@@ -1,0 +1,6 @@
+{
+    "name": "otswriter",
+    "class": "com.alibaba.datax.plugin.writer.otswriter.OtsWriter",
+    "description": "",
+    "developer": "alibaba"
+}

@@ -1,0 +1,15 @@
+{
+  "name": "rdbmsreader",
+  "parameter": {
+    "username": "",
+    "password": "",
+    "column": [],
+    "connection": [
+      {
+        "jdbcUrl": [],
+        "table": []
+      }
+    ],
+    "where": ""
+  }
+}

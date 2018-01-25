@@ -1,0 +1,9 @@
+{
+    "name": "txtfilereader",
+    "parameter": {
+        "path": [],
+        "encoding": "",
+        "column": [],
+        "fieldDelimiter": ""
+    }
+}

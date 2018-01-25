@@ -1,0 +1,13 @@
+{
+    "name": "hdfswriter",
+    "parameter": {
+        "defaultFS": "",
+        "fileType": "",
+        "path": "",
+        "fileName": "",
+        "column": [],
+        "writeMode": "",
+        "fieldDelimiter": "",
+        "compress":""
+    }
+}

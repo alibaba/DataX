@@ -1,0 +1,14 @@
+{
+    "name": "odpsreader",
+    "parameter": {
+        "accessId": "",
+        "accessKey": "",
+        "project": "",
+        "table": "",
+        "partition": [],
+        "column": [],
+        "packageAuthorizedProject": "",
+        "splitMode": "",
+        "odpsServer": ""
+    }
+}

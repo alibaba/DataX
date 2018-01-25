@@ -1,0 +1,7 @@
+{
+    "name": "ossreader",
+    "class": "com.alibaba.datax.plugin.reader.ossreader.OssReader",
+    "description": "",
+    "developer": "alibaba"
+}
+

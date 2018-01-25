@@ -1,0 +1,10 @@
+{
+  "name": "odpsreader",
+  "class": "com.alibaba.datax.plugin.reader.odpsreader.OdpsReader",
+  "description": {
+    "useScene": "prod.",
+    "mechanism": "TODO",
+    "warn": "TODO"
+  },
+  "developer": "alibaba"
+}

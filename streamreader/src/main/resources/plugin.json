@@ -1,0 +1,10 @@
+{
+    "name": "streamreader",
+    "class": "com.alibaba.datax.plugin.reader.streamreader.StreamReader",
+    "description": {
+        "useScene": "only for developer test.",
+        "mechanism": "use datax framework to transport data from stream.",
+        "warn": "Never use it in your real job."
+    },
+    "developer": "alibaba"
+}
