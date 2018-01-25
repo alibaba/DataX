@@ -1,0 +1,10 @@
+{
+  "name": "odpswriter",
+  "class": "com.alibaba.datax.plugin.writer.odpswriter.OdpsWriter",
+  "description": {
+    "useScene": "prod.",
+    "mechanism": "TODO",
+    "warn": "TODO"
+  },
+  "developer": "alibaba"
+}

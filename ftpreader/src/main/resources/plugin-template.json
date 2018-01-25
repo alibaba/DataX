@@ -1,0 +1,38 @@
+{
+  "name": "ftpreader",
+  "parameter": {
+    "host": "",
+    "port": "",
+    "username": "",
+    "password": "",
+    "protocol": "",
+    "path": [
+      ""
+    ],
+    "encoding": "UTF-8",
+    "column": [
+      {
+        "index": 0,
+        "type": "long"
+      },
+      {
+        "index": 1,
+        "type": "boolean"
+      },
+      {
+        "index": 2,
+        "type": "double"
+      },
+      {
+        "index": 3,
+        "type": "string"
+      },
+      {
+        "index": 4,
+        "type": "date",
+        "format": "yyyy.MM.dd"
+      }
+    ],
+    "fieldDelimiter": ","
+  }
+}

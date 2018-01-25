@@ -1,0 +1,11 @@
+{
+    "name": "mongodbreader",
+    "parameter": {
+        "address": [],
+        "userName": "",
+        "userPassword": "",
+        "dbName": "",
+        "collectionName": "",
+        "column": []
+    }
+}

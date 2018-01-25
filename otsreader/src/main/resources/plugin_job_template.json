@@ -1,0 +1,14 @@
+{
+    "name": "otsreader",
+    "parameter": {
+        "endpoint":"",
+        "accessId":"",
+        "accessKey":"",
+        "instanceName":"",
+        "column":[],
+        "range":{
+            "begin":[],
+            "end":[]
+        }
+    }
+}

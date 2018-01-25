@@ -1,0 +1,7 @@
+{
+    "name": "hbase11xreader",
+    "class": "com.alibaba.datax.plugin.reader.hbase11xreader.Hbase11xReader",
+    "description": "useScene: prod. mechanism: Scan to read data.",
+    "developer": "alibaba"
+}
+

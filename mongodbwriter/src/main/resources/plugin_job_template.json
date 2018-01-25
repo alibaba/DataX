@@ -1,0 +1,15 @@
+{
+    "name": "mongodbwriter",
+    "parameter": {
+        "address": [],
+        "userName": "",
+        "userPassword": "",
+        "dbName": "",
+        "collectionName": "",
+        "column": [],
+        "upsertInfo": {
+            "isUpsert": "",
+            "upsertKey": ""
+        }
+    }
+}

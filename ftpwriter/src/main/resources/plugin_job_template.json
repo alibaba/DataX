@@ -1,0 +1,24 @@
+{
+    "name": "ftpwriter",
+    "parameter": {
+        "name": "ftpwriter",
+        "parameter": {
+            "protocol": "",
+            "host": "",
+            "port": "",
+            "username": "",
+            "password": "",
+            "timeout": "",
+            "connectPattern": "",
+            "path": "",
+            "fileName": "",
+            "writeMode": "",
+            "fieldDelimiter": "",
+            "encoding": "",
+            "nullFormat": "",
+            "dateFormat": "",
+            "fileFormat": "",
+            "header": []
+        }
+    }
+}
