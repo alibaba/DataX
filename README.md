@@ -24,10 +24,7 @@ DataX本身作为数据同步框架，将不同数据源的同步抽象为从源
 
 ##### Download [DataX下载地址](http://datax-opensource.oss-cn-hangzhou.aliyuncs.com/datax.tar.gz)
 
-##### 请点击：[Quick Start](https://github.com/alibaba/DataX/wiki/Quick-Start)
-* [配置示例：从MySQL读取数据 写入ODPS](https://github.com/alibaba/DataX/wiki/Quick-Start)
-* [配置定时任务](https://github.com/alibaba/DataX/wiki/%E9%85%8D%E7%BD%AE%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1%EF%BC%88Linux%E7%8E%AF%E5%A2%83%EF%BC%89)
-* [动态传入参数](https://github.com/alibaba/DataX/wiki/%E5%8A%A8%E6%80%81%E4%BC%A0%E5%85%A5%E5%8F%82%E6%95%B0)
+##### 请点击：[Quick Start](https://github.com/alibaba/DataX/blob/master/userGuid.md)
 
 
 
@@ -35,29 +32,30 @@ DataX本身作为数据同步框架，将不同数据源的同步抽象为从源
 
 DataX目前已经有了比较全面的插件体系，主流的RDBMS数据库、NOSQL、大数据计算系统都已经接入，目前支持数据如下图，详情请点击：[DataX数据源参考指南](https://github.com/alibaba/DataX/wiki/DataX-all-data-channels)
 
-| 类型           | 数据源        | Reader(读) | Writer(写) |
-| ------------ | ---------- | :-------: | :-------: |
-| RDBMS 关系型数据库 | Mysql      |     √     |     √     |
-|              | Oracle     |     √     |     √     |
-|              | SqlServer  |     √     |     √     |
-|              | Postgresql |     √     |     √     |
-|              | DRDS |     √     |     √     |
-|              | 达梦         |     √     |     √     |
-| 阿里云数仓数据存储    | ODPS       |     √     |     √     |
-|              | ADS        |           |     √     |
-|              | OSS        |     √     |     √     |
-|              | OCS        |     √     |     √     |
-| NoSQL数据存储    | OTS        |     √     |     √     |
-|              | Hbase0.94  |     √     |     √     |
-|              | Hbase1.1   |     √     |     √     |
-|              | MongoDB    |     √     |     √     |
-| 无结构化数据存储     | TxtFile    |     √     |     √     |
-|              | FTP        |     √     |     √     |
-|              | HDFS       |     √     |     √     |
-
+| 类型           | 数据源        | Reader(读) | Writer(写) |文档|
+| ------------ | ---------- | :-------: | :-------: |:-------: |
+| RDBMS 关系型数据库 | MySQL      |     √     |     √     |![读](https://github.com/alibaba/DataX/blob/master/mysqlreader/doc/mysqlreader.md) 、![写](https://github.com/alibaba/DataX/blob/master/mysqlwriter/doc/mysqlwriter.md)|
+|              | Oracle     |     √     |     √     |![读]() 、![写]()|
+|              | SQLServer  |     √     |     √     |![读]() 、![写]()|
+|              | PostgreSQL |     √     |     √     |![读]() 、![写]()|
+|              | DRDS |     √     |     √     |![读]() 、![写]()|
+|              | 达梦         |     √     |     √     |![读]() 、![写]()|
+|              | 通用RDBMS(支持所有关系型数据库)         |     √     |     √     |![读]() 、![写]()|
+| 阿里云数仓数据存储    | ODPS       |     √     |     √     |![读]() 、![写]()|
+|              | ADS        |           |     √     |![读]() 、![写]()|
+|              | OSS        |     √     |     √     |![读]() 、![写]()|
+|              | OCS        |     √     |     √     |![读]() 、![写]()|
+| NoSQL数据存储    | OTS        |     √     |     √     |![读]() 、![写]()|
+|              | Hbase0.94  |     √     |     √     |![读]() 、![写]()|
+|              | Hbase1.1   |     √     |     √     |![读]() 、![写]()|
+|              | MongoDB    |     √     |     √     |![读]() 、![写]()|
+| 无结构化数据存储     | TxtFile    |     √     |     √     |![读]() 、![写]()|
+|              | FTP        |     √     |     √     |![读]() 、![写]()|
+|              | HDFS       |     √     |     √     |![读]() 、![写]()|
+|              | Elasticsearch       |         |     √     |![读]() 、![写]()|
 
 # 我要开发新的插件
-请点击：[DataX插件开发宝典](https://github.com/alibaba/DataX/wiki/DataX%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91%E5%AE%9D%E5%85%B8)
+请点击：[DataX插件开发宝典](xxx)
 
 # 项目成员
 
