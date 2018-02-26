@@ -49,7 +49,6 @@ public class ESClient {
         JestClientFactory factory = new JestClientFactory();
         Builder httpClientConfig = new HttpClientConfig
                 .Builder(endpoint)
-                .setPreemptiveAuth(new HttpHost(endpoint))
                 .multiThreaded(multiThread)
                 .connTimeout(30000)
                 .readTimeout(readTimeout)
@@ -59,7 +58,7 @@ public class ESClient {
                 .discoveryFrequency(5l, TimeUnit.MINUTES);
 
         if (!("".equals(user) || "".equals(passwd))) {
-            httpClientConfig.defaultCredentials(user, passwd);
+            httpClientConfig.setPreemptiveAuth(new HttpHost(endpoint)).defaultCredentials(user, passwd);
         }
 
         factory.setHttpClientConfig(httpClientConfig.build());
