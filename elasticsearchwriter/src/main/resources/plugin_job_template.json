@@ -1,0 +1,25 @@
+{
+    "name": "elasticsearchbwriter",
+    "parameter": {
+        "endpoint": "",
+        "accessId": "",
+        "accessKey": "",
+        "index": "",
+        "type": "",
+        "cleanup": true,
+        "discovery": false,
+        "batchSize": 1000,
+        "trySize": 30,
+        "timeout": 600000,
+        "compression": true,
+        "multiThread": true,
+        "ignoreWriteError": false,
+        "ignoreParseError": true,
+        "alias": "",
+        "aliasMode": "",
+        "settings": {"index" :{"number_of_shards": 1, "number_of_replicas": 0}},
+        "splitter": ",",
+        "column": [],
+        "dynamic": false
+    }
+}
