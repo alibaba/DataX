@@ -50,4 +50,10 @@ public final class Key {
 
     public static  final String WRITE_BUFFER_SIZE = "writeBufferSize";
 
+    public static  final String HAVE_KERBEROS = "haveKerberos";
+
+    public static  final String KERBEROS_KEYTAB_FILE_PATH = "kerberosKeytabFilePath";
+
+    public static  final String KERBEROS_PRINCIPAL = "kerberosPrincipal";
+
 }

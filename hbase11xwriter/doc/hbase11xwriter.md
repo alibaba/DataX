@@ -328,6 +328,32 @@ HbaseWriter 插件实现了从向Hbase中写取数据。在底层实现上，Hba
  
 	* 默认值：8M<br />
 
+* **haveKerberos**
+
+  * 描述：是否有Kerberos认证，默认false<br />
+ 
+     例如如果用户配置true，则配置项kerberosKeytabFilePath，kerberosPrincipal为必填。
+
+  * 必选：haveKerberos 为true必选 <br />
+ 
+  * 默认值：false <br />
+
+* **kerberosKeytabFilePath**
+
+  * 描述：Kerberos认证 keytab文件路径，绝对路径<br />
+
+  * 必选：否 <br />
+ 
+  * 默认值：无 <br />
+
+* **kerberosPrincipal**
+
+  * 描述：Kerberos认证Principal名，如xxxx/hadoopclient@xxx.xxx <br />
+
+  * 必选：haveKerberos 为true必选 <br />
+ 
+  * 默认值：无 <br />
+
 ### 3.3 HBase支持的列类型
 * BOOLEAN
 * SHORT
