@@ -339,7 +339,7 @@ ROW                                   COLUMN+CELL
 	
 	```
 	"column": 
-[
+  [
 	{
 	    "name": "rowkey",
 	    "type": "string"
@@ -348,7 +348,7 @@ ROW                                   COLUMN+CELL
 	    "value": "test",
 	    "type": "string"
 	}
-] 	
+  ] 	
 		            
 	```
     normal 模式下，对于用户指定Column信息，type必须填写，name/value必须选择其一。    
@@ -357,7 +357,7 @@ ROW                                   COLUMN+CELL
 		
 	```
 	"column": 
-[
+  [
 	{
 	    "name": "rowkey",
 	    "type": "string"
@@ -366,7 +366,7 @@ ROW                                   COLUMN+CELL
 	    "name": "info: age",
 	    "type": "string"
 	}
-]	
+  ]	
 	```
 
 	* 必选：是<br />
@@ -391,11 +391,11 @@ ROW                                   COLUMN+CELL
 	配置格式如下：   
 	
 	```
-	"range": {
-  "startRowkey": "aaa",
-  "endRowkey": "ccc",
-  "isBinaryRowkey":false
-}
+	  "range": {
+    "startRowkey": "aaa",
+    "endRowkey": "ccc",
+    "isBinaryRowkey":false
+    }
 	```
 	<br />
 	  
