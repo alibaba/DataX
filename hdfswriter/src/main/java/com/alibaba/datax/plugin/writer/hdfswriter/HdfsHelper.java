@@ -204,6 +204,18 @@ public  class HdfsHelper {
         LOG.info(String.format("finish delete tmp dir [%s] .",path.toString()));
     }
 
+    public void createDir(String path){
+        LOG.info(String.format("start create dir [%s] .",path.toString()));
+        try {
+            fileSystem.mkdirs(new Path(path));
+        } catch (Exception e) {
+            String message = String.format("创建临时目录[%s]时发生IO异常,请检查您的网络是否正常！", path.toString());
+            LOG.error(message);
+            throw DataXException.asDataXException(HdfsWriterErrorCode.CONNECT_HDFS_IO_ERROR, e);
+        }
+        LOG.info(String.format("finish create dir [%s] .",path.toString()));
+    }
+
     public void renameFile(HashSet<String> tmpFiles, HashSet<String> endFiles){
         Path tmpFilesParent = null;
         if(tmpFiles.size() != endFiles.size()){
