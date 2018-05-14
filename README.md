@@ -106,6 +106,7 @@ This software is free to use under the Apache License [Apache license](https://g
 ````
 钉钉用户请扫描以下二维码进行讨论：
 
-![DataX-OpenSource-Dingding](https://raw.githubusercontent.com/alibaba/DataX/master/images/datax-opensource-dingding.png)
+![DataX-OpenSource-Dingding](https://img.alicdn.com/tfs/TB1nPz6rbGYBuNjy0FoXXciBFXa-310-425.png)
+
 
 
