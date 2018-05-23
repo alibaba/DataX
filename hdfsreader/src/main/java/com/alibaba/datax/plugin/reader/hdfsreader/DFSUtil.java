@@ -486,15 +486,10 @@ public class DFSUtil {
     }
 
     private int getAllColumnsCount(String filePath) {
-        int columnsCount;
-        final String colFinal = "_col";
         Path path = new Path(filePath);
         try {
             Reader reader = OrcFile.createReader(path, OrcFile.readerOptions(hadoopConf));
-            String type_struct = reader.getObjectInspector().getTypeName();
-            columnsCount = (type_struct.length() - type_struct.replace(colFinal, "").length())
-                    / colFinal.length();
-            return columnsCount;
+            return reader.getTypes().get(0).getSubtypesCount();
         } catch (IOException e) {
             String message = "读取orcfile column列数失败，请联系系统管理员";
             throw DataXException.asDataXException(HdfsReaderErrorCode.READ_FILE_ERROR, message);
