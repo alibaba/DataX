@@ -9,6 +9,7 @@ import org.apache.commons.lang3.Validate;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +46,13 @@ public class Hbase11xHelper {
 
         org.apache.hadoop.hbase.client.Connection hConnection = null;
         try {
+            Boolean haveKerberos = hConfiguration.getBoolean(Key.HAVE_KERBEROS, false);
+            if(haveKerberos){
+                String kerberosKeytabFilePath = hConfiguration.get(Key.KERBEROS_KEYTAB_FILE_PATH);
+                String kerberosPrincipal = hConfiguration.get(Key.KERBEROS_PRINCIPAL);
+                UserGroupInformation.setConfiguration(hConfiguration);
+                UserGroupInformation.loginUserFromKeytab(kerberosPrincipal, kerberosKeytabFilePath);
+            }
             hConnection = ConnectionFactory.createConnection(hConfiguration);
 
         } catch (Exception e) {

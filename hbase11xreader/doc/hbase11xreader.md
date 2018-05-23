@@ -339,7 +339,7 @@ ROW                                   COLUMN+CELL
 	
 	```
 	"column": 
-[
+  [
 	{
 	    "name": "rowkey",
 	    "type": "string"
@@ -348,7 +348,7 @@ ROW                                   COLUMN+CELL
 	    "value": "test",
 	    "type": "string"
 	}
-] 	
+  ] 	
 		            
 	```
     normal 模式下，对于用户指定Column信息，type必须填写，name/value必须选择其一。    
@@ -357,7 +357,7 @@ ROW                                   COLUMN+CELL
 		
 	```
 	"column": 
-[
+  [
 	{
 	    "name": "rowkey",
 	    "type": "string"
@@ -366,7 +366,7 @@ ROW                                   COLUMN+CELL
 	    "name": "info: age",
 	    "type": "string"
 	}
-]	
+  ]	
 	```
 
 	* 必选：是<br />
@@ -391,11 +391,11 @@ ROW                                   COLUMN+CELL
 	配置格式如下：   
 	
 	```
-	"range": {
-  "startRowkey": "aaa",
-  "endRowkey": "ccc",
-  "isBinaryRowkey":false
-}
+	  "range": {
+    "startRowkey": "aaa",
+    "endRowkey": "ccc",
+    "isBinaryRowkey":false
+    }
 	```
 	<br />
 	  
@@ -419,6 +419,31 @@ ROW                                   COLUMN+CELL
  
 	* 默认值：100<br />
 
+* **haveKerberos**
+
+  * 描述：是否有Kerberos认证，默认false<br />
+ 
+     例如如果用户配置true，则配置项kerberosKeytabFilePath，kerberosPrincipal为必填。
+
+  * 必选：haveKerberos 为true必选 <br />
+ 
+  * 默认值：false <br />
+
+* **kerberosKeytabFilePath**
+
+  * 描述：Kerberos认证 keytab文件路径，绝对路径<br />
+
+  * 必选：否 <br />
+ 
+  * 默认值：无 <br />
+
+* **kerberosPrincipal**
+
+  * 描述：Kerberos认证Principal名，如xxxx/hadoopclient@xxx.xxx <br />
+
+  * 必选：haveKerberos 为true必选 <br />
+ 
+  * 默认值：无 <br />
 
 ### 3.3 类型转换
 
