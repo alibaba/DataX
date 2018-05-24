@@ -49,10 +49,10 @@ public class ESWriter extends Writer {
             esClient.createClient(Key.getEndpoint(conf),
                     Key.getAccessID(conf),
                     Key.getAccessKey(conf),
-                    false,
-                    300000,
-                    false,
-                    false);
+                    Key.isMultiThread(conf),
+                    Key.getTimeout(conf),
+                    Key.isCompression(conf),
+                    Key.isDiscovery(conf));
 
             String indexName = Key.getIndexName(conf);
             String typeName = Key.getTypeName(conf);

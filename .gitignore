@@ -1,0 +1,41 @@
+### wildcard ###
+*~
+*.iml
+*.class
+*.swp
+log.txt
+
+### file ###
+.DS_Store
+pom.xml.versionsBackup
+!.mvn/wrapper/maven-wrapper.jar
+
+#docker data
+contrib/docker/volumes/data
+
+### directory ###
+target/
+@log.path@/
+dist/
+node_modules/
+compressed/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.ipr
+
+### NetBeans ###
+nbproject/private/
+build/
+nbbuild/
+nbdist/
+.nb-gradle/
