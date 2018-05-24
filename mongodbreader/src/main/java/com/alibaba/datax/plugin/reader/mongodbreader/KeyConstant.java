@@ -82,6 +82,7 @@ public class KeyConstant {
      */
     public static final int MONGO_UNAUTHORIZED_ERR_CODE = 13;
     public static final int MONGO_ILLEGALOP_ERR_CODE = 20;
+    public static final int MONGO_COMMAND_NOT_FOUND_CODE = 59;
     /**
      * 判断是否为数组类型
      * @param type 数据类型

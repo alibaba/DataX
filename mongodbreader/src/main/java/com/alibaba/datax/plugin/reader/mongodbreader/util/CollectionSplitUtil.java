@@ -99,7 +99,8 @@ public class CollectionSplitUtil {
                 .append("force", true));
         } catch (MongoCommandException e) {
             if (e.getErrorCode() == KeyConstant.MONGO_UNAUTHORIZED_ERR_CODE ||
-                e.getErrorCode() == KeyConstant.MONGO_ILLEGALOP_ERR_CODE) {
+                e.getErrorCode() == KeyConstant.MONGO_ILLEGALOP_ERR_CODE ||
+                e.getErrorCode() == KeyConstant.MONGO_COMMAND_NOT_FOUND_CODE ) {
                 supportSplitVector = false;
             }
         }
@@ -139,6 +140,10 @@ public class CollectionSplitUtil {
 
             for (int i = 0; i < splitPointCount; i++) {
                 Document doc = col.find().skip(skipCount).limit(chunkDocCount).first();
+                if (doc == null) {
+                    break;   
+                }
+                
                 Object id = doc.get(KeyConstant.MONGO_PRIMARY_ID);
                 if (isObjectId) {
                     ObjectId oid = (ObjectId)id;
