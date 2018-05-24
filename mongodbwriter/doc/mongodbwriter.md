@@ -116,9 +116,9 @@ MongoDBWriter通过Datax框架获取Reader生成的数据，然后将Datax支持
                                 "type": "int"
                             }
                         ],
-						"upsertInfo": {
-							"isUpsert": "true",
-							"upsertKey": "unique_id"
+						"writeMode": {
+							"isReplace": "true",
+							"replaceKey": "unique_id"
 						}
                     }
                 }
