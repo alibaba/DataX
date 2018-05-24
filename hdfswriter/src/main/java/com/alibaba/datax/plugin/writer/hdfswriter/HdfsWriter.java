@@ -81,10 +81,10 @@ public class HdfsWriter extends Writer {
             //writeMode check
             this.writeMode = this.writerSliceConfig.getNecessaryValue(Key.WRITE_MODE, HdfsWriterErrorCode.REQUIRED_VALUE);
             writeMode = writeMode.toLowerCase().trim();
-            Set<String> supportedWriteModes = Sets.newHashSet("append", "nonconflict");
+            Set<String> supportedWriteModes = Sets.newHashSet("append", "nonconflict", "truncate");
             if (!supportedWriteModes.contains(writeMode)) {
                 throw DataXException.asDataXException(HdfsWriterErrorCode.ILLEGAL_VALUE,
-                        String.format("仅支持append, nonConflict两种模式, 不支持您配置的 writeMode 模式 : [%s]",
+                        String.format("仅支持append, nonConflict, truncate三种模式, 不支持您配置的 writeMode 模式 : [%s]",
                                 writeMode));
             }
             this.writerSliceConfig.set(Key.WRITE_MODE, writeMode);
@@ -160,13 +160,11 @@ public class HdfsWriter extends Writer {
                 if(existFilePaths.length > 0){
                     isExistFile = true;
                 }
-                /**
                  if ("truncate".equals(writeMode) && isExistFile ) {
                  LOG.info(String.format("由于您配置了writeMode truncate, 开始清理 [%s] 下面以 [%s] 开头的内容",
                  path, fileName));
                  hdfsHelper.deleteFiles(existFilePaths);
                  } else
-                 */
                 if ("append".equalsIgnoreCase(writeMode)) {
                     LOG.info(String.format("由于您配置了writeMode append, 写入前不做清理工作, [%s] 目录下写入相应文件名前缀  [%s] 的文件",
                             path, fileName));
@@ -181,8 +179,9 @@ public class HdfsWriter extends Writer {
                             String.format("由于您配置了writeMode nonConflict,但您配置的path: [%s] 目录不为空, 下面存在其他文件或文件夹.", path));
                 }
             }else{
-                throw DataXException.asDataXException(HdfsWriterErrorCode.ILLEGAL_VALUE,
-                        String.format("您配置的path: [%s] 不存在, 请先在hive端创建对应的数据库和表.", path));
+                hdfsHelper.createDir(path);
+//                throw DataXException.asDataXException(HdfsWriterErrorCode.ILLEGAL_VALUE,
+//                        String.format("您配置的path: [%s] 不存在, 请先在hive端创建对应的数据库和表.", path));
             }
         }
 
