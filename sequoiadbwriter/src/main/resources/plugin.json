@@ -1,0 +1,6 @@
+{
+    "name": "sequoiadbwriter",
+    "class": "com.alibaba.datax.plugin.writer.sequoiadbwriter.SequoiaDBWriter",
+    "description": "useScene: prod. mechanism: via SDBClient connect SequoiaDB write data concurrent.",
+    "developer": "jianhong xie"
+}
