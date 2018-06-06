@@ -28,6 +28,8 @@ import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import org.bson.BSONObject;
+import org.bson.BasicBSONObject;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
@@ -173,6 +175,13 @@ public class MongoDBReader extends Reader {
                                 String tempArrayStr = Joiner.on(splitter).join(array);
                                 record.addColumn(new StringColumn(tempArrayStr));
                             }
+                        } else if(KeyConstant.isDocumentType(column.getString(KeyConstant.COLUMN_TYPE))) {
+                            //将Document转换为BSONObject
+                            BSONObject bsonObject= new BasicBSONObject();
+                            for(String key :((Document)tempCol).keySet()) {
+                                bsonObject.put(key, ((Document) tempCol).getBoolean(key));
+                            }
+                            record.addColumn(new StringColumn(bsonObject.toString()));
                         } else {
                             record.addColumn(new StringColumn(tempCol.toString()));
                         }

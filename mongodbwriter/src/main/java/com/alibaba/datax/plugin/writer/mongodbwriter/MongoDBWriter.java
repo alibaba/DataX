@@ -17,6 +17,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.BulkWriteOptions;
 import com.mongodb.client.model.ReplaceOneModel;
 import com.mongodb.client.model.UpdateOptions;
+import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -226,10 +227,10 @@ public class MongoDBWriter extends Writer{
                                 } else {
                                     data.put(columnMeta.getJSONObject(i).getString(KeyConstant.COLUMN_NAME), record.getColumn(i).asString().split(splitter));
                                 }
-                            } else if(type.toLowerCase().equalsIgnoreCase("json")) {
-                                //如果是json类型,将其进行转换
-                                Object mode = com.mongodb.util.JSON.parse(record.getColumn(i).asString());
-                                data.put(columnMeta.getJSONObject(i).getString(KeyConstant.COLUMN_NAME),JSON.toJSON(mode));
+                            } else if(type.toLowerCase().equalsIgnoreCase("document")) {
+                                //如果是document类型,将其进行转换
+                                Document document = Document.parse(record.getColumn(i).asString());
+                                data.put(columnMeta.getJSONObject(i).getString(KeyConstant.COLUMN_NAME), document);
                             } else {
                                 data.put(columnMeta.getJSONObject(i).getString(KeyConstant.COLUMN_NAME), record.getColumn(i).asString());
                             }
