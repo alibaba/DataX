@@ -1,0 +1,11 @@
+{
+    "name": "sequoiadbreader",
+    "parameter": {
+        "address": [],
+        "userName": "",
+        "userPassword": "",
+        "collectionSpaceName": "",
+        "collectionName": "",
+        "column": []
+    }
+}

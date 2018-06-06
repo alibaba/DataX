@@ -1,0 +1,6 @@
+{
+    "name": "sequoiadbreader",
+    "class": "com.alibaba.datax.plugin.reader.sequoiadbreader.SequoiaDBReader",
+    "description": "useScene: prod. mechanism: via SDBClient connect sequoiadb reader data concurrent.",
+    "developer": "jianhong xie"
+}
