@@ -55,7 +55,7 @@ DataX目前已经有了比较全面的插件体系，主流的RDBMS数据库、N
 |              | Elasticsearch       |         |     √     |![读]() 、![写]()|
 
 # 我要开发新的插件
-请点击：[DataX插件开发宝典](xxx)
+请点击：[DataX插件开发宝典](https://github.com/alibaba/DataX/blob/master/dataxPluginDev.md)
 
 # 项目成员
 
