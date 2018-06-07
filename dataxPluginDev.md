@@ -131,13 +131,13 @@ public class SomeReader extends Reader {
 
 框架按照如下的顺序执行`Job`和`Task`的接口：
 
-![DataXReaderWriter (2)](https://github.com/alibaba/DataX/blob/master/images/plugin_dev_guide_1.jpg)
+![DataXReaderWriter (2)](https://github.com/alibaba/DataX/blob/master/images/plugin_dev_guide_1.png)
 
 上图中，黄色表示`Job`部分的执行阶段，蓝色表示`Task`部分的执行阶段，绿色表示框架执行阶段。
 
 相关类关系如下：
 
-![DataX](https://github.com/alibaba/DataX/blob/master/images/plugin_dev_guide_2.jpg)
+![DataX](https://github.com/alibaba/DataX/blob/master/images/plugin_dev_guide_2.png)
 
 ### 插件定义
 
@@ -397,7 +397,7 @@ public interface Record {
 
 `Column`除了提供数据相关的方法外，还提供一系列以`as`开头的数据类型转换转换方法。
 
-![Columns](https://github.com/alibaba/DataX/blob/master/images/plugin_dev_guide_3.jpg)
+![Columns](https://github.com/alibaba/DataX/blob/master/images/plugin_dev_guide_3.png)
 
 
 DataX的内部类型在实现上会选用不同的java类型：
