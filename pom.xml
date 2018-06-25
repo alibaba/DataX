@@ -52,7 +52,6 @@
         <module>oraclereader</module>
         <module>odpsreader</module>
         <module>otsreader</module>
-        <module>otsstreamreader</module>
         <module>txtfilereader</module>
         <module>hdfsreader</module>
         <module>streamreader</module>
