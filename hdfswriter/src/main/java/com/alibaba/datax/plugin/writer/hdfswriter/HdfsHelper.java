@@ -37,6 +37,7 @@ public class HdfsHelper {
     public org.apache.hadoop.conf.Configuration hadoopConf = null;
     public static final String HADOOP_SECURITY_AUTHENTICATION_KEY = "hadoop.security.authentication";
     public static final String HDFS_DEFAULTFS_KEY = "fs.defaultFS";
+    public static final String HDFS_DEFAULT_USER = "hdfs";
 
     // Kerberos
     private Boolean haveKerberos = false;
@@ -45,6 +46,7 @@ public class HdfsHelper {
 
     public void getFileSystem(String defaultFS, Configuration taskConfig) {
         hadoopConf = new org.apache.hadoop.conf.Configuration();
+        String hadoopUsername = HDFS_DEFAULT_USER;
 
         Configuration hadoopSiteParams = taskConfig.getConfiguration(Key.HADOOP_CONFIG);
         JSONObject hadoopSiteParamsAsJsonObject = JSON.parseObject(taskConfig.getString(Key.HADOOP_CONFIG));
@@ -52,6 +54,10 @@ public class HdfsHelper {
             Set<String> paramKeys = hadoopSiteParams.getKeys();
             for (String each : paramKeys) {
                 hadoopConf.set(each, hadoopSiteParamsAsJsonObject.getString(each));
+            }
+            String configHdfsUser = (String) hadoopSiteParams.get(Key.HADOOP_CONFIG_USERNAME);
+            if (configHdfsUser != null) {
+                hadoopUsername = configHdfsUser;
             }
         }
         hadoopConf.set(HDFS_DEFAULTFS_KEY, defaultFS);
@@ -66,6 +72,7 @@ public class HdfsHelper {
         this.kerberosAuthentication(this.kerberosPrincipal, this.kerberosKeytabFilePath);
         conf = new JobConf(hadoopConf);
         try {
+            System.setProperty("HADOOP_USER_NAME", hadoopUsername);
             fileSystem = FileSystem.get(conf);
         } catch (IOException e) {
             String message = String.format("获取FileSystem时发生网络IO异常,请检查您的网络是否正常!HDFS地址：[%s]",
@@ -213,12 +220,12 @@ public class HdfsHelper {
             if (isPathexists(destPath.toString())) {
                 fileSystem.delete(destPath, true);
             }
-            LOG.info("success delete dir : [%s]",destPath.toString());
+            LOG.info("success delete dir : [%s]", destPath.toString());
             if (isPathexists(sourcePath.toString())) {
                 fileSystem.rename(sourcePath, destPath);
-            }else{
-                Log.error("输入的路径[%s]不存在",sourcePath.toString());
-                throw new Exception("输入的路径"+sourcePath.toString()+"不存在");
+            } else {
+                Log.error("输入的路径[%s]不存在", sourcePath.toString());
+                throw new Exception("输入的路径" + sourcePath.toString() + "不存在");
             }
         } catch (Exception e) {
             String message = String.format("删除临时目录[%s]和改路径名时发生IO异常,请检查您的网络是否正常！", destPath.toString());
