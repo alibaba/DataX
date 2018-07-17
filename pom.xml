@@ -62,6 +62,7 @@
         <module>rdbmsreader</module>
         <module>hbase11xreader</module>
         <module>hbase094xreader</module>
+        <module>jsonfilereader</module>
 
         <!-- writer -->
         <module>mysqlwriter</module>
@@ -84,6 +85,7 @@
         <module>hbase094xwriter</module>
         <module>hbase11xsqlwriter</module>
         <module>elasticsearchwriter</module>
+        <module>rediswriter</module>
 
         <!-- common support module -->
         <module>plugin-rdbms-util</module>

@@ -1,0 +1,13 @@
+{
+  "name": "jsonfilereader",
+  "parameter": {
+    "path": [],
+    "column": [
+      {
+        "index": "$.a",
+        "type": ""
+      }
+    ],
+    "encoding": "UTF-8"
+  }
+}
