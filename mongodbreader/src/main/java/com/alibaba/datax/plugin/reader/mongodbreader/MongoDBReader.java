@@ -18,7 +18,11 @@ import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
+import java.math.BigDecimal;
 import java.util.*;
+import  com.alibaba.fastjson.parser.Feature;
+
+
 
 /**
  * Created by jianying.wcj on 2015/3/19 0019.
@@ -171,7 +175,6 @@ public class MongoDBReader extends Reader {
 
 
                             record.addColumn(new StringColumn(column_value));
-                            System.out.println("[INFO] ------------------------------------------------------------------------ fix end");
                         }
                     }
                 }
@@ -213,18 +216,51 @@ public class MongoDBReader extends Reader {
      * @return
      */
     private static String fixedNestedDocument(Object column_value) {
-
+        System.out.println("[INFO] ------------------------------------------------------------------------"+"fixedNestedDocument is run");
+        System.out.println("[INFO] ------------------------------------------------------------------------"+column_value.getClass().getName());
         String ret_column_value = "";
         if(column_value!=null){
             if(column_value instanceof Document){
                 ret_column_value = ((Document) column_value).toJson();
             }else if(column_value instanceof ArrayList){
-                ArrayList<Document> array = (ArrayList<Document>) column_value;
+                System.out.println("[INFO] ------------------------------------------------------------------------"+"array");
+                ArrayList array = (ArrayList) column_value;
+
                 JSONArray jsonArray = new JSONArray();
                 for(int i=0;i<array.size();i++){
-                    Document element = array.get(i);
-                    JSONObject json = JSONObject.parseObject(element.toJson());
-                    jsonArray.add(json);
+                    Object element = array.get(i);
+                    System.out.println("[INFO] ------------------------------------------------------------------------"+""+element.getClass());
+                    String unbox_json_str = "";
+                    if(element instanceof Document){
+                        unbox_json_str=((Document)element).toJson();
+                        JSONObject json = JSONObject.parseObject(unbox_json_str);
+                        jsonArray.add(json);
+                    }else if(element instanceof Double){
+                        unbox_json_str=String.valueOf(((Double) element).doubleValue());
+                        jsonArray.add(unbox_json_str);
+                    }else if(element instanceof Integer){
+                        unbox_json_str=((Integer)element).toString();
+                        jsonArray.add(unbox_json_str);
+                    }else if(element instanceof Float){
+                        unbox_json_str=((Float)element).toString();
+                        jsonArray.add(unbox_json_str);
+                    }else if(element instanceof String){
+                        unbox_json_str=(String)element;
+                        jsonArray.add(unbox_json_str);
+                    }else if(element instanceof Boolean){
+                        unbox_json_str=((Boolean)element).toString();
+                        jsonArray.add(unbox_json_str);
+                    }else if(element instanceof Long){
+                        unbox_json_str=((Long)element).toString();
+                        jsonArray.add(unbox_json_str);
+                    }else if(element instanceof Date){
+                        unbox_json_str=((Date)element).toString();
+                        jsonArray.add(unbox_json_str);
+                    }else if(element instanceof BigDecimal){
+                        unbox_json_str=new BigDecimal(String.valueOf(element)).toPlainString();
+                        jsonArray.add(unbox_json_str);
+                    }
+
                 }
                 ret_column_value = jsonArray.toJSONString();
             }else{
@@ -232,6 +268,7 @@ public class MongoDBReader extends Reader {
             }
         }
 
+        System.out.println("[INFO] ------------------------------------------------------------------------"+"fixedNestedDocument end ");
         return ret_column_value;
     }
 }
