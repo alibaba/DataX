@@ -1,0 +1,6 @@
+{
+    "name": "adswriter",
+    "class": "com.alibaba.datax.plugin.writer.adswriter.AdsWriter",
+    "description": "",
+    "developer": "alibaba"
+}

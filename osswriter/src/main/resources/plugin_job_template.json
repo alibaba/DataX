@@ -1,0 +1,13 @@
+{
+    "name": "osswriter",
+    "parameter": {
+        "endpoint": "",
+        "accessId": "",
+        "accessKey": "",
+        "bucket": "",
+        "object": "",
+        "encoding": "",
+        "fieldDelimiter": "",
+        "writeMode": ""
+    }
+}

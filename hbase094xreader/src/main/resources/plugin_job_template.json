@@ -1,0 +1,15 @@
+{
+    "name": "hbase094xreader",
+    "parameter": {
+        "hbaseConfig": {},
+        "table": "",
+        "encoding": "",
+        "mode": "",
+        "column": [],
+        "range": {
+            "startRowkey": "",
+            "endRowkey": "",
+            "isBinaryRowkey": true
+        }
+    }
+}

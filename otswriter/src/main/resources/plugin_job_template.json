@@ -1,0 +1,13 @@
+{
+    "name": "otswriter",
+    "parameter": {
+        "endpoint":"",
+        "accessId":"",
+        "accessKey":"",
+        "instanceName":"",
+        "table":"",
+        "primaryKey" : [],
+        "column" : [],
+        "writeMode" : ""
+    }
+}

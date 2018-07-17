@@ -1,0 +1,13 @@
+{
+    "name": "adswriter",
+    "parameter": {
+        "url": "",
+        "username": "",
+        "password": "",
+        "schema": "",
+        "table": "",
+        "partition": "",
+        "overWrite": "",
+        "lifeCycle": 2
+    }
+}

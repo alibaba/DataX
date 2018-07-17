@@ -1,0 +1,11 @@
+{
+    "name": "drdsreader",
+    "parameter": {
+        "jdbcUrl": "",
+        "username": "",
+        "password": "",
+        "table": "",
+        "column": [],
+        "where": ""
+    }
+}

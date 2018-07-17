@@ -1,0 +1,15 @@
+{
+    "name": "ocswriter",
+    "parameter": {
+        "proxy": "",
+        "port": "",
+        "userName": "",
+        "password": "",
+        "writeMode": "",
+        "writeFormat": "",
+        "fieldDelimiter": "",
+        "expireTime": "",
+        "indexes": "",
+        "batchSize": ""
+    }
+}

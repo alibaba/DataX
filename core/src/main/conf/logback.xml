@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <property name="log.dir" value="${datax.home}/log/" />
+    <property name="perf.dir" value="${datax.home}/log_perf/" />
+    <timestamp key="ymd" datePattern="yyyy-MM-dd"/>
+    <timestamp key="byMillionSecond" datePattern="HH_mm_ss.SSS"/>
+
+    <!-- 控制台输出 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <Encoding>UTF-8</Encoding>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{0} - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <encoder>UTF-8</encoder>
+        <file>${log.dir}/${ymd}/${log.file.name}-${byMillionSecond}.log</file>
+        <append>false</append>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{0} - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <appender name="PERF" class="ch.qos.logback.core.FileAppender">
+        <encoder>UTF-8</encoder>
+        <file>${perf.dir}/${ymd}/${log.file.name}-${byMillionSecond}.log</file>
+        <append>false</append>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <!-- 按照每天生成日志文件(对 DataX 不适应，DataX 是一个进程一个日志) -->
+    <!--
+    <appender name="FILE"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <Encoding>UTF-8</Encoding>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${log.dir}/%d{yyyy-MM-dd}/${log.file.name}-${byMillionSecond}.log</FileNamePattern>
+            <MaxHistory>31</MaxHistory>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{0} - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+    -->
+    <!-- 按照每天生成日志文件(给用户查看进度使用的)
+    <appender name="USER_FILE"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+            <evaluator>
+                <expression>logger.endsWith("MasterContainerCollector") || null != throwable</expression>
+            </evaluator>
+            <OnMatch>ACCEPT</OnMatch>
+            <OnMismatch>DENY</OnMismatch>
+        </filter>
+
+        <Encoding>UTF-8</Encoding>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${log.dir}/%d{yyyy-MM-dd}/${log.file}-user.log</FileNamePattern>
+            <MaxHistory>31</MaxHistory>
+        </rollingPolicy>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{0} - %msg%n
+            </pattern>
+        </layout>
+    </appender>
+    -->
+
+    <!-- 按照每天生成日志文件(脏数据专用)
+    <appender name="BAD_RECORD_FILE"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+            <evaluator>
+                <expression>logger.endsWith("StdoutPluginCollector") || null != throwable</expression>
+            </evaluator>
+            <OnMatch>ACCEPT</OnMatch>
+            <OnMismatch>DENY</OnMismatch>
+        </filter>
+
+        <Encoding>UTF-8</Encoding>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${log.dir}/%d{yyyy-MM-dd}/${log.file}-badrecord.log</FileNamePattern>
+            <MaxHistory>31</MaxHistory>
+        </rollingPolicy>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{0} - %msg%n
+            </pattern>
+        </layout>
+    </appender>
+    -->
+
+    <!-- 按照每天生成日志文件（给开发查看普通运行信息的）
+    <appender name="DEV_FILE"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>
+        </filter>
+
+        <Encoding>UTF-8</Encoding>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${log.dir}/%d{yyyy-MM-dd}/${log.file}-dev.log</FileNamePattern>
+            <MaxHistory>30</MaxHistory>
+        </rollingPolicy>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{0} - %msg%n
+            </pattern>
+        </layout>
+    </appender>
+    -->
+
+    <!-- 按照每天生成日志文件（给开发查看全部调试信息的）
+    <appender name="DEBUG_FILE"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
+
+        <Encoding>UTF-8</Encoding>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${log.dir}/%d{yyyy-MM-dd}/${log.file}-debug.log</FileNamePattern>
+            <MaxHistory>30</MaxHistory>
+        </rollingPolicy>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{0} - %msg%n
+            </pattern>
+        </layout>
+    </appender>
+    -->
+
+    <logger name="com.alibaba.datax.common.statistics.PerfRecord"  level="INFO" additivity="false">
+        <appender-ref ref="PERF" />
+    </logger>
+
+    <root level="${loglevel:-INFO}">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="FILE" />
+        <!--
+        <appender-ref ref="USER_FILE" />
+        <appender-ref ref="BAD_RECORD_FILE" />
+        <appender-ref ref="DEV_FILE" />
+        <appender-ref ref="DEBUG_FILE" />
+        -->
+    </root>
+</configuration>

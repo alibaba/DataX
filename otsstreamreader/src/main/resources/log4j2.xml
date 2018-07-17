@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration status="OFF">
+    <Appenders>
+        <RollingFile name="RollingFile" fileName="logs/aliyun-openservices-client-stream-reader.log"
+                     immediateFlush="false"
+                     filePattern="logs/$${date:yyyy-MM}/aliyun-openservices-client-stream-reader-%d{MM-dd-yyyy}-%i.log.gz">
+            <PatternLayout>
+                <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy
+                        size="250 MB" />
+            </Policies>
+        </RollingFile>
+        <Async name="Async">
+            <AppenderRef ref="RollingFile" />
+        </Async>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <AsyncLogger name="com.alibaba.datax.plugin.reader.otsstreamreader.internal" level="warn" additivity="false">
+            <AppenderRef ref="Async" level="warn" />
+        </AsyncLogger>
+        <AsyncLogger name="com.aliyun.openservices.client.internal.streamclient" level="warn" additivity="false">
+            <AppenderRef ref="Async" level="warn" />
+        </AsyncLogger>
+        <AsyncLogger name="com.aliyun.openservices.client.operation" level="warn" additivity="false">
+            <AppenderRef ref="Async" level="warn" />
+        </AsyncLogger>
+        <AsyncRoot level="info">
+            <AppenderRef ref="Async" />
+        </AsyncRoot>
+    </Loggers>
+</configuration>
