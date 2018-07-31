@@ -104,8 +104,7 @@ This software is free to use under the Apache License [Apache license](https://g
     9. 有大数据产品、云产品、中间件技术解决方案者优先考虑。
 ````
 钉钉用户请扫描以下二维码进行讨论：
-
-![DataX-OpenSource-Dingding](https://img.alicdn.com/tfs/TB1nPz6rbGYBuNjy0FoXXciBFXa-310-425.png)
+![DataX-OpenSource-Dingding](https://img.alicdn.com/tfs/TB1SdPUH21TBuNjy0FjXXajyXXa-359-504.png)
 
 
 
