@@ -1,0 +1,12 @@
+{
+    "name": "kuduwriter",
+    "parameter": {
+        "name": "kuduwriter",
+        "parameter": {
+            "kudu_masters": "",
+            "tableName": "",
+            "column": [],
+            "isUpsert":false
+        }
+    }
+}
