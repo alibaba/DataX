@@ -84,6 +84,7 @@
         <module>hbase094xwriter</module>
         <module>hbase11xsqlwriter</module>
         <module>elasticsearchwriter</module>
+        <module>kuduwriter</module>
 
         <!-- common support module -->
         <module>plugin-rdbms-util</module>
