@@ -280,7 +280,8 @@ public class UnstructuredStorageReaderUtil {
 			}
 			csvReader = new CsvReader(reader);
 			csvReader.setDelimiter(fieldDelimiter);
-
+			
+                        validateCsvReaderConfig(readerSliceConfig);
 			setCsvReaderConfig(csvReader);
 
 			String[] parseRows;
