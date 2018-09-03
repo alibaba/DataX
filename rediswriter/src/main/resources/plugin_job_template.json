@@ -1,0 +1,22 @@
+{
+  "name": "rediswriter",
+  "parameter": {
+    "connection": [
+      {
+        "uri": "tcp://127.0.0.1:7001",
+        "auth": ""
+      }
+    ],
+    "batchSize": 1000,
+    "timeout": 100000,
+    "redisCluster": false,
+    "flushDB": true
+  },
+  "core": {
+    "transport": {
+      "channel": {
+        "byteCapacity": 536870912
+      }
+    }
+  }
+}
