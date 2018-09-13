@@ -5,6 +5,7 @@ import com.alibaba.datax.common.element.LongColumn;
 import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.util.Configuration;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.time.DateUtils;
@@ -82,6 +83,27 @@ public class NormalTask extends HbaseAbstractTask {
                     throw DataXException.asDataXException(Hbase11xWriterErrorCode.CONSTRUCT_ROWKEY_ERROR, String.format("您的rowkeyColumn配置项中中index值超出范围,根据reader端配置,index的值小于%s,而您配置的值为%s，请检查并修改.",record.getColumnNumber(),index));
                 }
                 byte[] value = getColumnByte(columnType,record.getColumn(index));
+                String strategy = aRowkeyColumn.getString(Key.STRATEGY);
+                if ("random".equalsIgnoreCase(strategy)) {
+                    if (ColumnType.LONG.equals(columnType)) {
+                        long longValue = Bytes.toLong(value);
+                        String segment = Long.toString(longValue / 10000);
+                        String segmentSalt = StringUtils.substring(DigestUtils.md5Hex(segment), 0, 4);
+                        String valueWithPad = StringUtils.leftPad(Long.toString(longValue), 12, "0");
+                        String valueStr = segmentSalt + "_" + valueWithPad;
+                        value = Bytes.toBytes(valueStr);
+                    }
+                    if (ColumnType.STRING.equals(columnType)) {
+                        String strValue = Bytes.toString(value);
+                        String segmentSalt = StringUtils.substring(DigestUtils.md5Hex(strValue), 0, 4);
+                        String valueStr = segmentSalt + "_" + strValue;
+                        value = Bytes.toBytes(valueStr);
+                    }
+                }
+                if ("md5".equalsIgnoreCase(strategy)) {
+                    String strValue = Bytes.toString(value);
+                    value = Bytes.toBytes(DigestUtils.md5Hex(strValue));
+                }
                 rowkeyBuffer = Bytes.add(rowkeyBuffer, value);
             }
         }

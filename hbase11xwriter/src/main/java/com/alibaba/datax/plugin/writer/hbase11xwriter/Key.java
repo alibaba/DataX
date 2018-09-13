@@ -35,6 +35,8 @@ public final class Key {
 
     public static final String VALUE = "value";
 
+    public static final String STRATEGY = "strategy";
+
     public static final String FORMAT = "format";
 
     /**
