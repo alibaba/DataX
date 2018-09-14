@@ -52,6 +52,7 @@ public class TxtFileReader extends Reader {
 			this.pattern = new HashMap<String, Pattern>();
 			this.isRegexPath = new HashMap<String, Boolean>();
 			this.validateParameter();
+			UnstructuredStorageReaderUtil.validateParameter(this.originConfig);
 		}
 
 		private void validateParameter() {
