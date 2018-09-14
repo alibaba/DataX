@@ -43,6 +43,7 @@ public class OssReader extends Reader {
             LOG.debug("init() begin...");
             this.readerOriginConfig = this.getPluginJobConf();
             this.validate();
+            UnstructuredStorageReaderUtil.validateParameter(this.readerOriginConfig);
             LOG.debug("init() ok and end...");
         }
 

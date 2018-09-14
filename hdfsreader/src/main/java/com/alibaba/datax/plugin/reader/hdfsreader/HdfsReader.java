@@ -110,7 +110,8 @@ public class HdfsReader extends Reader {
             // validate the Columns
             validateColumns();
 
-            if(this.specifiedFileType.equalsIgnoreCase(Constant.CSV)){
+            if(this.specifiedFileType.equalsIgnoreCase(Constant.TEXT)
+                        || this.specifiedFileType.equalsIgnoreCase(Constant.CSV)) {
                 //compress校验
                 UnstructuredStorageReaderUtil.validateCompress(this.readerOriginConfig);
                 UnstructuredStorageReaderUtil.validateCsvReaderConfig(this.readerOriginConfig);
