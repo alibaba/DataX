@@ -212,8 +212,18 @@ public class HdfsWriter extends Writer {
             String fileSuffix;
             //临时存放路径
             String storePath =  buildTmpFilePath(this.path);
+            if(storePath != null && storePath.contains("/")){
+            	//由于在window上调试获取的路径为转义字符代表的斜杠
+                //故出现被认为是文件名称的一部分，使得获取父目录存在问题
+                //最终影响到直接删除更高一层的目录，导致Hive数据出现问题。
+            	storePath = storePath.replace('\\', '/');
+            }
             //最终存放路径
             String endStorePath = buildFilePath();
+            if(endStorePath != null && endStorePath.contains("/")){
+            	//storePath.replaceAll("\\", "/");
+            	endStorePath = endStorePath.replace('\\', '/');
+            }
             this.path = endStorePath;
             for (int i = 0; i < mandatoryNumber; i++) {
                 // handle same file name
