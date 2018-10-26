@@ -66,6 +66,7 @@ public class MongoDBWriter extends Writer{
         private String password = null;
 
         private String database = null;
+        private String authDb = null;
         private String collection = null;
         private Integer batchSize = null;
         private JSONArray mongodbColumnMeta = null;
@@ -320,8 +321,9 @@ public class MongoDBWriter extends Writer{
             this.userName = writerSliceConfig.getString(KeyConstant.MONGO_USER_NAME);
             this.password = writerSliceConfig.getString(KeyConstant.MONGO_USER_PASSWORD);
             this.database = writerSliceConfig.getString(KeyConstant.MONGO_DB_NAME);
+            this.authDb = writerSliceConfig.getString(KeyConstant.MONGO_AUTHDB, this.database);
             if(!Strings.isNullOrEmpty(userName) && !Strings.isNullOrEmpty(password)) {
-                this.mongoClient = MongoUtil.initCredentialMongoClient(this.writerSliceConfig,userName,password,database);
+                this.mongoClient = MongoUtil.initCredentialMongoClient(this.writerSliceConfig,userName,password,authDb);
             } else {
                 this.mongoClient = MongoUtil.initMongoClient(this.writerSliceConfig);
             }

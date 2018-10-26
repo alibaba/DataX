@@ -25,6 +25,7 @@ public class KeyConstant {
      * mongodb 数据库名
      */
     public static final String MONGO_DB_NAME = "dbName";
+    public static final String MONGO_AUTHDB = "authDb";
     /**
      * mongodb 集合名
      */
