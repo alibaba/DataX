@@ -603,29 +603,31 @@ public class JobContainer extends AbstractContainer {
 
         super.getContainerCommunicator().report(reportCommunication);
 
+        String resultInfo = String.format(
+            "\n" + "%-26s: %-18s\n" + "%-26s: %-18s\n" + "%-26s: %19s\n"
+                + "%-26s: %19s\n" + "%-26s: %19s\n" + "%-26s: %19s\n"
+                + "%-26s: %19s\n",
+            "任务启动时刻",
+            dateFormat.format(startTimeStamp),
 
-        LOG.info(String.format(
-                "\n" + "%-26s: %-18s\n" + "%-26s: %-18s\n" + "%-26s: %19s\n"
-                        + "%-26s: %19s\n" + "%-26s: %19s\n" + "%-26s: %19s\n"
-                        + "%-26s: %19s\n",
-                "任务启动时刻",
-                dateFormat.format(startTimeStamp),
+            "任务结束时刻",
+            dateFormat.format(endTimeStamp),
 
-                "任务结束时刻",
-                dateFormat.format(endTimeStamp),
+            "任务总计耗时",
+            String.valueOf(totalCosts) + "s",
+            "任务平均流量",
+            StrUtil.stringify(byteSpeedPerSecond)
+                + "/s",
+            "记录写入速度",
+            String.valueOf(recordSpeedPerSecond)
+                + "rec/s", "读出记录总数",
+            String.valueOf(CommunicationTool.getTotalReadRecords(communication)),
+            "读写失败总数",
+            String.valueOf(CommunicationTool.getTotalErrorRecords(communication))
+        );
+        LOG.info(resultInfo);
 
-                "任务总计耗时",
-                String.valueOf(totalCosts) + "s",
-                "任务平均流量",
-                StrUtil.stringify(byteSpeedPerSecond)
-                        + "/s",
-                "记录写入速度",
-                String.valueOf(recordSpeedPerSecond)
-                        + "rec/s", "读出记录总数",
-                String.valueOf(CommunicationTool.getTotalReadRecords(communication)),
-                "读写失败总数",
-                String.valueOf(CommunicationTool.getTotalErrorRecords(communication))
-        ));
+        TaskResultLog.persist(resultInfo);
 
         if (communication.getLongCounter(CommunicationTool.TRANSFORMER_SUCCEED_RECORDS) > 0
                 || communication.getLongCounter(CommunicationTool.TRANSFORMER_FAILED_RECORDS) > 0

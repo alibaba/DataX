@@ -6,6 +6,7 @@ import com.alibaba.datax.common.spi.ErrorCode;
 import com.alibaba.datax.common.statistics.PerfTrace;
 import com.alibaba.datax.common.statistics.VMInfo;
 import com.alibaba.datax.common.util.Configuration;
+import com.alibaba.datax.core.context.JobContext;
 import com.alibaba.datax.core.job.JobContainer;
 import com.alibaba.datax.core.taskgroup.TaskGroupContainer;
 import com.alibaba.datax.core.util.ConfigParser;
@@ -129,6 +130,10 @@ public class Engine {
         CommandLine cl = parser.parse(options, args);
 
         String jobPath = cl.getOptionValue("job");
+        int idx = jobPath.lastIndexOf("/");
+        String fileName = jobPath.substring(idx + 1);
+        fileName = fileName.substring(0, fileName.lastIndexOf("."));
+        JobContext.set("fileName", fileName);
 
         // 如果用户没有明确指定jobid, 则 datax.py 会指定 jobid 默认值为-1
         String jobIdString = cl.getOptionValue("jobid");
@@ -199,6 +204,13 @@ public class Engine {
     }
 
     public static void main(String[] args) throws Exception {
+        // job_dat_project.json,job_dat_project_csj.json,job_dat_project_csj_sub.json,
+        // job_dat_building.json,job_dat_building_csj.json,job_dat_building_csj_sub.json,
+        // job_dat_house.json,job_dat_house_csj.json,job_dat_house_csj_sub.json
+        args = new String[] {"-mode", "standalone", "-jobid", "-1", "-job", "/opt/datax/script/" +
+            "job_dat_house_csj_sub.json"
+        };
+
         int exitCode = 0;
         try {
             Engine.entry(args);
