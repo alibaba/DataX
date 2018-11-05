@@ -15,6 +15,11 @@
     </appender>
 
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <!--<filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>-->
         <encoder>UTF-8</encoder>
         <file>${log.dir}/${ymd}/${log.file.name}-${byMillionSecond}.log</file>
         <append>false</append>
@@ -25,6 +30,11 @@
     </appender>
 
     <appender name="PERF" class="ch.qos.logback.core.FileAppender">
+        <!--<filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>-->
         <encoder>UTF-8</encoder>
         <file>${perf.dir}/${ymd}/${log.file.name}-${byMillionSecond}.log</file>
         <append>false</append>
@@ -132,6 +142,18 @@
         </layout>
     </appender>
     -->
+
+    <appender name="ERROR_TASK" class="ch.qos.logback.core.FileAppender">
+        <encoder>UTF-8</encoder>
+        <file>${log.dir}/${ymd}/error_task/${log.file.name}-error-${ymd}.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="com.alibaba.datax.core.statistics.plugin.task.log" level="ERROR" additivity="false">
+        <appender-ref ref="ERROR_TASK" />
+    </logger>
 
     <logger name="com.alibaba.datax.common.statistics.PerfRecord"  level="INFO" additivity="false">
         <appender-ref ref="PERF" />
