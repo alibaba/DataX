@@ -4,6 +4,7 @@ import com.alibaba.datax.common.constant.PluginType;
 import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.core.statistics.communication.Communication;
+import com.alibaba.datax.core.statistics.plugin.task.log.ErrorLog;
 import com.alibaba.datax.core.util.container.CoreConstant;
 import com.alibaba.datax.core.statistics.plugin.task.util.DirtyRecord;
 import com.alibaba.fastjson.JSON;
@@ -69,6 +70,9 @@ public class StdoutPluginCollector extends AbstractTaskPluginCollector {
                     + this.formatDirty(dirtyRecord, t, errorMessage));
         }
 
+        if (null != dirtyRecord) {
+            ErrorLog.persistMainInfo(super.getPluginType().toString(), dirtyRecord);
+        }
         super.collectDirtyRecord(dirtyRecord, t, errorMessage);
     }
 }
