@@ -1,0 +1,21 @@
+## single line
+java -server -Xms1g -Xmx1g -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/opt/workspace/DataX/core/src/main/log -Xms1g -Xmx1g -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/opt/workspace/DataX/core/src/main/log -Dloglevel=info -Dfile.encoding=UTF-8 -Dlogback.statusListenerClass=ch.qos.logback.core.status.NopStatusListener -Djava.security.egd=file:///dev/urandom -Ddatax.home=/opt/workspace/DataX/core/src/main -Dlogback.configurationFile=/opt/workspace/DataX/core/src/main/conf/logback.xml -classpath /opt/workspace/DataX/core/src/main/lib/*:.  -Dlog.file.name=_biz_project_dc_json -Duser1=luomm -Dpass1=DJ360disoK -DjdbcUrl1='jdbc:mysql://192.168.2.60:3306/fxt_ods?useUnicode=true&characterEncoding=utf8' -Duser2=luomm -Dpass2=DJ360disoK -DjdbcUrl2='jdbc:mysql://192.168.2.60:3306/etl_newfdc_biz?useUnicode=true&characterEncoding=utf8' com.alibaba.datax.core.Engine -mode standalone -jobid -1 -job /opt/datax/script/job_biz_project_dc.json
+
+## multi line
+java -server -Xms1g -Xmx1g -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/opt/workspace/DataX/core/src/main/log
+-Dloglevel=info -Dfile.encoding=UTF-8 -Dlogback.statusListenerClass=ch.qos.logback.core.status.NopStatusListener
+-Djava.security.egd=file:///dev/urandom -Ddatax.home=/opt/workspace/DataX/core/src/main
+-Dlogback.configurationFile=/opt/workspace/DataX/core/src/main/conf/logback.xml
+-classpath /opt/workspace/DataX/core/src/main/lib/*:.  -Dlog.file.name=_biz_project_dc_json
+-Duser1=luomm -Dpass1=DJ360disoK -DjdbcUrl1='jdbc:mysql://192.168.2.60:3306/fxt_ods?useUnicode=true&characterEncoding=utf8'
+-Duser2=luomm -Dpass2=DJ360disoK -DjdbcUrl2='jdbc:mysql://192.168.2.60:3306/etl_newfdc_biz?useUnicode=true&characterEncoding=utf8'
+com.alibaba.datax.core.Engine -mode standalone -jobid -1 -job /opt/datax/script/job_biz_project_dc.json
+
+## start program need set VM-options
+-server -Xms1g -Xmx1g -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/opt/workspace/DataX/core/src/main/log
+-Dloglevel=info -Dfile.encoding=UTF-8 -Dlogback.statusListenerClass=ch.qos.logback.core.status.NopStatusListener
+-Djava.security.egd=file:///dev/urandom -Ddatax.home=/opt/workspace/DataX/core/src/main
+-Dlogback.configurationFile=/opt/workspace/DataX/core/src/main/conf/logback.xml
+-Dlog.file.name=job_dat_project
+-Duser1=fxtbank_user -Dpass1=bank335566 -DjdbcUrl1=jdbc:sqlserver://192.168.2.5:1433;databaseName=FXTProject
+-Duser2=luomm -Dpass2=DJ360disoK -DjdbcUrl2=jdbc:mysql://192.168.2.60:3306/fxt_ods?useUnicode=true&characterEncoding=utf8
