@@ -1,0 +1,1 @@
+python /opt/datax/bin/datax.py -p "-Duser1=luomm -Dpass1=DJ360disoK -DjdbcUrl1='jdbc:mysql://192.168.2.60:3306/fxt_ods?useUnicode=true&characterEncoding=utf8' -Duser2=luomm -Dpass2=DJ360disoK -DjdbcUrl2='jdbc:mysql://192.168.2.60:3306/etl_newfdc_biz?useUnicode=true&characterEncoding=utf8'" /opt/datax/script/job_biz_project_dc.json >> /opt/datax/script/project.log

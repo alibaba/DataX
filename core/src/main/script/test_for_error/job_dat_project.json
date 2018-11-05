@@ -1,0 +1,41 @@
+{
+    "job": {
+        "setting": {
+            "speed": {
+                "channel": "1"
+            }
+        },
+        "content": [
+            {
+                "reader": {
+                    "name": "sqlserverreader",
+                    "parameter": {
+                        "username": "$user1",
+                        "password": "$pass1",
+                        "connection": [
+                            {
+                                "querySql": ["select CONVERT(varchar(10),CityID) + 'abc',ProjectId,ProjectName,SubAreaId,FieldNo,PurposeCode,Address,LandArea,StartDate,UsableYear,BuildingArea,SalableArea,CubageRate,GreenRate,BuildingDate,CoverDate,SaleDate,JoinDate,EndDate,InnerSaleDate,RightCode,ParkingNumber,AveragePrice,ManagerTel,ManagerPrice,TotalNum,BuildingNum,Detail,BuildingTypeCode,UpdateDateTime,OfficeArea,OtherArea,PlanPurpose,PriceDate,IsComplete,OtherName,SaveDateTime,SaveUser,Weight,BusinessArea,IndustryArea,IsEValue,PinYin,AreaID,OldId,CreateTime,AreaLineId,Valid,SalePrice,FxtCompanyId,PinYinAll,X,Y,XYScale,Creator,IsEmpty,TotalId,East,West,South,North,BuildingQuality,HousingScale,BuildingDetail,HouseDetail,BasementPurpose,ManagerQuality,Facilities,AppendageClass,RegionalAnalysis,Wrinkle,Aversion,ParkingDesc,SourceName,StartEndDate,ProjectUniqueId,0 from FXTProject.dbo.DAT_Project with(nolock) where  ( ((CreateTime >= CONVERT(DATETIME,CONVERT(VARCHAR(10),DATEADD(D,-100,GETDATE()),120)) and CreateTime < CONVERT(DATETIME,CONVERT(VARCHAR(10),GETDATE(),120))) OR (SaveDateTime >= CONVERT(DATETIME,CONVERT(VARCHAR(10),DATEADD(D,-1,GETDATE()),120)) and SaveDateTime < CONVERT(DATETIME,CONVERT(VARCHAR(10),GETDATE(),120)))))"], 
+                                "jdbcUrl": ["$jdbcUrl1"]
+                            }
+                        ]
+                    }
+                },
+                "writer": {
+                    "name": "mysqlwriter",
+                    "parameter": {
+                        "username": "$user2", 
+                        "password": "$pass2",
+                        "writeMode": "insert", 
+                        "column": ["cityid","projectid","projectname","subareaid","fieldno","purposecode","address","landarea","startdate","usableyear","buildingarea","salablearea","cubagerate","greenrate","buildingdate","coverdate","saledate","joindate","enddate","innersaledate","rightcode","parkingnumber","averageprice","managertel","managerprice","totalnum","buildingnum","detail","buildingtypecode","updatedatetime","officearea","otherarea","planpurpose","pricedate","iscomplete","othername","savedatetime","saveuser","weight","businessarea","industryarea","isevalue","pinyin","areaid","oldid","createtime","arealineid","valid","saleprice","fxtcompanyid","pinyinall","x","y","xyscale","creator","isempty","totalid","east","west","south","north","buildingquality","housingscale","buildingdetail","housedetail","basementpurpose","managerquality","facilities","appendageclass","regionalanalysis","wrinkle","aversion","parkingdesc","sourcename","startenddate","projectuniqueid","sys_status"],
+                        "connection": [
+                            {
+                                "table": ["dat_project"], 
+                                "jdbcUrl": "$jdbcUrl2"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

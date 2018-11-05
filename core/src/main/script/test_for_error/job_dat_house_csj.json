@@ -1,0 +1,41 @@
+{
+    "job": {
+        "setting": {
+            "speed": {
+                "channel": "1"
+            }
+        },
+        "content": [
+            {
+                "reader": {
+                    "name": "sqlserverreader",
+                    "parameter": {
+                        "username": "$user1",
+                        "password": "$pass1",
+                        "connection": [
+                            {
+                                "querySql": ["select CONVERT(varchar(10),CityID) + 'abc',HouseId,BuildingId,HouseName,HouseTypeCode,FloorNo,UnitNo,BuildArea,FrontCode,SightCode,UnitPrice,SalePrice,Weight,PhotoName,Remark,StructureCode,TotalPrice,PurposeCode,IsEValue,OldId,CreateTime,Valid,SaveDateTime,SaveUser,FxtCompanyId,IsShowBuildingArea,InnerBuildingArea,SubHouseType,SubHouseArea,Creator,NominalFloor,VDCode,FitmentCode,Cookroom,Balcony,Toilet,NoiseCode,HouseUniqueId,0 from FXTProject.dbo.DAT_House_csj with(nolock) where  ( ((CreateTime >= CONVERT(DATETIME,CONVERT(VARCHAR(10),DATEADD(D,-100,GETDATE()),120)) and CreateTime < CONVERT(DATETIME,CONVERT(VARCHAR(10),GETDATE(),120))) OR (SaveDateTime >= CONVERT(DATETIME,CONVERT(VARCHAR(10),DATEADD(D,-1,GETDATE()),120)) and SaveDateTime < CONVERT(DATETIME,CONVERT(VARCHAR(10),GETDATE(),120)))))"], 
+                                "jdbcUrl": ["$jdbcUrl1"]
+                            }
+                        ]
+                    }
+                },
+                "writer": {
+                    "name": "mysqlwriter",
+                    "parameter": {
+                        "username": "$user2", 
+                        "password": "$pass2",
+                        "writeMode": "update", 
+                        "column": ["cityid","houseid","buildingid","housename","housetypecode","floorno","unitno","buildarea","frontcode","sightcode","unitprice","saleprice","weight","photoname","remark","structurecode","totalprice","purposecode","isevalue","oldid","createtime","valid","savedatetime","saveuser","fxtcompanyid","isshowbuildingarea","innerbuildingarea","subhousetype","subhousearea","creator","nominalfloor","vdcode","fitmentcode","cookroom","balcony","toilet","noisecode","houseuniqueid","sys_status"],
+                        "connection": [
+                            {
+                                "table": ["dat_house_csj"], 
+                                "jdbcUrl": "$jdbcUrl2"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

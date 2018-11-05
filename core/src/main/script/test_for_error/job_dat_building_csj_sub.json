@@ -1,0 +1,41 @@
+{
+    "job": {
+        "setting": {
+            "speed": {
+                "channel": "1"
+            }
+        },
+        "content": [
+            {
+                "reader": {
+                    "name": "sqlserverreader",
+                    "parameter": {
+                        "username": "$user1",
+                        "password": "$pass1",
+                        "connection": [
+                            {
+                                "querySql": ["select CONVERT(varchar(10),CityID) + 'abc',BuildingId,Fxt_CompanyId,BuildingName,ProjectId,PurposeCode,StructureCode,BuildingTypeCode,TotalFloor,FloorHigh,SaleLicence,ElevatorRate,UnitsNumber,TotalNumber,TotalBuildArea,BuildDate,SaleDate,AveragePrice,AverageFloor,JoinDate,LicenceDate,OtherName,Weight,IsEValue,CreateTime,OldId,Valid,SalePrice,SaveDateTime,SaveUser,LocationCode,SightCode,FrontCode,StructureWeight,BuildingTypeWeight,YearWeight,PurposeWeight,LocationWeight,SightWeight,FrontWeight,X,Y,XYScale,Wall,IsElevator,SubAveragePrice,PriceDetail,BHouseTypeCode,BHouseTypeWeight,Creator,Distance,DistanceWeight,basement,Remark,ElevatorRateWeight,IsYard,YardWeight,Doorplate,RightCode,IsVirtual,FloorSpread,PodiumBuildingFloor,PodiumBuildingArea,TowerBuildingArea,BasementArea,BasementPurpose,HouseNumber,HouseArea,OtherNumber,OtherArea,innerFitmentCode,FloorHouseNumber,LiftNumber,LiftBrand,Facilities,PipelineGasCode,HeatingModeCode,WallTypeCode,MaintenanceCode,isTotalFloor,0 from FXTProject.dbo.DAT_Building_csj_sub with(nolock) where  ( ((CreateTime >= CONVERT(DATETIME,CONVERT(VARCHAR(10),DATEADD(D,-1000,GETDATE()),120)) and CreateTime < CONVERT(DATETIME,CONVERT(VARCHAR(10),GETDATE(),120))) OR (SaveDateTime >= CONVERT(DATETIME,CONVERT(VARCHAR(10),DATEADD(D,-1000,GETDATE()),120)) and SaveDateTime < CONVERT(DATETIME,CONVERT(VARCHAR(10),GETDATE(),120)))))"], 
+                                "jdbcUrl": ["$jdbcUrl1"]
+                            }
+                        ]
+                    }
+                },
+                "writer": {
+                    "name": "mysqlwriter",
+                    "parameter": {
+                        "username": "$user2", 
+                        "password": "$pass2",
+                        "writeMode": "update", 
+                        "column": ["cityid","buildingid","fxt_companyid","buildingname","projectid","purposecode","structurecode","buildingtypecode","totalfloor","floorhigh","salelicence","elevatorrate","unitsnumber","totalnumber","totalbuildarea","builddate","saledate","averageprice","averagefloor","joindate","licencedate","othername","weight","isevalue","createtime","oldid","valid","saleprice","savedatetime","saveuser","locationcode","sightcode","frontcode","structureweight","buildingtypeweight","yearweight","purposeweight","locationweight","sightweight","frontweight","x","y","xyscale","wall","iselevator","subaverageprice","pricedetail","bhousetypecode","bhousetypeweight","creator","distance","distanceweight","basement","remark","elevatorrateweight","isyard","yardweight","doorplate","rightcode","isvirtual","floorspread","podiumbuildingfloor","podiumbuildingarea","towerbuildingarea","basementarea","basementpurpose","housenumber","housearea","othernumber","otherarea","innerfitmentcode","floorhousenumber","liftnumber","liftbrand","facilities","pipelinegascode","heatingmodecode","walltypecode","maintenancecode","istotalfloor","sys_status"],
+                        "connection": [
+                            {
+                                "table": ["dat_building_sub"], 
+                                "jdbcUrl": "$jdbcUrl2"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}
