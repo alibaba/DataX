@@ -83,6 +83,7 @@
         <module>hbase11xwriter</module>
         <module>hbase094xwriter</module>
         <module>hbase11xsqlwriter</module>
+        <module>hbase11xsqlreader</module>
         <module>elasticsearchwriter</module>
 
         <!-- common support module -->

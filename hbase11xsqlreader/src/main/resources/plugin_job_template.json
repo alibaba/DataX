@@ -1,0 +1,13 @@
+{
+    "name": "hbase11sqlreader",
+    "parameter": {
+        "hbaseConfig": {
+            "hbase.zookeeper.quorum": "hb-proxy-pub-xxx-001.hbase.rds.aliyuncs.com,hb-proxy-pub-xxx-002.hbase.rds.aliyuncs.com,hb-proxy-pub-xxx-003.hbase.rds.aliyuncs.com"
+        },
+        "table": "TABLE1",
+        "column": [
+            "ID",
+            "COL1"
+        ]
+    }
+}
