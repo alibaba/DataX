@@ -207,9 +207,9 @@ public class Engine {
         // job_dat_project.json,job_dat_project_csj.json,job_dat_project_csj_sub.json,
         // job_dat_building.json,job_dat_building_csj.json,job_dat_building_csj_sub.json,
         // job_dat_house.json,job_dat_house_csj.json,job_dat_house_csj_sub.json
-        args = new String[] {"-mode", "standalone", "-jobid", "-1", "-job", "/opt/datax/script/" +
+        /*args = new String[] {"-mode", "standalone", "-jobid", "-1", "-job", "/opt/datax/script/" +
             "job_dat_house_csj_sub.json"
-        };
+        };*/
 
         int exitCode = 0;
         try {
