@@ -63,6 +63,10 @@ public class KeyConstant {
      */
     public static final String UNIQUE_KEY = "replaceKey";
     /**
+     * UNIQUE_KEY的分隔符,用于支持组合唯一索引
+     */
+    public static final String UNI_KEY_SEPERATOR = ",";
+    /**
      * 判断是否为数组类型
      * @param type 数据类型
      * @return

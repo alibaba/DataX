@@ -11,7 +11,8 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Strings;
-import com.mongodb.*;
+import com.mongodb.BasicDBObject;
+import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.BulkWriteOptions;
@@ -22,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MongoDBWriter extends Writer{
@@ -298,8 +300,11 @@ public class MongoDBWriter extends Writer{
                     List<ReplaceOneModel<BasicDBObject>> replaceOneModelList = new ArrayList<ReplaceOneModel<BasicDBObject>>();
                     for(BasicDBObject data : dataList) {
                         BasicDBObject query = new BasicDBObject();
-                        if(uniqueKey != null) {
-                            query.put(uniqueKey,data.get(uniqueKey));
+                        List<String> columnList = Arrays.asList(uniqueKey.split(KeyConstant.UNI_KEY_SEPERATOR));
+                        for (String column : columnList) {
+                            if (column != null) {
+                                query.put(column, data.get(column));
+                            }
                         }
                         ReplaceOneModel<BasicDBObject> replaceOneModel = new ReplaceOneModel<BasicDBObject>(query, data, new UpdateOptions().upsert(true));
                         replaceOneModelList.add(replaceOneModel);
