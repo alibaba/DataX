@@ -145,7 +145,7 @@
 
     <appender name="ERROR_TASK" class="ch.qos.logback.core.FileAppender">
         <encoder>UTF-8</encoder>
-        <file>${log.dir}/${ymd}/error_task/${log.file.name}-error-${ymd}.log</file>
+        <file>${log.dir}/${ymd}/error_task/${log.file.name}.log</file>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <pattern>%msg%n</pattern>
         </encoder>
