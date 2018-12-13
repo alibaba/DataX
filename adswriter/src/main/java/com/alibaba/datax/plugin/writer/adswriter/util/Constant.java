@@ -16,7 +16,7 @@ public class Constant {
     
     public static final long DEFAULT_SOCKET_TIMEOUT = 3600000L;
     
-    public static final int DEFAULT_RETRY_TIMES = 2;
+    public static final int DEFAULT_RETRY_TIMES = 3;
     
     public static final String INSERT_TEMPLATE = "insert into %s ( %s ) values ";
     

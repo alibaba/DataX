@@ -121,7 +121,7 @@ public class AdsHelper {
             connection = DriverManager.getConnection(url, connectionProps);
             statement = connection.createStatement();
             // ads 表名、schema名不区分大小写, 提高用户易用性, 注意列顺序性
-            String columnMetaSql = String.format("select ordinal_position,column_name,data_type,type_name,column_comment from information_schema.columns where lower(table_schema) = `'%s'` and lower(table_name) = `'%s'` order by ordinal_position", schema.toLowerCase(), table.toLowerCase());
+            String columnMetaSql = String.format("select ordinal_position,column_name,data_type,type_name,column_comment from information_schema.columns where table_schema = `'%s'` and table_name = `'%s'` order by ordinal_position", schema.toLowerCase(), table.toLowerCase());
             LOG.info(String.format("检查列信息sql语句:%s", columnMetaSql));
             rs = statement.executeQuery(columnMetaSql);
 
@@ -145,7 +145,7 @@ public class AdsHelper {
             tableInfo.setTableName(table);
             DBUtil.closeDBResources(rs, statement, null);
             
-            String tableMetaSql = String.format("select update_type, partition_type, partition_column, partition_count, primary_key_columns from information_schema.tables where lower(table_schema) = `'%s'` and lower(table_name) = `'%s'`", schema.toLowerCase(), table.toLowerCase());
+            String tableMetaSql = String.format("select update_type, partition_type, partition_column, partition_count, primary_key_columns from information_schema.tables where table_schema = `'%s'` and table_name = `'%s'`", schema.toLowerCase(), table.toLowerCase());
             LOG.info(String.format("检查表信息sql语句:%s", tableMetaSql));
             statement = connection.createStatement();
             rs = statement.executeQuery(tableMetaSql);

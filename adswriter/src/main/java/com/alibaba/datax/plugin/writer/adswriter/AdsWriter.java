@@ -10,8 +10,10 @@ import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
 import com.alibaba.datax.plugin.rdbms.writer.util.WriterUtil;
 import com.alibaba.datax.plugin.writer.adswriter.ads.ColumnInfo;
 import com.alibaba.datax.plugin.writer.adswriter.ads.TableInfo;
+import com.alibaba.datax.plugin.writer.adswriter.insert.AdsClientProxy;
 import com.alibaba.datax.plugin.writer.adswriter.insert.AdsInsertProxy;
 import com.alibaba.datax.plugin.writer.adswriter.insert.AdsInsertUtil;
+import com.alibaba.datax.plugin.writer.adswriter.insert.AdsProxy;
 import com.alibaba.datax.plugin.writer.adswriter.load.AdsHelper;
 import com.alibaba.datax.plugin.writer.adswriter.load.TableMetaHelper;
 import com.alibaba.datax.plugin.writer.adswriter.load.TransferProjectConf;
@@ -168,8 +170,9 @@ public class AdsWriter extends Writer {
                 userConfiguredPartitions = Collections.emptyList();
             }
 
-            if(userConfiguredPartitions.size() > 1)
+            if(userConfiguredPartitions.size() > 1) {
                 throw DataXException.asDataXException(AdsWriterErrorCode.ODPS_PARTITION_FAILED, "");
+            }
 
             if(userConfiguredPartitions.size() == 0) {
                 loadAdsData(adsHelper, odpsTableName,null);
@@ -304,7 +307,7 @@ public class AdsWriter extends Writer {
         private Configuration writerSliceConfig;
         private OdpsWriter.Task odpsWriterTaskProxy = new OdpsWriter.Task();
 
-        
+
         private String writeMode;
         private String schema;
         private String table;
@@ -312,17 +315,28 @@ public class AdsWriter extends Writer {
         // warn: 只有在insert, stream模式才有, 对于load模式表明为odps临时表了
         private TableInfo tableInfo;
 
+        private String writeProxy;
+        AdsProxy proxy = null;
+
         @Override
         public void init() {
             writerSliceConfig = super.getPluginJobConf();
             this.writeMode = this.writerSliceConfig.getString(Key.WRITE_MODE);
             this.schema = writerSliceConfig.getString(Key.SCHEMA);
             this.table =  writerSliceConfig.getString(Key.ADS_TABLE);
-            
+
             if(Constant.LOADMODE.equalsIgnoreCase(this.writeMode)) {
                 odpsWriterTaskProxy.setPluginJobConf(writerSliceConfig);
                 odpsWriterTaskProxy.init();
             } else if(Constant.INSERTMODE.equalsIgnoreCase(this.writeMode) || Constant.STREAMMODE.equalsIgnoreCase(this.writeMode)) {
+
+                if (Constant.STREAMMODE.equalsIgnoreCase(this.writeMode)) {
+                    this.writeProxy = "datax";
+                } else {
+                    this.writeProxy = this.writerSliceConfig.getString("writeProxy", "adbClient");
+                }
+                this.writerSliceConfig.set("writeProxy", this.writeProxy);
+
                 try {
                     this.tableInfo = AdsUtil.createAdsHelper(this.writerSliceConfig).getTableInfo(this.table);
                 } catch (AdsException e) {
@@ -361,7 +375,12 @@ public class AdsWriter extends Writer {
                 List<String> columns = writerSliceConfig.getList(Key.COLUMN, String.class);
                 Connection connection = AdsUtil.getAdsConnect(this.writerSliceConfig);
                 TaskPluginCollector taskPluginCollector = super.getTaskPluginCollector();
-                AdsInsertProxy proxy = new AdsInsertProxy(schema + "." + table, columns, writerSliceConfig, taskPluginCollector, this.tableInfo);
+
+                if (StringUtils.equalsIgnoreCase(this.writeProxy, "adbClient")) {
+                    this.proxy = new AdsClientProxy(table, columns, writerSliceConfig, taskPluginCollector, this.tableInfo);
+                } else {
+                    this.proxy = new AdsInsertProxy(schema + "." + table, columns, writerSliceConfig, taskPluginCollector, this.tableInfo);
+                }
                 proxy.startWriteWithConnection(recordReceiver, connection, columnNumber);
             }
         }
@@ -381,6 +400,9 @@ public class AdsWriter extends Writer {
                 odpsWriterTaskProxy.destroy();
             } else {
                 //do noting until now
+                if (null != this.proxy) {
+                    this.proxy.closeResource();
+                }
             }
         }
     }
