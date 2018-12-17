@@ -90,14 +90,14 @@ public class AdsClientProxy implements AdsProxy {
             throw DataXException.asDataXException(AdsWriterErrorCode.INVALID_CONFIG_VALUE,
                     "url should be in host:port format!");
         }
+        this.table = table.toLowerCase();
         databaseConfig.setHost(hostAndPort[0]);
         databaseConfig.setPort(Integer.parseInt(hostAndPort[1]));
         databaseConfig.setUser(configuration.getString(Key.USERNAME));
         databaseConfig.setPassword(configuration.getString(Key.PASSWORD));
         databaseConfig.setDatabase(configuration.getString(Key.SCHEMA));
-        databaseConfig.setTable(Collections.singletonList(table));
-        this.table = table;
-        databaseConfig.setColumns(table, columns);
+        databaseConfig.setTable(Collections.singletonList(this.table));
+        databaseConfig.setColumns(this.table, columns);
 
         // 如果出现insert失败，是否跳过
         boolean ignoreInsertError = configuration.getBool("ignoreInsertError", false);
