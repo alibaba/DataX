@@ -46,13 +46,15 @@
 
         <!-- reader -->
         <module>mysqlreader</module>
+        <module>clickhousereader</module>
         <module>drdsreader</module>
         <module>sqlserverreader</module>
         <module>postgresqlreader</module>
         <module>oraclereader</module>
         <module>odpsreader</module>
         <module>otsreader</module>
-        <module>otsstreamreader</module>
+        <!--depends on a not exist repo, disable-->
+        <!--<module>otsstreamreader</module>-->
         <module>txtfilereader</module>
         <module>hdfsreader</module>
         <module>streamreader</module>
@@ -60,11 +62,13 @@
         <module>ftpreader</module>
         <module>mongodbreader</module>
         <module>rdbmsreader</module>
-        <module>hbase11xreader</module>
         <module>hbase094xreader</module>
+        <module>hbase11xreader</module>
+        <module>hbase11xsqlreader</module>
 
         <!-- writer -->
         <module>mysqlwriter</module>
+        <module>clickhousewriter</module>
         <module>drdswriter</module>
         <module>odpswriter</module>
         <module>txtfilewriter</module>
@@ -80,10 +84,9 @@
         <module>adswriter</module>
         <module>ocswriter</module>
         <module>rdbmswriter</module>
-        <module>hbase11xwriter</module>
         <module>hbase094xwriter</module>
+        <module>hbase11xwriter</module>
         <module>hbase11xsqlwriter</module>
-        <module>hbase11xsqlreader</module>
         <module>elasticsearchwriter</module>
 
         <!-- common support module -->

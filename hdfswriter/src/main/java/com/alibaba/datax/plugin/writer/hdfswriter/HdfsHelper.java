@@ -22,27 +22,31 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.mapred.*;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hive.com.esotericsoftware.minlog.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public  class HdfsHelper {
+public class HdfsHelper {
     public static final Logger LOG = LoggerFactory.getLogger(HdfsWriter.Job.class);
     public FileSystem fileSystem = null;
     public JobConf conf = null;
     public org.apache.hadoop.conf.Configuration hadoopConf = null;
     public static final String HADOOP_SECURITY_AUTHENTICATION_KEY = "hadoop.security.authentication";
     public static final String HDFS_DEFAULTFS_KEY = "fs.defaultFS";
+    public static final String HDFS_DEFAULT_USER = "hdfs";
 
     // Kerberos
     private Boolean haveKerberos = false;
-    private String  kerberosKeytabFilePath;
-    private String  kerberosPrincipal;
+    private String kerberosKeytabFilePath;
+    private String kerberosPrincipal;
 
-    public void getFileSystem(String defaultFS, Configuration taskConfig){
+    public void getFileSystem(String defaultFS, Configuration taskConfig) {
         hadoopConf = new org.apache.hadoop.conf.Configuration();
+        String hadoopUsername = HDFS_DEFAULT_USER;
 
         Configuration hadoopSiteParams = taskConfig.getConfiguration(Key.HADOOP_CONFIG);
         JSONObject hadoopSiteParamsAsJsonObject = JSON.parseObject(taskConfig.getString(Key.HADOOP_CONFIG));
@@ -51,12 +55,16 @@ public  class HdfsHelper {
             for (String each : paramKeys) {
                 hadoopConf.set(each, hadoopSiteParamsAsJsonObject.getString(each));
             }
+            String configHdfsUser = (String) hadoopSiteParams.get(Key.HADOOP_CONFIG_USERNAME);
+            if (configHdfsUser != null) {
+                hadoopUsername = configHdfsUser;
+            }
         }
         hadoopConf.set(HDFS_DEFAULTFS_KEY, defaultFS);
 
         //是否有Kerberos认证
         this.haveKerberos = taskConfig.getBool(Key.HAVE_KERBEROS, false);
-        if(haveKerberos){
+        if (haveKerberos) {
             this.kerberosKeytabFilePath = taskConfig.getString(Key.KERBEROS_KEYTAB_FILE_PATH);
             this.kerberosPrincipal = taskConfig.getString(Key.KERBEROS_PRINCIPAL);
             hadoopConf.set(HADOOP_SECURITY_AUTHENTICATION_KEY, "kerberos");
@@ -64,20 +72,21 @@ public  class HdfsHelper {
         this.kerberosAuthentication(this.kerberosPrincipal, this.kerberosKeytabFilePath);
         conf = new JobConf(hadoopConf);
         try {
+            System.setProperty("HADOOP_USER_NAME", hadoopUsername);
             fileSystem = FileSystem.get(conf);
         } catch (IOException e) {
             String message = String.format("获取FileSystem时发生网络IO异常,请检查您的网络是否正常!HDFS地址：[%s]",
                     "message:defaultFS =" + defaultFS);
             LOG.error(message);
             throw DataXException.asDataXException(HdfsWriterErrorCode.CONNECT_HDFS_IO_ERROR, e);
-        }catch (Exception e) {
+        } catch (Exception e) {
             String message = String.format("获取FileSystem失败,请检查HDFS地址是否正确: [%s]",
                     "message:defaultFS =" + defaultFS);
             LOG.error(message);
             throw DataXException.asDataXException(HdfsWriterErrorCode.CONNECT_HDFS_IO_ERROR, e);
         }
 
-        if(null == fileSystem || null == conf){
+        if (null == fileSystem || null == conf) {
             String message = String.format("获取FileSystem失败,请检查HDFS地址是否正确: [%s]",
                     "message:defaultFS =" + defaultFS);
             LOG.error(message);
@@ -85,8 +94,8 @@ public  class HdfsHelper {
         }
     }
 
-    private void kerberosAuthentication(String kerberosPrincipal, String kerberosKeytabFilePath){
-        if(haveKerberos && StringUtils.isNotBlank(this.kerberosPrincipal) && StringUtils.isNotBlank(this.kerberosKeytabFilePath)){
+    private void kerberosAuthentication(String kerberosPrincipal, String kerberosKeytabFilePath) {
+        if (haveKerberos && StringUtils.isNotBlank(this.kerberosPrincipal) && StringUtils.isNotBlank(this.kerberosKeytabFilePath)) {
             UserGroupInformation.setConfiguration(this.hadoopConf);
             try {
                 UserGroupInformation.loginUserFromKeytab(kerberosPrincipal, kerberosKeytabFilePath);
@@ -100,19 +109,19 @@ public  class HdfsHelper {
     }
 
     /**
-     *获取指定目录先的文件列表
+     * 获取指定目录先的文件列表
+     *
      * @param dir
-     * @return
-     * 拿到的是文件全路径，
+     * @return 拿到的是文件全路径，
      * eg：hdfs://10.101.204.12:9000/user/hive/warehouse/writer.db/text/test.textfile
      */
-    public String[] hdfsDirList(String dir){
+    public String[] hdfsDirList(String dir) {
         Path path = new Path(dir);
         String[] files = null;
         try {
             FileStatus[] status = fileSystem.listStatus(path);
             files = new String[status.length];
-            for(int i=0;i<status.length;i++){
+            for (int i = 0; i < status.length; i++) {
                 files[i] = status[i].getPath().toString();
             }
         } catch (IOException e) {
@@ -125,24 +134,25 @@ public  class HdfsHelper {
 
     /**
      * 获取以fileName__ 开头的文件列表
+     *
      * @param dir
      * @param fileName
      * @return
      */
-    public Path[] hdfsDirList(String dir,String fileName){
+    public Path[] hdfsDirList(String dir, String fileName) {
         Path path = new Path(dir);
         Path[] files = null;
         String filterFileName = fileName + "__*";
         try {
             PathFilter pathFilter = new GlobFilter(filterFileName);
-            FileStatus[] status = fileSystem.listStatus(path,pathFilter);
+            FileStatus[] status = fileSystem.listStatus(path, pathFilter);
             files = new Path[status.length];
-            for(int i=0;i<status.length;i++){
+            for (int i = 0; i < status.length; i++) {
                 files[i] = status[i].getPath();
             }
         } catch (IOException e) {
             String message = String.format("获取目录[%s]下文件名以[%s]开头的文件列表时发生网络IO异常,请检查您的网络是否正常！",
-                    dir,fileName);
+                    dir, fileName);
             LOG.error(message);
             throw DataXException.asDataXException(HdfsWriterErrorCode.CONNECT_HDFS_IO_ERROR, e);
         }
@@ -176,11 +186,11 @@ public  class HdfsHelper {
         return isDir;
     }
 
-    public void deleteFiles(Path[] paths){
-        for(int i=0;i<paths.length;i++){
+    public void deleteFiles(Path[] paths) {
+        for (int i = 0; i < paths.length; i++) {
             LOG.info(String.format("delete file [%s].", paths[i].toString()));
             try {
-                fileSystem.delete(paths[i],true);
+                fileSystem.delete(paths[i], true);
             } catch (IOException e) {
                 String message = String.format("删除文件[%s]时发生IO异常,请检查您的网络是否正常！",
                         paths[i].toString());
@@ -190,10 +200,10 @@ public  class HdfsHelper {
         }
     }
 
-    public void deleteDir(Path path){
-        LOG.info(String.format("start delete tmp dir [%s] .",path.toString()));
+    public void deleteDir(Path path) {
+        LOG.info(String.format("start delete tmp dir [%s] .", path.toString()));
         try {
-            if(isPathexists(path.toString())) {
+            if (isPathexists(path.toString())) {
                 fileSystem.delete(path, true);
             }
         } catch (Exception e) {
@@ -201,52 +211,73 @@ public  class HdfsHelper {
             LOG.error(message);
             throw DataXException.asDataXException(HdfsWriterErrorCode.CONNECT_HDFS_IO_ERROR, e);
         }
-        LOG.info(String.format("finish delete tmp dir [%s] .",path.toString()));
+        LOG.info(String.format("finish delete tmp dir [%s] .", path.toString()));
     }
 
-    public void renameFile(HashSet<String> tmpFiles, HashSet<String> endFiles){
+    public void renameDir(Path sourcePath, Path destPath) {
+        LOG.info(String.format("start rename source dir [%s] to dest dir [%s] .", sourcePath.toString(), destPath.toString()));
+        try {
+            if (isPathexists(destPath.toString())) {
+                fileSystem.delete(destPath, true);
+            }
+            LOG.info("success delete dir : [%s]", destPath.toString());
+            if (isPathexists(sourcePath.toString())) {
+                fileSystem.rename(sourcePath, destPath);
+            } else {
+                Log.error("输入的路径[%s]不存在", sourcePath.toString());
+                throw new Exception("输入的路径" + sourcePath.toString() + "不存在");
+            }
+        } catch (Exception e) {
+            String message = String.format("删除临时目录[%s]和改路径名时发生IO异常,请检查您的网络是否正常！", destPath.toString());
+            LOG.error(message);
+            throw DataXException.asDataXException(HdfsWriterErrorCode.CONNECT_HDFS_IO_ERROR, e);
+        }
+        LOG.info(String.format("finish rename source dir [%s] to dest dir [%s].", sourcePath.toString(), destPath.toString()));
+    }
+
+    public void renameFile(HashSet<String> tmpFiles, HashSet<String> endFiles) {
         Path tmpFilesParent = null;
-        if(tmpFiles.size() != endFiles.size()){
+        if (tmpFiles.size() != endFiles.size()) {
             String message = String.format("临时目录下文件名个数与目标文件名个数不一致!");
             LOG.error(message);
             throw DataXException.asDataXException(HdfsWriterErrorCode.HDFS_RENAME_FILE_ERROR, message);
-        }else{
-            try{
-                for (Iterator it1=tmpFiles.iterator(),it2=endFiles.iterator();it1.hasNext()&&it2.hasNext();){
+        } else {
+            try {
+                for (Iterator it1 = tmpFiles.iterator(), it2 = endFiles.iterator(); it1.hasNext() && it2.hasNext(); ) {
                     String srcFile = it1.next().toString();
                     String dstFile = it2.next().toString();
                     Path srcFilePah = new Path(srcFile);
                     Path dstFilePah = new Path(dstFile);
-                    if(tmpFilesParent == null){
+                    if (tmpFilesParent == null) {
                         tmpFilesParent = srcFilePah.getParent();
                     }
-                    LOG.info(String.format("start rename file [%s] to file [%s].", srcFile,dstFile));
+                    LOG.info(String.format("start rename file [%s] to file [%s].", srcFile, dstFile));
                     boolean renameTag = false;
                     long fileLen = fileSystem.getFileStatus(srcFilePah).getLen();
-                    if(fileLen>0){
-                        renameTag = fileSystem.rename(srcFilePah,dstFilePah);
-                        if(!renameTag){
+                    if (fileLen > 0) {
+                        renameTag = fileSystem.rename(srcFilePah, dstFilePah);
+                        if (!renameTag) {
                             String message = String.format("重命名文件[%s]失败,请检查您的网络是否正常！", srcFile);
                             LOG.error(message);
                             throw DataXException.asDataXException(HdfsWriterErrorCode.HDFS_RENAME_FILE_ERROR, message);
                         }
-                        LOG.info(String.format("finish rename file [%s] to file [%s].", srcFile,dstFile));
-                    }else{
+                        LOG.info(String.format("finish rename file [%s] to file [%s].", srcFile, dstFile));
+                    } else {
                         LOG.info(String.format("文件［%s］内容为空,请检查写入是否正常！", srcFile));
                     }
                 }
-            }catch (Exception e) {
+            } catch (Exception e) {
                 String message = String.format("重命名文件时发生异常,请检查您的网络是否正常！");
                 LOG.error(message);
                 throw DataXException.asDataXException(HdfsWriterErrorCode.CONNECT_HDFS_IO_ERROR, e);
-            }finally {
+            } finally {
                 deleteDir(tmpFilesParent);
             }
         }
     }
 
     //关闭FileSystem
-    public void closeFileSystem(){
+    public void closeFileSystem() {
         try {
             fileSystem.close();
         } catch (IOException e) {
@@ -258,7 +289,7 @@ public  class HdfsHelper {
 
 
     //textfile格式文件
-    public  FSDataOutputStream getOutputStream(String path){
+    public FSDataOutputStream getOutputStream(String path) {
         Path storePath = new Path(path);
         FSDataOutputStream fSDataOutputStream = null;
         try {
@@ -274,26 +305,27 @@ public  class HdfsHelper {
 
     /**
      * 写textfile类型文件
+     *
      * @param lineReceiver
      * @param config
      * @param fileName
      * @param taskPluginCollector
      */
     public void textFileStartWrite(RecordReceiver lineReceiver, Configuration config, String fileName,
-                                   TaskPluginCollector taskPluginCollector){
+                                   TaskPluginCollector taskPluginCollector) {
         char fieldDelimiter = config.getChar(Key.FIELD_DELIMITER);
-        List<Configuration>  columns = config.getListConfiguration(Key.COLUMN);
-        String compress = config.getString(Key.COMPRESS,null);
+        List<Configuration> columns = config.getListConfiguration(Key.COLUMN);
+        String compress = config.getString(Key.COMPRESS, null);
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
-        String attempt = "attempt_"+dateFormat.format(new Date())+"_0001_m_000000_0";
+        String attempt = "attempt_" + dateFormat.format(new Date()) + "_0001_m_000000_0";
         Path outputPath = new Path(fileName);
         //todo 需要进一步确定TASK_ATTEMPT_ID
         conf.set(JobContext.TASK_ATTEMPT_ID, attempt);
         FileOutputFormat outFormat = new TextOutputFormat();
         outFormat.setOutputPath(conf, outputPath);
         outFormat.setWorkOutputPath(conf, outputPath);
-        if(null != compress) {
+        if (null != compress) {
             Class<? extends CompressionCodec> codecClass = getCompressCodec(compress);
             if (null != codecClass) {
                 outFormat.setOutputCompressorClass(conf, codecClass);
@@ -305,7 +337,7 @@ public  class HdfsHelper {
             while ((record = lineReceiver.getFromReader()) != null) {
                 MutablePair<Text, Boolean> transportResult = transportOneRecord(record, fieldDelimiter, columns, taskPluginCollector);
                 if (!transportResult.getRight()) {
-                    writer.write(NullWritable.get(),transportResult.getLeft());
+                    writer.write(NullWritable.get(), transportResult.getLeft());
                 }
             }
             writer.close(Reporter.NULL);
@@ -320,11 +352,11 @@ public  class HdfsHelper {
 
     public static MutablePair<Text, Boolean> transportOneRecord(
             Record record, char fieldDelimiter, List<Configuration> columnsConfiguration, TaskPluginCollector taskPluginCollector) {
-        MutablePair<List<Object>, Boolean> transportResultList =  transportOneRecord(record,columnsConfiguration,taskPluginCollector);
+        MutablePair<List<Object>, Boolean> transportResultList = transportOneRecord(record, columnsConfiguration, taskPluginCollector);
         //保存<转换后的数据,是否是脏数据>
         MutablePair<Text, Boolean> transportResult = new MutablePair<Text, Boolean>();
         transportResult.setRight(false);
-        if(null != transportResultList){
+        if (null != transportResultList) {
             Text recordResult = new Text(StringUtils.join(transportResultList.getLeft(), fieldDelimiter));
             transportResult.setRight(transportResultList.getRight());
             transportResult.setLeft(recordResult);
@@ -332,20 +364,20 @@ public  class HdfsHelper {
         return transportResult;
     }
 
-    public Class<? extends CompressionCodec>  getCompressCodec(String compress){
+    public Class<? extends CompressionCodec> getCompressCodec(String compress) {
         Class<? extends CompressionCodec> codecClass = null;
-        if(null == compress){
+        if (null == compress) {
             codecClass = null;
-        }else if("GZIP".equalsIgnoreCase(compress)){
+        } else if ("GZIP".equalsIgnoreCase(compress)) {
             codecClass = org.apache.hadoop.io.compress.GzipCodec.class;
-        }else if ("BZIP2".equalsIgnoreCase(compress)) {
+        } else if ("BZIP2".equalsIgnoreCase(compress)) {
             codecClass = org.apache.hadoop.io.compress.BZip2Codec.class;
-        }else if("SNAPPY".equalsIgnoreCase(compress)){
+        } else if ("SNAPPY".equalsIgnoreCase(compress)) {
             //todo 等需求明确后支持 需要用户安装SnappyCodec
             codecClass = org.apache.hadoop.io.compress.SnappyCodec.class;
             // org.apache.hadoop.hive.ql.io.orc.ZlibCodec.class  not public
             //codecClass = org.apache.hadoop.hive.ql.io.orc.ZlibCodec.class;
-        }else {
+        } else {
             throw DataXException.asDataXException(HdfsWriterErrorCode.ILLEGAL_VALUE,
                     String.format("目前不支持您配置的 compress 模式 : [%s]", compress));
         }
@@ -354,24 +386,25 @@ public  class HdfsHelper {
 
     /**
      * 写orcfile类型文件
+     *
      * @param lineReceiver
      * @param config
      * @param fileName
      * @param taskPluginCollector
      */
     public void orcFileStartWrite(RecordReceiver lineReceiver, Configuration config, String fileName,
-                                  TaskPluginCollector taskPluginCollector){
-        List<Configuration>  columns = config.getListConfiguration(Key.COLUMN);
+                                  TaskPluginCollector taskPluginCollector) {
+        List<Configuration> columns = config.getListConfiguration(Key.COLUMN);
         String compress = config.getString(Key.COMPRESS, null);
         List<String> columnNames = getColumnNames(columns);
         List<ObjectInspector> columnTypeInspectors = getColumnTypeInspectors(columns);
-        StructObjectInspector inspector = (StructObjectInspector)ObjectInspectorFactory
+        StructObjectInspector inspector = (StructObjectInspector) ObjectInspectorFactory
                 .getStandardStructObjectInspector(columnNames, columnTypeInspectors);
 
         OrcSerde orcSerde = new OrcSerde();
 
         FileOutputFormat outFormat = new OrcOutputFormat();
-        if(!"NONE".equalsIgnoreCase(compress) && null != compress ) {
+        if (!"NONE".equalsIgnoreCase(compress) && null != compress) {
             Class<? extends CompressionCodec> codecClass = getCompressCodec(compress);
             if (null != codecClass) {
                 outFormat.setOutputCompressorClass(conf, codecClass);
@@ -381,7 +414,7 @@ public  class HdfsHelper {
             RecordWriter writer = outFormat.getRecordWriter(fileSystem, conf, fileName, Reporter.NULL);
             Record record = null;
             while ((record = lineReceiver.getFromReader()) != null) {
-                MutablePair<List<Object>, Boolean> transportResult =  transportOneRecord(record,columns,taskPluginCollector);
+                MutablePair<List<Object>, Boolean> transportResult = transportOneRecord(record, columns, taskPluginCollector);
                 if (!transportResult.getRight()) {
                     writer.write(NullWritable.get(), orcSerde.serialize(transportResult.getLeft(), inspector));
                 }
@@ -396,7 +429,7 @@ public  class HdfsHelper {
         }
     }
 
-    public List<String> getColumnNames(List<Configuration> columns){
+    public List<String> getColumnNames(List<Configuration> columns) {
         List<String> columnNames = Lists.newArrayList();
         for (Configuration eachColumnConf : columns) {
             columnNames.add(eachColumnConf.getString(Key.NAME));
@@ -406,11 +439,12 @@ public  class HdfsHelper {
 
     /**
      * 根据writer配置的字段类型，构建inspector
+     *
      * @param columns
      * @return
      */
-    public List<ObjectInspector>  getColumnTypeInspectors(List<Configuration> columns){
-        List<ObjectInspector>  columnTypeInspectors = Lists.newArrayList();
+    public List<ObjectInspector> getColumnTypeInspectors(List<Configuration> columns) {
+        List<ObjectInspector> columnTypeInspectors = Lists.newArrayList();
         for (Configuration eachColumnConf : columns) {
             SupportHiveDataType columnType = SupportHiveDataType.valueOf(eachColumnConf.getString(Key.TYPE).toUpperCase());
             ObjectInspector objectInspector = null;
@@ -462,7 +496,7 @@ public  class HdfsHelper {
         return columnTypeInspectors;
     }
 
-    public OrcSerde getOrcSerde(Configuration config){
+    public OrcSerde getOrcSerde(Configuration config) {
         String fieldDelimiter = config.getString(Key.FIELD_DELIMITER);
         String compress = config.getString(Key.COMPRESS);
         String encoding = config.getString(Key.ENCODING);
@@ -478,8 +512,8 @@ public  class HdfsHelper {
     }
 
     public static MutablePair<List<Object>, Boolean> transportOneRecord(
-            Record record,List<Configuration> columnsConfiguration,
-            TaskPluginCollector taskPluginCollector){
+            Record record, List<Configuration> columnsConfiguration,
+            TaskPluginCollector taskPluginCollector) {
 
         MutablePair<List<Object>, Boolean> transportResult = new MutablePair<List<Object>, Boolean>();
         transportResult.setRight(false);
@@ -518,7 +552,7 @@ public  class HdfsHelper {
                             case STRING:
                             case VARCHAR:
                             case CHAR:
-                                recordList.add(column.asString());
+                                recordList.add(column.asString().replace("\n", ""));
                                 break;
                             case BOOLEAN:
                                 recordList.add(column.asBoolean());
@@ -547,7 +581,7 @@ public  class HdfsHelper {
                         transportResult.setRight(true);
                         break;
                     }
-                }else {
+                } else {
                     // warn: it's all ok if nullFormat is null
                     recordList.add(null);
                 }

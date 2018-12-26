@@ -13,6 +13,7 @@ import org.apache.hadoop.fs.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.*;
 
 
@@ -31,6 +32,8 @@ public class HdfsWriter extends Writer {
         private String fieldDelimiter;
         private String compress;
         private String encoding;
+        private String storePath; // 临时存放路径
+        private String endStorePath; // 最终存放路径
         private HashSet<String> tmpFiles = new HashSet<String>();//临时文件全路径
         private HashSet<String> endFiles = new HashSet<String>();//最终文件全路径
 
@@ -51,17 +54,17 @@ public class HdfsWriter extends Writer {
             this.defaultFS = this.writerSliceConfig.getNecessaryValue(Key.DEFAULT_FS, HdfsWriterErrorCode.REQUIRED_VALUE);
             //fileType check
             this.fileType = this.writerSliceConfig.getNecessaryValue(Key.FILE_TYPE, HdfsWriterErrorCode.REQUIRED_VALUE);
-            if( !fileType.equalsIgnoreCase("ORC") && !fileType.equalsIgnoreCase("TEXT")){
+            if (!fileType.equalsIgnoreCase("ORC") && !fileType.equalsIgnoreCase("TEXT")) {
                 String message = "HdfsWriter插件目前只支持ORC和TEXT两种格式的文件,请将filetype选项的值配置为ORC或者TEXT";
                 throw DataXException.asDataXException(HdfsWriterErrorCode.ILLEGAL_VALUE, message);
             }
             //path
             this.path = this.writerSliceConfig.getNecessaryValue(Key.PATH, HdfsWriterErrorCode.REQUIRED_VALUE);
-            if(!path.startsWith("/")){
+            if (!path.startsWith("/")) {
                 String message = String.format("请检查参数path:[%s],需要配置为绝对路径", path);
                 LOG.error(message);
                 throw DataXException.asDataXException(HdfsWriterErrorCode.ILLEGAL_VALUE, message);
-            }else if(path.contains("*") || path.contains("?")){
+            } else if (path.contains("*") || path.contains("?")) {
                 String message = String.format("请检查参数path:[%s],不能包含*,?等特殊字符", path);
                 LOG.error(message);
                 throw DataXException.asDataXException(HdfsWriterErrorCode.ILLEGAL_VALUE, message);
@@ -72,7 +75,7 @@ public class HdfsWriter extends Writer {
             this.columns = this.writerSliceConfig.getListConfiguration(Key.COLUMN);
             if (null == columns || columns.size() == 0) {
                 throw DataXException.asDataXException(HdfsWriterErrorCode.REQUIRED_VALUE, "您需要指定 columns");
-            }else{
+            } else {
                 for (Configuration eachColumnConf : columns) {
                     eachColumnConf.getNecessaryValue(Key.NAME, HdfsWriterErrorCode.COLUMN_REQUIRED_VALUE);
                     eachColumnConf.getNecessaryValue(Key.TYPE, HdfsWriterErrorCode.COLUMN_REQUIRED_VALUE);
@@ -81,45 +84,45 @@ public class HdfsWriter extends Writer {
             //writeMode check
             this.writeMode = this.writerSliceConfig.getNecessaryValue(Key.WRITE_MODE, HdfsWriterErrorCode.REQUIRED_VALUE);
             writeMode = writeMode.toLowerCase().trim();
-            Set<String> supportedWriteModes = Sets.newHashSet("append", "nonconflict");
+            Set<String> supportedWriteModes = Sets.newHashSet("append", "nonconflict", "replace");
             if (!supportedWriteModes.contains(writeMode)) {
                 throw DataXException.asDataXException(HdfsWriterErrorCode.ILLEGAL_VALUE,
-                        String.format("仅支持append, nonConflict两种模式, 不支持您配置的 writeMode 模式 : [%s]",
+                        String.format("仅支持 append, nonConflict, replace 3种模式, 不支持您配置的 writeMode 模式 : [%s]",
                                 writeMode));
             }
             this.writerSliceConfig.set(Key.WRITE_MODE, writeMode);
             //fieldDelimiter check
-            this.fieldDelimiter = this.writerSliceConfig.getString(Key.FIELD_DELIMITER,null);
-            if(null == fieldDelimiter){
+            this.fieldDelimiter = this.writerSliceConfig.getString(Key.FIELD_DELIMITER, null);
+            if (null == fieldDelimiter) {
                 throw DataXException.asDataXException(HdfsWriterErrorCode.REQUIRED_VALUE,
                         String.format("您提供配置文件有误，[%s]是必填参数.", Key.FIELD_DELIMITER));
-            }else if(1 != fieldDelimiter.length()){
+            } else if (1 != fieldDelimiter.length()) {
                 // warn: if have, length must be one
                 throw DataXException.asDataXException(HdfsWriterErrorCode.ILLEGAL_VALUE,
                         String.format("仅仅支持单字符切分, 您配置的切分为 : [%s]", fieldDelimiter));
             }
             //compress check
-            this.compress  = this.writerSliceConfig.getString(Key.COMPRESS,null);
-            if(fileType.equalsIgnoreCase("TEXT")){
+            this.compress = this.writerSliceConfig.getString(Key.COMPRESS, null);
+            if (fileType.equalsIgnoreCase("TEXT")) {
                 Set<String> textSupportedCompress = Sets.newHashSet("GZIP", "BZIP2");
                 //用户可能配置的是compress:"",空字符串,需要将compress设置为null
-                if(StringUtils.isBlank(compress) ){
+                if (StringUtils.isBlank(compress)) {
                     this.writerSliceConfig.set(Key.COMPRESS, null);
-                }else {
+                } else {
                     compress = compress.toUpperCase().trim();
-                    if(!textSupportedCompress.contains(compress) ){
+                    if (!textSupportedCompress.contains(compress)) {
                         throw DataXException.asDataXException(HdfsWriterErrorCode.ILLEGAL_VALUE,
                                 String.format("目前TEXT FILE仅支持GZIP、BZIP2 两种压缩, 不支持您配置的 compress 模式 : [%s]",
                                         compress));
                     }
                 }
-            }else if(fileType.equalsIgnoreCase("ORC")){
+            } else if (fileType.equalsIgnoreCase("ORC")) {
                 Set<String> orcSupportedCompress = Sets.newHashSet("NONE", "SNAPPY");
-                if(null == compress){
+                if (null == compress) {
                     this.writerSliceConfig.set(Key.COMPRESS, "NONE");
-                }else {
+                } else {
                     compress = compress.toUpperCase().trim();
-                    if(!orcSupportedCompress.contains(compress)){
+                    if (!orcSupportedCompress.contains(compress)) {
                         throw DataXException.asDataXException(HdfsWriterErrorCode.ILLEGAL_VALUE,
                                 String.format("目前ORC FILE仅支持SNAPPY压缩, 不支持您配置的 compress 模式 : [%s]",
                                         compress));
@@ -129,12 +132,12 @@ public class HdfsWriter extends Writer {
             }
             //Kerberos check
             Boolean haveKerberos = this.writerSliceConfig.getBool(Key.HAVE_KERBEROS, false);
-            if(haveKerberos) {
+            if (haveKerberos) {
                 this.writerSliceConfig.getNecessaryValue(Key.KERBEROS_KEYTAB_FILE_PATH, HdfsWriterErrorCode.REQUIRED_VALUE);
                 this.writerSliceConfig.getNecessaryValue(Key.KERBEROS_PRINCIPAL, HdfsWriterErrorCode.REQUIRED_VALUE);
             }
             // encoding check
-            this.encoding = this.writerSliceConfig.getString(Key.ENCODING,Constant.DEFAULT_ENCODING);
+            this.encoding = this.writerSliceConfig.getString(Key.ENCODING, Constant.DEFAULT_ENCODING);
             try {
                 encoding = encoding.trim();
                 this.writerSliceConfig.set(Key.ENCODING, encoding);
@@ -147,17 +150,37 @@ public class HdfsWriter extends Writer {
 
         @Override
         public void prepare() {
+            // 检查目标文件夹的父文件夹是不是存在，不存在则创建
+            String parentPath = new Path(path).getParent().toString();
+            if (!hdfsHelper.isPathexists(path)) {
+                if (!hdfsHelper.isPathexists(parentPath)) {
+                    throw DataXException.asDataXException(HdfsWriterErrorCode.ILLEGAL_VALUE,
+                            String.format("您配置的path: [%s] 不存在, 请先在hive端创建对应的数据库和表.", path));
+                } else {
+                    try {
+                        hdfsHelper.fileSystem.mkdirs(new Path(path));
+                    } catch (IOException e) {
+                        throw DataXException.asDataXException(HdfsWriterErrorCode.WRITER_RUNTIME_EXCEPTION,
+                                String.format("您配置的path: [%s] 不存在, 在创建文件夹时失败.", path));
+                    }
+                }
+            }
+            // 如果写入模式是替换，直接返回
+            if ("replace".equalsIgnoreCase(writeMode)) {
+                LOG.info(String.format("由于您配置了writeMode replace, 会将 [%s] 文件夹删掉，并将临时数据问价夹重命名为[%s]", path, path));
+                return;
+            }
             //若路径已经存在，检查path是否是目录
-            if(hdfsHelper.isPathexists(path)){
-                if(!hdfsHelper.isPathDir(path)){
+            if (hdfsHelper.isPathexists(path)) {
+                if (!hdfsHelper.isPathDir(path)) {
                     throw DataXException.asDataXException(HdfsWriterErrorCode.ILLEGAL_VALUE,
                             String.format("您配置的path: [%s] 不是一个合法的目录, 请您注意文件重名, 不合法目录名等情况.",
                                     path));
                 }
                 //根据writeMode对目录下文件进行处理
-                Path[] existFilePaths = hdfsHelper.hdfsDirList(path,fileName);
+                Path[] existFilePaths = hdfsHelper.hdfsDirList(path, fileName);
                 boolean isExistFile = false;
-                if(existFilePaths.length > 0){
+                if (existFilePaths.length > 0) {
                     isExistFile = true;
                 }
                 /**
@@ -170,17 +193,20 @@ public class HdfsWriter extends Writer {
                 if ("append".equalsIgnoreCase(writeMode)) {
                     LOG.info(String.format("由于您配置了writeMode append, 写入前不做清理工作, [%s] 目录下写入相应文件名前缀  [%s] 的文件",
                             path, fileName));
-                } else if ("nonconflict".equalsIgnoreCase(writeMode) && isExistFile) {
-                    LOG.info(String.format("由于您配置了writeMode nonConflict, 开始检查 [%s] 下面的内容", path));
-                    List<String> allFiles = new ArrayList<String>();
-                    for (Path eachFile : existFilePaths) {
-                        allFiles.add(eachFile.toString());
+                } else if ("nonconflict".equalsIgnoreCase(writeMode)) {
+                    if (isExistFile) {
+                        LOG.info(String.format("由于您配置了writeMode nonConflict, 开始检查 [%s] 下面的内容", path));
+                        List<String> allFiles = new ArrayList<String>();
+                        for (Path eachFile : existFilePaths) {
+                            allFiles.add(eachFile.toString());
+                        }
+                        LOG.error(String.format("冲突文件列表为: [%s]", StringUtils.join(allFiles, ",")));
+                        throw DataXException.asDataXException(HdfsWriterErrorCode.ILLEGAL_VALUE,
+                                String.format("由于您配置了writeMode nonConflict,但您配置的path: [%s] 目录不为空, 下面存在其他文件或文件夹.", path));
+
                     }
-                    LOG.error(String.format("冲突文件列表为: [%s]", StringUtils.join(allFiles, ",")));
-                    throw DataXException.asDataXException(HdfsWriterErrorCode.ILLEGAL_VALUE,
-                            String.format("由于您配置了writeMode nonConflict,但您配置的path: [%s] 目录不为空, 下面存在其他文件或文件夹.", path));
                 }
-            }else{
+            } else {
                 throw DataXException.asDataXException(HdfsWriterErrorCode.ILLEGAL_VALUE,
                         String.format("您配置的path: [%s] 不存在, 请先在hive端创建对应的数据库和表.", path));
             }
@@ -188,6 +214,10 @@ public class HdfsWriter extends Writer {
 
         @Override
         public void post() {
+            if ("replace".equalsIgnoreCase(writeMode)) {
+                hdfsHelper.renameDir(new Path(storePath), new Path(endStorePath));
+                return;
+            }
             hdfsHelper.renameFile(tmpFiles, endFiles);
         }
 
@@ -205,15 +235,15 @@ public class HdfsWriter extends Writer {
             Set<String> allFiles = new HashSet<String>();
 
             //获取该路径下的所有已有文件列表
-            if(hdfsHelper.isPathexists(path)){
+            if (hdfsHelper.isPathexists(path)) {
                 allFiles.addAll(Arrays.asList(hdfsHelper.hdfsDirList(path)));
             }
 
             String fileSuffix;
             //临时存放路径
-            String storePath =  buildTmpFilePath(this.path);
+            storePath = buildTmpFilePath(this.path);
             //最终存放路径
-            String endStorePath = buildFilePath();
+            endStorePath = buildFilePath();
             this.path = endStorePath;
             for (int i = 0; i < mandatoryNumber; i++) {
                 // handle same file name
@@ -235,13 +265,13 @@ public class HdfsWriter extends Writer {
                 allFiles.add(endFullFileName);
 
                 //设置临时文件全路径和最终文件全路径
-                if("GZIP".equalsIgnoreCase(this.compress)){
+                if ("GZIP".equalsIgnoreCase(this.compress)) {
                     this.tmpFiles.add(fullFileName + ".gz");
                     this.endFiles.add(endFullFileName + ".gz");
-                }else if("BZIP2".equalsIgnoreCase(compress)){
+                } else if ("BZIP2".equalsIgnoreCase(compress)) {
                     this.tmpFiles.add(fullFileName + ".bz2");
                     this.endFiles.add(endFullFileName + ".bz2");
-                }else{
+                } else {
                     this.tmpFiles.add(fullFileName);
                     this.endFiles.add(endFullFileName);
                 }
@@ -281,20 +311,20 @@ public class HdfsWriter extends Writer {
 
         /**
          * 创建临时目录
+         *
          * @param userPath
          * @return
          */
         private String buildTmpFilePath(String userPath) {
+            userPath = "/tmp" + (userPath.startsWith(String.valueOf(IOUtils.DIR_SEPARATOR)) ? "" : "/") + userPath;
             String tmpFilePath;
             boolean isEndWithSeparator = false;
             switch (IOUtils.DIR_SEPARATOR) {
                 case IOUtils.DIR_SEPARATOR_UNIX:
-                    isEndWithSeparator = userPath.endsWith(String
-                            .valueOf(IOUtils.DIR_SEPARATOR));
+                    isEndWithSeparator = userPath.endsWith(String.valueOf(IOUtils.DIR_SEPARATOR));
                     break;
                 case IOUtils.DIR_SEPARATOR_WINDOWS:
-                    isEndWithSeparator = userPath.endsWith(String
-                            .valueOf(IOUtils.DIR_SEPARATOR_WINDOWS));
+                    isEndWithSeparator = userPath.endsWith(String.valueOf(IOUtils.DIR_SEPARATOR_WINDOWS));
                     break;
                 default:
                     break;
@@ -303,19 +333,19 @@ public class HdfsWriter extends Writer {
             tmpSuffix = UUID.randomUUID().toString().replace('-', '_');
             if (!isEndWithSeparator) {
                 tmpFilePath = String.format("%s__%s%s", userPath, tmpSuffix, IOUtils.DIR_SEPARATOR);
-            }else if("/".equals(userPath)){
+            } else if ("/".equals(userPath)) {
                 tmpFilePath = String.format("%s__%s%s", userPath, tmpSuffix, IOUtils.DIR_SEPARATOR);
-            }else{
-                tmpFilePath = String.format("%s__%s%s", userPath.substring(0,userPath.length()-1), tmpSuffix, IOUtils.DIR_SEPARATOR);
+            } else {
+                tmpFilePath = String.format("%s__%s%s", userPath.substring(0, userPath.length() - 1), tmpSuffix, IOUtils.DIR_SEPARATOR);
             }
-            while(hdfsHelper.isPathexists(tmpFilePath)){
+            while (hdfsHelper.isPathexists(tmpFilePath)) {
                 tmpSuffix = UUID.randomUUID().toString().replace('-', '_');
                 if (!isEndWithSeparator) {
                     tmpFilePath = String.format("%s__%s%s", userPath, tmpSuffix, IOUtils.DIR_SEPARATOR);
-                }else if("/".equals(userPath)){
+                } else if ("/".equals(userPath)) {
                     tmpFilePath = String.format("%s__%s%s", userPath, tmpSuffix, IOUtils.DIR_SEPARATOR);
-                }else{
-                    tmpFilePath = String.format("%s__%s%s", userPath.substring(0,userPath.length()-1), tmpSuffix, IOUtils.DIR_SEPARATOR);
+                } else {
+                    tmpFilePath = String.format("%s__%s%s", userPath.substring(0, userPath.length() - 1), tmpSuffix, IOUtils.DIR_SEPARATOR);
                 }
             }
             return tmpFilePath;
@@ -355,13 +385,13 @@ public class HdfsWriter extends Writer {
         public void startWrite(RecordReceiver lineReceiver) {
             LOG.info("begin do write...");
             LOG.info(String.format("write to file : [%s]", this.fileName));
-            if(fileType.equalsIgnoreCase("TEXT")){
+            if (fileType.equalsIgnoreCase("TEXT")) {
                 //写TEXT FILE
-                hdfsHelper.textFileStartWrite(lineReceiver,this.writerSliceConfig, this.fileName,
+                hdfsHelper.textFileStartWrite(lineReceiver, this.writerSliceConfig, this.fileName,
                         this.getTaskPluginCollector());
-            }else if(fileType.equalsIgnoreCase("ORC")){
+            } else if (fileType.equalsIgnoreCase("ORC")) {
                 //写ORC FILE
-                hdfsHelper.orcFileStartWrite(lineReceiver,this.writerSliceConfig, this.fileName,
+                hdfsHelper.orcFileStartWrite(lineReceiver, this.writerSliceConfig, this.fileName,
                         this.getTaskPluginCollector());
             }
 

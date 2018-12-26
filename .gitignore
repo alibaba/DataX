@@ -6,3 +6,5 @@
 /logs/
 .idea/
 *.iml
+*.spec
+target
