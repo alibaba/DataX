@@ -29,6 +29,11 @@ public final class Key {
 
     public static final String INDEX = "index";
 
+    /**
+     * 当配置column的name为REFERENCE时,会提取record中索引为columnIndex的值作为row的column
+     */
+    public static final String COL_INDEX = "columnIndex";
+
     public static final String NAME = "name";
 
     public static final String TYPE = "type";

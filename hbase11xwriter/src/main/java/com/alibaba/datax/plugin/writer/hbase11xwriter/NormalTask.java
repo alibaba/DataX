@@ -8,21 +8,18 @@ import com.alibaba.datax.common.util.Configuration;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.apache.commons.lang3.time.DateUtils;
-import org.apache.commons.net.ntp.TimeStamp;
 import org.apache.hadoop.hbase.client.Durability;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Map;
 
 public class NormalTask extends HbaseAbstractTask {
+    private static final String NAME_TYPE_REFERENCE = "REFERENCE";
     private static final Logger LOG = LoggerFactory.getLogger(NormalTask.class);
     public NormalTask(Configuration configuration) {
         super(configuration);
@@ -47,6 +44,10 @@ public class NormalTask extends HbaseAbstractTask {
             String type = aColumn.getString(Key.TYPE);
             ColumnType columnType = ColumnType.getByTypeName(type);
             String name = aColumn.getString(Key.NAME);
+            if (NAME_TYPE_REFERENCE.equals(name)) {
+                int colIndex = aColumn.getInt(Key.COL_INDEX);
+                name = getName(record, colIndex);
+            }
             String promptInfo = "Hbasewriter 中，column 的列配置格式应该是：列族:列名. 您配置的列错误：" + name;
             String[] cfAndQualifier = name.split(":");
             Validate.isTrue(cfAndQualifier != null && cfAndQualifier.length == 2
@@ -108,6 +109,14 @@ public class NormalTask extends HbaseAbstractTask {
             }
         }
         return rowkeyBuffer;
+    }
+
+    public String getName(Record record, int index) {
+        if (index >= record.getColumnNumber()) {
+            throw DataXException.asDataXException(Hbase11xWriterErrorCode.ILLEGAL_VALUE, String.format("您的column配置项中中columnIndex值超出范围,根据reader端配置,columnIndex的值小于%s,而您配置的值为%s，请检查并修改.",record.getColumnNumber(),index));
+        }
+
+        return record.getColumn(index).asString();
     }
 
     public long getVersion(Record record){
