@@ -19,7 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class NormalTask extends HbaseAbstractTask {
-    private static final String NAME_TYPE_REFERENCE = "REFERENCE";
+    public static final String NAME_TYPE_REFERENCE = "REFERENCE";
     private static final Logger LOG = LoggerFactory.getLogger(NormalTask.class);
     public NormalTask(Configuration configuration) {
         super(configuration);
