@@ -1,10 +1,7 @@
 
 # ClickHouseReader 插件文档
 
-
 ___
-
-
 
 ## 1 快速介绍
 
@@ -267,7 +264,7 @@ INSERT INTO `t_match_record`(`id`, `trade_no`, `order_no`, `pair_id`, `belonger`
 
 * 执行DataX的机器参数为:
 	1. cpu: 4核 Intel(R) Core(TM) i5-8600 CPU @ 3.10GHz
-	2. mem: 4GB
+	2. mem: 1GB
 	3. net: 千兆双网卡
 	4. disc: DataX 数据不落磁盘，不统计此项
 
@@ -305,19 +302,7 @@ INSERT INTO `t_match_record`(`id`, `trade_no`, `order_no`, `pair_id`, `belonger`
 
 ## 5 约束限制
 
-### 5.1 一致性约束
-
-ClickHouse在数据存储划分中属于RDBMS系统，对外可以提供强一致性数据查询接口。例如当一次同步任务启动运行过程中，当该库存在其他数据写入方写入数据时，ClickHouseReader完全不会获取到写入更新数据，这是由于数据库本身的快照特性决定的。关于数据库快照特性，请参看[MVCC Wikipedia](https://en.wikipedia.org/wiki/Multiversion_concurrency_control)
-
-上述是在ClickHouseReader单线程模型下数据同步一致性的特性，由于ClickHouseReader可以根据用户配置信息使用了并发数据抽取，因此不能严格保证数据一致性：当ClickHouseReader根据splitPk进行数据切分后，会先后启动多个并发任务完成数据同步。由于多个并发任务相互之间不属于同一个读事务，同时多个并发任务存在时间间隔。因此这份数据并不是`完整的`、`一致的`数据快照信息。
-
-针对多线程的一致性快照需求，在技术上目前无法实现，只能从工程角度解决，工程化的方式存在取舍，我们提供几个解决思路给用户，用户可以自行选择：
-
-1. 使用单线程同步，即不再进行数据切片。缺点是速度比较慢，但是能够很好保证一致性。
-
-2. 关闭其他数据写入方，保证当前数据为静态数据，例如，锁表、关闭备库同步等等。缺点是可能影响在线业务。
-
-### 5.2 增量数据同步
+### 5.1 增量数据同步
 
 ClickHouseReader使用JDBC SELECT语句完成数据抽取工作，因此可以使用SELECT...WHERE...进行增量数据抽取，方式有多种：
 
@@ -326,7 +311,7 @@ ClickHouseReader使用JDBC SELECT语句完成数据抽取工作，因此可以�
 
 对于业务上无字段区分新增、修改数据情况，ClickHouseReader也无法进行增量数据同步，只能同步全量数据。
 
-### 5.3 Sql安全性
+### 5.2 Sql安全性
 
 ClickHouseReader提供querySql语句交给用户自己实现SELECT抽取语句，ClickHouseReader本身对querySql不做任何安全性校验。这块交由DataX用户方自己保证。
 

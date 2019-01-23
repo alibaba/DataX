@@ -232,17 +232,15 @@ public class ClickHouseWriter {
             DBUtil.closeDBResources(null, null, connection);
         }
 
-        private void doBatchExecute(Connection connection, List<Record> buffer)
-                throws SQLException {
+        private void doBatchExecute(Connection connection, List<Record> buffer) {
             doBatchInsert(connection,buffer);
         }
 
 
-        private void doBatchInsert(Connection connection, List<Record> buffer)
-                throws SQLException {
+        //需要说明的是，ClickHouse并不支持事务，这里先移除事务调用
+        private void doBatchInsert(Connection connection, List<Record> buffer) {
             PreparedStatement preparedStatement = null;
             try {
-                connection.setAutoCommit(false);
                 preparedStatement = connection
                         .prepareStatement(this.writeRecordSql);
 
@@ -252,10 +250,6 @@ public class ClickHouseWriter {
                     preparedStatement.addBatch();
                 }
                 preparedStatement.executeBatch();
-                connection.commit();
-            } catch (SQLException e) {
-                LOG.warn("批量执行异常:",e);
-                connection.rollback();
             } catch (Exception e) {
                 throw DataXException.asDataXException(
                         DBUtilErrorCode.WRITE_DATA_ERROR, e);
