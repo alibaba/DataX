@@ -217,7 +217,13 @@ public final class DBUtil {
 
     public static boolean checkInsertPrivilege(DataBaseType dataBaseType, String jdbcURL, String userName, String password, List<String> tableList) {
         Connection connection = connect(dataBaseType, jdbcURL, userName, password);
-        String insertTemplate = "insert into %s(select * from %s where 1 = 2)";
+        String insertTemplate;
+
+        if(dataBaseType == DataBaseType.ClickHouse){ //估计ClickHouse语法解析器有bug
+            insertTemplate = "insert into %s select * from %s where 1 = 2";
+        }else {
+            insertTemplate = "insert into %s(select * from %s where 1 = 2)";
+        }
 
         boolean hasInsertPrivilege = true;
         Statement insertStmt = null;

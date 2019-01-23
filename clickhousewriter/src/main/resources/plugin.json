@@ -1,0 +1,6 @@
+{
+    "name": "clickhousewriter",
+    "class": "com.alibaba.datax.plugin.writer.clickhousewriter.ClickHouseWriter",
+    "description": "适用于: 生产环境.  原理: TODO",
+    "developer": "alibaba"
+}

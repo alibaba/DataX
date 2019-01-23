@@ -1,0 +1,15 @@
+{
+    "name": "clickhousereader",
+    "parameter": {
+        "username": "",
+        "password": "",
+        "column": [],
+        "connection": [
+            {
+            "jdbcUrl": [],
+            "table": []
+            }
+        ],
+        "where": ""
+    }
+}
