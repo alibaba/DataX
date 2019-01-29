@@ -39,6 +39,22 @@
             <groupId>com.alibaba.datax</groupId>
             <artifactId>plugin-rdbms-util</artifactId>
             <version>${datax-project-version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.alibaba</groupId>
+                    <artifactId>druid</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba.cloud.analyticdb</groupId>
+            <artifactId>adbclient</artifactId>
+            <version>1.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid</artifactId>
+            <version>1.1.12</version>
         </dependency>
 
         <dependency>
