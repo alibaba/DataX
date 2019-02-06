@@ -89,6 +89,7 @@
         <!-- common support module -->
         <module>plugin-rdbms-util</module>
         <module>plugin-unstructured-storage-util</module>
+        <module>sybasereader</module>
     </modules>
 
     <dependencyManagement>
