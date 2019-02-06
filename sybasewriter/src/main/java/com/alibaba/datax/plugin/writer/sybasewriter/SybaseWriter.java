@@ -33,7 +33,7 @@ public class SybaseWriter {
                         .asDataXException(
                                 DBUtilErrorCode.CONF_ERROR,
                                 String.format(
-                                        "写入模式(writeMode)配置错误. 因为Sybase不支持配置项 writeMode: %s, Oracle只能使用insert sql 插入数据. 请检查您的配置并作出修改",
+                                        "写入模式(writeMode)配置错误. 因为Sybase不支持配置项 writeMode: %s, SybaseWriter只能使用insert sql 插入数据. 请检查您的配置并作出修改",
                                         writeMode));
             }
 
