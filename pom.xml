@@ -90,6 +90,7 @@
         <module>plugin-rdbms-util</module>
         <module>plugin-unstructured-storage-util</module>
         <module>sybasereader</module>
+        <module>sybasewriter</module>
     </modules>
 
     <dependencyManagement>
