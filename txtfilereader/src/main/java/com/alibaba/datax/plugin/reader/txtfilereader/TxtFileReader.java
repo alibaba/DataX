@@ -194,8 +194,8 @@ public class TxtFileReader extends Reader {
 						".?");
 				Pattern patt = Pattern.compile(regexString);
 				this.pattern.put(eachPath, patt);
-				this.sourceFiles = this.buildSourceTargets();
 			}
+			this.sourceFiles = this.buildSourceTargets();
 
 			LOG.info(String.format("您即将读取的文件数为: [%s]", this.sourceFiles.size()));
 		}
