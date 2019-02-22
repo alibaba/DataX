@@ -37,6 +37,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 
     <modules>
@@ -88,7 +90,8 @@
         <!-- common support module -->
         <module>plugin-rdbms-util</module>
         <module>plugin-unstructured-storage-util</module>
-    </modules>
+    <module>db2writer</module>
+  </modules>
 
     <dependencyManagement>
         <dependencies>
@@ -163,6 +166,14 @@
                 <version>1.9.5</version>
                 <scope>test</scope>
             </dependency>
+            
+            <dependency>
+          <groupId>jdk.tools</groupId>
+          <artifactId>jdk.tools</artifactId>
+          <version>1.8</version>
+          <scope>system</scope>
+          <systemPath>C:\Program Files\Java\jre1.8.0_181\lib\tools.jar</systemPath>
+        </dependency>
         </dependencies>
     </dependencyManagement>
 
