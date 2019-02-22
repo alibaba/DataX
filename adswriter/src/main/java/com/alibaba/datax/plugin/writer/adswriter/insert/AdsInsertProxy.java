@@ -34,7 +34,7 @@ import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
 
-public class AdsInsertProxy {
+public class AdsInsertProxy implements AdsProxy {
 
     private static final Logger LOG = LoggerFactory
             .getLogger(AdsInsertProxy.class);
@@ -46,9 +46,9 @@ public class AdsInsertProxy {
     private TaskPluginCollector taskPluginCollector;
     private Configuration configuration;
     private Boolean emptyAsNull;
-    
+
     private String writeMode;
-    
+
     private String insertSqlPrefix;
     private String deleteSqlPrefix;
     private int opColumnIndex;
@@ -58,10 +58,10 @@ public class AdsInsertProxy {
     private Map<String, Pair<Integer, String>> userConfigColumnsMetaData;
     // columnName: index @ ads column
     private Map<String, Integer> primaryKeyNameIndexMap;
-    
+
     private int retryTimeUpperLimit;
     private Connection currentConnection;
-    
+
     private String partitionColumn;
     private int partitionColumnIndex = -1;
     private int partitionCount;
@@ -80,14 +80,14 @@ public class AdsInsertProxy {
                 Key.RETRY_CONNECTION_TIME, Constant.DEFAULT_RETRY_TIMES);
         this.partitionCount = tableInfo.getPartitionCount();
         this.partitionColumn = tableInfo.getPartitionColumn();
-        
+
         //目前ads新建的表如果未插入数据不能通过select colums from table where 1=2，获取列信息，需要读取ads数据字典
         //not this: this.resultSetMetaData = DBUtil.getColumnMetaData(connection, this.table, StringUtils.join(this.columns, ","));
         //no retry here(fetch meta data) 注意实时表列换序的可能
         this.adsTableColumnsMetaData = AdsInsertUtil.getColumnMetaData(tableInfo, this.columns);
         this.userConfigColumnsMetaData = new HashMap<String, Pair<Integer, String>>();
-        
-        List<String> primaryKeyColumnName =  tableInfo.getPrimaryKeyColumns();
+
+        List<String> primaryKeyColumnName = tableInfo.getPrimaryKeyColumns();
         List<String> adsColumnsNames = tableInfo.getColumnsNames();
         this.primaryKeyNameIndexMap = new HashMap<String, Integer>();
         //warn: 要使用用户配置的column顺序, 不要使用从ads元数据获取的column顺序, 原来复用load列顺序其实有问题的
@@ -108,7 +108,7 @@ public class AdsInsertProxy {
                     this.userConfigColumnsMetaData.put(oriEachColumn, this.adsTableColumnsMetaData.get(eachAdsColumn));
                 }
             }
-            
+
             // 根据第几个column分区列排序，ads实时表只有一级分区、最多256个分区
             if (eachColumn.equalsIgnoreCase(this.partitionColumn)) {
                 this.partitionColumnIndex = i;
@@ -117,8 +117,8 @@ public class AdsInsertProxy {
     }
 
     public void startWriteWithConnection(RecordReceiver recordReceiver,
-                                                Connection connection,
-                                                int columnNumber) {
+                                         Connection connection,
+                                         int columnNumber) {
         this.currentConnection = connection;
         int batchSize = this.configuration.getInt(Key.BATCH_SIZE, Constant.DEFAULT_BATCH_SIZE);
         // 默认情况下bufferSize需要和batchSize一致
@@ -164,13 +164,13 @@ public class AdsInsertProxy {
                     OperationType operationType = OperationType.asOperationType(optionColumnValue);
                     if (operationType.isInsertTemplate()) {
                         writeBuffer.add(record);
-                        if (this.lastDmlMode == null || this.lastDmlMode == Constant.INSERTMODE ) {
+                        if (this.lastDmlMode == null || this.lastDmlMode == Constant.INSERTMODE) {
                             this.lastDmlMode = Constant.INSERTMODE;
                             if (writeBuffer.size() >= bufferSize) {
                                 this.doBatchRecordWithPartitionSort(writeBuffer, Constant.INSERTMODE, bufferSize, batchSize);
                                 writeBuffer.clear();
                             }
-                        } else  {
+                        } else {
                             this.lastDmlMode = Constant.INSERTMODE;
                             // 模式变换触发一次提交ads delete, 并进入insert模式
                             this.doBatchRecordWithPartitionSort(deleteBuffer, Constant.DELETEMODE, bufferSize, batchSize);
@@ -178,7 +178,7 @@ public class AdsInsertProxy {
                         }
                     } else if (operationType.isDeleteTemplate()) {
                         deleteBuffer.add(record);
-                        if (this.lastDmlMode == null || this.lastDmlMode == Constant.DELETEMODE ) { 
+                        if (this.lastDmlMode == null || this.lastDmlMode == Constant.DELETEMODE) {
                             this.lastDmlMode = Constant.DELETEMODE;
                             if (deleteBuffer.size() >= bufferSize) {
                                 this.doBatchRecordWithPartitionSort(deleteBuffer, Constant.DELETEMODE, bufferSize, batchSize);
@@ -196,14 +196,14 @@ public class AdsInsertProxy {
                     }
                 }
             }
-            
+
             if (!writeBuffer.isEmpty()) {
                 //doOneRecord(writeBuffer, Constant.INSERTMODE);
                 this.doBatchRecordWithPartitionSort(writeBuffer, Constant.INSERTMODE, bufferSize, batchSize);
                 writeBuffer.clear();
             }
             // 2个缓冲最多一个不为空同时
-            if (null!= deleteBuffer && !deleteBuffer.isEmpty()) {
+            if (null != deleteBuffer && !deleteBuffer.isEmpty()) {
                 //doOneRecord(deleteBuffer, Constant.DELETEMODE);
                 this.doBatchRecordWithPartitionSort(deleteBuffer, Constant.DELETEMODE, bufferSize, batchSize);
                 deleteBuffer.clear();
@@ -216,14 +216,14 @@ public class AdsInsertProxy {
             DBUtil.closeDBResources(null, null, connection);
         }
     }
-    
+
     /**
      * @param bufferSize datax缓冲记录条数
-     * @param batchSize datax向ads系统一次发送数据条数
-     * @param buffer datax缓冲区
-     * @param mode 实时表模式insert 或者 stream
-     * */
-    private void doBatchRecordWithPartitionSort(List<Record> buffer, String mode, int bufferSize, int batchSize) throws SQLException{
+     * @param batchSize  datax向ads系统一次发送数据条数
+     * @param buffer     datax缓冲区
+     * @param mode       实时表模式insert 或者 stream
+     */
+    private void doBatchRecordWithPartitionSort(List<Record> buffer, String mode, int bufferSize, int batchSize) throws SQLException {
         //warn: 排序会影响数据插入顺序, 如果源头没有数据约束, 排序可能造成数据不一致, 快速排序是一种不稳定的排序算法
         //warn: 不明确配置bufferSize或者小于batchSize的情况下，不要进行排序;如果缓冲区实际内容条数少于batchSize也不排序了，最后一次的余量
         int recordBufferedNumber = buffer.size();
@@ -261,7 +261,7 @@ public class AdsInsertProxy {
                     return true;
                 }
             }, this.retryTimeUpperLimit, 2000L, true, retryExceptionClasss);
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             LOG.warn(String.format("after retry %s times, doBatchRecord meet a exception: ", this.retryTimeUpperLimit), e);
             LOG.info("try to re execute for each record...");
             doOneRecord(buffer, mode);
@@ -274,7 +274,7 @@ public class AdsInsertProxy {
                     DBUtilErrorCode.WRITE_DATA_ERROR, e);
         }
     }
-    
+
     //warn: ADS 无法支持事物roll back都是不管用
     @SuppressWarnings("resource")
     private void doBatchRecordDml(List<Record> buffer, String mode) throws Exception {
@@ -313,7 +313,7 @@ public class AdsInsertProxy {
                 } else {
                     try {
                         Throwable causeThrowable = eachException.getCause();
-                        eachException = causeThrowable == null ? null : (Exception)causeThrowable;
+                        eachException = causeThrowable == null ? null : (Exception) causeThrowable;
                     } catch (Exception castException) {
                         LOG.warn("doBatchRecordDml meet a no! retry exception: " + e.getMessage());
                         throw e;
@@ -330,7 +330,7 @@ public class AdsInsertProxy {
             DBUtil.closeDBResources(statement, null);
         }
     }
-    
+
     private void doOneRecord(List<Record> buffer, final String mode) {
         List<Class<?>> retryExceptionClasss = new ArrayList<Class<?>>();
         retryExceptionClasss.add(com.mysql.jdbc.exceptions.jdbc4.CommunicationsException.class);
@@ -350,7 +350,7 @@ public class AdsInsertProxy {
             }
         }
     }
-    
+
     @SuppressWarnings("resource")
     private void doOneRecordDml(Record record, String mode) throws Exception {
         Statement statement = null;
@@ -380,7 +380,7 @@ public class AdsInsertProxy {
                 } else {
                     try {
                         Throwable causeThrowable = eachException.getCause();
-                        eachException = causeThrowable == null ? null : (Exception)causeThrowable;
+                        eachException = causeThrowable == null ? null : (Exception) causeThrowable;
                     } catch (Exception castException) {
                         LOG.warn("doOneDml meet a no! retry exception: " + e.getMessage());
                         throw e;
@@ -397,7 +397,7 @@ public class AdsInsertProxy {
             DBUtil.closeDBResources(statement, null);
         }
     }
-    
+
     private boolean isRetryable(Throwable e) {
         Class<?> meetExceptionClass = e.getClass();
         if (meetExceptionClass == com.mysql.jdbc.exceptions.jdbc4.CommunicationsException.class) {
@@ -408,7 +408,7 @@ public class AdsInsertProxy {
         }
         return false;
     }
-    
+
     private String generateDmlSql(Connection connection, Record record, String mode) throws SQLException {
         String sql = null;
         StringBuilder sqlSb = new StringBuilder();
@@ -417,7 +417,7 @@ public class AdsInsertProxy {
             sqlSb.append("(");
             int columnsSize = this.columns.size();
             for (int i = 0; i < columnsSize; i++) {
-                if((i + 1) != columnsSize) {
+                if ((i + 1) != columnsSize) {
                     sqlSb.append("?,");
                 } else {
                     sqlSb.append("?");
@@ -431,7 +431,7 @@ public class AdsInsertProxy {
                 if (Constant.STREAMMODE.equalsIgnoreCase(this.writeMode)) {
                     if (preparedParamsIndex >= this.opColumnIndex) {
                         preparedParamsIndex = i + 1;
-                    } 
+                    }
                 }
                 String columnName = this.columns.get(i);
                 int columnSqltype = this.userConfigColumnsMetaData.get(columnName).getLeft();
@@ -446,7 +446,7 @@ public class AdsInsertProxy {
             int entrySetSize = primaryEntrySet.size();
             int i = 0;
             for (Entry<String, Integer> eachEntry : primaryEntrySet) {
-                if((i + 1) != entrySetSize) {
+                if ((i + 1) != entrySetSize) {
                     sqlSb.append(String.format(" (%s = ?) and ", eachEntry.getKey()));
                 } else {
                     sqlSb.append(String.format(" (%s = ?) ", eachEntry.getKey()));
@@ -463,7 +463,7 @@ public class AdsInsertProxy {
                 int columnSqlType = this.userConfigColumnsMetaData.get(columnName).getLeft();
                 int primaryKeyInUserConfigIndex = this.primaryKeyNameIndexMap.get(columnName);
                 if (primaryKeyInUserConfigIndex >= this.opColumnIndex) {
-                    primaryKeyInUserConfigIndex ++;
+                    primaryKeyInUserConfigIndex++;
                 }
                 prepareColumnTypeValue(statement, columnSqlType, record.getColumn(primaryKeyInUserConfigIndex), i, columnName);
                 i++;
@@ -473,8 +473,8 @@ public class AdsInsertProxy {
         }
         return sql;
     }
-    
-    private void appendDmlSqlValues(Connection connection, Record record, StringBuilder sqlSb, String mode) throws SQLException { 
+
+    private void appendDmlSqlValues(Connection connection, Record record, StringBuilder sqlSb, String mode) throws SQLException {
         String sqlResult = this.generateDmlSql(connection, record, mode);
         if (mode.equalsIgnoreCase(Constant.INSERTMODE)) {
             sqlSb.append(",");
@@ -508,21 +508,21 @@ public class AdsInsertProxy {
             case Types.DECIMAL:
             case Types.REAL:
                 String numValue = column.asString();
-                if(emptyAsNull && "".equals(numValue) || numValue == null){
+                if (emptyAsNull && "".equals(numValue) || numValue == null) {
                     //statement.setObject(preparedPatamIndex + 1,  null);
                     statement.setNull(preparedPatamIndex + 1, Types.BIGINT);
-                } else{
+                } else {
                     statement.setLong(preparedPatamIndex + 1, column.asLong());
                 }
                 break;
-                
+
             case Types.FLOAT:
             case Types.DOUBLE:
                 String floatValue = column.asString();
-                if(emptyAsNull && "".equals(floatValue) || floatValue == null){
+                if (emptyAsNull && "".equals(floatValue) || floatValue == null) {
                     //statement.setObject(preparedPatamIndex + 1,  null);
                     statement.setNull(preparedPatamIndex + 1, Types.DOUBLE);
-                } else{
+                } else {
                     statement.setDouble(preparedPatamIndex + 1, column.asDouble());
                 }
                 break;
@@ -535,13 +535,13 @@ public class AdsInsertProxy {
                 } else {
                     statement.setLong(preparedPatamIndex + 1, longValue);
                 }
-                
+
                 break;
 
             case Types.DATE:
                 java.sql.Date sqlDate = null;
                 try {
-                    if("".equals(column.getRawData())) {
+                    if ("".equals(column.getRawData())) {
                         utilDate = null;
                     } else {
                         utilDate = column.asDate();
@@ -550,17 +550,17 @@ public class AdsInsertProxy {
                     throw new SQLException(String.format(
                             "Date 类型转换错误：[%s]", column));
                 }
-                
+
                 if (null != utilDate) {
                     sqlDate = new java.sql.Date(utilDate.getTime());
-                } 
+                }
                 statement.setDate(preparedPatamIndex + 1, sqlDate);
                 break;
 
             case Types.TIME:
                 java.sql.Time sqlTime = null;
                 try {
-                    if("".equals(column.getRawData())) {
+                    if ("".equals(column.getRawData())) {
                         utilDate = null;
                     } else {
                         utilDate = column.asDate();
@@ -579,7 +579,7 @@ public class AdsInsertProxy {
             case Types.TIMESTAMP:
                 java.sql.Timestamp sqlTimestamp = null;
                 try {
-                    if("".equals(column.getRawData())) {
+                    if ("".equals(column.getRawData())) {
                         utilDate = null;
                     } else {
                         utilDate = column.asDate();
@@ -597,14 +597,14 @@ public class AdsInsertProxy {
                 break;
 
             case Types.BOOLEAN:
-            //case Types.BIT: ads 没有bit
+                //case Types.BIT: ads 没有bit
                 Boolean booleanValue = column.asBoolean();
                 if (null == booleanValue) {
                     statement.setNull(preparedPatamIndex + 1, Types.BOOLEAN);
                 } else {
                     statement.setBoolean(preparedPatamIndex + 1, booleanValue);
                 }
-                
+
                 break;
             default:
                 Pair<Integer, String> columnMetaPair = this.userConfigColumnsMetaData.get(columnName);
@@ -616,7 +616,7 @@ public class AdsInsertProxy {
                                         columnName, columnMetaPair.getRight(), columnMetaPair.getLeft()));
         }
     }
-    
+
     private static int getHashPartition(String value, int totalHashPartitionNum) {
         long crc32 = (value == null ? getCRC32("-1") : getCRC32(value));
         return (int) (crc32 % totalHashPartitionNum);
@@ -627,5 +627,9 @@ public class AdsInsertProxy {
         byte[] bytes = value.getBytes();
         checksum.update(bytes, 0, bytes.length);
         return checksum.getValue();
+    }
+
+    @Override
+    public void closeResource() {
     }
 }
