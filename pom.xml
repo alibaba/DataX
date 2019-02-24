@@ -87,11 +87,11 @@
         <module>hbase11xsqlwriter</module>
         <module>hbase11xsqlreader</module>
         <module>elasticsearchwriter</module>
+        <module>db2writer</module>
 
         <!-- common support module -->
         <module>plugin-rdbms-util</module>
         <module>plugin-unstructured-storage-util</module>
-    <module>db2writer</module>
   </modules>
 
     <dependencyManagement>
