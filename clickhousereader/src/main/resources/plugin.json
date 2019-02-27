@@ -1,0 +1,6 @@
+{
+    "name": "clickhousereader",
+    "class": "com.alibaba.datax.plugin.reader.clickhousereader.ClickHouseReader",
+    "description": "useScene: prod. mechanism: Jdbc connection using the database, execute select sql, retrieve data from the ResultSet. warn: The more you know about the database, the less problems you encounter.",
+    "developer": "alibaba"
+}

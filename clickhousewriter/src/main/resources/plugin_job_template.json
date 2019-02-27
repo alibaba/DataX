@@ -1,0 +1,17 @@
+{
+    "name": "clickhousewriter",
+    "parameter": {
+        "username": "",
+        "password": "",
+        "column": [],
+        "session": [],
+        "preSql": [],
+        "postSql": [],
+        "connection": [
+            {
+                "jdbcUrl": "",
+                "table": []
+            }
+        ]
+    }
+}
