@@ -1,0 +1,32 @@
+{
+  "name": "jsonfilereader",
+  "parameter": {
+    "path": [
+      ""
+    ],
+    "encoding": "UTF-8",
+    "column": [
+      {
+        "index": "$.a",
+        "type": "long"
+      },
+      {
+        "index": "$.b",
+        "type": "boolean"
+      },
+      {
+        "index": "$.c.d",
+        "type": "double"
+      },
+      {
+        "index": "$.e[0]",
+        "type": "string"
+      },
+      {
+        "index": "$.f",
+        "type": "date",
+        "format": "yyyy.MM.dd"
+      }
+    ]
+  }
+}
