@@ -1,0 +1,6 @@
+{
+  "name": "redisreader",
+  "class": "com.alibaba.datax.plugin.reader.redisreader.RedisReader",
+  "description": "Use redis-replicator connect to redis, execute dump command",
+  "developer": "alibaba"
+}

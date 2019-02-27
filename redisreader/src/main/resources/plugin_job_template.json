@@ -1,0 +1,26 @@
+{
+  "name": "redisreader",
+  "parameter": {
+    "connection": [
+      {
+        "uri": "tcp://127.0.0.1:6379",
+        "auth": ""
+      },
+      {
+        "uri": "file:///data/dump.rdb"
+      },
+      {
+        "uri": "http://localhost/dump.rdb"
+      }
+    ],
+    "db": [],
+
+    "include": [
+      "^user"
+    ],
+
+    "exclude": [
+
+    ]
+  }
+}
