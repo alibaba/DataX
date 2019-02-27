@@ -2,16 +2,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.alibaba.datax</groupId>
         <artifactId>datax-all</artifactId>
+        <groupId>com.alibaba.datax</groupId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
-    <groupId>com.alibaba.datax</groupId>
-    <artifactId>otsstreamreader</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <modelVersion>4.0.0</modelVersion>
 
+    <artifactId>sybasewriter</artifactId>
     <dependencies>
         <dependency>
             <groupId>com.alibaba.datax</groupId>
@@ -22,40 +20,30 @@
                     <artifactId>slf4j-log4j12</artifactId>
                     <groupId>org.slf4j</groupId>
                 </exclusion>
-                <exclusion>
-                    <artifactId>logback-classic</artifactId>
-                    <groupId>ch.qos.logback</groupId>
-                </exclusion>
             </exclusions>
         </dependency>
-        <!--Other 依赖 -->
         <dependency>
-            <groupId>com.aliyun.openservices</groupId>
-            <artifactId>tablestore-streamclient</artifactId>
-            <version>1.0.0</version>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.2.4</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>18.0</version>
-            <scope>test</scope>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.alibaba.datax</groupId>
+            <artifactId>plugin-rdbms-util</artifactId>
+            <version>${datax-project-version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.sybase</groupId>
+            <artifactId>jconn3</artifactId>
+            <version>3.0</version>
+        </dependency>
     </dependencies>
     <build>
-        <resources>
-            <resource>
-                <directory>src/main/java</directory>
-                <includes>
-                    <include>**/*.properties</include>
-                </includes>
-            </resource>
-        </resources>
         <plugins>
             <!-- compiler plugin -->
             <plugin>
@@ -87,4 +75,5 @@
             </plugin>
         </plugins>
     </build>
+
 </project>
