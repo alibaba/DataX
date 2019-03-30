@@ -124,15 +124,10 @@ public class DFSUtil {
             //判断hdfsPath是否包含正则符号
             if (hdfsPath.contains("*") || hdfsPath.contains("?")) {
                 Path path = new Path(hdfsPath);
-                FileStatus stats[] = hdfs.globStatus(path);
+                FileStatus[] stats = hdfs.globStatus(path);
                 for (FileStatus f : stats) {
                     if (f.isFile()) {
-                        if (f.getLen() == 0) {
-                            String message = String.format("文件[%s]长度为0，将会跳过不作处理！", hdfsPath);
-                            LOG.warn(message);
-                        } else {
-                            addSourceFileByType(f.getPath().toString());
-                        }
+                        addSourceFileIfNotEmpty(f);
                     } else if (f.isDirectory()) {
                         getHDFSAllFilesNORegex(f.getPath().toString(), hdfs);
                     }
@@ -159,7 +154,7 @@ public class DFSUtil {
         // If the network disconnected, this method will retry 45 times
         // each time the retry interval for 20 seconds
         // 获取要读取的文件的根目录的所有二级子文件目录
-        FileStatus stats[] = hdfs.listStatus(listFiles);
+        FileStatus[] stats = hdfs.listStatus(listFiles);
 
         for (FileStatus f : stats) {
             // 判断是不是目录，如果是目录，递归调用
@@ -167,8 +162,7 @@ public class DFSUtil {
                 LOG.info(String.format("[%s] 是目录, 递归获取该目录下的文件", f.getPath().toString()));
                 getHDFSAllFilesNORegex(f.getPath().toString(), hdfs);
             } else if (f.isFile()) {
-
-                addSourceFileByType(f.getPath().toString());
+                addSourceFileIfNotEmpty(f);
             } else {
                 String message = String.format("该路径[%s]文件类型既不是目录也不是文件，插件自动忽略。",
                         f.getPath().toString());
@@ -176,6 +170,17 @@ public class DFSUtil {
             }
         }
         return sourceHDFSAllFilesList;
+    }
+
+    private void addSourceFileIfNotEmpty(FileStatus f) {
+        if (f.isFile()) {
+            String filePath = f.getPath().toString();
+            if (f.getLen() > 0) {
+                addSourceFileByType(filePath);
+            } else {
+                LOG.warn(String.format("文件[%s]长度为0，将会跳过不作处理！", filePath));
+            }
+        }
     }
 
     // 根据用户指定的文件类型，将指定的文件类型的路径加入sourceHDFSAllFilesList
