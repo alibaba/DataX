@@ -263,8 +263,10 @@ public class UnstructuredStorageWriterUtil {
         char fieldDelimiter = config.getChar(Key.FIELD_DELIMITER,
                 Constant.DEFAULT_FIELD_DELIMITER);
 
+        boolean forceQualifier = config.getBool(Key.FORCE_QUALIFIER, Constant.DEFAULT_FORCE_QUALIFIER);
+
         UnstructuredWriter unstructuredWriter = TextCsvWriterManager
-                .produceUnstructuredWriter(fileFormat, fieldDelimiter, writer);
+                .produceUnstructuredWriter(fileFormat, fieldDelimiter, writer, forceQualifier);
 
         List<String> headers = config.getList(Key.HEADER, String.class);
         if (null != headers && !headers.isEmpty()) {
