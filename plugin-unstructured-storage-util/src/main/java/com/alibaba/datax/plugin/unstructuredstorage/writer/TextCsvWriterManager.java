@@ -1,14 +1,15 @@
 package com.alibaba.datax.plugin.unstructuredstorage.writer;
 
-import com.csvreader.CsvWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.List;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.Writer;
-import java.util.List;
+import com.csvreader.CsvWriter;
 
 public class TextCsvWriterManager {
     public static UnstructuredWriter produceUnstructuredWriter(
@@ -17,17 +18,7 @@ public class TextCsvWriterManager {
         if (Constant.FILE_FORMAT_TEXT.equals(fileFormat)) {
             return new TextWriterImpl(writer, fieldDelimiter);
         } else {
-            return new CsvWriterImpl(writer, fieldDelimiter, Constant.DEFAULT_FORCE_QUALIFIER);
-        }
-    }
-
-    public static UnstructuredWriter produceUnstructuredWriter(
-            String fileFormat, char fieldDelimiter, Writer writer, boolean forceQualifier) {
-        // warn: false means plain text(old way), true means strict csv format
-        if (Constant.FILE_FORMAT_TEXT.equals(fileFormat)) {
-            return new TextWriterImpl(writer, fieldDelimiter);
-        } else {
-            return new CsvWriterImpl(writer, fieldDelimiter, forceQualifier);
+            return new CsvWriterImpl(writer, fieldDelimiter);
         }
     }
 }
@@ -39,14 +30,13 @@ class CsvWriterImpl implements UnstructuredWriter {
     private char fieldDelimiter;
     private CsvWriter csvWriter;
 
-    public CsvWriterImpl(Writer writer, char fieldDelimiter, boolean forceQualifier) {
+    public CsvWriterImpl(Writer writer, char fieldDelimiter) {
         this.fieldDelimiter = fieldDelimiter;
         this.csvWriter = new CsvWriter(writer, this.fieldDelimiter);
         this.csvWriter.setTextQualifier('"');
         this.csvWriter.setUseTextQualifier(true);
         // warn: in linux is \n , in windows is \r\n
         this.csvWriter.setRecordDelimiter(IOUtils.LINE_SEPARATOR.charAt(0));
-        this.csvWriter.setForceQualifier(forceQualifier);
     }
 
     @Override

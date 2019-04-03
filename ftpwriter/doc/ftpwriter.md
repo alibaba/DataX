@@ -208,15 +208,6 @@ FtpWriter实现了从DataX协议转为FTP文件功能，FTP文件本身是无结
  	* 必选：否 <br />
  
  	* 默认值：无 <br />
- 	
-* **forceQualifier**
-       
-    * 描述：强制启用文本限定符 <br />
-    
-    * 必须：否 <br />
-    
-    * 默认值: false <br />
-
 
 ### 3.3 类型转换
 

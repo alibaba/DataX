@@ -35,7 +35,4 @@ public class Key {
     
     // writer file type suffix, like .txt  .csv
     public static final String SUFFIX = "suffix";
-
-    // not must, default false
-    public static final String FORCE_QUALIFIER = "forceQualifier";
 }
