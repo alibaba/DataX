@@ -22,7 +22,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.misc.BASE64Decoder;
 
 import java.io.*;
 import java.nio.charset.UnsupportedCharsetException;
@@ -460,21 +459,6 @@ public class UnstructuredStorageReaderUtil {
 										"DATE"));
 							}
 							break;
-						//BYTES类型字段经BASE64解码处理
-						case BYTES:
-							try {
-								if (columnValue == null){
-									columnGenerated = new BytesColumn();
-								}else{
-									BASE64Decoder dec = new BASE64Decoder();
-									columnGenerated = new BytesColumn(dec.decodeBuffer(columnValue));
-								}
-							} catch (Exception e) {
-								throw new IllegalArgumentException(String.format(
-										"类型转换错误, 无法将[%s] 转换为[%s]", columnValue,
-										"BYTES"));
-							}
-							break;
 						default:
 							String errorMessage = String.format(
 									"您配置的列类型暂不支持 : [%s]", columnType);
@@ -522,7 +506,7 @@ public class UnstructuredStorageReaderUtil {
 	}
 
 	private enum Type {
-		STRING, LONG, BOOLEAN, DOUBLE, DATE, BYTES, ;
+		STRING, LONG, BOOLEAN, DOUBLE, DATE, ;
 	}
 
 	/**

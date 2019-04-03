@@ -14,7 +14,7 @@ FtpWriter提供了向远程FTP文件写入CSV格式的一个或者多个文件�
 
 FtpWriter实现了从DataX协议转为FTP文件功能，FTP文件本身是无结构化数据存储，FtpWriter如下几个方面约定:
 
-1. 支持且仅支持写入文本类型(支持BLOB如视频数据)的文件，且要求文本中shema为一张二维表。
+1. 支持且仅支持写入文本类型(不支持BLOB如视频数据)的文件，且要求文本中shema为一张二维表。
 
 2. 支持类CSV格式文件，自定义分隔符。
 
@@ -231,7 +231,6 @@ FTP文件本身不提供数据类型，该类型是DataX FtpWriter定义：
 | String   |String -> 字符串序列化表示| 
 | Boolean  |Boolean -> 字符串序列化表示| 
 | Date     |Date -> 字符串序列化表示|
-| Bytes    |Bytes -> 字符串BASE64加密表示|
 
 其中：
 
@@ -239,7 +238,7 @@ FTP文件本身不提供数据类型，该类型是DataX FtpWriter定义：
 * FTP文件 Double是指FTP文件文本中使用Double的字符串表示形式，例如"3.1415"。
 * FTP文件 Boolean是指FTP文件文本中使用Boolean的字符串表示形式，例如"true"、"false"。不区分大小写。
 * FTP文件 Date是指FTP文件文本中使用Date的字符串表示形式，例如"2014-12-31"，Date可以指定format格式。
-* FTP文件 Bytes是指FTP文件文本中使用Bytes的字符串表示形式，经过BASE64编码，例如"MTIzZmRhZmFm"。
+
 
 ## 4 性能报告
 

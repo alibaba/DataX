@@ -306,7 +306,6 @@ boolean captureRawRecord = true;
 | String   |String|
 | Boolean  |Boolean |
 | Date     |Date |
-| Bytes    |Bytes |
 
 其中：
 
@@ -314,8 +313,6 @@ boolean captureRawRecord = true;
 * 远程FTP文件 Double是指远程FTP文件文本中使用Double的字符串表示形式，例如"3.1415"。
 * 远程FTP文件 Boolean是指远程FTP文件文本中使用Boolean的字符串表示形式，例如"true"、"false"。不区分大小写。
 * 远程FTP文件 Date是指远程FTP文件文本中使用Date的字符串表示形式，例如"2014-12-31"，Date可以指定format格式。
-* 远程FTP文件 Bytes是指远程FTP文件文本中使用Bytes的字符串表示形式，经过BASE64编码，例如"MTIzZmRhZmFm"。
-  针对原数据类型为BLOB,BFILE,RAW,LONG RAW等的数据，读取时需要指定类型为Bytes。
 
 
 ## 4 性能报告

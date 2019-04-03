@@ -1,14 +1,18 @@
 package com.alibaba.datax.plugin.unstructuredstorage.writer;
 
-import com.alibaba.datax.common.element.BytesColumn;
-import com.alibaba.datax.common.element.Column;
-import com.alibaba.datax.common.element.DateColumn;
-import com.alibaba.datax.common.element.Record;
-import com.alibaba.datax.common.exception.DataXException;
-import com.alibaba.datax.common.plugin.RecordReceiver;
-import com.alibaba.datax.common.plugin.TaskPluginCollector;
-import com.alibaba.datax.common.util.Configuration;
-import com.google.common.collect.Sets;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
 import org.apache.commons.compress.compressors.CompressorOutputStream;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
@@ -17,12 +21,15 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.misc.BASE64Encoder;
 
-import java.io.*;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import com.alibaba.datax.common.element.Column;
+import com.alibaba.datax.common.element.DateColumn;
+import com.alibaba.datax.common.element.Record;
+import com.alibaba.datax.common.exception.DataXException;
+import com.alibaba.datax.common.plugin.RecordReceiver;
+import com.alibaba.datax.common.plugin.TaskPluginCollector;
+import com.alibaba.datax.common.util.Configuration;
+import com.google.common.collect.Sets;
 
 public class UnstructuredStorageWriterUtil {
     private UnstructuredStorageWriterUtil() {
@@ -299,20 +306,12 @@ public class UnstructuredStorageWriterUtil {
             int recordLength = record.getColumnNumber();
             if (0 != recordLength) {
                 Column column;
-	            BASE64Encoder enc = new BASE64Encoder();
                 for (int i = 0; i < recordLength; i++) {
                     column = record.getColumn(i);
                     if (null != column.getRawData()) {
                         boolean isDateColumn = column instanceof DateColumn;
                         if (!isDateColumn) {
-	                        //扩展ftpwriter兼容性(BLOB,BFILE,RAW,LONG RAW)
-	                        boolean isBytesColumn = column instanceof BytesColumn;
-	                        if(!isBytesColumn){
-		                        splitedRows.add(column.asString());
-	                        } else {
-	                            //当column属于BytesColumn时，采用BASE64进行编码
-		                        splitedRows.add(enc.encodeBuffer(column.asBytes()));
-	                        }
+                            splitedRows.add(column.asString());
                         } else {
                             if (null != dateParse) {
                                 splitedRows.add(dateParse.format(column
