@@ -1,0 +1,13 @@
+ {
+    "name": "hbase20xsqlwriter",
+    "parameter": {
+        "queryServerAddress": "",
+        "table": "",
+        "serialization": "PROTOBUF",
+        "column": [
+        ],
+        "batchSize": "100",
+        "nullMode": "skip",
+        "schema": ""
+    }
+}
