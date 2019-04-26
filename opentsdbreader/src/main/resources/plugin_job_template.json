@@ -1,0 +1,11 @@
+{
+  "name": "opentsdbreader",
+  "parameter": {
+    "endpoint": "http://localhost:8242",
+    "column": [
+      "m"
+    ],
+    "startTime": "2019-01-01 00:00:00",
+    "endTime": "2019-01-01 01:00:00"
+  }
+}
