@@ -1,0 +1,6 @@
+{
+    "name": "clickhousewriter",
+    "class": "com.alibaba.datax.writer.ClickHouseWriter",
+    "description": "ClickHouse JDBC Writer",
+    "developer": "martin"
+}
