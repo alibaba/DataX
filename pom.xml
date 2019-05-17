@@ -17,7 +17,6 @@
     <packaging>pom</packaging>
 
     <properties>
-        <datax-project-version>0.0.1-SNAPSHOT</datax-project-version>
         <commons-lang3-version>3.3.2</commons-lang3-version>
         <commons-configuration-version>1.10</commons-configuration-version>
         <commons-cli-version>1.2</commons-cli-version>
@@ -37,6 +36,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
+        <java.source.version>1.8</java.source.version>
+        <java.target.version>1.8</java.target.version>
     </properties>
 
     <modules>
@@ -46,53 +47,15 @@
 
         <!-- reader -->
         <module>mysqlreader</module>
-        <module>drdsreader</module>
-        <module>sqlserverreader</module>
         <module>postgresqlreader</module>
-        <module>oraclereader</module>
-        <module>odpsreader</module>
-        <module>otsreader</module>
-        <module>otsstreamreader</module>
-        <module>txtfilereader</module>
-        <module>hdfsreader</module>
-        <module>streamreader</module>
-        <module>ossreader</module>
-        <module>ftpreader</module>
-        <module>mongodbreader</module>
-        <module>rdbmsreader</module>
-        <module>hbase11xreader</module>
-        <module>hbase094xreader</module>
-        <module>opentsdbreader</module>
 
         <!-- writer -->
         <module>mysqlwriter</module>
-        <module>drdswriter</module>
-        <module>odpswriter</module>
-        <module>txtfilewriter</module>
-        <module>ftpwriter</module>
-        <module>hdfswriter</module>
-        <module>streamwriter</module>
-        <module>otswriter</module>
-        <module>oraclewriter</module>
-        <module>sqlserverwriter</module>
         <module>postgresqlwriter</module>
-        <module>osswriter</module>
-        <module>mongodbwriter</module>
-        <module>adswriter</module>
-        <module>ocswriter</module>
-        <module>rdbmswriter</module>
-        <module>hbase11xwriter</module>
-        <module>hbase094xwriter</module>
-        <module>hbase11xsqlwriter</module>
-        <module>hbase11xsqlreader</module>
-        <module>elasticsearchwriter</module>
-        <module>tsdbwriter</module>
 
         <!-- common support module -->
         <module>plugin-rdbms-util</module>
         <module>plugin-unstructured-storage-util</module>
-        <module>hbase20xsqlreader</module>
-        <module>hbase20xsqlwriter</module>
     </modules>
 
     <dependencyManagement>
@@ -193,8 +156,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.3.2</version>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>${java.source.version}</source>
+                    <target>${java.target.version}</target>
                     <encoding>${project-sourceEncoding}</encoding>
                 </configuration>
             </plugin>

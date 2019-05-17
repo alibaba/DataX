@@ -14,7 +14,7 @@
 		<dependency>
 			<groupId>com.alibaba.datax</groupId>
 			<artifactId>datax-common</artifactId>
-			<version>${datax-project-version}</version>
+			<version>${project.version}</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>slf4j-log4j12</artifactId>

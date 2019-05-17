@@ -15,7 +15,7 @@
         <dependency>
             <groupId>com.alibaba.datax</groupId>
             <artifactId>datax-transformer</artifactId>
-            <version>${datax-project-version}</version>
+            <version>${project.version}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>slf4j-log4j12</artifactId>
@@ -140,8 +140,8 @@
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>${java.source.version}</source>
+                    <target>${java.target.version}</target>
                     <encoding>${project-sourceEncoding}</encoding>
                 </configuration>
             </plugin>

@@ -1,6 +1,0 @@
-{
-    "name": "elasticsearchwriter",
-    "class": "com.alibaba.datax.plugin.writer.elasticsearchwriter.ESWriter",
-    "description": "适用于: 生产环境.  原理: TODO",
-    "developer": "alibaba"
-}

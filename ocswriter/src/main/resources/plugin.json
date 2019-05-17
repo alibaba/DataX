@@ -1,6 +1,0 @@
-{
-  "name": "ocswriter",
-  "class": "com.alibaba.datax.plugin.writer.ocswriter.OcsWriter",
-  "description": "set|add|replace|append|prepend record into ocs.",
-  "developer": "alibaba"
-}
