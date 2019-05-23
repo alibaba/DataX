@@ -49,9 +49,9 @@ public class HBase20SQLReaderHelper {
             String schema = configuration.getString(Key.SCHEMA, null);
             String tableName = configuration.getNecessaryValue(Key.TABLE, HBase20xSQLReaderErrorCode.REQUIRED_VALUE);
             if (schema != null && !schema.isEmpty()) {
-                fullTableName = schema + "." + tableName;
+                fullTableName = "\"" + schema + "\".\"" + tableName + "\"";
             } else {
-                fullTableName = tableName;
+                fullTableName = "\"" + tableName + "\"";
             }
             // 如果列名未配置，默认读取全部列*
             columnNames = configuration.getList(Key.COLUMN, String.class);
@@ -248,7 +248,7 @@ public class HBase20SQLReaderHelper {
         String querySql;
         StringBuilder columnBuilder = new StringBuilder();
         for (String columnName : columnNames) {
-            columnBuilder.append(columnName).append(",");
+            columnBuilder.append("\"").append(columnName).append("\",");
         }
         columnBuilder.setLength(columnBuilder.length() -1);
         if (StringUtils.isBlank(where)) {
