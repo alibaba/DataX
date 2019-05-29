@@ -14,8 +14,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <phoenix.version>5.0.0-HBase-2.0</phoenix.version>
-        <avatica.version>1.12.0</avatica.version>
+        <phoenix.version>5.1.0-HBase-2.0.0.2</phoenix.version>
         <commons-codec.version>1.8</commons-codec.version>
     </properties>
 
@@ -32,8 +31,8 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.apache.phoenix</groupId>
-            <artifactId>phoenix-queryserver</artifactId>
+            <groupId>com.aliyun.phoenix</groupId>
+            <artifactId>ali-phoenix-shaded-thin-client</artifactId>
             <version>${phoenix.version}</version>
         </dependency>
 

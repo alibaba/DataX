@@ -95,7 +95,15 @@ HBase20xsqlwriter实现了向hbase中的SQL表(phoenix)批量导入数据的功�
    * 描述：插件名字，必须是`hbase11xsqlwriter`
    * 必选：是
    * 默认值：无
+   
+* **schema**
 
+	* 描述：表所在的schema
+	
+	* 必选：否 <br />
+ 
+	* 默认值：无 <br />
+	
 * **table**
 
    * 描述：要导入的表名，大小写敏感，通常phoenix表都是**大写**表名
