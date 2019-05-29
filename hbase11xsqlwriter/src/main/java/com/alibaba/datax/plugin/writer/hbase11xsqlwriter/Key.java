@@ -10,6 +10,10 @@ public final class Key {
     public final static String HBASE_CONFIG = "hbaseConfig";
     public final static String HBASE_ZK_QUORUM = HConstants.ZOOKEEPER_QUORUM;
     public final static String HBASE_ZNODE_PARENT = HConstants.ZOOKEEPER_ZNODE_PARENT;
+    public final static String HBASE_THIN_CONNECT_URL = "hbase.thin.connect.url";
+    public final static String HBASE_THIN_CONNECT_NAMESPACE = "hbase.thin.connect.namespace";
+    public final static String HBASE_THIN_CONNECT_USERNAME = "hbase.thin.connect.username";
+    public final static String HBASE_THIN_CONNECT_PASSWORD = "hbase.thin.connect.password";
 
     /**
      * 【必选】writer要写入的表的表名
@@ -33,6 +37,9 @@ public final class Key {
      * 如果全局启动多个writer，则必须确保所有的writer都prepare之后，再开始导数据。
      */
     public static  final String TRUNCATE = "truncate";
+
+
+    public static  final String THIN_CLIENT = "thinClient";
 
     /**
      * 【可选】批量写入的最大行数，默认100行

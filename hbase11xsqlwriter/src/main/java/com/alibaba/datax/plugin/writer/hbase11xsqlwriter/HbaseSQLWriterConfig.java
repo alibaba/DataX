@@ -2,6 +2,7 @@ package com.alibaba.datax.plugin.writer.hbase11xsqlwriter;
 
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.util.Configuration;
+import com.google.common.base.Strings;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.util.Pair;
@@ -9,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * HBase SQL writer config
@@ -30,6 +32,10 @@ public class HbaseSQLWriterConfig {
     private NullModeType nullMode;
     private int batchSize;                  // 一次批量写入多少行
     private boolean truncate;               // 导入开始前是否要清空目的表
+    private boolean isThinClient;
+    private String namespace;
+    private String username;
+    private String password;
 
     /**
      * @return 获取原始的datax配置
@@ -81,6 +87,22 @@ public class HbaseSQLWriterConfig {
         return truncate;
     }
 
+    public boolean isThinClient() {
+        return isThinClient;
+    }
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
     /**
      * @param dataxCfg
      * @return
@@ -100,6 +122,7 @@ public class HbaseSQLWriterConfig {
         cfg.nullMode = NullModeType.getByTypeName(dataxCfg.getString(Key.NULL_MODE, Constant.DEFAULT_NULL_MODE));
         cfg.batchSize = dataxCfg.getInt(Key.BATCH_SIZE, Constant.DEFAULT_BATCH_ROW_COUNT);
         cfg.truncate = dataxCfg.getBool(Key.TRUNCATE, Constant.DEFAULT_TRUNCATE);
+        cfg.isThinClient = dataxCfg.getBool(Key.THIN_CLIENT, Constant.DEFAULT_USE_THIN_CLIENT);
 
         // 4. 打印解析出来的配置
         LOG.info("HBase SQL writer config parsed:" + cfg.toString());
@@ -117,31 +140,52 @@ public class HbaseSQLWriterConfig {
                     "读 Hbase 时需要配置hbaseConfig，其内容为 Hbase 连接信息，请联系 Hbase PE 获取该信息.");
         }
 
-        // 解析zk服务器和znode信息
-        Pair<String, String> zkCfg;
-        try {
-            zkCfg = HbaseSQLHelper.getHbaseConfig(hbaseCfg);
-        } catch (Throwable t) {
-            // 解析hbase配置错误
-            throw DataXException.asDataXException(
+
+        if (dataxCfg.getBool(Key.THIN_CLIENT, Constant.DEFAULT_USE_THIN_CLIENT)) {
+            Map<String, String> thinConnectConfig = HbaseSQLHelper.getThinConnectConfig(hbaseCfg);
+            String thinConnectStr = thinConnectConfig.get(Key.HBASE_THIN_CONNECT_URL);
+            cfg.namespace = thinConnectConfig.get(Key.HBASE_THIN_CONNECT_NAMESPACE);
+            cfg.username = thinConnectConfig.get(Key.HBASE_THIN_CONNECT_USERNAME);
+            cfg.password = thinConnectConfig.get(Key.HBASE_THIN_CONNECT_PASSWORD);
+            if (Strings.isNullOrEmpty(thinConnectStr)) {
+                throw DataXException.asDataXException(
+                    HbaseSQLWriterErrorCode.ILLEGAL_VALUE,
+                    "thinClient=true的轻客户端模式下HBase的hbase.thin.connect.url配置不能为空，请联系HBase PE获取该信息.");
+            }
+            if (Strings.isNullOrEmpty(cfg.namespace) || Strings.isNullOrEmpty(cfg.username) || Strings
+                .isNullOrEmpty(cfg.password)) {
+                throw DataXException.asDataXException(HbaseSQLWriterErrorCode.ILLEGAL_VALUE,
+                    "thinClient=true的轻客户端模式下HBase的hbase.thin.connect.namespce|username|password配置不能为空，请联系HBase "
+                        + "PE获取该信息.");
+            }
+            cfg.connectionString = thinConnectStr;
+        } else {
+            // 解析zk服务器和znode信息
+            Pair<String, String> zkCfg;
+            try {
+                zkCfg = HbaseSQLHelper.getHbaseConfig(hbaseCfg);
+            } catch (Throwable t) {
+                // 解析hbase配置错误
+                throw DataXException.asDataXException(
                     HbaseSQLWriterErrorCode.REQUIRED_VALUE,
                     "解析hbaseConfig出错，请确认您配置的hbaseConfig为合法的json数据格式，内容正确.");
-        }
-        String zkQuorum = zkCfg.getFirst();
-        String znode = zkCfg.getSecond();
-        if (zkQuorum == null || zkQuorum.isEmpty()) {
-            throw DataXException.asDataXException(
+            }
+            String zkQuorum = zkCfg.getFirst();
+            String znode = zkCfg.getSecond();
+            if (zkQuorum == null || zkQuorum.isEmpty()) {
+                throw DataXException.asDataXException(
                     HbaseSQLWriterErrorCode.ILLEGAL_VALUE,
                     "HBase的hbase.zookeeper.quorum配置不能为空，请联系HBase PE获取该信息.");
-        }
-        if (znode == null || znode.isEmpty()) {
-            throw DataXException.asDataXException(
+            }
+            if (znode == null || znode.isEmpty()) {
+                throw DataXException.asDataXException(
                     HbaseSQLWriterErrorCode.ILLEGAL_VALUE,
                     "HBase的zookeeper.znode.parent配置不能为空，请联系HBase PE获取该信息.");
-        }
+            }
 
-        // 生成sql使用的连接字符串， 格式： jdbc:phoenix:zk_quorum:2181:/znode_parent
-        cfg.connectionString = "jdbc:phoenix:" + zkQuorum + ":2181:" + znode;
+            // 生成sql使用的连接字符串， 格式： jdbc:phoenix:zk_quorum:2181:/znode_parent
+            cfg.connectionString = "jdbc:phoenix:" + zkQuorum + ":2181:" + znode;
+        }
     }
 
     private static void parseTableConfig(HbaseSQLWriterConfig cfg, Configuration dataxCfg) {
