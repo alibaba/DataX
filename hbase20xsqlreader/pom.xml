@@ -14,7 +14,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <phoenix.version>5.0.0-HBase-2.0</phoenix.version>
+        <phoenix.version>5.1.0-HBase-2.0.0.2</phoenix.version>
     </properties>
 
     <dependencies>
@@ -31,15 +31,9 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.phoenix</groupId>
-            <artifactId>phoenix-queryserver</artifactId>
+            <groupId>com.aliyun.phoenix</groupId>
+            <artifactId>ali-phoenix-shaded-thin-client</artifactId>
             <version>${phoenix.version}</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>servlet-api</artifactId>
-                    <groupId>javax.servlet</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
 
