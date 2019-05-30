@@ -9,6 +9,7 @@ import com.alibaba.datax.common.plugin.TaskPluginCollector;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.core.util.FrameworkErrorCode;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +52,8 @@ public abstract class AbstractTaskPluginCollector extends TaskPluginCollector {
 
     @Override
     public void collectDirtyRecord(Record dirtyRecord, Throwable t,
-                                   String errorMessage) {
+                                   String errorMessage)
+    {
 
         if (null == dirtyRecord) {
             LOG.warn("脏数据record=null.");

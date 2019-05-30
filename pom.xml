@@ -16,6 +16,25 @@
     <name>datax-all</name>
     <packaging>pom</packaging>
 
+    <modules>
+        <module>common</module>
+        <module>core</module>
+        <module>transformer</module>
+
+        <!-- reader -->
+        <module>mysqlreader</module>
+        <module>postgresqlreader</module>
+
+        <!-- writer -->
+        <module>mysqlwriter</module>
+        <module>postgresqlwriter</module>
+
+        <!-- common support module -->
+        <module>plugin-rdbms-util</module>
+        <module>plugin-unstructured-storage-util</module>
+        <module>clickhousewriter</module>
+    </modules>
+
     <properties>
         <commons-lang3-version>3.3.2</commons-lang3-version>
         <commons-configuration-version>1.10</commons-configuration-version>
@@ -41,26 +60,10 @@
         <!--<maven.compiler.source>1.8</maven.compiler.source>-->
         <!--<maven.compiler.target>1.8</maven.compiler.target>-->
         <clickhouse-jdbc.version>0.1.53</clickhouse-jdbc.version>
+        <!--<postgresql-jdbc.version>9.3-1102-jdbc4</postgresql-jdbc.version>-->
+        <postgresql-jdbc.version>9.4.1207</postgresql-jdbc.version>
+        <jackson.version>2.9.9</jackson.version>
     </properties>
-
-    <modules>
-        <module>common</module>
-        <module>core</module>
-        <module>transformer</module>
-
-        <!-- reader -->
-        <module>mysqlreader</module>
-        <module>postgresqlreader</module>
-
-        <!-- writer -->
-        <module>mysqlwriter</module>
-        <module>postgresqlwriter</module>
-
-        <!-- common support module -->
-        <module>plugin-rdbms-util</module>
-        <module>plugin-unstructured-storage-util</module>
-        <module>clickhousewriter</module>
-    </modules>
 
     <dependencyManagement>
         <dependencies>
@@ -74,11 +77,18 @@
                 <artifactId>fastjson</artifactId>
                 <version>${fastjson-version}</version>
             </dependency>
-            <!--<dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>${guava-version}</version>
-            </dependency>-->
+            </dependency>
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
@@ -142,6 +152,12 @@
                 <groupId>ru.yandex.clickhouse</groupId>
                 <artifactId>clickhouse-jdbc</artifactId>
                 <version>${clickhouse-jdbc.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>${postgresql-jdbc.version}</version>
             </dependency>
 
         </dependencies>

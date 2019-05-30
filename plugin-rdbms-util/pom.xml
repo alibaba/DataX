@@ -61,7 +61,11 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>r05</version>
+            <!--<version>r05</version>-->
         </dependency>
+		<dependency>
+			<groupId>ru.yandex.clickhouse</groupId>
+			<artifactId>clickhouse-jdbc</artifactId>
+		</dependency>
     </dependencies>
 </project>

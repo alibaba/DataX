@@ -4,6 +4,7 @@ import com.alibaba.datax.common.constant.PluginType;
 import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.core.statistics.communication.Communication;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
  * Created by jingxing on 14-9-9.
@@ -16,7 +17,8 @@ public class HttpPluginCollector extends AbstractTaskPluginCollector {
 
     @Override
     public void collectDirtyRecord(Record dirtyRecord, Throwable t,
-                                   String errorMessage) {
+                                   String errorMessage)
+    {
         super.collectDirtyRecord(dirtyRecord, t, errorMessage);
     }
 
