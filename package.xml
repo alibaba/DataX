@@ -34,6 +34,13 @@
             <outputDirectory>datax</outputDirectory>
         </fileSet>
         <fileSet>
+            <directory>hivereader/target/datax/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>datax</outputDirectory>
+        </fileSet>
+        <fileSet>
             <directory>oceanbasereader/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
@@ -97,13 +104,13 @@
             </includes>
             <outputDirectory>datax</outputDirectory>
         </fileSet>
-		<fileSet>
-             <directory>otsstreamreader/target/datax/</directory>
-             <includes>
-                 <include>**/*.*</include>
-             </includes>
-             <outputDirectory>datax</outputDirectory>
-         </fileSet>
+        <fileSet>
+            <directory>otsstreamreader/target/datax/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>datax</outputDirectory>
+        </fileSet>
         <fileSet>
             <directory>txtfilereader/target/datax/</directory>
             <includes>
@@ -132,7 +139,7 @@
             </includes>
             <outputDirectory>datax</outputDirectory>
         </fileSet>
-         <fileSet>
+        <fileSet>
             <directory>ftpreader/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
@@ -239,7 +246,7 @@
             </includes>
             <outputDirectory>datax</outputDirectory>
         </fileSet>
-		<fileSet>
+        <fileSet>
             <directory>oraclewriter/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
@@ -253,7 +260,7 @@
             </includes>
             <outputDirectory>datax</outputDirectory>
         </fileSet>
-		<fileSet>
+        <fileSet>
             <directory>postgresqlwriter/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>

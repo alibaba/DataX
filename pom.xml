@@ -24,6 +24,7 @@
         <!-- reader -->
         <module>mysqlreader</module>
         <module>postgresqlreader</module>
+        <module>hivereader</module>
 
         <!-- writer -->
         <module>mysqlwriter</module>
@@ -158,6 +159,32 @@
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
                 <version>${postgresql-jdbc.version}</version>
+            </dependency>
+
+            <!-- https://mvnrepository.com/artifact/org.apache.hive/hive-jdbc -->
+            <dependency>
+                <groupId>org.apache.hive</groupId>
+                <artifactId>hive-jdbc</artifactId>
+                <version>1.2.1</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>log4j-over-slf4j</artifactId>
+                        <groupId>org.slf4j</groupId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-common</artifactId>
+                <version>2.6.0</version>
             </dependency>
 
         </dependencies>
