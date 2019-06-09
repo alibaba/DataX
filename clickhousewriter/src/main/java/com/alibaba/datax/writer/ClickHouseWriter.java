@@ -1,7 +1,4 @@
-/**
- * 私有代码，未经许可，不得复制、散播；
- * 否则将可能依法追究责任。
- */
+
 
 package com.alibaba.datax.writer;
 

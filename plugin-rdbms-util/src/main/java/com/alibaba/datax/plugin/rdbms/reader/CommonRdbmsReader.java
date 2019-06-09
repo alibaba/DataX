@@ -270,7 +270,7 @@ public class CommonRdbmsReader
                 for (int i = 1; i <= columnNumber; i++) {
                     final int columnType = metaData.getColumnType(i);
                     final String sourceColumnTypeName = metaData.getColumnTypeName(i);
-                    LOG.info("<--- from DB: {}" +
+                    LOG.debug("<--- from DB: {}" +
                                     ", columnIndex: {}" +
                                     ", columnJdbcDataType: {}" +
                                     ", columnClassName: {}" +
@@ -365,7 +365,7 @@ public class CommonRdbmsReader
                         // warn: bit(>1) -> Types.VARBINARY 可使用BytesColumn
                         case Types.BOOLEAN:
                         case Types.BIT:
-                            LOG.info("---> data: (Boolean){} - (String){}", rs.getBoolean(i), rs.getString(i));
+                            LOG.debug("---> data: (Boolean){} - (String){}", rs.getBoolean(i), rs.getString(i));
                             record.addColumn(new BoolColumn(rs.getBoolean(i)));
                             break;
 

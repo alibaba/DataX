@@ -454,7 +454,7 @@ public class CommonRdbmsWriter
             final int parameterIndex = columnIndex + 1;
             final Object rawData = column.getRawData();
 
-            LOG.info("---> to DB: {}, columnIndex: {}, rawData: {}, dataXDefineDataType: {}, dataTypeClassName: {}, jdbcDataType: {}"
+            LOG.debug("---> to DB: {}, columnIndex: {}, rawData: {}, dataXDefineDataType: {}, dataTypeClassName: {}, jdbcDataType: {}"
                     , this.dataBaseType
                     , parameterIndex
                     , column.asString()
@@ -487,7 +487,7 @@ public class CommonRdbmsWriter
                 case Types.BIGINT:
                     String strValue = column.asString();
                     final Long aLong = column.asLong();
-                    LOG.info("---> | strValue: {}, longValue: {}", strValue, aLong);
+                    LOG.debug("---> | strValue: {}, longValue: {}", strValue, aLong);
                     if (emptyAsNull && "".equals(strValue)) {
                         preparedStatement.setString(parameterIndex, null);
                     }
@@ -611,7 +611,7 @@ public class CommonRdbmsWriter
                             LOG.error("Error occurred while constructing Array data.", e);
                         }
 
-                        LOG.info("---> byteSize: {}" +
+                        LOG.debug("---> byteSize: {}" +
                                         ", sourceColumnTypeName: {}" +
                                         ", jdbcType: {}"
                                 , byteSize

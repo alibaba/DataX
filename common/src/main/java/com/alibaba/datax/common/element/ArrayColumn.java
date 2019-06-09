@@ -1,12 +1,10 @@
-/**
- * 私有代码，未经许可，不得复制、散播；
- * 否则将可能依法追究责任。
- */
+
 
 package com.alibaba.datax.common.element;
 
 import com.alibaba.datax.common.exception.CommonErrorCode;
 import com.alibaba.datax.common.exception.DataXException;
+import com.alibaba.fastjson.JSON;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -23,7 +21,7 @@ public class ArrayColumn
     public ArrayColumn(Object rawData)
     {
         // TODO 这里需要实现度量 array 类型的 rawData  的size的方法--临时写成这样
-        super(rawData, Type.ARRAY, (rawData == null) ? 0 : rawData.toString().length());
+        super(rawData, Type.ARRAY, (rawData == null) ? 0 : JSON.toJSONString(rawData).length());
     }
 
     @Override
