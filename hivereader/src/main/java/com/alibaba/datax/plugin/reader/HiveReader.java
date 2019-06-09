@@ -13,7 +13,7 @@ import java.util.List;
 
 public class HiveReader extends Reader {
 
-    private static final DataBaseType DATABASE_TYPE = DataBaseType.MySql;
+    private static final DataBaseType DATABASE_TYPE = DataBaseType.Hive;
 
     public static class Job extends Reader.Job {
         private static final Logger LOG = LoggerFactory
@@ -31,7 +31,7 @@ public class HiveReader extends Reader {
                 LOG.warn("对 mysqlreader 不需要配置 fetchSize, mysqlreader 将会忽略这项配置. 如果您不想再看到此警告,请去除fetchSize 配置.");
             }
 
-            this.originalConfig.set(Constant.FETCH_SIZE, Integer.MIN_VALUE);
+            this.originalConfig.set(Constant.FETCH_SIZE, 1024);
 
             this.commonRdbmsReaderJob = new CommonRdbmsReader.Job(DATABASE_TYPE);
             this.commonRdbmsReaderJob.init(this.originalConfig);

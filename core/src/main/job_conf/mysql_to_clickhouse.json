@@ -1,0 +1,63 @@
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "name": "mysqlreader",
+          "parameter": {
+            "column": [
+              "user_id",
+              "group_id"
+            ],
+            "connection": [
+              {
+                "jdbcUrl": [
+                  "jdbc:mysql://127.0.0.1:3306/huest"
+                ],
+                "table": [
+                  "auth_user_groups"
+                ]
+              }
+            ],
+            "password": "Martin@2018",
+            "splitPk": "id",
+            "username": "root"
+          }
+        },
+        "writer": {
+          "name": "clickhousewriter",
+          "parameter": {
+            "column": [
+              "user_id",
+              "group_id"
+            ],
+            "connection": [
+              {
+                "jdbcUrl": "jdbc:clickhouse://127.0.0.1:8123/test",
+                "table": [
+                  "auth_user_groups"
+                ]
+              }
+            ],
+            "password": "ckhUser_pass",
+            "preSql": [
+              ""
+            ],
+            "session": [],
+            "username": "ckh_user1",
+            "writeMode": "insert"
+          }
+        }
+      }
+    ],
+    "setting": {
+      "errorLimit": {
+        "percentage": 0.02,
+        "record": 0
+      },
+      "speed": {
+        "channel": 3
+      }
+    }
+  }
+}

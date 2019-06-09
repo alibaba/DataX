@@ -5,6 +5,7 @@ import com.alibaba.datax.common.element.BoolColumn;
 import com.alibaba.datax.common.element.BytesColumn;
 import com.alibaba.datax.common.element.DateColumn;
 import com.alibaba.datax.common.element.DoubleColumn;
+import com.alibaba.datax.common.element.JavaObjColumn;
 import com.alibaba.datax.common.element.LongColumn;
 import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.element.StringColumn;
@@ -270,16 +271,16 @@ public class CommonRdbmsReader
                     final int columnType = metaData.getColumnType(i);
                     final String sourceColumnTypeName = metaData.getColumnTypeName(i);
                     LOG.info("<--- from DB: {}" +
-                                    ", read rawData:{}" +
-                                    ", columnindex: {}" +
-                                    ", columnClassName: {}" +
+                                    ", columnIndex: {}" +
                                     ", columnJdbcDataType: {}" +
+                                    ", columnClassName: {}" +
+                                    ", columnRawData:{}" +
                                     ", with sourceColumnTypeName: {}"
                             , this.dataBaseType
-                            , rs.getString(i)
                             , i
-                            , metaData.getColumnClassName(i)
                             , JDBCType.valueOf(columnType).getName()
+                            , metaData.getColumnClassName(i)
+                            , rs.getString(i)
                             , sourceColumnTypeName);
                     switch (columnType) {
 
@@ -377,14 +378,38 @@ public class CommonRdbmsReader
                             break;
 
                         case Types.ARRAY:
-                            if (this.dataBaseType == DataBaseType.ClickHouse) {
+                            ArrayColumn arrayColumn = null;
+                            if (this.dataBaseType != DataBaseType.Hive) {
+                                final Array array = rs.getArray(i);
+                                arrayColumn = new ArrayColumn((null == array) ? array : array.getArray());
+                                arrayColumn.setSourceDataType(sourceColumnTypeName);
+                                record.addColumn(arrayColumn);
                             }
-                            final Array array = rs.getArray(i);
-                            final ArrayColumn arrayColumn = new ArrayColumn((null == array) ? array : array.getArray());
-                            arrayColumn.setSourceDataType(sourceColumnTypeName);
-                            record.addColumn(arrayColumn);
+                            else {
+                                final String dataStr = rs.getString(i);
+                                // TODO Hard coding for ClickHouse @20190610 01:52, By Martin.Zhou
+                                if (dataStr != null && dataStr.length() > 0) {
+                                    arrayColumn = new ArrayColumn(dataStr.replace("[", "")
+                                            .replace("]", "")
+                                            .replace("\"", "")
+                                            .split(","));
+                                }
+                                else {
+                                    arrayColumn = new ArrayColumn(java.lang.reflect.Array.newInstance(String.class, 0));
+                                }
+                                // this configuration very importtant for hive
+                                arrayColumn.setSourceDataType(JDBCType.VARCHAR.getName());
+                                record.addColumn(arrayColumn);
+                            }
                             break;
 
+                        case Types.JAVA_OBJECT:
+                            // TODO For hive Map(Struct not supported at current time) DataType
+                            final String dataStr = rs.getString(i);
+                            final JavaObjColumn javaObjColumn = new JavaObjColumn(dataStr);
+                            javaObjColumn.setSourceDataType(sourceColumnTypeName);
+                            record.addColumn(javaObjColumn);
+                            break;
                         default:
                             throw DataXException
                                     .asDataXException(

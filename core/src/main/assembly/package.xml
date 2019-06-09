@@ -37,6 +37,14 @@
             </includes>
             <outputDirectory>/conf</outputDirectory>
         </fileSet>
+        <!-- for job configs -->
+        <fileSet>
+            <directory>src/main/job_conf</directory>
+            <includes>
+                <include>*.*</include>
+            </includes>
+            <outputDirectory>/job_conf</outputDirectory>
+        </fileSet>
         <!-- for engine -->
         <fileSet>
             <directory>target/</directory>

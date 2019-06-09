@@ -1,0 +1,67 @@
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "name": "hivereader",
+          "parameter": {
+            "column": [
+              "id",
+              "name",
+              "vip_id",
+              "active_apps"
+            ],
+            "connection": [
+              {
+                "jdbcUrl": [
+                  "jdbc:hive2://192.168.118.11:10000/default"
+                ],
+                "table": [
+                  "user_features_simple2"
+                ]
+              }
+            ],
+            "password": "1234Abcd",
+            "splitPk": "",
+            "username": "zhouxy"
+          }
+        },
+        "writer": {
+          "name": "clickhousewriter",
+          "parameter": {
+            "column": [
+              "id",
+              "name",
+              "vip_id",
+              "active_apps"
+            ],
+            "connection": [
+              {
+                "jdbcUrl": "jdbc:clickhouse://192.168.118.128:8123/test",
+                "table": [
+                  "user_features_simple2"
+                ]
+              }
+            ],
+            "password": "ckhUser_pass",
+            "preSql": [
+              ""
+            ],
+            "session": [],
+            "username": "ckh_user1",
+            "writeMode": "insert"
+          }
+        }
+      }
+    ],
+    "setting": {
+      "errorLimit": {
+        "percentage": 0.02,
+        "record": 0
+      },
+      "speed": {
+        "channel": 3
+      }
+    }
+  }
+}

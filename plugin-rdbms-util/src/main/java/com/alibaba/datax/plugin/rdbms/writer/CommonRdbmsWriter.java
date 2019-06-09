@@ -3,6 +3,7 @@ package com.alibaba.datax.plugin.rdbms.writer;
 import com.alibaba.datax.common.constant.JavaDataType;
 import com.alibaba.datax.common.constant.PostgresqlDataType;
 import com.alibaba.datax.common.element.Column;
+import com.alibaba.datax.common.element.DoubleColumn;
 import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordReceiver;
@@ -452,6 +453,7 @@ public class CommonRdbmsWriter
 
             final int parameterIndex = columnIndex + 1;
             final Object rawData = column.getRawData();
+
             LOG.info("---> to DB: {}, columnIndex: {}, rawData: {}, dataXDefineDataType: {}, dataTypeClassName: {}, jdbcDataType: {}"
                     , this.dataBaseType
                     , parameterIndex
@@ -472,14 +474,17 @@ public class CommonRdbmsWriter
                     preparedStatement.setString(parameterIndex, column.asString());
                     break;
 
-                case Types.SMALLINT:
-                case Types.INTEGER:
-                case Types.BIGINT:
                 case Types.NUMERIC:
                 case Types.DECIMAL:
                 case Types.FLOAT:
                 case Types.REAL:
                 case Types.DOUBLE:
+                    final Double aDouble = column.asDouble();
+                    preparedStatement.setDouble(parameterIndex, (aDouble == null) ? 0L : aDouble);
+                    break;
+                case Types.SMALLINT:
+                case Types.INTEGER:
+                case Types.BIGINT:
                     String strValue = column.asString();
                     final Long aLong = column.asLong();
                     LOG.info("---> | strValue: {}, longValue: {}", strValue, aLong);
@@ -615,6 +620,18 @@ public class CommonRdbmsWriter
                         // TODO
                         final ClickHouseArray clickHouseArray = new ClickHouseArray(jdbcType.getVendorTypeNumber(), arrayData);
                         preparedStatement.setArray(parameterIndex, clickHouseArray);
+                    }
+                    break;
+                case Types.JAVA_OBJECT:
+                    final String sourceDataType = column.getSourceDataType();
+                    final Column.Type type = column.getType();
+                    if (type == Column.Type.JAVA_OBJECT
+                            && "map".equalsIgnoreCase(sourceDataType)) {
+                        final Object rawDataObj = column.getRawData();
+                        String dataStr = (String) rawDataObj;
+                        if (DataBaseType.ClickHouse == this.dataBaseType) {
+                            preparedStatement.setString(parameterIndex, dataStr);
+                        }
                     }
                     break;
                 default:

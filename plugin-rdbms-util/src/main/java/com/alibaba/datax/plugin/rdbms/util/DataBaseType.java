@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 public enum DataBaseType
 {
     MySql("mysql", "com.mysql.jdbc.Driver"),
+    Hive("hive", "org.apache.hive.jdbc.HiveDriver"),
     Tddl("mysql", "com.mysql.jdbc.Driver"),
     DRDS("drds", "com.mysql.jdbc.Driver"),
     Oracle("oracle", "oracle.jdbc.OracleDriver"),
@@ -58,6 +59,7 @@ public enum DataBaseType
             case DB2:
                 break;
             case PostgreSQL:
+            case Hive:
             case ClickHouse:
                 break;
             case RDBMS:
@@ -99,6 +101,7 @@ public enum DataBaseType
             case DB2:
                 break;
             case PostgreSQL:
+            case Hive:
             case ClickHouse:
                 break;
             case RDBMS:
@@ -128,6 +131,7 @@ public enum DataBaseType
                 break;
             case DB2:
             case PostgreSQL:
+            case Hive:
             case ClickHouse:
                 break;
             default:
@@ -151,6 +155,7 @@ public enum DataBaseType
                 result = "[" + columnName + "]";
                 break;
             case DB2:
+            case Hive:
             case PostgreSQL:
                 break;
             default:
@@ -175,6 +180,7 @@ public enum DataBaseType
             case DB2:
                 break;
             case ClickHouse:
+            case Hive:
             case PostgreSQL:
                 break;
             default:

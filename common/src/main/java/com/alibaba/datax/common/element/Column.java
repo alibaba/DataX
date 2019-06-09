@@ -92,6 +92,6 @@ public abstract class Column {
 	}
 
 	public enum Type {
-		BAD, NULL, INT, LONG, DOUBLE, STRING, BOOL, DATE, BYTES, ARRAY
+		BAD, NULL, INT, LONG, DOUBLE, STRING, BOOL, DATE, BYTES, ARRAY, JAVA_OBJECT
 	}
 }
