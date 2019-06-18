@@ -54,7 +54,7 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 .idea/httpRequests
-target/
+#target/
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup
@@ -112,7 +112,7 @@ instance/
 .webassets-cache
 .scrapy
 docs/_build/
-target/
+#target/
 .ipynb_checkpoints
 .python-version
 celerybeat-schedule
