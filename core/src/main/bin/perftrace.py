@@ -6,6 +6,8 @@
    Life's short, Python more.
 """
 
+from __future__ import print_function
+
 import re
 import os
 import sys
@@ -15,8 +17,13 @@ import signal
 import time
 import subprocess
 from optparse import OptionParser
-reload(sys)
-sys.setdefaultencoding('utf8')
+
+PY2 = sys.version_info[0] == 2
+if PY2:
+    reload(sys)
+    sys.setdefaultencoding('utf8')
+    input = raw_input
+
 
 ##begin cli & help logic
 def getOptionParser():
@@ -91,16 +98,16 @@ warn: test write performance will write data into your table, you can use a temp
 
 def printCopyright():
     DATAX_VERSION = 'UNKNOWN_DATAX_VERSION'
-    print '''
+    print('''
 DataX Util Tools (%s), From Alibaba !
-Copyright (C) 2010-2016, Alibaba Group. All Rights Reserved.''' % DATAX_VERSION
+Copyright (C) 2010-2016, Alibaba Group. All Rights Reserved.''' % DATAX_VERSION)
     sys.stdout.flush()
 
 
 def yesNoChoice():
     yes = set(['yes','y', 'ye', ''])
     no = set(['no','n'])
-    choice = raw_input().lower()
+    choice = input().lower()
     if choice in yes:
         return True
     elif choice in no:
@@ -113,12 +120,12 @@ def yesNoChoice():
 ##begin process logic
 def suicide(signum, e):
     global childProcess
-    print >> sys.stderr, "[Error] Receive unexpected signal %d, starts to suicide." % (signum)
+    print(">>", sys.stderr, "[Error] Receive unexpected signal %d, starts to suicide." % (signum))
     if childProcess:
         childProcess.send_signal(signal.SIGQUIT)
         time.sleep(1)
         childProcess.kill()
-    print >> sys.stderr, "DataX Process was killed ! you did ?"
+    print(">>", sys.stderr, "DataX Process was killed ! you did ?")
     sys.exit(-1)
 
 
@@ -300,11 +307,11 @@ def readJobJsonFromRemote(jobConfigPath):
 def parseJson(strConfig, context):
     try:
         return json.loads(strConfig)
-    except Exception, e:
+    except Exception:
         import traceback
         traceback.print_exc()
         sys.stdout.flush()
-        print >> sys.stderr, '%s %s need in line with json syntax' % (context, strConfig)
+        print(">> ", sys.stderr, '%s %s need in line with json syntax' % (context, strConfig))
         sys.exit(-1)
 
 def convert(options, args):
@@ -355,7 +362,7 @@ def convert(options, args):
         traceWriterDict = parseJson(options.writer, 'writer config')
         return renderDataXJson(traceWriterDict, 'writer', options.channel)
     else:
-        print getUsage()
+        print(getUsage())
         sys.exit(-1)
     #dataxParams = {}
     #for opt, value in options.__dict__.items():
@@ -375,24 +382,23 @@ if __name__ == "__main__":
     dataxJobPath = os.path.join(os.getcwd(), "perftrace-" + str(uuid.uuid1()))
     jobConfigOk = True
     if os.path.exists(dataxJobPath):
-        print "file already exists, truncate and rewrite it? %s" % dataxJobPath
+        print("file already exists, truncate and rewrite it? %s" % dataxJobPath)
         if yesNoChoice():
             jobConfigOk = True
         else:
-            print "exit failed, because of file conflict"
+            print("exit failed, because of file conflict")
             sys.exit(-1)
     fileWriter = open(dataxJobPath, 'w')
     fileWriter.write(dataxTraceJobJson)
     fileWriter.close()
 
 
-    print "trace environments:"
-    print "dataxJobPath:  %s" % dataxJobPath
+    print("trace environments:\ndataxJobPath:  %s" % dataxJobPath)
     dataxHomePath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    print "dataxHomePath: %s" % dataxHomePath
+    print("dataxHomePath: %s" % dataxHomePath)
 
     dataxCommand = "%s %s" % (os.path.join(dataxHomePath, "bin", "datax.py"), dataxJobPath)
-    print "dataxCommand:  %s" % dataxCommand
+    print("dataxCommand:  %s" % dataxCommand)
 
     returncode = fork(dataxCommand, True)
     if options.delete == 'true':
