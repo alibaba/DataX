@@ -87,6 +87,8 @@
         <module>hbase11xsqlreader</module>
         <module>elasticsearchwriter</module>
         <module>tsdbwriter</module>
+        <!-- custom writer -->
+        <module>otsmzgwriter</module>
 
         <!-- common support module -->
         <module>plugin-rdbms-util</module>
