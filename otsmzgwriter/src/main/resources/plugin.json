@@ -1,6 +1,0 @@
-{
-    "name": "otsmzgwriter",
-    "class": "com.alibaba.datax.plugin.writer.otsmzgwriter.OtsWriter",
-    "description": "Meizhi Tec Pooled Table General Ots Writer",
-    "developer": "daixinjie"
-}

@@ -232,7 +232,7 @@
             <outputDirectory>datax</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>otsmzgwriter/target/datax/</directory>
+            <directory>tablestorewriter/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
             </includes>
