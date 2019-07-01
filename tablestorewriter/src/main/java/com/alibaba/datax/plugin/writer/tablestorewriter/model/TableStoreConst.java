@@ -3,9 +3,9 @@ package com.alibaba.datax.plugin.writer.tablestorewriter.model;
 public class TableStoreConst {
     // Reader support type
     public final static String TYPE_STRING = "STRING";
-    public final static String TYPE_INTEGER = "INT";
+    public final static String TYPE_INTEGER = "INTEGER";
     public final static String TYPE_DOUBLE = "DOUBLE";
-    public final static String TYPE_BOOLEAN = "BOOL";
+    public final static String TYPE_BOOLEAN = "BOOLEAN";
     public final static String TYPE_BINARY = "BINARY";
 
     // Column
