@@ -19,10 +19,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.*;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.sql.Date;
+import java.util.*;
 
 /**
  * Created by admin on 1/3/18.
@@ -35,18 +33,32 @@ public class HbaseSQLReaderTask {
     private Map<String, PColumn> pColumns;
     private HbaseSQLReaderConfig readerConfig;
     private TaskAttemptContextImpl hadoopAttemptContext;
+    private Map<String,String> hbaseConfig;
 
     public HbaseSQLReaderTask(Configuration config) {
         this.readerConfig = HbaseSQLHelper.parseConfig(config);
+        String string = config.getString(Key.HBASE_CONFIG);
+        this.hbaseConfig = HbaseSQLHelper.getHbaseConfig2(string);
+        this.readerConfig.hbaseConfig = this.hbaseConfig;
         pColumns = new LinkedHashMap<String, PColumn>();
     }
 
-    private void getPColumns() throws SQLException {
+    private void getPColumns(Map<String,String> hbaseConfig) throws SQLException {
+        Properties properties = new Properties();
+        if(hbaseConfig.containsKey("phoenix.schema.isNamespaceMappingEnabled")
+                && hbaseConfig.get("phoenix.schema.isNamespaceMappingEnabled").equals("true")){
+            properties.put("phoenix.schema.isNamespaceMappingEnabled","true");
+        }
         Connection con =
-                DriverManager.getConnection(this.readerConfig.getConnectionString());
+                DriverManager.getConnection(this.readerConfig.getConnectionString(),properties);
+
+        String tableName = this.readerConfig.getTableName();
+
+        String[] t = tableName.split("\\.");
+
         PhoenixConnection phoenixConnection = con.unwrap(PhoenixConnection.class);
         MetaDataClient metaDataClient = new MetaDataClient(phoenixConnection);
-        PTable table = metaDataClient.updateCache("", this.readerConfig.getTableName()).getTable();
+        PTable table = metaDataClient.updateCache(t[0], t[1]).getTable();
         List<String> columnNames = this.readerConfig.getColumns();
         for (PColumn pColumn : table.getColumns()) {
             if (columnNames.contains(pColumn.getName().getString())) {
@@ -58,7 +70,7 @@ public class HbaseSQLReaderTask {
     public void init() {
         LOG.info("reader table info: " + this.readerConfig.toString());
         try {
-            this.getPColumns();
+            this.getPColumns(hbaseConfig);
         } catch (SQLException e) {
             throw DataXException.asDataXException(
                     HbaseSQLReaderErrorCode.GET_PHOENIX_CONNECTIONINFO_ERROR, "获取表的列出问题，重试，若还有问题请检查hbase集群状态,"+ e.getMessage());

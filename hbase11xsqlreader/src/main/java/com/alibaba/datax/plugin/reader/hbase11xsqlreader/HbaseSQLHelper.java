@@ -10,6 +10,7 @@ import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.JobID;
 import org.apache.hadoop.mapreduce.task.JobContextImpl;
 import org.apache.phoenix.jdbc.PhoenixConnection;
+import org.apache.phoenix.jdbc.PhoenixDriver;
 import org.apache.phoenix.jdbc.PhoenixEmbeddedDriver;
 import org.apache.phoenix.mapreduce.PhoenixInputFormat;
 import org.apache.phoenix.mapreduce.PhoenixInputSplit;
@@ -23,12 +24,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.sql.*;
+import java.util.*;
 
 
 public class HbaseSQLHelper {
@@ -62,12 +59,23 @@ public class HbaseSQLHelper {
         return conf;
     }
 
-    public static List<String> getPColumnNames(String connectionString, String tableName) throws SQLException {
+    public static List<String> getPColumnNames(String connectionString, String tableName,Map<String,String> hbaseConfig) throws SQLException {
+        //对命名空间做处理
+        Properties properties = new Properties();
+
+
+        if(hbaseConfig.containsKey("phoenix.schema.isNamespaceMappingEnabled")
+                && hbaseConfig.get("phoenix.schema.isNamespaceMappingEnabled").equals("true")){
+            properties.put("phoenix.schema.isNamespaceMappingEnabled","true");
+        }
         Connection con =
-                DriverManager.getConnection(connectionString);
+                DriverManager.getConnection(connectionString,properties);
         PhoenixConnection phoenixConnection = con.unwrap(PhoenixConnection.class);
         MetaDataClient metaDataClient = new MetaDataClient(phoenixConnection);
-        PTable table = metaDataClient.updateCache("", tableName).getTable();
+
+        String[] t = tableName.split("\\.");
+
+        PTable table = metaDataClient.updateCache(t[0], t[1]).getTable();
         List<String> columnNames = new ArrayList<String>();
         for (PColumn pColumn : table.getColumns()) {
             if (!pColumn.getName().getString().equals(SaltingUtil.SALTING_COLUMN_NAME))
@@ -121,5 +129,12 @@ public class HbaseSQLHelper {
         if(znode == null)
             znode = "";
         return new Pair<String, String>(zkQuorum, znode);
+    }
+
+    public static Map<String,String> getHbaseConfig2(String hbaseCfgString){
+        Map<String, String> hbaseConfigMap = JSON.parseObject(hbaseCfgString, new TypeReference<Map<String, String>>() {
+        });
+
+        return hbaseConfigMap;
     }
 }
