@@ -94,14 +94,18 @@ public class Common {
     }
 
     public static Record parseRowToLine(Row row, List<TableStoreColumn> columns, Record line) {
-//        Map<String, ColumnValue> values = row.getColumns();
-        Column[] columns1 = row.getColumns();
         for (TableStoreColumn col : columns) {
             if (col.getColumnType() == TableStoreColumn.OTSColumnType.CONST) {
                 line.addColumn(col.getValue());
             } else {
-//                ColumnValue v = values.get(col.getName());
-                ColumnValue v = row.getLatestColumn(col.getName()).getValue();
+
+                Column latestColumn = row.getLatestColumn(col.getName());
+                ColumnValue v = null;
+
+                if (null != latestColumn) {
+                    v = latestColumn.getValue();
+                }
+
                 if (v == null) {
                     line.addColumn(new StringColumn(null));
                 } else {

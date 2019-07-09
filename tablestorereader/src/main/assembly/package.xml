@@ -21,14 +21,14 @@
             <includes>
                 <include>tablestorereader-0.0.1-SNAPSHOT.jar</include>
             </includes>
-            <outputDirectory>plugin/eader/tablestorereader</outputDirectory>
+            <outputDirectory>plugin/reader/tablestorereader</outputDirectory>
         </fileSet>
     </fileSets>
 
     <dependencySets>
         <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
-            <outputDirectory>plugin/reade/tablestorereader/libs</outputDirectory>
+            <outputDirectory>plugin/reader/tablestorereader/libs</outputDirectory>
             <scope>runtime</scope>
         </dependencySet>
     </dependencySets>

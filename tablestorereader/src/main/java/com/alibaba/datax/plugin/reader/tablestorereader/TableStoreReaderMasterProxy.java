@@ -90,7 +90,7 @@ public class TableStoreReaderMasterProxy {
 
         List<Configuration> configurations = new ArrayList<Configuration>();
 
-        List<TableStoreRange> ranges = null;
+        List<TableStoreRange> ranges = new ArrayList<TableStoreRange>();
 
         ranges.add(range);
 

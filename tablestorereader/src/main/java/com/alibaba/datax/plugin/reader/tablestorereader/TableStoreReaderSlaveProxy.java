@@ -204,6 +204,8 @@ public class TableStoreReaderSlaveProxy {
         }
         List<Row> rows = resp.getRows();
         while (resp.getNextToken() != null) { //读到NextToken为null为止，即读出全部数据
+            LOG.info("rows:{}", JSON.toJSONString(rows));
+
             //把Token设置到下一次请求中
             searchRequest.getSearchQuery().setToken(resp.getNextToken());
             resp = syncClient.search(searchRequest);
@@ -213,8 +215,6 @@ public class TableStoreReaderSlaveProxy {
             }
 
             rowsToSender(rows, sender, conf.getColumns());
-
-            LOG.info("rows:{}", JSON.toJSONString(rows));
         }
 
         syncClient.shutdown();
