@@ -42,6 +42,16 @@ public class ParamChecker {
         return value;
     }
 
+    public static Integer checkIntegerAndGet(Configuration param, String key, Integer defaultValue) {
+        Integer value = param.getInt(key, defaultValue);
+
+        if (null == value) {
+            throwNotExistException(key);
+        }
+
+        return value;
+    }
+
     public static List<Object> checkListAndGet(Configuration param, String key, boolean isCheckEmpty) {
         List<Object> value = null;
         try {

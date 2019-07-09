@@ -26,11 +26,27 @@ public final class Key {
 
     public final static String OTS_INSTANCE_NAME = "instanceName";
 
+    /**
+     * 指定的表名
+     */
     public final static String TABLE_NAME = "table";
+
+    /**
+     * 指定的索引名
+     */
     public final static String INDEX_NAME = "index";
 
     public final static String COLUMN = "column";
+
+    /**
+     * 要导出的属性列name 为List结构 不能为空
+     */
     public final static String COLUMN_NAME = "columnName";
+
+    /**
+     * 每次读取的大小，默认为1000
+     */
+    public final static String LIMIT = "limit";
 
     //======================================================
     // 注意：如果range-begin大于range-end,那么系统将逆序导出所有数据

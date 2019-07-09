@@ -5,7 +5,9 @@
     "accessId": "",
     "accessKey": "",
     "instanceName": "",
-    "column": [],
-    "query": ""
+    "columnName":[],
+    "table": [],
+    "index": [],
+    "limit": ""
   }
 }

@@ -198,9 +198,8 @@ public class TableStoreReaderSlaveProxy {
         searchQuery.setQuery(new MatchAllQuery());
         searchQuery.setGetTotalCount(true);
         SearchRequest searchRequest = new SearchRequest(conf.getTableName(), conf.getIndexName(), searchQuery);
-
         SearchRequest.ColumnsToGet columnsToGet = new SearchRequest.ColumnsToGet();
-        columnsToGet.setReturnAll(true);
+        columnsToGet.setColumns(conf.getColumnNames());
         searchRequest.setColumnsToGet(columnsToGet);
 
         SearchResponse resp = syncClient.search(searchRequest);
@@ -208,14 +207,13 @@ public class TableStoreReaderSlaveProxy {
         if (!resp.isAllSuccess()) {
             throw new RuntimeException("not all success");
         }
+
         List<Row> rows = resp.getRows();
 
         LOG.info("read begin.");
 
         //读到NextToken为null为止，即读出全部数据
         while (resp.getNextToken() != null) {
-            LOG.info("rows:{}", JSON.toJSONString(rows));
-
             //把Token设置到下一次请求中
             searchRequest.getSearchQuery().setToken(resp.getNextToken());
             resp = syncClient.search(searchRequest);

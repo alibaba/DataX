@@ -9,6 +9,7 @@ import com.alibaba.datax.plugin.reader.tablestorereader.utils.*;
 import com.alicloud.openservices.tablestore.model.Direction;
 import com.alicloud.openservices.tablestore.model.TableMeta;
 import com.alicloud.openservices.tablestore.SyncClient;
+import org.checkerframework.checker.units.qual.K;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,6 +60,9 @@ public class TableStoreReaderMasterProxy {
         conf.setInstanceName(ParamChecker.checkStringAndGet(param, Key.OTS_INSTANCE_NAME));
         conf.setTableName(ParamChecker.checkStringAndGet(param, Key.TABLE_NAME));
         conf.setIndexName(ParamChecker.checkStringAndGet(param, Key.INDEX_NAME));
+        conf.setLimit(ParamChecker.checkIntegerAndGet(param, Key.LIMIT, 1000));
+        conf.setColumnNames(ParamChecker.checkListAndGet(param, Key.COLUMN_NAME, true).stream()
+                .map(Object::toString).collect(Collectors.toList()));
 
         tableStoreClient = new SyncClient(
                 this.conf.getEndpoint(),
@@ -70,8 +74,6 @@ public class TableStoreReaderMasterProxy {
 
         LOG.info("Table Meta : {}", GsonParser.metaToJson(meta));
 
-        conf.setColumnNames(ParamChecker.checkListAndGet(param, Key.COLUMN_NAME, false).stream()
-                .map(Object::toString).collect(Collectors.toList()));
 
 //        conf.setColumns(ReaderModelParser.parseOTSColumnList(ParamChecker.checkListAndGet(param, Key.COLUMN, true)));
 
