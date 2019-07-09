@@ -27,8 +27,10 @@ public final class Key {
     public final static String OTS_INSTANCE_NAME = "instanceName";
 
     public final static String TABLE_NAME = "table";
+    public final static String INDEX_NAME = "index";
 
     public final static String COLUMN = "column";
+    public final static String COLUMN_NAME = "columnName";
 
     //======================================================
     // 注意：如果range-begin大于range-end,那么系统将逆序导出所有数据

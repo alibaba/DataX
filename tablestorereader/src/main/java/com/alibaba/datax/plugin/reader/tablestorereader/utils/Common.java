@@ -93,41 +93,37 @@ public class Common {
         return normalColumns;
     }
 
-    public static Record parseRowToLine(Row row, List<TableStoreColumn> columns, Record line) {
-        for (TableStoreColumn col : columns) {
-            if (col.getColumnType() == TableStoreColumn.OTSColumnType.CONST) {
-                line.addColumn(col.getValue());
+    public static Record parseRowToLine(Row row, List<String> columns, Record line) {
+        for (String col : columns) {
+
+            Column latestColumn = row.getLatestColumn(col);
+            ColumnValue v = null;
+
+            if (null != latestColumn) {
+                v = latestColumn.getValue();
+            }
+
+            if (v == null) {
+                line.addColumn(new StringColumn(null));
             } else {
-
-                Column latestColumn = row.getLatestColumn(col.getName());
-                ColumnValue v = null;
-
-                if (null != latestColumn) {
-                    v = latestColumn.getValue();
-                }
-
-                if (v == null) {
-                    line.addColumn(new StringColumn(null));
-                } else {
-                    switch (v.getType()) {
-                        case STRING:
-                            line.addColumn(new StringColumn(v.asString()));
-                            break;
-                        case INTEGER:
-                            line.addColumn(new LongColumn(v.asLong()));
-                            break;
-                        case DOUBLE:
-                            line.addColumn(new DoubleColumn(v.asDouble()));
-                            break;
-                        case BOOLEAN:
-                            line.addColumn(new BoolColumn(v.asBoolean()));
-                            break;
-                        case BINARY:
-                            line.addColumn(new BytesColumn(v.asBinary()));
-                            break;
-                        default:
-                            throw new IllegalArgumentException("Unsuporrt tranform the type: " + col.getValue().getType() + ".");
-                    }
+                switch (v.getType()) {
+                    case STRING:
+                        line.addColumn(new StringColumn(v.asString()));
+                        break;
+                    case INTEGER:
+                        line.addColumn(new LongColumn(v.asLong()));
+                        break;
+                    case DOUBLE:
+                        line.addColumn(new DoubleColumn(v.asDouble()));
+                        break;
+                    case BOOLEAN:
+                        line.addColumn(new BoolColumn(v.asBoolean()));
+                        break;
+                    case BINARY:
+                        line.addColumn(new BytesColumn(v.asBinary()));
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Unsuporrt tranform the type, column: " + col + ".");
                 }
             }
         }

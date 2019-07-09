@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class TableStoreReaderMasterProxy {
 
@@ -57,6 +58,7 @@ public class TableStoreReaderMasterProxy {
         conf.setAccesskey(ParamChecker.checkStringAndGet(param, Key.OTS_ACCESSKEY));
         conf.setInstanceName(ParamChecker.checkStringAndGet(param, Key.OTS_INSTANCE_NAME));
         conf.setTableName(ParamChecker.checkStringAndGet(param, Key.TABLE_NAME));
+        conf.setIndexName(ParamChecker.checkStringAndGet(param, Key.INDEX_NAME));
 
         tableStoreClient = new SyncClient(
                 this.conf.getEndpoint(),
@@ -64,11 +66,14 @@ public class TableStoreReaderMasterProxy {
                 this.conf.getAccesskey(),
                 this.conf.getInstanceName());
 
-
         meta = getTableMeta(tableStoreClient, conf.getTableName());
+
         LOG.info("Table Meta : {}", GsonParser.metaToJson(meta));
 
-        conf.setColumns(ReaderModelParser.parseOTSColumnList(ParamChecker.checkListAndGet(param, Key.COLUMN, true)));
+        conf.setColumnNames(ParamChecker.checkListAndGet(param, Key.COLUMN_NAME, false).stream()
+                .map(Object::toString).collect(Collectors.toList()));
+
+//        conf.setColumns(ReaderModelParser.parseOTSColumnList(ParamChecker.checkListAndGet(param, Key.COLUMN, true)));
 
 //        Map<String, Object> rangeMap = ParamChecker.checkMapAndGet(param, Key.RANGE, true);
 //        conf.setRangeBegin(ReaderodelParser.parsePrimaryKey(ParamChecker.checkListAndGet(rangeMap, Key.RANGE_BEGIN, false)));

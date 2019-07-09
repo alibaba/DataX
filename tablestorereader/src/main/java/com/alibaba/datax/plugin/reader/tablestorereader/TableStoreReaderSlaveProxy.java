@@ -24,6 +24,8 @@ import com.alicloud.openservices.tablestore.model.search.query.MatchAllQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class TableStoreReaderSlaveProxy {
@@ -48,7 +50,7 @@ public class TableStoreReaderSlaveProxy {
 
     private static final Logger LOG = LoggerFactory.getLogger(TableStoreReaderSlaveProxy.class);
 
-    private void rowsToSender(List<Row> rows, RecordSender sender, List<TableStoreColumn> columns) {
+    private void rowsToSender(List<Row> rows, RecordSender sender, List<String> columns) {
         for (Row row : rows) {
             Record line = sender.createRecord();
             line = Common.parseRowToLine(row, columns, line);
@@ -195,7 +197,11 @@ public class TableStoreReaderSlaveProxy {
         SearchQuery searchQuery = new SearchQuery();
         searchQuery.setQuery(new MatchAllQuery());
         searchQuery.setGetTotalCount(true);
-        SearchRequest searchRequest = new SearchRequest("sink_table_master_01", "sink_table_master_main", searchQuery);
+        SearchRequest searchRequest = new SearchRequest(conf.getTableName(), conf.getIndexName(), searchQuery);
+
+        SearchRequest.ColumnsToGet columnsToGet = new SearchRequest.ColumnsToGet();
+        columnsToGet.setReturnAll(true);
+        searchRequest.setColumnsToGet(columnsToGet);
 
         SearchResponse resp = syncClient.search(searchRequest);
 
@@ -203,7 +209,11 @@ public class TableStoreReaderSlaveProxy {
             throw new RuntimeException("not all success");
         }
         List<Row> rows = resp.getRows();
-        while (resp.getNextToken() != null) { //读到NextToken为null为止，即读出全部数据
+
+        LOG.info("read begin.");
+
+        //读到NextToken为null为止，即读出全部数据
+        while (resp.getNextToken() != null) {
             LOG.info("rows:{}", JSON.toJSONString(rows));
 
             //把Token设置到下一次请求中
@@ -214,11 +224,11 @@ public class TableStoreReaderSlaveProxy {
                 throw new RuntimeException("not all success");
             }
 
-            rowsToSender(rows, sender, conf.getColumns());
+            rowsToSender(rows, sender, conf.getColumnNames());
         }
 
         syncClient.shutdown();
 
-        LOG.info("read begin.");
+        LOG.info("read end.");
     }
 }

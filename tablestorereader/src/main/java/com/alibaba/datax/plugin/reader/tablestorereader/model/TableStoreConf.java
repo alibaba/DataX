@@ -10,13 +10,16 @@ public class TableStoreConf {
     private String accesskey = null;
     private String instanceName = null;
     private String tableName = null;
-    
+    private String indexName = null;
+
     private List<PrimaryKeyValue> rangeBegin = null;
     private List<PrimaryKeyValue> rangeEnd = null;
     private List<PrimaryKeyValue> rangeSplit = null;
    
     private List<TableStoreColumn> columns = null;
-    
+
+    private List<String> columnNames = null;
+
     private int retry;
     private int sleepInMilliSecond;
     
@@ -51,12 +54,29 @@ public class TableStoreConf {
         this.tableName = tableName;
     }
 
+    public String getIndexName() {
+        return indexName;
+    }
+
+    public void setIndexName(String indexName) {
+        this.indexName = indexName;
+    }
+
     public List<TableStoreColumn> getColumns() {
         return columns;
     }
     public void setColumns(List<TableStoreColumn> columns) {
         this.columns = columns;
     }
+
+    public List<String> getColumnNames() {
+        return columnNames;
+    }
+
+    public void setColumnNames(List<String> columnNames) {
+        this.columnNames = columnNames;
+    }
+
     public int getRetry() {
         return retry;
     }

@@ -105,6 +105,7 @@ public class ReaderModelParser {
         checkIsAllConstColumn(columns);
         return columns;
     }
+
 //
 //    public static PrimaryKeyValue parsePrimaryKeyValue(String type, String value) {
 //        if (type.equalsIgnoreCase(TableStoreConst.TYPE_STRING)) {
