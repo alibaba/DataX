@@ -1,0 +1,11 @@
+{
+  "name": "tablestorereader",
+  "parameter": {
+    "endpoint": "",
+    "accessId": "",
+    "accessKey": "",
+    "instanceName": "",
+    "column": [],
+    "query": ""
+  }
+}

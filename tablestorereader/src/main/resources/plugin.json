@@ -1,0 +1,6 @@
+{
+    "name": "tablestorereader",
+    "class": "com.alibaba.datax.plugin.reader.tablestorereader.TableStoreReader",
+    "description": "Meizhi Tec Pooled Table General Table Store Writer",
+    "developer": "daixinjie"
+}

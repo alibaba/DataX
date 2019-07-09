@@ -90,11 +90,13 @@
         <!-- custom writer -->
         <module>tablestorewriter</module>
 
+        <!-- custom reader -->
+        <module>tablestorereader</module>
         <!-- common support module -->
-        <module>plugin-rdbms-util</module>
-        <module>plugin-unstructured-storage-util</module>
-        <module>hbase20xsqlreader</module>
-        <module>hbase20xsqlwriter</module>
+<!--        <module>plugin-rdbms-util</module>-->
+<!--        <module>plugin-unstructured-storage-util</module>-->
+<!--        <module>hbase20xsqlreader</module>-->
+<!--        <module>hbase20xsqlwriter</module>-->
     </modules>
 
     <dependencyManagement>
