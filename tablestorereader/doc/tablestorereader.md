@@ -1,11 +1,14 @@
 
-# OTSWriter 插件文档
-
+# Tablestroe search query 插件文档
 
 ___
 
 
 ## 1 快速介绍
+
+该插件支持索引的多元搜索获取数据，以token形式拉取分页数据，导致不能使用多线程split完成，故默认只能有一个task遍历完成
+
+todo
 
 OTSWriter插件实现了向OTS写入数据，目前支持三种写入方式：
 
