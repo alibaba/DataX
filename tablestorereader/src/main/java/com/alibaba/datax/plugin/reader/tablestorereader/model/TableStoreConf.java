@@ -1,6 +1,7 @@
 package com.alibaba.datax.plugin.reader.tablestorereader.model;
 
 import com.alicloud.openservices.tablestore.model.PrimaryKeyValue;
+import com.alicloud.openservices.tablestore.model.search.query.Query;
 
 import java.util.List;
 
@@ -20,6 +21,8 @@ public class TableStoreConf {
     private List<TableStoreColumn> columns = null;
 
     private List<String> columnNames = null;
+
+    private String queryRow = null;
 
     private int retry;
     private int sleepInMilliSecond;
@@ -134,5 +137,13 @@ public class TableStoreConf {
 
     public void setRangeSplit(List<PrimaryKeyValue> rangeSplit) {
         this.rangeSplit = rangeSplit;
+    }
+
+    public String getQueryRow() {
+        return queryRow;
+    }
+
+    public void setQueryRow(String queryRow) {
+        this.queryRow = queryRow;
     }
 }

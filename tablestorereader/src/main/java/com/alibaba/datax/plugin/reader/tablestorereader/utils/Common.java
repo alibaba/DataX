@@ -1,15 +1,23 @@
 package com.alibaba.datax.plugin.reader.tablestorereader.utils;
 
 import com.alibaba.datax.common.element.*;
+import com.alibaba.datax.common.util.Configuration;
+import com.alibaba.datax.plugin.reader.tablestorereader.Key;
 import com.alibaba.datax.plugin.reader.tablestorereader.model.TableStoreColumn;
+import com.alibaba.datax.plugin.reader.tablestorereader.model.TableStoreConf;
+import com.alibaba.datax.plugin.reader.tablestorereader.model.TableStoreConst;
 import com.alibaba.datax.plugin.reader.tablestorereader.model.TableStorePrimaryKeyColumn;
+import com.alibaba.datax.plugin.reader.tablestorereader.utils.query.QueryFactory;
+import com.alibaba.fastjson.JSON;
 import com.alicloud.openservices.tablestore.model.*;
 
 import com.alicloud.openservices.tablestore.model.Column;
+import org.checkerframework.checker.units.qual.K;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class Common {
 
@@ -161,5 +169,29 @@ public class Common {
             }
         }
         return sleepTime;
+    }
+
+    public static TableStoreConf buildConf(Configuration param) throws Exception {
+        TableStoreConf conf = new TableStoreConf();
+
+        conf.setRetry(param.getInt(TableStoreConst.RETRY, 18));
+        conf.setSleepInMilliSecond(param.getInt(TableStoreConst.SLEEP_IN_MILLI_SECOND, 100));
+
+        // 必选参数
+        conf.setEndpoint(ParamChecker.checkStringAndGet(param, Key.OTS_ENDPOINT));
+        conf.setAccessId(ParamChecker.checkStringAndGet(param, Key.OTS_ACCESSID));
+        conf.setAccesskey(ParamChecker.checkStringAndGet(param, Key.OTS_ACCESSKEY));
+        conf.setInstanceName(ParamChecker.checkStringAndGet(param, Key.OTS_INSTANCE_NAME));
+        conf.setTableName(ParamChecker.checkStringAndGet(param, Key.TABLE_NAME));
+        conf.setIndexName(ParamChecker.checkStringAndGet(param, Key.INDEX_NAME));
+        conf.setLimit(ParamChecker.checkIntegerAndGet(param, Key.LIMIT, 1000));
+        conf.setColumnNames(ParamChecker.checkListAndGet(param, Key.COLUMN_NAME, true).stream()
+                .map(Object::toString).collect(Collectors.toList()));
+
+        QueryFactory.build(param.getConfiguration(Key.QUERY));
+
+        conf.setQueryRow(JSON.toJSONString(param.get(Key.QUERY)));
+
+        return conf;
     }
 }

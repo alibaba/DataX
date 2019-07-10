@@ -50,19 +50,7 @@ public class TableStoreReaderMasterProxy {
     public void init(Configuration param) throws Exception {
         // 默认参数
         // 每次重试的时间都是上一次的一倍，当sleep时间大于30秒时，Sleep重试时间不在增长。18次能覆盖OTS的Failover时间5分钟
-        conf.setRetry(param.getInt(TableStoreConst.RETRY, 18));
-        conf.setSleepInMilliSecond(param.getInt(TableStoreConst.SLEEP_IN_MILLI_SECOND, 100));
-
-        // 必选参数
-        conf.setEndpoint(ParamChecker.checkStringAndGet(param, Key.OTS_ENDPOINT));
-        conf.setAccessId(ParamChecker.checkStringAndGet(param, Key.OTS_ACCESSID));
-        conf.setAccesskey(ParamChecker.checkStringAndGet(param, Key.OTS_ACCESSKEY));
-        conf.setInstanceName(ParamChecker.checkStringAndGet(param, Key.OTS_INSTANCE_NAME));
-        conf.setTableName(ParamChecker.checkStringAndGet(param, Key.TABLE_NAME));
-        conf.setIndexName(ParamChecker.checkStringAndGet(param, Key.INDEX_NAME));
-        conf.setLimit(ParamChecker.checkIntegerAndGet(param, Key.LIMIT, 1000));
-        conf.setColumnNames(ParamChecker.checkListAndGet(param, Key.COLUMN_NAME, true).stream()
-                .map(Object::toString).collect(Collectors.toList()));
+        conf = Common.buildConf(param);
 
         tableStoreClient = new SyncClient(
                 this.conf.getEndpoint(),
@@ -73,7 +61,6 @@ public class TableStoreReaderMasterProxy {
         meta = getTableMeta(tableStoreClient, conf.getTableName());
 
         LOG.info("Table Meta : {}", GsonParser.metaToJson(meta));
-
 
 //        conf.setColumns(ReaderModelParser.parseOTSColumnList(ParamChecker.checkListAndGet(param, Key.COLUMN, true)));
 
@@ -108,6 +95,9 @@ public class TableStoreReaderMasterProxy {
         for (TableStoreRange item : ranges) {
             Configuration configuration = Configuration.newDefault();
             configuration.set(TableStoreConst.OTS_CONF, GsonParser.confToJson(this.conf));
+            // 执行的最小单位是， 分割后的task进行的，故此设置改config会传递到task中，
+            // 起初传递进来的文件不会传递到task中
+
             configuration.set(TableStoreConst.OTS_RANGE, GsonParser.rangeToJson(item));
             configuration.set(TableStoreConst.OTS_DIRECTION, GsonParser.directionToJson(direction));
             configurations.add(configuration);

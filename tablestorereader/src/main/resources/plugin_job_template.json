@@ -8,6 +8,10 @@
     "columnName":[],
     "table": [],
     "index": [],
-    "limit": ""
+    "limit": "",
+    "query": {
+      "type": "",
+      "params": { }
+    }
   }
 }

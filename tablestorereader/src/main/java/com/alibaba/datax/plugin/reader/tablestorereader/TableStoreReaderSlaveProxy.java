@@ -9,7 +9,9 @@ import com.alibaba.datax.plugin.reader.tablestorereader.model.TableStoreConst;
 import com.alibaba.datax.plugin.reader.tablestorereader.model.TableStoreRange;
 import com.alibaba.datax.plugin.reader.tablestorereader.utils.Common;
 import com.alibaba.datax.plugin.reader.tablestorereader.utils.GsonParser;
+import com.alibaba.datax.plugin.reader.tablestorereader.utils.ParamChecker;
 import com.alibaba.datax.plugin.reader.tablestorereader.utils.RetryHelper;
+import com.alibaba.datax.plugin.reader.tablestorereader.utils.query.QueryFactory;
 import com.alibaba.fastjson.JSON;
 import com.alicloud.openservices.tablestore.AsyncClient;
 import com.alicloud.openservices.tablestore.ClientConfiguration;
@@ -21,6 +23,7 @@ import com.alicloud.openservices.tablestore.model.search.SearchQuery;
 import com.alicloud.openservices.tablestore.model.search.SearchRequest;
 import com.alicloud.openservices.tablestore.model.search.SearchResponse;
 import com.alicloud.openservices.tablestore.model.search.query.MatchAllQuery;
+import com.alicloud.openservices.tablestore.model.search.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -182,6 +185,9 @@ public class TableStoreReaderSlaveProxy {
     public void read(RecordSender sender, Configuration configuration) throws Exception {
 
         TableStoreConf conf = GsonParser.jsonToConf(configuration.getString(TableStoreConst.OTS_CONF));
+
+        Query query = QueryFactory.build(Configuration.from(conf.getQueryRow()));
+
         ClientConfiguration configure1 = new ClientConfiguration();
 
         SyncClient syncClient = new SyncClient(
@@ -195,7 +201,8 @@ public class TableStoreReaderSlaveProxy {
         );
 
         SearchQuery searchQuery = new SearchQuery();
-        searchQuery.setQuery(new MatchAllQuery());
+        searchQuery.setQuery(query);
+        searchQuery.setLimit(conf.getLimit());
         searchQuery.setGetTotalCount(true);
         SearchRequest searchRequest = new SearchRequest(conf.getTableName(), conf.getIndexName(), searchQuery);
         SearchRequest.ColumnsToGet columnsToGet = new SearchRequest.ColumnsToGet();
