@@ -72,6 +72,8 @@ COPY命令将数据写入ADB PG数据库中。
                   "database": "database",
                   "schema": "schema",
                   "table": "table",
+                  "preSql": ["delete * from table"],
+                  "postSql": ["select * from table"],
                   "column": ["*"]
               }
             }
@@ -151,7 +153,21 @@ COPY命令将数据写入ADB PG数据库中。
   * 必选：是 <br />
 
   * 默认值：否 <br />
-  
+* **preSql**
+ 
+   * 描述：写入数据到目的表前，会先执行这里的标准语句。如果 Sql 中有你需要操作到的表名称，可以使用 `@table` 表示，这样在实际执行 Sql 语句时，会对变量按照实际表名称进行替换。比如你的任务是要写入到目的端的100个同构分表(表名称为:datax_00,datax01, ... datax_98,datax_99)，并且你希望导入数据前，先对表中数据进行删除操作，那么你可以这样配置：`"preSql":["delete from @table"]`，效果是：在执行到每个表写入数据前，会先执行对应的 delete from 对应表名称 <br />
+ 
+   * 必选：否 <br />
+ 
+   * 默认值：否 <br />
+   
+* **postSql**
+ 
+   * 描述：写入数据到目的表后，会先执行这里的标准语句。如果 Sql 中有你需要操作到的表名称，可以使用 `@table` 表示，这样在实际执行 Sql 语句时，会对变量按照实际表名称进行替换。 <br />
+ 
+   * 必选：否 <br />
+ 
+   * 默认值：否 <br />
 ### 3.3 类型转换
 
 目前 AdbpgWriter 支持大部分 ADB PG 数据库的类型，但也存在部分没有支持的情况，请注意检查你的类型。
