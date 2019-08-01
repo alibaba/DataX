@@ -23,7 +23,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 /**
- * Created by yuncheng on 07/15/2019.
+ * @author yuncheng
  */
 public class Adb4pgClientProxy implements AdbProxy {
     private static final Logger LOG = LoggerFactory.getLogger(Adb4pgClientProxy.class);

@@ -21,7 +21,7 @@ import static com.alibaba.datax.plugin.rdbms.util.DBUtilErrorCode.*;
 import static com.alibaba.datax.plugin.rdbms.util.DataBaseType.PostgreSQL;
 
 /**
- * Created by yuncheng on 07/13/2019.
+ * @author yuncheng
  */
 public class AdbpgWriter extends Writer {
     private static final DataBaseType DATABASE_TYPE = DataBaseType.PostgreSQL;

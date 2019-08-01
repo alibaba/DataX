@@ -4,7 +4,7 @@ import com.alibaba.datax.common.plugin.RecordReceiver;
 
 import java.sql.Connection;
 /**
- * Created by yuncheng on 07/15/2019.
+ * @author yuncheng
  */
 public interface AdbProxy {
     public abstract void startWriteWithConnection(RecordReceiver recordReceiver, Connection connection);

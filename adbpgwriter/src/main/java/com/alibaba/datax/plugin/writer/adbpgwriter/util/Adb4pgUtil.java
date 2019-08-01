@@ -23,7 +23,7 @@ import java.util.*;
 import static com.alibaba.datax.plugin.rdbms.util.DBUtilErrorCode.COLUMN_SPLIT_ERROR;
 
 /**
- * Created by yuncheng on 07/13/2019.
+ * @author yuncheng
  */
 public class Adb4pgUtil {
 
