@@ -1,0 +1,45 @@
+{
+    "job": {
+        "setting": {
+            "speed": {
+                "byte":10485760
+            },
+            "errorLimit": {
+                "record": 0,
+                "percentage": 0.02
+            }
+        },
+        "content": [
+            {
+                "reader": {
+                    "name": "mysqlreader",
+                    "parameter": {
+                        "print": false,
+                        "encoding": "UTF-8",
+                        "username": "eliy",
+                        "password": "bladerfuK~1",
+                        "column": ["bools", "tinyints", "smallints", "ints", "bigints", "floats", "doubles", "dates", "datetimes", "strings", "strangs"],
+                        "connection": [{
+                            "table": ["datax"],
+                            "jdbcUrl": ["jdbc:mysql://192.168.0.219:3306/mango?user=eliy&password=bladerfuK~1"]
+                        }]
+                    }
+                },
+                "writer": {
+                    "name": "sqreamwriter",
+                    "parameter": {
+                        "print": false,
+                        "encoding": "UTF-8",
+                        "username": "sqream",
+                        "password": "sqream",
+                        "column": ["bools", "tinyints", "smallints", "ints", "bigints", "floats", "doubles", "dates", "datetimes", "strings", "strangs"],
+                        "connection": [{
+                            "table": ["data"],
+                            "jdbcUrl": "jdbc:Sqream://127.0.0.1:5000/master;user=sqream;password=sqream;cluster=false;ssl=false"
+                        }]
+                    }
+                }
+            }
+        ]
+    }
+}
