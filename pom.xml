@@ -87,7 +87,8 @@
         <module>hbase11xsqlreader</module>
         <module>elasticsearchwriter</module>
         <module>tsdbwriter</module>
-
+        <module>adbpgwriter</module>
+        
         <!-- common support module -->
         <module>plugin-rdbms-util</module>
         <module>plugin-unstructured-storage-util</module>
