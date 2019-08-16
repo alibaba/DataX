@@ -79,7 +79,7 @@ This software is free to use under the Apache License [Apache license](https://g
 ![Datax-logo](https://github.com/alibaba/DataX/blob/master/images/datax-enterprise-users.jpg)
 
 ```
-长期招聘 联系邮箱：hanfa.shf@alibaba-inc.com
+长期招聘 联系邮箱：datax@alibabacloud.com
 【JAVA开发职位】
 职位名称：JAVA资深开发工程师/专家/高级专家
 工作年限 : 2年以上
