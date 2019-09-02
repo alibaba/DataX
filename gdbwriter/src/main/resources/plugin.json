@@ -1,0 +1,6 @@
+{
+    "name": "gdbwriter",
+    "class": "com.alibaba.datax.plugin.writer.gdbwriter.GdbWriter",
+    "description": "useScene: prod. mechanism: connect GDB with gremlin-client, execute DSL as 'g.addV() or g.addE()' to write record",
+    "developer": "alibaba"
+}
