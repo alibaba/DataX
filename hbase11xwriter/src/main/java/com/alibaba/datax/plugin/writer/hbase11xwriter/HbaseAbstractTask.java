@@ -110,6 +110,31 @@ public abstract class HbaseAbstractTask {
                 case STRING:
                     bytes = this.getValueByte(columnType,column.asString());
                     break;
+                case $DEFAULT:
+                case $UNSIGNED_INT:
+                case $UNSIGNED_LONG:
+                case $UNSIGNED_TINYINT:
+                case $UNSIGNED_SMALLINT:
+                case $UNSIGNED_FLOAT:
+                case $UNSIGNED_DOUBLE:
+                case $INTEGER:
+                case $BIGINT:
+                case $TINYINT:
+                case $SMALLINT:
+                case $FLOAT:
+                case $DOUBLE:
+                case $DECIMAL:
+                case $BOOLEAN:
+                case $UNSIGNED_TIME:
+                case $UNSIGNED_DATE:
+                case $UNSIGNED_TIMESTAMP:
+                case $TIME:
+                case $DATE:
+                case $TIMESTAMP:
+                case $VARBINARY:
+                case $VARCHAR:
+                    bytes = PhoenixTypeUtil.toBytes(column.getRawData(), columnType);
+                    break;
                 default:
                     throw DataXException.asDataXException(Hbase11xWriterErrorCode.ILLEGAL_VALUE, "HbaseWriter列不支持您配置的列类型:" + columnType);
             }
