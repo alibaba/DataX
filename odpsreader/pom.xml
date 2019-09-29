@@ -43,11 +43,11 @@
             <scope>system</scope>
             <systemPath>${basedir}/src/main/libs/bcprov-jdk15on-1.52.jar</systemPath>
         </dependency>
-		<dependency>
-			<groupId>com.aliyun.odps</groupId>
-			<artifactId>odps-sdk-core</artifactId>
-			<version>0.19.3-public</version>
-		</dependency>
+        <dependency>
+            <groupId>com.aliyun.odps</groupId>
+            <artifactId>odps-sdk-core</artifactId>
+            <version>0.20.7-public</version>
+        </dependency>
 
         <dependency>
             <groupId>org.mockito</groupId>
