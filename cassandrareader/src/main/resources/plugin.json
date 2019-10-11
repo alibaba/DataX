@@ -1,0 +1,6 @@
+{
+    "name": "cassandrareader",
+    "class": "com.alibaba.datax.plugin.reader.cassandrareader.CassandraReader",
+    "description": "useScene: prod. mechanism: execute select cql, retrieve data from the ResultSet. warn: The more you know about the database, the less problems you encounter.",
+    "developer": "alibaba"
+}

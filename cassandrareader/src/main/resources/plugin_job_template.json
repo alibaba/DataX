@@ -1,0 +1,15 @@
+{
+    "name": "cassandrareader",
+    "parameter": {
+        "username": "",
+        "password": "",
+        "host": "",
+        "port": "",
+        "useSSL": false,
+        "keyspace": "",
+        "table": "",
+        "column": [
+            "c1","c2","c3"
+        ]
+    }
+}
