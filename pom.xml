@@ -63,6 +63,7 @@
         <module>rdbmsreader</module>
         <module>hbase11xreader</module>
         <module>hbase094xreader</module>
+        <module>tsdbreader</module>
         <module>opentsdbreader</module>
         <module>cassandrareader</module>
 
