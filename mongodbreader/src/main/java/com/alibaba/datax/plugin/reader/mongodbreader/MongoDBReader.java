@@ -35,6 +35,7 @@ import org.bson.types.ObjectId;
  * Created by jianying.wcj on 2015/3/19 0019.
  * Modified by mingyan.zc on 2016/6/13.
  * Modified by mingyan.zc on 2017/7/5.
+ * Modified by sowevo on 2018/7/4.
  */
 public class MongoDBReader extends Reader {
 
@@ -149,8 +150,8 @@ public class MongoDBReader extends Reader {
                         }
                     }
                     if (tempCol == null) {
-                        //continue; 这个不能直接continue会导致record到目的端错位
-                        record.addColumn(new StringColumn(null));
+                        //Record中对传进去的null进行了过滤,并没有将其加入Record,依然会导致record到目的端错位,改为空字符串
+                        record.addColumn(new StringColumn(""));
                     }else if (tempCol instanceof Double) {
                         //TODO deal with Double.isNaN()
                         record.addColumn(new DoubleColumn((Double) tempCol));
