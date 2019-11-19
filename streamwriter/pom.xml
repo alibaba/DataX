@@ -39,8 +39,8 @@
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
+					<source>${jdk-version}</source>
+					<target>${jdk-version}</target>
 					<encoding>${project-sourceEncoding}</encoding>
 				</configuration>
 			</plugin>

@@ -17,6 +17,7 @@
     <packaging>pom</packaging>
 
     <properties>
+        <jdk-version>1.8</jdk-version>
         <datax-project-version>0.0.1-SNAPSHOT</datax-project-version>
         <commons-lang3-version>3.3.2</commons-lang3-version>
         <commons-configuration-version>1.10</commons-configuration-version>
@@ -62,7 +63,9 @@
         <module>rdbmsreader</module>
         <module>hbase11xreader</module>
         <module>hbase094xreader</module>
+        <module>tsdbreader</module>
         <module>opentsdbreader</module>
+        <module>cassandrareader</module>
 
         <!-- writer -->
         <module>mysqlwriter</module>
@@ -89,7 +92,7 @@
         <module>tsdbwriter</module>
         <module>adbpgwriter</module>
         <module>gdbwriter</module>
-
+        <module>cassandrawriter</module>
         <!-- common support module -->
         <module>plugin-rdbms-util</module>
         <module>plugin-unstructured-storage-util</module>
@@ -223,8 +226,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.3.2</version>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>${jdk-version}</source>
+                    <target>${jdk-version}</target>
                     <encoding>${project-sourceEncoding}</encoding>
                 </configuration>
             </plugin>
