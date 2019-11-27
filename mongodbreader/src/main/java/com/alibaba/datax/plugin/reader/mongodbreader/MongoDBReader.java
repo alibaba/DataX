@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import com.alibaba.datax.common.element.BoolColumn;
 import com.alibaba.datax.common.element.DateColumn;
@@ -49,7 +50,7 @@ public class MongoDBReader extends Reader {
 
         @Override
         public List<Configuration> split(int adviceNumber) {
-            return CollectionSplitUtil.doSplit(originalConfig,adviceNumber,mongoClient);
+            return CollectionSplitUtil.doSplit(originalConfig, adviceNumber, mongoClient);
         }
 
         @Override
@@ -173,6 +174,8 @@ public class MongoDBReader extends Reader {
                                 String tempArrayStr = Joiner.on(splitter).join(array);
                                 record.addColumn(new StringColumn(tempArrayStr));
                             }
+                        } else if (tempCol instanceof List || tempCol instanceof Map) {
+                            record.addColumn(new StringColumn(JSON.toJSONString(tempCol)));
                         } else {
                             record.addColumn(new StringColumn(tempCol.toString()));
                         }
