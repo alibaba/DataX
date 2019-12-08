@@ -9,8 +9,10 @@ import org.apache.hadoop.hbase.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * HBase SQL writer config
@@ -36,6 +38,9 @@ public class HbaseSQLWriterConfig {
     private String namespace;
     private String username;
     private String password;
+
+    // Phoenix connect config
+    Properties phoenixProperties = new Properties();
 
     /**
      * @return 获取原始的datax配置
@@ -103,6 +108,10 @@ public class HbaseSQLWriterConfig {
         return username;
     }
 
+    public Properties getPhoenixProperties() {
+        return phoenixProperties;
+    }
+
     /**
      * @param dataxCfg
      * @return
@@ -118,13 +127,16 @@ public class HbaseSQLWriterConfig {
         // 2. 解析列配置
         parseTableConfig(cfg, dataxCfg);
 
-        // 3. 解析其他配置
+        // 3. phoenix配置
+        parsePhoenixConfig(cfg, dataxCfg);
+
+        // 4. 解析其他配置
         cfg.nullMode = NullModeType.getByTypeName(dataxCfg.getString(Key.NULL_MODE, Constant.DEFAULT_NULL_MODE));
         cfg.batchSize = dataxCfg.getInt(Key.BATCH_SIZE, Constant.DEFAULT_BATCH_ROW_COUNT);
         cfg.truncate = dataxCfg.getBool(Key.TRUNCATE, Constant.DEFAULT_TRUNCATE);
         cfg.isThinClient = dataxCfg.getBool(Key.THIN_CLIENT, Constant.DEFAULT_USE_THIN_CLIENT);
 
-        // 4. 打印解析出来的配置
+        // 5. 打印解析出来的配置
         LOG.info("HBase SQL writer config parsed:" + cfg.toString());
 
         return cfg;
@@ -186,6 +198,31 @@ public class HbaseSQLWriterConfig {
             // 生成sql使用的连接字符串， 格式： jdbc:phoenix:zk_quorum:2181:/znode_parent
             cfg.connectionString = "jdbc:phoenix:" + zkQuorum + ":2181:" + znode;
         }
+    }
+
+    private static void parsePhoenixConfig(HbaseSQLWriterConfig cfg, Configuration dataxCfg) {
+        // 获取phoenix配置信息字符串
+        String phoenixCfg = dataxCfg.getString(Key.PHOENIX_CONFIG);
+
+        Map<String, String> configs = null;
+        try {
+            configs = HbaseSQLHelper.getPhoenixConfig(phoenixCfg);
+        } catch (Throwable t) {
+            // 解析phoenix配置错误
+            throw DataXException.asDataXException(
+                    HbaseSQLWriterErrorCode.ILLEGAL_VALUE,
+                    "解析phoenixConfig出错，请确认您配置的phoenixConfig为合法的json数据格式，内容正确.");
+        }
+
+        // 设置Phoenix连接配置项
+        Properties prop = new Properties();
+
+        prop.setProperty(Key.PHOENIX_SCHEMA_IS_NAMESPACE_MAPPING_ENABLED,
+                configs.get(Key.PHOENIX_SCHEMA_IS_NAMESPACE_MAPPING_ENABLED));
+        prop.setProperty(Key.PHOENIX_SCHEMA_MAP_SYSTEM_TABLES_TO_NAMESPACE,
+                configs.get(Key.PHOENIX_SCHEMA_MAP_SYSTEM_TABLES_TO_NAMESPACE));
+
+        cfg.phoenixProperties = prop;
     }
 
     private static void parseTableConfig(HbaseSQLWriterConfig cfg, Configuration dataxCfg) {

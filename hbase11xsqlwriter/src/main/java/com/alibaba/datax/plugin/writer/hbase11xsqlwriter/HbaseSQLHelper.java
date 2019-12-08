@@ -4,6 +4,7 @@ import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.util.Pair;
@@ -26,6 +27,7 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * @author yanghan.y
@@ -58,6 +60,29 @@ public class HbaseSQLHelper {
             znode = Constant.DEFAULT_ZNODE;
         }
         return new Pair<String, String>(zkQuorum, znode);
+    }
+
+    /**
+     * 解析phoenix config配置项
+     * @param phoenixCfgString 配置中{@link Key#PHOENIX_CONFIG}的值
+     * @return
+     */
+    public static Map<String, String> getPhoenixConfig(String phoenixCfgString) {
+        assert phoenixCfgString != null;
+
+        Map<String, String> phoenixConfigMap = JSON.parseObject(phoenixCfgString, new TypeReference<Map<String, String>>() {});
+
+        if (phoenixConfigMap == null) {
+            phoenixConfigMap = new HashMap<>(0);
+        }
+
+        String isNamespaceMappingEnabled = phoenixConfigMap.get(Key.PHOENIX_SCHEMA_IS_NAMESPACE_MAPPING_ENABLED);
+        String mapSystemTablesToNamespace = phoenixConfigMap.get(Key.PHOENIX_SCHEMA_MAP_SYSTEM_TABLES_TO_NAMESPACE);
+
+        Map<String, String> configs = new HashMap<>(2);
+        configs.put(Key.PHOENIX_SCHEMA_IS_NAMESPACE_MAPPING_ENABLED, String.valueOf(Boolean.parseBoolean(isNamespaceMappingEnabled)));
+        configs.put(Key.PHOENIX_SCHEMA_MAP_SYSTEM_TABLES_TO_NAMESPACE, String.valueOf(Boolean.parseBoolean(mapSystemTablesToNamespace)));
+        return configs;
     }
 
     public static Map<String, String> getThinConnectConfig(String hbaseCfgString) {
@@ -112,7 +137,7 @@ public class HbaseSQLHelper {
             if (cfg.isThinClient()) {
                 conn = getThinClientJdbcConnection(cfg);
             } else {
-                conn = DriverManager.getConnection(connStr);
+                conn = DriverManager.getConnection(connStr, cfg.getPhoenixProperties());
             }
             conn.setAutoCommit(false);
         } catch (Throwable e) {
