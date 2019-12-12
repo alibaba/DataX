@@ -51,14 +51,14 @@ public class KuduReader extends Reader {
                     } else {
                         possibleUpperBound = Math.min(possibleUpperBound, upperBound);
                     }
-                    conf.set(KeyConstant.LOWER_BOUND, possibleLowerBound);
-                    conf.set(KeyConstant.UPPER_BOUND, possibleUpperBound);
+                    conf.set(KeyConstant.SPLIT_LOWER_BOUND, String.valueOf(possibleLowerBound));
+                    conf.set(KeyConstant.SPLIT_UPPER_BOUND, String.valueOf(possibleUpperBound));
                     confList.add(conf);
                 }
             } else {
                 Configuration conf = originalConfig.clone();
-                conf.set(KeyConstant.LOWER_BOUND, "min");
-                conf.set(KeyConstant.UPPER_BOUND, "max");
+                conf.set(KeyConstant.SPLIT_LOWER_BOUND, "min");
+                conf.set(KeyConstant.SPLIT_UPPER_BOUND, "max");
                 confList.add(conf);
             }
 
@@ -220,8 +220,8 @@ public class KuduReader extends Reader {
             String masterAddresses = readerSliceConfig.getString(KeyConstant.KUDU_MASTER_ADDRESSES);
             tableName = readerSliceConfig.getString(KeyConstant.KUDU_TABlE_NAME);
             kuduClient = (new KuduClient.KuduClientBuilder(masterAddresses)).build();
-            lowerBound = readerSliceConfig.getString(KeyConstant.LOWER_BOUND);
-            upperBound = readerSliceConfig.getString(KeyConstant.UPPER_BOUND);
+            lowerBound = readerSliceConfig.getString(KeyConstant.SPLIT_LOWER_BOUND);
+            upperBound = readerSliceConfig.getString(KeyConstant.SPLIT_UPPER_BOUND);
             splitKey = readerSliceConfig.getString(KeyConstant.SPLIT_KEY);
         }
 

@@ -13,6 +13,10 @@ public class KeyConstant {
 
     public static final String UPPER_BOUND = "upperBound";
 
+    public static final String SPLIT_LOWER_BOUND = "splitLowerBound";
+
+    public static final String SPLIT_UPPER_BOUND = "splitUpperBound";
+
     public static final String SPLIT_KEY = "splitKey";
 
 }
