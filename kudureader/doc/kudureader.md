@@ -53,12 +53,12 @@ KuduReader通过Datax框架从Kudu并行的读取数据，通过主控的JOB程�
 
 | DataX 内部类型| Kudu 数据类型    |
 | -------- | -----  |
-| Long     | int, Long |
-| Double   | double |
-| String   | string, array |
-| Date     | date  |
+| Long     | byte, short, int, long |
+| Double   | float, double |
+| String   | string |
+| Date     | timestamp  |
 | Boolean  | boolean |
-| Bytes    | bytes |
+| Bytes    | binary |
 
 
 #### 6 性能报告
