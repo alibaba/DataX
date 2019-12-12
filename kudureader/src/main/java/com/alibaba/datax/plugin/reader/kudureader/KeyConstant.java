@@ -13,6 +13,6 @@ public class KeyConstant {
 
     public static final String UPPER_BOUND = "upperBound";
 
-    public static final String IS_OBJECTID = "isObjectId";
+    public static final String SPLIT_KEY = "splitKey";
 
 }
