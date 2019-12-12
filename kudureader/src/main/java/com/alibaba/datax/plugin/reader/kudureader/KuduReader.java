@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.alibaba.datax.common.element.*;
 import com.alibaba.datax.common.exception.DataXException;
+import com.alibaba.datax.common.plugin.AbstractTaskPlugin;
 import com.alibaba.datax.common.plugin.RecordSender;
 import com.alibaba.datax.common.spi.Reader;
 import com.alibaba.datax.common.util.Configuration;
@@ -82,6 +83,8 @@ public class KuduReader extends Reader {
 
                     Record record = recordSender.createRecord();
 
+                    boolean isDirtyRecord = false;
+
                     for (ColumnSchema columnSchema : columnSchemas) {
                         if (result.isNull(columnSchema.getName())) {
                             record.addColumn(new StringColumn(null));
@@ -121,10 +124,21 @@ public class KuduReader extends Reader {
                                 record.addColumn(new DateColumn(result.getTimestamp(columnSchema.getName())));
                                 break;
                             default:
+                                isDirtyRecord = true;
+                                getTaskPluginCollector().collectDirtyRecord(
+                                        record,
+                                        "Invalid kudu data type: " + columnType.getName()
+                                );
+                                break;
+                        }
+                        if (isDirtyRecord) {
+                            break;
                         }
                     }
 
-                    recordSender.sendToWriter(record);
+                    if (!isDirtyRecord) {
+                        recordSender.sendToWriter(record);
+                    }
                 }
             }
 
