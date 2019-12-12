@@ -47,7 +47,10 @@ KuduReader通过Datax框架从Kudu并行的读取数据，通过主控的JOB程�
 #### 4 参数说明
 
 * masterAddresses： Kudu Master集群RPC地址。【必填】
-* tableName：Kudu的表名。【选填】
+* tableName：Kudu的表名。【必填】
+* splitKey：并行读取数据分片字段。【选填】
+* lowerBound：并行读取数据分片范围下界。【选填】
+* upperBound：并行读取数据分片范围上界。【选填】
 
 #### 5 类型转换
 
