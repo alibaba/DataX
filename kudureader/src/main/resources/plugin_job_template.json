@@ -5,6 +5,8 @@
         "tableName": "test",
         "splitKey": "",
         "lowerBound": "min",
-        "upperBound": "max"
+        "upperBound": "max",
+        "socketReadTimeoutMs": 30000,
+        "scanRequestTimeout": 30000
     }
 }

@@ -51,6 +51,8 @@ KuduReader通过Datax框架从Kudu并行的读取数据，通过主控的JOB程�
 * splitKey：并行读取数据分片字段。【选填】
 * lowerBound：并行读取数据分片范围下界。【选填】
 * upperBound：并行读取数据分片范围上界。【选填】
+* socketReadTimeoutMs：读取数据超时(毫秒)。【选填】
+* scanRequestTimeout：数据扫描请求超时(毫秒)。【选填】
 
 #### 5 类型转换
 

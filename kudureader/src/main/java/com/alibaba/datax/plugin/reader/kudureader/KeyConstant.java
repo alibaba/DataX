@@ -19,4 +19,8 @@ public class KeyConstant {
 
     public static final String SPLIT_KEY = "splitKey";
 
+    public static final String SOCKET_READ_TIMEOUT_MS = "socketReadTimeoutMs";
+
+    public static final String SCAN_REQUEST_TIMEOUT = "scanRequestTimeout";
+
 }

@@ -92,6 +92,8 @@ public class KuduReader extends Reader {
 
         private String upperBound;
 
+        private Long scanRequestTimeout;
+
         @Override
         public void startRead(RecordSender recordSender) {
             KuduTable kuduTable = null;
@@ -107,6 +109,9 @@ public class KuduReader extends Reader {
             Schema schema = kuduTable.getSchema();
 
             KuduScanner.KuduScannerBuilder kuduScannerBuilder = kuduClient.newScannerBuilder(kuduTable);
+            if (scanRequestTimeout != null) {
+                kuduScannerBuilder.scanRequestTimeout(scanRequestTimeout);
+            }
             KuduScanner kuduScanner;
 
             if ((splitKey != null) && (!"min".equals(lowerBound)) && (!"max".equals(upperBound))) {
@@ -219,7 +224,13 @@ public class KuduReader extends Reader {
             Configuration readerSliceConfig = super.getPluginJobConf();
             String masterAddresses = readerSliceConfig.getString(KeyConstant.KUDU_MASTER_ADDRESSES);
             tableName = readerSliceConfig.getString(KeyConstant.KUDU_TABlE_NAME);
-            kuduClient = (new KuduClient.KuduClientBuilder(masterAddresses)).build();
+            Long socketReadTimeoutMs = readerSliceConfig.getLong(KeyConstant.SOCKET_READ_TIMEOUT_MS);
+            scanRequestTimeout = readerSliceConfig.getLong(KeyConstant.SCAN_REQUEST_TIMEOUT);
+            KuduClient.KuduClientBuilder kuduClientBuilder = (new KuduClient.KuduClientBuilder(masterAddresses));
+            if (socketReadTimeoutMs != null) {
+                kuduClientBuilder.defaultSocketReadTimeoutMs(socketReadTimeoutMs);
+            }
+            kuduClient = kuduClientBuilder.build();
             lowerBound = readerSliceConfig.getString(KeyConstant.SPLIT_LOWER_BOUND);
             upperBound = readerSliceConfig.getString(KeyConstant.SPLIT_UPPER_BOUND);
             splitKey = readerSliceConfig.getString(KeyConstant.SPLIT_KEY);
