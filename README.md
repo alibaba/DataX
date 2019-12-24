@@ -1,6 +1,11 @@
 ![Datax-logo](https://github.com/alibaba/DataX/blob/master/images/DataX-logo.jpg)
 
+# hardcode
+1. 为了支持Postgres的JSONB字段: querySql: column::json#>>'{}'
+2. 为了支持Postgres的UPDATE: "writeMode": "update",
 
+为了实现业务需求，没有完整的按照DataX的结构进行开发。
+具体改动可以看提交详情。
 
 # DataX
 

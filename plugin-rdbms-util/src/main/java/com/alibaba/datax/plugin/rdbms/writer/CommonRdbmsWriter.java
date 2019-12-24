@@ -410,6 +410,10 @@ public class CommonRdbmsWriter {
 
         protected PreparedStatement fillPreparedStatementColumnType(PreparedStatement preparedStatement, int columnIndex, int columnSqltype, Column column) throws SQLException {
             java.util.Date utilDate;
+            //针对metadata做强制columnSqltype转换
+            if(this.resultSetMetaData.getRight().get(columnIndex).startsWith("jsonb")) {
+                columnSqltype = Types.LONGNVARCHAR;
+            }
             switch (columnSqltype) {
                 case Types.CHAR:
                 case Types.NCHAR:
