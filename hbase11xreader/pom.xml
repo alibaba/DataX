@@ -37,12 +37,31 @@
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-client</artifactId>
             <version>${hbase.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>jdk.tools</artifactId>
+                    <groupId>jdk.tools</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-common</artifactId>
             <version>${hbase.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.alibaba.hbase</groupId>
+            <artifactId>alihbase-connector</artifactId>
+            <version>1.0.4</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.hbase</groupId>
+                    <artifactId>hbase-client</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
@@ -73,8 +92,8 @@
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>${jdk-version}</source>
+                    <target>${jdk-version}</target>
                     <encoding>${project-sourceEncoding}</encoding>
                 </configuration>
             </plugin>

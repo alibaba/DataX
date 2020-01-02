@@ -42,6 +42,12 @@
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase</artifactId>
             <version>0.94.27</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>jdk.tools</artifactId>
+                    <groupId>jdk.tools</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
@@ -79,8 +85,8 @@
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>${jdk-version}</source>
+                    <target>${jdk-version}</target>
                     <encoding>${project-sourceEncoding}</encoding>
                 </configuration>
             </plugin>

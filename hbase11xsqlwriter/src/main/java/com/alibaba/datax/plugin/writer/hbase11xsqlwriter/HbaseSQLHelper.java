@@ -11,6 +11,7 @@ import org.apache.phoenix.jdbc.PhoenixConnection;
 import org.apache.phoenix.schema.ColumnNotFoundException;
 import org.apache.phoenix.schema.MetaDataClient;
 import org.apache.phoenix.schema.PTable;
+import org.apache.phoenix.schema.types.PDataType;
 import org.apache.phoenix.util.SchemaUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +19,11 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +32,8 @@ import java.util.Map;
  */
 public class HbaseSQLHelper {
     private static final Logger LOG = LoggerFactory.getLogger(HbaseSQLHelper.class);
+
+    public static ThinClientPTable ptable;
 
     /**
      * 将datax的配置解析成sql writer的配置
@@ -53,6 +60,11 @@ public class HbaseSQLHelper {
         return new Pair<String, String>(zkQuorum, znode);
     }
 
+    public static Map<String, String> getThinConnectConfig(String hbaseCfgString) {
+        assert hbaseCfgString != null;
+        return JSON.parseObject(hbaseCfgString, new TypeReference<Map<String, String>>() {});
+    }
+
     /**
      * 校验配置
      */
@@ -61,12 +73,12 @@ public class HbaseSQLHelper {
         Connection conn = getJdbcConnection(cfg);
 
         // 检查表:存在，可用
-        checkTable(conn, cfg.getTableName());
+        checkTable(conn, cfg.getNamespace(), cfg.getTableName(), cfg.isThinClient());
 
         // 校验元数据：配置中给出的列必须是目的表中已经存在的列
         PTable schema = null;
         try {
-            schema = getTableSchema(conn, cfg.getTableName());
+            schema = getTableSchema(conn, cfg.getNamespace(), cfg.getTableName(), cfg.isThinClient());
         } catch (SQLException e) {
             throw DataXException.asDataXException(HbaseSQLWriterErrorCode.GET_HBASE_CONNECTION_ERROR,
                     "无法获取目的表" + cfg.getTableName() + "的元数据信息，表可能不是SQL表或表名配置错误，请检查您的配置 或者 联系 HBase 管理员.", e);
@@ -97,7 +109,11 @@ public class HbaseSQLHelper {
         Connection conn;
         try {
             Class.forName("org.apache.phoenix.jdbc.PhoenixDriver");
-            conn = DriverManager.getConnection(connStr);
+            if (cfg.isThinClient()) {
+                conn = getThinClientJdbcConnection(cfg);
+            } else {
+                conn = DriverManager.getConnection(connStr);
+            }
             conn.setAutoCommit(false);
         } catch (Throwable e) {
             throw DataXException.asDataXException(HbaseSQLWriterErrorCode.GET_HBASE_CONNECTION_ERROR,
@@ -105,6 +121,32 @@ public class HbaseSQLHelper {
         }
         LOG.debug("Connected to HBase cluster successfully.");
         return conn;
+    }
+
+    /**
+     * 创建 thin client jdbc连接
+     * @param cfg
+     * @return
+     * @throws SQLException
+     */
+    public static Connection getThinClientJdbcConnection(HbaseSQLWriterConfig cfg) throws SQLException {
+        String connStr = cfg.getConnectionString();
+        LOG.info("Connecting to HBase cluster [" + connStr + "] use thin client ...");
+        Connection conn = DriverManager.getConnection(connStr, cfg.getUsername(), cfg.getPassword());
+        String userNamespaceQuery = "use " + cfg.getNamespace();
+        Statement statement = null;
+        try {
+          statement = conn.createStatement();
+          statement.executeUpdate(userNamespaceQuery);
+          return conn;
+        } catch (Exception e) {
+          throw DataXException.asDataXException(HbaseSQLWriterErrorCode.GET_HBASE_CONNECTION_ERROR,
+              "无法连接配置的namespace, 请检查配置 或者 联系 HBase 管理员.", e);
+        } finally {
+          if (statement != null) {
+            statement.close();
+          }
+        }
     }
 
     /**
@@ -120,6 +162,70 @@ public class HbaseSQLHelper {
         String tableName = SchemaUtil.getTableNameFromFullName(fullTableName);
         return mdc.updateCache(schemaName, tableName).getTable();
     }
+
+    /**
+     *  获取一张表的元数据信息
+     * @param conn
+     * @param namespace
+     * @param fullTableName
+     * @param isThinClient  是否使用thin client
+     * @return 表的元数据
+     * @throws SQLException
+     */
+    public static PTable getTableSchema(Connection conn, String namespace, String fullTableName, boolean isThinClient)
+        throws
+        SQLException {
+        LOG.info("Start to get table schema of namespace=" + namespace + " , fullTableName=" + fullTableName);
+        if (!isThinClient) {
+            return getTableSchema(conn, fullTableName);
+        } else {
+            if (ptable == null) {
+                ResultSet result = conn.getMetaData().getColumns(null, namespace, fullTableName, null);
+                try {
+                    ThinClientPTable retTable = new ThinClientPTable();
+                    retTable.setColTypeMap(parseColType(result));
+                    ptable = retTable;
+                }finally {
+                    if (result != null) {
+                        result.close();
+                    }
+                }
+            }
+            return ptable;
+        }
+
+    }
+
+    /**
+     * 解析字段
+     * @param rs
+     * @return
+     * @throws SQLException
+     */
+    public static Map<String, ThinClientPTable.ThinClientPColumn>  parseColType(ResultSet rs) throws SQLException {
+        Map<String, ThinClientPTable.ThinClientPColumn> cols = new HashMap<String, ThinClientPTable
+            .ThinClientPColumn>();
+        ResultSetMetaData md = rs.getMetaData();
+        int columnCount = md.getColumnCount();
+
+        while (rs.next()) {
+            String colName  = null;
+            PDataType colType = null;
+            for (int i = 1; i <= columnCount; i++) {
+                if (md.getColumnLabel(i).equals("TYPE_NAME")) {
+                    colType = PDataType.fromSqlTypeName((String) rs.getObject(i));
+                } else if (md.getColumnLabel(i).equals("COLUMN_NAME")) {
+                    colName = (String) rs.getObject(i);
+                }
+            }
+            if (colType == null || colName == null) {
+                throw new SQLException("ColType or colName is null, colType : " + colType + " , colName : " + colName);
+            }
+            cols.put(colName, new ThinClientPTable.ThinClientPColumn(colName, colType));
+        }
+        return cols;
+    }
+
 
     /**
      * 清空表
@@ -147,6 +253,24 @@ public class HbaseSQLHelper {
             }
         }
     }
+
+    /**
+     * 检查表
+     * @param conn
+     * @param namespace
+     * @param tableName
+     * @param isThinClient
+     * @throws DataXException
+     */
+    public static void checkTable(Connection conn, String namespace, String tableName, boolean isThinClient)
+        throws DataXException {
+        if (!isThinClient) {
+            checkTable(conn, tableName);
+        } else {
+            //ignore check table when use thin client
+        }
+    }
+
 
     /**
      * 检查表：表要存在，enabled

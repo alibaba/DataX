@@ -1,0 +1,29 @@
+{
+  "name": "tsdbreader",
+  "parameter": {
+    "sinkDbType": "RDB",
+    "endpoint": "http://localhost:8242",
+    "column": [
+      "__metric__",
+      "__ts__",
+      "app",
+      "cluster",
+      "group",
+      "ip",
+      "zone",
+      "__value__"
+    ],
+    "metric": [
+      "m"
+    ],
+    "tag": {
+      "m": {
+        "app": "a1",
+        "cluster": "c1"
+      }
+    },
+    "splitIntervalMs": 60000,
+    "beginDateTime": "2019-01-01 00:00:00",
+    "endDateTime": "2019-01-01 01:00:00"
+  }
+}

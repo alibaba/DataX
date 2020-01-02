@@ -157,12 +157,20 @@ public class HbaseSQLWriterTask {
     private PreparedStatement createPreparedStatement() throws SQLException {
         // 生成列名集合，列之间用逗号分隔： col1,col2,col3,...
         StringBuilder columnNamesBuilder = new StringBuilder();
-        for (String col : cfg.getColumns()) {
-            // 列名使用双引号，则不自动转换为全大写，而是保留用户配置的大小写
-            columnNamesBuilder.append("\"");
-            columnNamesBuilder.append(col);
-            columnNamesBuilder.append("\"");
-            columnNamesBuilder.append(",");
+        if (cfg.isThinClient()) {
+            for (String col : cfg.getColumns()) {
+                // thin 客户端不使用双引号
+                columnNamesBuilder.append(col);
+                columnNamesBuilder.append(",");
+            }
+        } else {
+            for (String col : cfg.getColumns()) {
+                // 列名使用双引号，则不自动转换为全大写，而是保留用户配置的大小写
+                columnNamesBuilder.append("\"");
+                columnNamesBuilder.append(col);
+                columnNamesBuilder.append("\"");
+                columnNamesBuilder.append(",");
+            }
         }
         columnNamesBuilder.setLength(columnNamesBuilder.length() - 1);   // 移除末尾多余的逗号
         String columnNames = columnNamesBuilder.toString();
@@ -171,9 +179,13 @@ public class HbaseSQLWriterTask {
 
         // 生成UPSERT模板
         String tableName = cfg.getTableName();
-        // 表名使用双引号，则不自动转换为全大写，而是保留用户配置的大小写
-        StringBuilder upsertBuilder =
-                new StringBuilder("upsert into \"" + tableName + "\" (" + columnNames + " ) values (");
+        StringBuilder upsertBuilder = null;
+        if (cfg.isThinClient()) {
+            upsertBuilder = new StringBuilder("upsert into " + tableName + " (" + columnNames + " ) values (");
+        } else {
+            // 表名使用双引号，则不自动转换为全大写，而是保留用户配置的大小写
+            upsertBuilder = new StringBuilder("upsert into \"" + tableName + "\" (" + columnNames + " ) values (");
+        }
         for (int i = 0; i < cfg.getColumns().size(); i++) {
             upsertBuilder.append("?,");
         }
@@ -191,7 +203,8 @@ public class HbaseSQLWriterTask {
      */
     private int[] getColumnSqlType(List<String> columnNames) throws SQLException {
         int[] types = new int[numberOfColumnsToWrite];
-        PTable ptable = HbaseSQLHelper.getTableSchema(connection, cfg.getTableName());
+        PTable ptable = HbaseSQLHelper
+            .getTableSchema(connection, cfg.getNamespace(), cfg.getTableName(), cfg.isThinClient());
 
         for (int i = 0; i < columnNames.size(); i++) {
             String name = columnNames.get(i);

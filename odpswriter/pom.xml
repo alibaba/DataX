@@ -40,7 +40,7 @@
         <dependency>
 			<groupId>com.aliyun.odps</groupId>
 			<artifactId>odps-sdk-core</artifactId>
-			<version>0.19.3-public</version>
+			<version>0.20.7-public</version>
 		</dependency>
 
         <!-- httpclient begin -->
@@ -78,8 +78,8 @@
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>${jdk-version}</source>
+                    <target>${jdk-version}</target>
                     <encoding>${project-sourceEncoding}</encoding>
                 </configuration>
             </plugin>

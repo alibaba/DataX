@@ -72,9 +72,9 @@ public class HBase20xSQLWriterTask {
         batchSize = configuration.getInt(Key.BATCHSIZE, Constant.DEFAULT_BATCH_ROW_COUNT);
         String schema = configuration.getString(Key.SCHEMA);
         String tableName = configuration.getNecessaryValue(Key.TABLE, HBase20xSQLWriterErrorCode.REQUIRED_VALUE);
-        fullTableName = tableName;
+        fullTableName = "\"" + tableName + "\"";
         if (schema != null && !schema.isEmpty()) {
-            fullTableName = schema + "." + tableName;
+            fullTableName = "\"" + schema + "\".\"" + tableName + "\"";
         }
         columns = configuration.getList(Key.COLUMN, String.class);
         if (pstmt == null) {
@@ -125,7 +125,7 @@ public class HBase20xSQLWriterTask {
         int[] types = new int[numberOfColumnsToWrite];
         StringBuilder columnNamesBuilder = new StringBuilder();
         for (String columnName : columns) {
-            columnNamesBuilder.append(columnName).append(",");
+            columnNamesBuilder.append("\"").append(columnName).append("\",");
         }
         columnNamesBuilder.setLength(columnNamesBuilder.length() - 1);
         // 查询一条数据获取表meta信息

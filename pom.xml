@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -17,6 +17,7 @@
     <packaging>pom</packaging>
 
     <properties>
+        <jdk-version>1.8</jdk-version>
         <datax-project-version>0.0.1-SNAPSHOT</datax-project-version>
         <commons-lang3-version>3.3.2</commons-lang3-version>
         <commons-configuration-version>1.10</commons-configuration-version>
@@ -37,8 +38,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 
     <modules>
@@ -64,6 +63,9 @@
         <module>rdbmsreader</module>
         <module>hbase11xreader</module>
         <module>hbase094xreader</module>
+        <module>tsdbreader</module>
+        <module>opentsdbreader</module>
+        <module>cassandrareader</module>
 
         <!-- writer -->
         <module>mysqlwriter</module>
@@ -87,12 +89,13 @@
         <module>hbase11xsqlwriter</module>
         <module>hbase11xsqlreader</module>
         <module>elasticsearchwriter</module>
-        <module>db2writer</module>
-
+        <module>tsdbwriter</module>
+        <module>adbpgwriter</module>
+        <module>gdbwriter</module>
+        <module>cassandrawriter</module>
         <!-- common support module -->
         <module>plugin-rdbms-util</module>
         <module>plugin-unstructured-storage-util</module>
-
         <module>hbase20xsqlreader</module>
         <module>hbase20xsqlwriter</module>
     </modules>
@@ -170,16 +173,36 @@
                 <version>1.9.5</version>
                 <scope>test</scope>
             </dependency>
-            
-            <dependency>
-          <groupId>jdk.tools</groupId>
-          <artifactId>jdk.tools</artifactId>
-          <version>1.8</version>
-          <scope>system</scope>
-          <systemPath>C:\Program Files\Java\jre1.8.0_181\lib\tools.jar</systemPath>
-        </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <repositories>
+        <repository>
+            <id>central</id>
+            <name>Nexus aliyun</name>
+            <url>https://maven.aliyun.com/repository/central</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>central</id>
+            <name>Nexus aliyun</name>
+            <url>https://maven.aliyun.com/repository/central</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
 
     <build>
         <plugins>
@@ -203,8 +226,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.3.2</version>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>${jdk-version}</source>
+                    <target>${jdk-version}</target>
                     <encoding>${project-sourceEncoding}</encoding>
                 </configuration>
             </plugin>

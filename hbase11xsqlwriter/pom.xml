@@ -18,6 +18,8 @@
         <phoenix.version>4.11.0-HBase-1.1</phoenix.version>
         <hadoop.version>2.7.1</hadoop.version>
         <commons-codec.version>1.8</commons-codec.version>
+        <protobuf.version>3.2.0</protobuf.version>
+        <httpclient.version>4.4.1</httpclient.version>
     </properties>
 
     <dependencies>
@@ -46,6 +48,17 @@
             <groupId>org.apache.phoenix</groupId>
             <artifactId>phoenix-core</artifactId>
             <version>${phoenix.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>jdk.tools</artifactId>
+                    <groupId>jdk.tools</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.phoenix</groupId>
+            <artifactId>phoenix-queryserver-client</artifactId>
+            <version>${phoenix.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -57,6 +70,21 @@
             <artifactId>commons-codec</artifactId>
             <version>${commons-codec.version}</version>
         </dependency>
+
+        <!-- httpclient begin -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>${httpclient.version}</version>
+        </dependency>
+        <!-- httpclient end -->
+
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>${protobuf.version}</version>
+        </dependency>
+
 
         <!-- for test -->
         <dependency>
@@ -98,8 +126,8 @@
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>${jdk-version}</source>
+                    <target>${jdk-version}</target>
                     <encoding>${project-sourceEncoding}</encoding>
                 </configuration>
             </plugin>
