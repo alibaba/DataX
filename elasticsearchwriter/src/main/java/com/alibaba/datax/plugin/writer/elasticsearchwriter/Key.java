@@ -64,6 +64,10 @@ public final class Key {
         return conf.getBool("cleanup", false);
     }
 
+    public static boolean isDelete(Configuration conf) {
+        return conf.getBool("delete", false);
+    }
+
     public static boolean isDiscovery(Configuration conf) {
         return conf.getBool("discovery", false);
     }
