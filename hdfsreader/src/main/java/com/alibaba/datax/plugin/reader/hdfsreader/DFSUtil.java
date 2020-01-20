@@ -386,7 +386,7 @@ public class DFSUtil {
         int columnIndexMax = -1;
         // 判断是否读取所有列
         if (null == column || column.size() == 0) {
-            int allColumnsCount = getAllColumnsCount_parquet(sourceOrcFilePath);
+            int allColumnsCount = getAllColumnsCountByparquet(sourceOrcFilePath);
             columnIndexMax = allColumnsCount - 1;
             isReadAllColumns = true;
         } else {
@@ -581,7 +581,7 @@ public class DFSUtil {
         }
     }
 
-    private int getAllColumnsCount_parquet(String filePath) {
+    private int getAllColumnsCountByparquet(String filePath) {
         int columnsCount;
         Path path = new Path(filePath);
         try {
