@@ -589,7 +589,7 @@ public class DFSUtil {
             columnsCount = readerFooter.getFileMetaData().getSchema().getColumns().size();
             return columnsCount;
         } catch (IOException e) {
-            String message = "读取orcfile column列数失败，请联系系统管理员";
+            String message = "读取parquet column列数失败，请联系系统管理员";
             throw DataXException.asDataXException(HdfsReaderErrorCode.READ_FILE_ERROR, message);
         }
     }
