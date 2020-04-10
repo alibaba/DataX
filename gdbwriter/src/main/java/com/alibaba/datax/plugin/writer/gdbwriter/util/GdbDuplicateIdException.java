@@ -1,9 +1,8 @@
 /*
- * (C)  2019-present Alibaba Group Holding Limited.
+ * (C) 2019-present Alibaba Group Holding Limited.
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
+ * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License version 2 as published by the Free Software Foundation.
  */
 package com.alibaba.datax.plugin.writer.gdbwriter.util;
 
@@ -13,11 +12,11 @@ package com.alibaba.datax.plugin.writer.gdbwriter.util;
  */
 
 public class GdbDuplicateIdException extends Exception {
-	public GdbDuplicateIdException(Exception e) {
-		super(e);
-	}
+    public GdbDuplicateIdException(Exception e) {
+        super(e);
+    }
 
-	public GdbDuplicateIdException() {
-		super();
-	}
+    public GdbDuplicateIdException() {
+        super();
+    }
 }
