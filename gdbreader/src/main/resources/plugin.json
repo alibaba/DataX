@@ -1,0 +1,6 @@
+{
+    "name": "gdbreader",
+    "class": "com.alibaba.datax.plugin.reader.gdbreader.GdbReader",
+    "description": "useScene: prod. mechanism: connect GDB with gremlin-client, execute 'g.V().propertyMap() or g.E().propertyMap()' to get record",
+    "developer": "alibaba"
+}
