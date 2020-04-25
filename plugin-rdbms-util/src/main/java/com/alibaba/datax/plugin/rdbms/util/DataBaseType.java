@@ -18,7 +18,8 @@ public enum DataBaseType {
     PostgreSQL("postgresql", "org.postgresql.Driver"),
     RDBMS("rdbms", "com.alibaba.datax.plugin.rdbms.util.DataBaseType"),
     DB2("db2", "com.ibm.db2.jcc.DB2Driver"),
-    ADS("ads","com.mysql.jdbc.Driver");
+    ADS("ads","com.mysql.jdbc.Driver"),
+    ClickHouse("clickhouse", "ru.yandex.clickhouse.ClickHouseDriver");
 
 
     private String typeName;
@@ -54,6 +55,8 @@ public enum DataBaseType {
                 break;
             case PostgreSQL:
             	break;
+            case ClickHouse:
+                break;
             case RDBMS:
                 break;
             default:
@@ -91,6 +94,8 @@ public enum DataBaseType {
                 break;
             case PostgreSQL:
             	break;
+            case ClickHouse:
+                break;
             case RDBMS:
                 break;
             default:
