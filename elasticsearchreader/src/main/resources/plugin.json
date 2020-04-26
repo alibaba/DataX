@@ -1,0 +1,7 @@
+{
+    "name": "elasticsearchreader",
+    "class": "com.alibaba.datax.plugin.reader.elasticsearchreader.ESReader",
+    "description": "Es Read",
+    "developer": "shiyedata ldq"
+}
+
