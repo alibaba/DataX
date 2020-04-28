@@ -189,7 +189,12 @@ public class OpenTSDBReader extends Reader {
         public void startRead(RecordSender recordSender) {
             try {
                 for (String column : columns) {
-                    conn.sendDPs(column, this.startTime, this.endTime, recordSender);
+                    //If some metric does not exist, it is not a fatal error. Just log it and do not affect other jobs.
+                    try {
+                        conn.sendDPs(column, this.startTime, this.endTime, recordSender);
+                    }catch(net.opentsdb.uid.NoSuchUniqueName e){
+                        LOG.warn("在时间段{}-{}无{}指标", this.startTime,this.endTime,column);
+                    }
                 }
             } catch (Exception e) {
                 throw DataXException.asDataXException(
