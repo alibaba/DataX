@@ -1,9 +1,6 @@
 package com.alibaba.datax.plugin.writer.osswriter;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
+import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -12,7 +9,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.zip.GZIPOutputStream;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -244,6 +244,7 @@ public class OssWriter extends Writer {
         private List<String> header;
         private Long maxFileSize;// MB
         private String suffix;
+        private boolean compress;
 
         @Override
         public void init() {
@@ -285,6 +286,8 @@ public class OssWriter extends Writer {
                             com.alibaba.datax.plugin.unstructuredstorage.writer.Key.SUFFIX,
                             com.alibaba.datax.plugin.unstructuredstorage.writer.Constant.DEFAULT_SUFFIX);
             this.suffix = this.suffix.trim();// warn: need trim
+            this.compress = this.writerSliceConfig
+                    .getBool(com.alibaba.datax.plugin.unstructuredstorage.writer.Key.COMPRESS, false);
         }
 
         @Override
@@ -437,24 +440,34 @@ public class OssWriter extends Writer {
         /**
          * 对于同一个UploadID，该号码不但唯一标识这一块数据，也标识了这块数据在整个文件内的相对位置。
          * 如果你用同一个part号码，上传了新的数据，那么OSS上已有的这个号码的Part数据将被覆盖。
-         * 
+         *
          * @throws Exception
-         * */
+         */
         private void uploadOnePart(
                 final StringWriter sw,
                 final int partNumber,
                 final InitiateMultipartUploadResult initiateMultipartUploadResult,
-                final List<PartETag> partETags, final String currentObject)
+                final List<PartETag> partETags,
+                final String currentObject)
                 throws Exception {
             final String encoding = this.encoding;
             final String bucket = this.bucket;
             final OSSClient ossClient = this.ossClient;
+            final boolean compress = this.compress;
             RetryUtil.executeWithRetry(new Callable<Boolean>() {
                 @Override
                 public Boolean call() throws Exception {
                     byte[] byteArray = sw.toString().getBytes(encoding);
-                    InputStream inputStream = new ByteArrayInputStream(
-                            byteArray);
+                    // to gzip compress the content
+                    InputStream inputStream;
+                    if (compress) {
+                        ByteArrayOutputStream obj = new ByteArrayOutputStream();
+                        GZIPOutputStream gzipout = new GZIPOutputStream(obj);
+                        gzipout.write(byteArray);
+                        inputStream = new ByteArrayInputStream(obj.toByteArray());
+                    } else {
+                        inputStream = new ByteArrayInputStream(byteArray);
+                    }
                     // 创建UploadPartRequest，上传分块
                     UploadPartRequest uploadPartRequest = new UploadPartRequest();
                     uploadPartRequest.setBucketName(bucket);
@@ -464,6 +477,9 @@ public class OssWriter extends Writer {
                     uploadPartRequest.setInputStream(inputStream);
                     uploadPartRequest.setPartSize(byteArray.length);
                     uploadPartRequest.setPartNumber(partNumber);
+                    if (compress) {
+                        uploadPartRequest.setHeaders(ImmutableMap.of("Content-Encoding", "gzip"));
+                    }
                     UploadPartResult uploadPartResult = ossClient
                             .uploadPart(uploadPartRequest);
                     partETags.add(uploadPartResult.getPartETag());
