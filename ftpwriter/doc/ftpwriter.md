@@ -63,6 +63,7 @@ FtpWriter实现了从DataX协议转为FTP文件功能，FTP文件本身是无结
                         "nullFormat": "null",
                         "dateFormat": "yyyy-MM-dd",
                         "fileFormat": "csv",
+			"suffix": ".csv",
                         "header": []
                     }
                 }
@@ -200,6 +201,14 @@ FtpWriter实现了从DataX协议转为FTP文件功能，FTP文件本身是无结
  	* 必选：否 <br />
  
  	* 默认值：text <br />
+	
+* **suffix**
+
+	* 描述：最后输出文件的后缀，当前支持 ".text"以及".csv"
+ 
+ 	* 必选：否 <br />
+ 
+ 	* 默认值："" <br />
 
 * **header**
 
