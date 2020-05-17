@@ -69,17 +69,6 @@ public class OssWriter extends Writer {
                     OssWriterErrorCode.REQUIRED_VALUE);
             this.writerSliceConfig.getNecessaryValue(Key.OBJECT,
                     OssWriterErrorCode.REQUIRED_VALUE);
-            // warn: do not support compress!!
-            String compress = this.writerSliceConfig
-                    .getString(com.alibaba.datax.plugin.unstructuredstorage.writer.Key.COMPRESS);
-            if (StringUtils.isNotBlank(compress)) {
-                String errorMessage = String.format(
-                        "OSS写暂时不支持压缩, 该压缩配置项[%s]不起效用", compress);
-                LOG.error(errorMessage);
-                throw DataXException.asDataXException(
-                        OssWriterErrorCode.ILLEGAL_VALUE, errorMessage);
-
-            }
             UnstructuredStorageWriterUtil
                     .validateParameter(this.writerSliceConfig);
 
@@ -244,7 +233,7 @@ public class OssWriter extends Writer {
         private List<String> header;
         private Long maxFileSize;// MB
         private String suffix;
-        private boolean compress;
+        private String compress;
 
         @Override
         public void init() {
@@ -287,7 +276,7 @@ public class OssWriter extends Writer {
                             com.alibaba.datax.plugin.unstructuredstorage.writer.Constant.DEFAULT_SUFFIX);
             this.suffix = this.suffix.trim();// warn: need trim
             this.compress = this.writerSliceConfig
-                    .getBool(com.alibaba.datax.plugin.unstructuredstorage.writer.Key.COMPRESS, false);
+                    .getString(com.alibaba.datax.plugin.unstructuredstorage.writer.Key.COMPRESS);
         }
 
         @Override
@@ -453,18 +442,22 @@ public class OssWriter extends Writer {
             final String encoding = this.encoding;
             final String bucket = this.bucket;
             final OSSClient ossClient = this.ossClient;
-            final boolean compress = this.compress;
+            final String compress = this.compress;
             RetryUtil.executeWithRetry(new Callable<Boolean>() {
                 @Override
                 public Boolean call() throws Exception {
                     byte[] byteArray = sw.toString().getBytes(encoding);
+                    int length = byteArray.length;
                     // to gzip compress the content
                     InputStream inputStream;
-                    if (compress) {
+                    if ("gzip".equals(compress)) {
                         ByteArrayOutputStream obj = new ByteArrayOutputStream();
                         GZIPOutputStream gzipout = new GZIPOutputStream(obj);
                         gzipout.write(byteArray);
-                        inputStream = new ByteArrayInputStream(obj.toByteArray());
+                        gzipout.close();
+                        byte[] bytes = obj.toByteArray();
+                        inputStream = new ByteArrayInputStream(bytes);
+                        length = bytes.length;
                     } else {
                         inputStream = new ByteArrayInputStream(byteArray);
                     }
@@ -475,9 +468,9 @@ public class OssWriter extends Writer {
                     uploadPartRequest.setUploadId(initiateMultipartUploadResult
                             .getUploadId());
                     uploadPartRequest.setInputStream(inputStream);
-                    uploadPartRequest.setPartSize(byteArray.length);
+                    uploadPartRequest.setPartSize(length);
                     uploadPartRequest.setPartNumber(partNumber);
-                    if (compress) {
+                    if ("gzip".equals(compress)) {
                         uploadPartRequest.setHeaders(ImmutableMap.of("Content-Encoding", "gzip"));
                     }
                     UploadPartResult uploadPartResult = ossClient
@@ -485,7 +478,7 @@ public class OssWriter extends Writer {
                     partETags.add(uploadPartResult.getPartETag());
                     LOG.info(String
                             .format("upload part [%s] size [%s] Byte has been completed.",
-                                    partNumber, byteArray.length));
+                                    partNumber, length));
                     IOUtils.closeQuietly(inputStream);
                     return true;
                 }
