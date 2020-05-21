@@ -1,23 +1,5 @@
 package com.alibaba.datax.plugin.writer.osswriter;
 
-import java.io.*;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.zip.GZIPOutputStream;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordReceiver;
@@ -31,15 +13,19 @@ import com.alibaba.datax.plugin.writer.osswriter.util.OssUtil;
 import com.aliyun.oss.ClientException;
 import com.aliyun.oss.OSSClient;
 import com.aliyun.oss.OSSException;
-import com.aliyun.oss.model.CompleteMultipartUploadRequest;
-import com.aliyun.oss.model.CompleteMultipartUploadResult;
-import com.aliyun.oss.model.InitiateMultipartUploadRequest;
-import com.aliyun.oss.model.InitiateMultipartUploadResult;
-import com.aliyun.oss.model.OSSObjectSummary;
-import com.aliyun.oss.model.ObjectListing;
-import com.aliyun.oss.model.PartETag;
-import com.aliyun.oss.model.UploadPartRequest;
-import com.aliyun.oss.model.UploadPartResult;
+import com.aliyun.oss.model.*;
+import com.google.common.collect.ImmutableMap;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.Callable;
 
 /**
  * Created by haiwei.luo on 15-02-09.
@@ -306,33 +292,17 @@ public class OssWriter extends Writer {
             // 可以根据currentPartNumber做分块级别的重试，InitiateMultipartUploadRequest多次一个currentPartNumber会覆盖原有
             int currentPartNumber = 1;
             try {
+                if (StringUtils.isBlank(this.suffix)) {
+                    currentObject = this.object;
+                } else {
+                    currentObject = String.format("%s%s", this.object, this.suffix);
+                }
                 // warn
                 boolean needInitMultipartTransform = true;
                 while ((record = lineReceiver.getFromReader()) != null) {
                     gotData = true;
                     // init:begin new multipart upload
                     if (needInitMultipartTransform) {
-                        if (objectRollingNumber == 0) {
-                            if (StringUtils.isBlank(this.suffix)) {
-                                currentObject = this.object;
-                            } else {
-                                currentObject = String.format("%s%s",
-                                        this.object, this.suffix);
-                            }
-                        } else {
-                            // currentObject is like(no suffix)
-                            // myfile__9b886b70fbef11e59a3600163e00068c_1
-                            if (StringUtils.isBlank(this.suffix)) {
-                                currentObject = String.format("%s_%s",
-                                        this.object, objectRollingNumber);
-                            } else {
-                                // or with suffix
-                                // myfile__9b886b70fbef11e59a3600163e00068c_1.csv
-                                currentObject = String.format("%s_%s%s",
-                                        this.object, objectRollingNumber,
-                                        this.suffix);
-                            }
-                        }
                         objectRollingNumber++;
                         currentInitiateMultipartUploadRequest = new InitiateMultipartUploadRequest(
                                 this.bucket, currentObject);
@@ -344,7 +314,6 @@ public class OssWriter extends Writer {
                                         this.bucket, currentObject,
                                         currentInitiateMultipartUploadResult
                                                 .getUploadId()));
-
                         // each object's header
                         if (null != this.header && !this.header.isEmpty()) {
                             unstructuredWriter.writeOneRecord(this.header);
@@ -450,9 +419,10 @@ public class OssWriter extends Writer {
                     int length = byteArray.length;
                     // to gzip compress the content
                     InputStream inputStream;
-                    if ("gzip".equals(compress)) {
+                    // TODO more compress support
+                    if ("gzip".equalsIgnoreCase(compress)) {
                         ByteArrayOutputStream obj = new ByteArrayOutputStream();
-                        GZIPOutputStream gzipout = new GZIPOutputStream(obj);
+                        GzipCompressorOutputStream gzipout = new GzipCompressorOutputStream(obj);
                         gzipout.write(byteArray);
                         gzipout.close();
                         byte[] bytes = obj.toByteArray();
@@ -470,7 +440,8 @@ public class OssWriter extends Writer {
                     uploadPartRequest.setInputStream(inputStream);
                     uploadPartRequest.setPartSize(length);
                     uploadPartRequest.setPartNumber(partNumber);
-                    if ("gzip".equals(compress)) {
+                    // TODO more compress support
+                    if ("gzip".equalsIgnoreCase(compress)) {
                         uploadPartRequest.setHeaders(ImmutableMap.of("Content-Encoding", "gzip"));
                     }
                     UploadPartResult uploadPartResult = ossClient
