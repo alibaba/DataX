@@ -46,7 +46,7 @@
               "valueDelimiter": ",",
               "pushType": "overwrite",
               "expire":300,
-              "keyPrefix":"datax:"
+              "keyPrefix":"datax:list:"
             }
           }
         }

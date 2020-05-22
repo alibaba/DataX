@@ -44,7 +44,7 @@
               "colKey":{"name":"uid","index":0},
               "colValue":{"name":"name","index":2},
               "expire":300,
-              "keyPrefix":"datax:"
+              "keyPrefix":"datax:string:"
             }
           }
         }

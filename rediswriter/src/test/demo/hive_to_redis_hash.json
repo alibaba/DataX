@@ -45,7 +45,7 @@
               "colValue":[{"name":"channels","index":1},{"name":"name","index":2}],
               "valueDelimiter": ",",
               "expire":300,
-              "keyPrefix":"datax:"
+              "keyPrefix":"datax:hash:"
             }
           }
         }
