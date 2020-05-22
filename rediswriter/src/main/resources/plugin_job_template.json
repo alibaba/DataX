@@ -1,0 +1,16 @@
+{
+  "name": "rediswriter",
+  "parameter": {
+    "redisMode": "",
+    "address": "",
+    "auth": "",
+    "writeType": "",
+    "config": {
+      "colKey": {},
+      "colValue": {},
+      "expire": 0,
+      "keyPrefix": "",
+      "keySuffix": ""
+    }
+  }
+}

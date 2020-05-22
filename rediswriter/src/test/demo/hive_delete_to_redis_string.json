@@ -1,0 +1,53 @@
+{
+  "job": {
+    "setting": {
+      "speed": {
+        "channel": 3
+      }
+    },
+    "content": [
+      {
+        "reader": {
+          "name": "hdfsreader",
+          "parameter": {
+            "path": "/user/hive/warehouse/test.db/redis_writer",
+            "defaultFS": "hdfs://recessw-hdp3-manager001:8020",
+            "column": [
+              {
+                "index": 0,
+                "name": "uid",
+                "type": "string"
+              },
+              {
+                "index": 1,
+                "name": "channels",
+                "type": "string"
+              },
+              {
+                "index": 2,
+                "name": "name",
+                "type": "string"
+              }],
+            "fileType": "text",
+            "encoding": "UTF-8",
+            "fieldDelimiter": "\t"
+          }
+        },
+        "writer": {
+          "name": "rediswriter",
+          "parameter": {
+            "redisMode": "cluster",
+            "address": "recessw-web-redis002:6379,recessw-web-redis002:6479,recessw-web-redis003:6379,recessw-web-redis003:6479,recessw-web-redis004:6379,recessw-web-redis004:6479",
+            "auth": "Pye9WQAYsgetVrLw",
+            "writeType":"string",
+            "writeMode": "delete",
+            "config":{
+              "colKey":{"name":"uid","index":0},
+              "keyPrefix":"datax:"
+            }
+          }
+        }
+      }
+    ]
+  }
+}
