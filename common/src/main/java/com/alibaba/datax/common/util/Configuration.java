@@ -9,6 +9,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.*;
@@ -51,6 +53,7 @@ import java.util.*;
  * 3. 输出JSON，将上述对象转为JSON，要把上述Map的多级key转为树形结构，并输出为JSON <br>
  */
 public class Configuration {
+	private static final Logger log = LoggerFactory.getLogger(Configuration.class);
 
     /**
      * 对于加密的keyPath，需要记录下来
@@ -423,7 +426,13 @@ public class Configuration {
 
 		List<T> result = new ArrayList<T>();
 
-		List<Object> origin = (List<Object>) object;
+		List<Object> origin = new ArrayList<>();
+		try {
+			origin = (List<Object>) object;
+		}catch(ClassCastException e){
+			log.warn("{} 转为 List 时发生了异常，默认将此值添加到 List 中", String.valueOf(object));
+			origin.add(String.valueOf(object));
+		}
 		for (final Object each : origin) {
 			result.add((T) each);
 		}
