@@ -2,7 +2,8 @@
         xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
-    <id></id>
+    <!--The assembly id is used for reporting and calculating descriptor/component merges.-->
+    <id>${project.artifactId}</id>
     <formats>
         <format>dir</format>
     </formats>
