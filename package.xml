@@ -96,7 +96,7 @@
             <outputDirectory>datax</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>mongodbreader/target/datax</directory>
+            <directory>mongodbreader/target/datax-plugin</directory>
             <includes>
                 <include>**/*.*</include>
             </includes>
