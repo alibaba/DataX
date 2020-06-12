@@ -100,6 +100,8 @@
         <module>plugin-unstructured-storage-util</module>
         <module>hbase20xsqlreader</module>
         <module>hbase20xsqlwriter</module>
+        <module>informixreader</module>
+        <module>informixwriter</module>
     </modules>
 
     <dependencyManagement>

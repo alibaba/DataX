@@ -19,8 +19,8 @@ public enum DataBaseType {
     RDBMS("rdbms", "com.alibaba.datax.plugin.rdbms.util.DataBaseType"),
     DB2("db2", "com.ibm.db2.jcc.DB2Driver"),
     ADS("ads","com.mysql.jdbc.Driver"),
-    ClickHouse("clickhouse", "ru.yandex.clickhouse.ClickHouseDriver");
-
+    ClickHouse("clickhouse", "ru.yandex.clickhouse.ClickHouseDriver"),
+    Informix("informix", "com.informix.jdbc.IfxDriver");
 
     private String typeName;
     private String driverClassName;
@@ -58,6 +58,8 @@ public enum DataBaseType {
             case ClickHouse:
                 break;
             case RDBMS:
+                break;
+            case Informix:
                 break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type.");
@@ -98,6 +100,8 @@ public enum DataBaseType {
                 break;
             case RDBMS:
                 break;
+            case Informix:
+                break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type.");
         }
@@ -123,6 +127,8 @@ public enum DataBaseType {
             case DB2:
             case PostgreSQL:
             	break;
+            case Informix:
+                break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type.");
         }
@@ -146,6 +152,8 @@ public enum DataBaseType {
             case DB2:
             case PostgreSQL:
                 break;
+            case Informix:
+                break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type");
         }
@@ -167,6 +175,8 @@ public enum DataBaseType {
             case DB2:
                 break;
             case PostgreSQL:
+                break;
+            case Informix:
                 break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type");
