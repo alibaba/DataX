@@ -66,6 +66,11 @@
           	<artifactId>caffeine</artifactId>
           	<version>2.4.0</version>
         </dependency>
+	<dependency>
+            <groupId>com.squareup</groupId>
+            <artifactId>javapoet</artifactId>
+            <version>1.12.1</version>
+        </dependency>
     </dependencies>
 
     <build>

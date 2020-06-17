@@ -56,6 +56,11 @@
             <artifactId>lombok</artifactId>
             <version>1.18.8</version>
         </dependency>
+	<dependency>
+            <groupId>com.squareup</groupId>
+            <artifactId>javapoet</artifactId>
+            <version>1.12.1</version>
+        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
