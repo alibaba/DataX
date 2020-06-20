@@ -48,12 +48,13 @@ OSSWriter实现了从DataX协议转为OSS中的TXT文件功能，OSS本身是无
 
                 },
                 "writer": {
+                      "name": "osswriter",
                       "parameter": {
                         "endpoint": "http://oss.aliyuncs.com",
                         "accessId": "",
                         "accessKey": "",
                         "bucket": "myBucket",
-                        "object": "/cdo/datax",
+                        "object": "cdo/datax",
                         "encoding": "UTF-8",
                         "fieldDelimiter": ",",
                         "writeMode": "truncate|append|nonConflict"
