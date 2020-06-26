@@ -28,6 +28,10 @@ public final class Key {
 
     public final static String esPassword = "password";
     public final static String esBatchSize = "batchSize";
+
+    public final static String keepAlive = "keepAlive";
+
+
     /*
      * @name: esIndex
      * @description:  elastic search index

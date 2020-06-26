@@ -49,13 +49,11 @@ public class ESReader extends Reader {
         private String esType = null;
 
 
-        private long splitPk = 0L;
 
         private String query = null;
 
 //        private TransportClient client = null;
 
-        private Integer batchSize = 1000;
         private RestHighLevelClient esClient = null;
 
 
@@ -77,15 +75,12 @@ public class ESReader extends Reader {
 
 
             this.esColumnMeta = JSON.parseArray(readerSplitConfiguration.getString(Key.esColumn));
-            this.esClusterName = this.readerSplitConfiguration.getString(Key.esClusterName);
             this.esClusterAddress = readerSplitConfiguration.getList(Key.esClusterAddress);
             this.esIndex = readerSplitConfiguration.getString(Key.esIndex);
             this.esType = readerSplitConfiguration.getString(Key.esType);
-            this.batchSize = readerSplitConfiguration.getInt(Key.batchSize, 1000);
             this.esUsername = readerSplitConfiguration.getString(Key.esUsername);
             this.esPassword = readerSplitConfiguration.getString(Key.esPassword);
             this.query = readerSplitConfiguration.getString(Key.query);
-            this.splitPk = readerSplitConfiguration.getLong(Key.splitPk);
         }
 
         @Override
@@ -145,7 +140,6 @@ public class ESReader extends Reader {
         private String esType = null;
 
 
-        private long splitPk = 0L;
 
         private String query = null;
 
@@ -172,15 +166,16 @@ public class ESReader extends Reader {
 
 
             this.esColumnMeta = JSON.parseArray(readerSplitConfiguration.getString(Key.esColumn));
-            this.esClusterName = this.readerSplitConfiguration.getString(Key.esClusterName);
             this.esClusterAddress = readerSplitConfiguration.getList(Key.esClusterAddress);
             this.esIndex = readerSplitConfiguration.getString(Key.esIndex);
             this.esType = readerSplitConfiguration.getString(Key.esType);
             this.batchSize = readerSplitConfiguration.getInt(Key.batchSize, 1000);
             this.esUsername = readerSplitConfiguration.getString(Key.esUsername);
             this.esPassword = readerSplitConfiguration.getString(Key.esPassword);
+            this.keepAlive = readerSplitConfiguration.getLong(Key.keepAlive);
+
+
             this.query = readerSplitConfiguration.getString(Key.query);
-            this.splitPk = readerSplitConfiguration.getLong(Key.splitPk);
         }
 
         @Override
