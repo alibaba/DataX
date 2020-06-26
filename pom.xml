@@ -66,6 +66,7 @@
         <module>tsdbreader</module>
         <module>opentsdbreader</module>
         <module>cassandrareader</module>
+        <module>elasticsearchreader</module>
 
         <!-- writer -->
         <module>mysqlwriter</module>

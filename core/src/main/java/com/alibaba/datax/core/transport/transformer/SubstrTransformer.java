@@ -1,5 +1,4 @@
 package com.alibaba.datax.core.transport.transformer;
-
 import com.alibaba.datax.common.element.Column;
 import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.element.StringColumn;

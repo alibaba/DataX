@@ -2,6 +2,7 @@
 #### 1 快速介绍
 
 MongoDBReader 插件利用 MongoDB 的java客户端MongoClient进行MongoDB的读操作。最新版本的Mongo已经将DB锁的粒度从DB级别降低到document级别，配合上MongoDB强大的索引功能，基本可以达到高性能的读取MongoDB的需求。
+在针对字段频繁增加的mongodb表时，可以增加jsonType类型，将整个一行json数据保存为一个字段，进行导出。后续的ETL行为可以根据完整json进行灵活处理。
 
 #### 2 实现原理
 
@@ -144,6 +145,59 @@ MongoDBReader通过Datax框架从MongoDB并行的读取数据，通过主控的J
 | Boolean  | boolean |
 | Bytes    | bytes |
 
+#### 6 扫描mongo整行完整数据
 
-#### 6 性能报告
-#### 7 测试报告
+	    {
+	    "job": {
+	        "setting": {
+	            "speed": {
+	                "channel": 2
+	            }
+	        },
+	        "content": [
+	            {
+	                "reader": {
+	                    "jsonType":true,
+	                    "name": "mongodbreader",
+	                    "parameter": {
+	                        "address": ["127.0.0.1:27017"],
+	                        "userName": "",
+	                        "userPassword": "",
+	                        "dbName": "tag_per_data",
+	                        "collectionName": "tag_data12",
+	                        "column": [
+	                            {
+	                                "name": "_id",
+	                                "type": "string"
+	                            }
+	                        ]
+	                    }
+	                },
+	                "writer": {
+	                    "name": "odpswriter",
+	                    "parameter": {
+	                        "project": "tb_ai_recommendation",
+	                        "table": "jianying_tag_datax_read_test01",
+	                        "column": [
+	                            "id"
+	                        ],
+	                        "accessId": "**************",
+	                        "accessKey": "********************",
+	                        "truncate": true,
+	                        "odpsServer": "xxx/api",
+	                        "tunnelServer": "xxx",
+	                        "accountType": "aliyun"
+	                    }
+	                }
+	            }
+	        ]
+	    }
+        }
+
+
+#### 7 参数说明
+* jsonType： 扫描mongo整行数据,true时，将忽略用户配置的column，将mongodb整行json数据不解析，直接输出完整json数据【选填】
+* type： 字段的数据类型，建议用户对所有的数据类型都填写string，代码内部会自动判断数据类型。如果为string，Document和ArrayList对象才能转为标准json输出，而不需要填写splitter参数。
+
+#### 8 性能报告
+#### 9 测试报告

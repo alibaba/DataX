@@ -6,24 +6,26 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.alibaba.datax.common.exception.DataXException;
+import com.alibaba.datax.common.spi.Reader;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.plugin.reader.mongodbreader.KeyConstant;
 import com.alibaba.datax.plugin.reader.mongodbreader.MongoDBReaderErrorCode;
 
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientURI;
-import com.mongodb.MongoCredential;
-import com.mongodb.ServerAddress;
+import com.mongodb.*;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoIterable;
+import org.bson.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by jianying.wcj on 2015/3/17 0017.
  * Modified by mingyan.zc on 2016/6/13.
  */
 public class MongoUtil {
-
+    private static final Logger LOG = LoggerFactory
+            .getLogger(MongoUtil.class);
     public static MongoClient initMongoClient(Configuration conf) {
 
         List<Object> addressList = conf.getList(KeyConstant.MONGO_ADDRESS);
@@ -53,32 +55,46 @@ public class MongoUtil {
             MongoClientURI mongoClientURI  =null;
             MongoClient mongoClient  = null;
             MongoDatabase db = null;
+
+
+
+
+
+
             try {
 
                 uri= "mongodb://" + userName + ":" + password + "@" + addressListStr + "/?authMechanism=SCRAM-SHA-1";
-                 mongoClientURI = new MongoClientURI(uri);
-                 mongoClient = new MongoClient(mongoClientURI);
-                 mongoClient.getDatabase(database).getReadConcern();
-                mongoClient.setReadPreference(com.mongodb.ReadPreference.secondaryPreferred());
-                return mongoClient;
-            } catch (Exception e14) {
-            }
-
-            try {
-                uri = "mongodb://" + userName + ":" + password + "@" + addressListStr + "/" + database;
-
                 mongoClientURI = new MongoClientURI(uri);
                 mongoClient = new MongoClient(mongoClientURI);
-                mongoClient.getDatabase(database).getReadConcern();
-                mongoClient.setReadPreference(com.mongodb.ReadPreference.secondaryPreferred());
-                return mongoClient;
-            } catch (Exception e14) {
+                Document document = mongoClient.getDatabase(database).runCommand(new Document("ping", 1));
+            } catch (Exception e) {
+                LOG.error(e.getMessage(),e);
             }
 
-            MongoCredential credential = MongoCredential.createCredential(userName, database, password.toCharArray());
-            mongoClient = new MongoClient(parseServerAddress(addressList), Arrays.asList(new MongoCredential[]{credential}));
-            mongoClient.getDatabase(database).getReadConcern();
-            mongoClient.setReadPreference(com.mongodb.ReadPreference.secondaryPreferred());
+
+            if(null==mongoClient){
+                try {
+                    uri = "mongodb://" + userName + ":" + password + "@" + addressListStr + "/" + database;
+
+                    mongoClientURI = new MongoClientURI(uri);
+                    mongoClient = new MongoClient(mongoClientURI);
+                    Document document = mongoClient.getDatabase(database).runCommand(new Document("ping", 1));
+                } catch (Exception e) {
+                    LOG.error(e.getMessage(),e);
+                }
+            }
+
+
+            if(null==mongoClient){
+                MongoCredential credential = MongoCredential.createCredential(userName, database, password.toCharArray());
+                mongoClient = new MongoClient(parseServerAddress(addressList), Arrays.asList(new MongoCredential[]{credential}));
+                mongoClient.setReadPreference(com.mongodb.ReadPreference.secondaryPreferred());
+                Document document = mongoClient.getDatabase(database).runCommand(new Document("ping", 1));
+            }
+
+
+
+
             return mongoClient;
 
 

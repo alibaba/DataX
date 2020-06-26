@@ -83,7 +83,9 @@ public class KeyConstant {
     public static final int MONGO_UNAUTHORIZED_ERR_CODE = 13;
     public static final int MONGO_ILLEGALOP_ERR_CODE = 20;
 
-
+    /**
+     * 扫描mongo整行数据,true时，将忽略用户配置的column
+     */
     public static final String JSON_TYPE = "jsonType";
 
     /**

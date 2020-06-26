@@ -17,6 +17,7 @@ import io.searchbox.indices.IndicesExists;
 import io.searchbox.indices.aliases.*;
 import io.searchbox.indices.mapping.PutMapping;
 import org.apache.http.HttpHost;
+import org.elasticsearch.search.slice.SliceBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

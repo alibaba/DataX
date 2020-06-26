@@ -20,9 +20,13 @@ import com.alibaba.fastjson.JSONObject;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
+import com.mongodb.Bytes;
 import com.mongodb.MongoClient;
 import com.mongodb.client.*;
 import org.bson.Document;
+import org.bson.conversions.Bson;
+import org.bson.json.JsonMode;
+import org.bson.json.JsonWriterSettings;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +36,7 @@ import com.alibaba.datax.common.element.Column;
  * Created by jianying.wcj on 2015/3/19 0019.
  * Modified by mingyan.zc on 2016/6/13.
  * Modified by mingyan.zc on 2017/7/5.
+ * Modified by liukunyuan on 2020/6/22.
  */
 public class MongoDBReader extends Reader {
     private static final Logger LOG = LoggerFactory
@@ -100,7 +105,7 @@ public class MongoDBReader extends Reader {
         private Object lowerBound = null;
         private Object upperBound = null;
         private boolean isObjectId = true;
-
+        private int batchSize = 1000;
         private boolean jsonType = false;
 
         @Override
@@ -131,9 +136,14 @@ public class MongoDBReader extends Reader {
                 Document queryFilter = Document.parse(query);
                 filter = new Document("$and", Arrays.asList(filter, queryFilter));
             }
-            dbCursor = col.find(filter).iterator();
+            LOG.info("过滤条件："+filter.toJson());
+            dbCursor = col.find(filter).batchSize(batchSize).iterator();
+
+            JsonWriterSettings settings = CollectionSplitUtil.getJsonWriterSettings();
             while (dbCursor.hasNext()) {
                 Document item = dbCursor.next();
+                // format json
+                item = Document.parse(item.toJson(settings));
 
                 Record record = recordSender.createRecord();
 
@@ -189,18 +199,17 @@ public class MongoDBReader extends Reader {
                         ArrayList resultList = new ArrayList<String>(array.size());
                         for (Object obj : array) {
                             if (obj instanceof Document) {
-                                resultList.add(((Document) obj).toJson());
-
+                                Document doc = (Document) obj;
+                                resultList.add(doc.toJson());
                             } else {
-                                resultList.add(JSON.toJSON(obj));
-
+                                resultList.add(obj);
                             }
                         }
 
                         record.addColumn(new StringColumn(JSON.toJSONString(resultList)));
                     } else if (tempCol instanceof Document && "STRING".equalsIgnoreCase(column.getString(KeyConstant.COLUMN_TYPE))) {
-//                        ((Document) tempCol).toJson();
-                        record.addColumn(new StringColumn(((Document) tempCol).toJson()));
+                        Document doc = (Document)tempCol;
+                        record.addColumn(new StringColumn(doc.toJson()));
                     } else {
                         if (KeyConstant.isArrayType(column.getString(KeyConstant.COLUMN_TYPE))) {
                             String splitter = column.getString(KeyConstant.COLUMN_SPLITTER);
@@ -238,6 +247,7 @@ public class MongoDBReader extends Reader {
 
             this.collection = readerSliceConfig.getString(KeyConstant.MONGO_COLLECTION_NAME);
             this.query = readerSliceConfig.getString(KeyConstant.MONGO_QUERY);
+            this.batchSize = readerSliceConfig.getInt(KeyConstant.BATCH_SIZE,1000);
             this.mongodbColumnMeta = JSON.parseArray(readerSliceConfig.getString(KeyConstant.MONGO_COLUMN));
             this.lowerBound = readerSliceConfig.get(KeyConstant.LOWER_BOUND);
             this.upperBound = readerSliceConfig.get(KeyConstant.UPPER_BOUND);
@@ -257,11 +267,7 @@ public class MongoDBReader extends Reader {
         }
 
 
-        private static void toJson(Object bson) {
-           boolean hasDocumentAndList = false;
-//           if()
 
-        }
 
 
     }
