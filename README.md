@@ -64,9 +64,9 @@ DataX目前已经有了比较全面的插件体系，主流的RDBMS数据库、N
 
 # 项目成员
 
-核心Contributions:  光戈、一斅、祁然、云时
+核心Contributions: 言柏 、枕水、秋奇、青砾、一斅、云时
 
-感谢天烬、巴真、静行对DataX做出的贡献。
+感谢天烬、光戈、祁然、巴真、静行对DataX做出的贡献。
 
 # License
 
