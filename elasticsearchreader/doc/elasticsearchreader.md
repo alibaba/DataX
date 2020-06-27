@@ -133,7 +133,9 @@
 
 
 ## 4 性能报告
+* es环境：5个shard数、3T数据，每日新增数据在15G左右，设置channel=5,batchSize=10000,同步数据到本地，速度稳定在15.58MB/s
+2020-06-27 15:05:07.730 [job-0] INFO  StandAloneJobContainerCommunicator - Total 10829888 records, 3166074919 bytes | Speed 15.58MB/s, 56000 records/s | Error 0 records, 0 bytes |  All Task WaitWriterTime 30.316s |  All Task WaitReaderTime 945.980s | Percentage 0.00%
 
 ## 5 约束限制
 
-** elasticsearch reader的channel个数不要超过es的shard数
+** elasticsearch reader的channel个数不要超过es的shard数，如果超过，插件会自动缩小channel数

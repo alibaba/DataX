@@ -112,6 +112,24 @@ public class ESReader extends Reader {
 
         @Override
         public List<Configuration> split(int adviceNumber) {
+            SearchRequest searchRequest = new SearchRequest(this.esIndex);
+            if(StringUtils.isNotBlank(this.esType)){
+                searchRequest.types(this.esType);
+            }
+            try {
+                SearchResponse searchResponse = this.esClient.search(searchRequest);
+                int shards = searchResponse.getSuccessfulShards();
+                if(adviceNumber>shards){
+                    LOG.info("期望的channel数为:{},超过了最大shard数：{},channel数重置为shard数:{}",adviceNumber,shards,shards);
+                    adviceNumber=shards;
+
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
+
             List<Configuration> readerSplitConfigurations = new ArrayList<Configuration>();
             for (int i = 0; i < adviceNumber; i++) {
                 Configuration readerSplitConfiguration = this.readerSplitConfiguration.clone();
@@ -172,7 +190,7 @@ public class ESReader extends Reader {
             this.batchSize = readerSplitConfiguration.getInt(Key.batchSize, 1000);
             this.esUsername = readerSplitConfiguration.getString(Key.esUsername);
             this.esPassword = readerSplitConfiguration.getString(Key.esPassword);
-            this.keepAlive = readerSplitConfiguration.getLong(Key.keepAlive);
+            this.keepAlive = readerSplitConfiguration.getLong(Key.keepAlive,1);
 
 
             this.query = readerSplitConfiguration.getString(Key.query);
@@ -222,7 +240,9 @@ public class ESReader extends Reader {
 
 
             SearchRequest searchRequest = new SearchRequest(this.esIndex);
-            searchRequest.types(this.esType);
+            if(StringUtils.isNotBlank(this.esType)){
+                searchRequest.types(this.esType);
+            }
             searchRequest.scroll(scroll);
             searchRequest.source(searchSourceBuilder);
 
