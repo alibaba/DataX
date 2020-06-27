@@ -134,7 +134,15 @@
 
 ## 4 性能报告
 * es环境：5个shard数、3T数据，每日新增数据在15G左右，设置channel=5,batchSize=10000,同步数据到本地，速度稳定在15.58MB/s
-2020-06-27 15:05:07.730 [job-0] INFO  StandAloneJobContainerCommunicator - Total 10829888 records, 3166074919 bytes | Speed 15.58MB/s, 56000 records/s | Error 0 records, 0 bytes |  All Task WaitWriterTime 30.316s |  All Task WaitReaderTime 945.980s | Percentage 0.00%
+
+任务启动时刻                    : 2020-06-27 15:01:15
+任务结束时刻                    : 2020-06-27 15:18:57
+任务总计耗时                    :               1062s
+任务平均流量                    :           14.54MB/s
+记录写入速度                    :          52129rec/s
+读出记录总数                    :            54214662
+读写失败总数                    :                   0
+
 
 ## 5 约束限制
 
