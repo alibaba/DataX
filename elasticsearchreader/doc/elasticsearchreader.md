@@ -144,6 +144,7 @@
 读写失败总数                    :                   0
 
 
+
 ## 5 约束限制
 
 ** elasticsearch reader的channel个数不要超过es的shard数，如果超过，插件会自动缩小channel数
