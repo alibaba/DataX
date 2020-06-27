@@ -154,22 +154,18 @@ public class CollectionSplitUtil {
     // bson转json格式设置
     public static JsonWriterSettings getJsonWriterSettings() {
         JsonWriterSettings jsonWriterSettings = JsonWriterSettings.builder()
-                .dateTimeConverter((value, writer) -> writer.writeNumber(value.toString()))
+                .dateTimeConverter((value, writer) -> writer.writeString(Long.toString(value)))
                 .decimal128Converter((value, writer) -> writer.writeNumber(value.toString()))
                 .objectIdConverter((value, writer) -> writer.writeString(value.toString()))
                 .int32Converter((value, writer) -> writer.writeNumber(value.toString()))
-                .int64Converter((value, writer) -> writer.writeNumber(value.toString()))
+                .int64Converter((value, writer) -> writer.writeString(Long.toString(value)))
                 .build();
 
         return jsonWriterSettings;
     }
 
 
-    private static String getObject(String objectid) {
-        String object = objectid.substring(0, 8);
-        object = object + "0000000000000000";
-        return object;
-    }
+
 
 
 }
