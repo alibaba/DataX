@@ -201,4 +201,5 @@ MongoDBReader通过Datax框架从MongoDB并行的读取数据，通过主控的J
 * type： 字段的数据类型，建议用户对所有的数据类型都填写string，代码内部会自动判断数据类型。如果为string，Document和ArrayList对象才能转为标准json输出，而不需要填写splitter参数。
 
 #### 8 性能报告
+
 #### 9 测试报告
