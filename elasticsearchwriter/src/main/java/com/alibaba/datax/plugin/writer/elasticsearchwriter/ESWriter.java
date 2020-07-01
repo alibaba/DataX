@@ -441,10 +441,10 @@ public class ESWriter extends Writer {
                                         } catch (Exception e) {
                                             String[] json = text.substring(1,text.length()-1).split("\",\"");
                                             parse = new HashMap();
-                                            for (int i0=0;i0<json.length;i0++) {
-                                                String item=json[i0];
-                                                if(i0==0) item=item.substring(1);
-                                                if(i0==json.length-1) item=item.substring(0,item.length()-1);
+                                            for (int ii=0;ii<json.length;ii++) {
+                                                String item=json[ii];
+                                                if(ii==0) item=item.substring(1);
+                                                if(ii==json.length-1) item=item.substring(0,item.length()-1);
                                                 String[] kv = item.split("\":\"");
                                                 String key = kv[0].replace("\"","");
                                                 String value=null;
