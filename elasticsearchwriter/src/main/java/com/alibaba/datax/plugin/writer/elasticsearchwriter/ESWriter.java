@@ -8,6 +8,7 @@ import com.alibaba.datax.common.spi.Writer;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.common.util.RetryUtil;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import io.searchbox.client.JestResult;
@@ -107,12 +108,15 @@ public class ESWriter extends Writer {
 
                     columnItem.setName(colName);
                     columnItem.setType(colTypeStr);
-
-                    if (colType == ESFieldType.ID) {
-                        columnList.add(columnItem);
-                        // 如果是id,则properties为空
-                        continue;
+                    if (colType.equals(ESFieldType.ID)){
+                        columnItem.setType("keyword");
                     }
+
+//                    if (colType == ESFieldType.ID) {
+//                        columnList.add(columnItem);
+//                        // 如果是id,则properties为空
+//                        continue;
+//                    }
 
                     Boolean array = jo.getBoolean("array");
                     if (array != null) {
@@ -151,6 +155,9 @@ public class ESWriter extends Writer {
                                 //field.put("format", "strict_date_optional_time||epoch_millis||yyyy-MM-dd HH:mm:ss||yyyy-MM-dd");
                             }
                             */
+                            break;
+                        case ID:
+                            field.put("type","keyword");
                             break;
                         case GEO_SHAPE:
                             field.put("tree", jo.getString("tree"));
@@ -320,9 +327,19 @@ public class ESWriter extends Writer {
                     String columnName = columnList.get(i).getName();
                     ESFieldType columnType = typeList.get(i);
                     //如果是数组类型，那它传入的必是字符串类型
-                    if (columnList.get(i).isArray() != null && columnList.get(i).isArray()) {
-                        String[] dataList = column.asString().split(splitter);
+                    //此处追加个值为null的判断条件
+                    String text = column.asString();
+                    if (text !=null && columnList.get(i).isArray() != null && columnList.get(i).isArray()) {
+                        String[] dataList = text.split(splitter);
                         if (!columnType.equals(ESFieldType.DATE)) {
+//                            nested数组判断
+//                            if(columnType.equals(ESFieldType.NESTED) || columnType.equals(ESFieldType.OBJECT)||columnType.equals(ESFieldType.GEO_SHAPE)){
+//                                Map<String,String>[] nested=new Map[dataList.length];
+//                                for (int i1 = 0; i1 < dataList.length; i1++) {
+//                                    nested[i1]=JSON.parseObject(dataList[i1],Map.class);
+//                                }
+//                                data.put(columnName,nested);
+//                            }else
                             data.put(columnName, dataList);
                         } else {
                             for (int pos = 0; pos < dataList.length; pos++) {
@@ -338,6 +355,7 @@ public class ESWriter extends Writer {
                                 } else {
                                     id = record.getColumn(i).asString();
                                 }
+                                data.put(columnName, text);
                                 break;
                             case DATE:
                                 try {
@@ -352,7 +370,7 @@ public class ESWriter extends Writer {
                             case TEXT:
                             case IP:
                             case GEO_POINT:
-                                data.put(columnName, column.asString());
+                                data.put(columnName, text);
                                 break;
                             case BOOLEAN:
                                 data.put(columnName, column.asBoolean());
@@ -374,10 +392,73 @@ public class ESWriter extends Writer {
                             case DOUBLE:
                                 data.put(columnName, column.asDouble());
                                 break;
-                            case NESTED:
                             case OBJECT:
                             case GEO_SHAPE:
-                                data.put(columnName, JSON.parse(column.asString()));
+                            case NESTED:
+
+                                //解决传入参数为null的bug
+                                if(text !=null){
+                                    String[] split = text.split(splitter);
+                                    if (split.length>1) {
+                                        ArrayList<Map> nested = new ArrayList<>();
+                                        for (int i1 = 0; i1 < split.length; i1++) {
+    //                                        log.warn(column.asString());
+
+                                            String str = split[i1];
+
+                                            try {
+                                                Map parse = JSON.parseObject(str, Map.class);
+                                                nested.add(parse);
+                                            } catch (Exception e) {
+
+    //                                            log.warn(str);
+                                                String[] json = str.substring(1,str.length()-1).split("\",\"");
+                                                Map parse = new HashMap();
+                                                for (int i0=0;i0<json.length;i0++) {
+                                                    String item=json[i0];
+                                                    if(i0==0) item=item.substring(1);
+                                                    if(i0==json.length-1) item=item.substring(0,item.length()-1);
+                                                    String[] kv = item.split("\":\"");
+                                                    String key = kv[0].replace("\"","");
+                                                    String value=null;
+                                                    if(kv.length>1){
+                                                        value = kv[1].replace("\\","\\\\").replace("\"","");
+                                                    }
+                                                    parse.put(key,value);
+                                                }
+    //                                            log.warn("json格式错误！！！！");
+    //                                            log.warn(parse.toString());
+                                                nested.add(parse);
+
+                                            }
+                                        }
+                                        data.put(columnName,nested);
+                                    }
+                                    else {
+                                            Map parse;
+                                        try {
+                                            parse = JSON.parseObject(text, Map.class);
+                                        } catch (Exception e) {
+                                            String[] json = text.substring(1,text.length()-1).split("\",\"");
+                                            parse = new HashMap();
+                                            for (int i0=0;i0<json.length;i0++) {
+                                                String item=json[i0];
+                                                if(i0==0) item=item.substring(1);
+                                                if(i0==json.length-1) item=item.substring(0,item.length()-1);
+                                                String[] kv = item.split("\":\"");
+                                                String key = kv[0].replace("\"","");
+                                                String value=null;
+                                                if(kv.length>1){
+                                                    value = kv[1].replace("\\","\\\\").replace("\"","");
+                                                }
+                                                parse.put(key,value);
+                                            }
+                                        }
+                                            data.put(columnName,parse);
+                                    }
+
+                                }else
+                                data.put(columnName, null);
                                 break;
                             default:
                                 getTaskPluginCollector().collectDirtyRecord(record, "类型错误:不支持的类型:" + columnType + " " + columnName);

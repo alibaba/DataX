@@ -122,7 +122,7 @@ public final class Key {
     }
 
     public static String getSplitter(Configuration conf) {
-        return conf.getString("splitter", "-,-");
+        return conf.getString("splitter", "|");
     }
 
     public static boolean getDynamic(Configuration conf) {

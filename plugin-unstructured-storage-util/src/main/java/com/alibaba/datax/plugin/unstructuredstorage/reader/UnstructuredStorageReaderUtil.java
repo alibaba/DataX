@@ -283,12 +283,13 @@ public class UnstructuredStorageReaderUtil {
 
 			setCsvReaderConfig(csvReader);
 
-			String[] parseRows;
-			while ((parseRows = UnstructuredStorageReaderUtil
-					.splitBufferedReader(csvReader)) != null) {
-				UnstructuredStorageReaderUtil.transportOneRecord(recordSender,
-						column, parseRows, nullFormat, taskPluginCollector);
+
+			String line = null;
+			while ((line = reader.readLine()) != null) {
+				String[] parseRows = line.split(delimiterInStr, -1);
+				UnstructuredStorageReaderUtil.transportOneRecord(recordSender,column, parseRows, nullFormat, taskPluginCollector);
 			}
+
 		} catch (UnsupportedEncodingException uee) {
 			throw DataXException
 					.asDataXException(
