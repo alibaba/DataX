@@ -132,6 +132,7 @@ MongoDBReader通过Datax框架从MongoDB并行的读取数据，通过主控的J
 * name：Column的名字。【必填】
 * type：Column的类型。【选填】
 * splitter：因为MongoDB支持数组类型，但是Datax框架本身不支持数组类型，所以mongoDB读出来的数组类型要通过这个分隔符合并成字符串。【选填】
+* query: MongoDB的额外查询条件。【选填】
 
 #### 5 类型转换
 
