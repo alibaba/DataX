@@ -69,19 +69,7 @@ public class MongoUtil {
                     mongoClient = null;
                 }
                 if (null == mongoClient) {
-                    try {
                         uri = "mongodb://" + userName + ":" + password + "@" + address + "/?authMechanism=SCRAM-SHA-1";
-                        MongoClientURI mongoClientURI = new MongoClientURI(uri);
-                        mongoClient = new MongoClient(mongoClientURI);
-                        Document document = mongoClient.getDatabase(database).runCommand(new Document("ping", 1));
-                    } catch (Exception e) {
-                        mongoClient = null;
-                    }
-
-                }
-
-                if (null == mongoClient) {
-                        uri = "mongodb://" + userName + ":" + password + "@" + address + "/" + database;
                         MongoClientURI mongoClientURI = new MongoClientURI(uri);
                         mongoClient = new MongoClient(mongoClientURI);
                         Document document = mongoClient.getDatabase(database).runCommand(new Document("ping", 1));

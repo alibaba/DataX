@@ -135,7 +135,6 @@ public class CollectionSplitUtil {
 
         if (null == rangeList) {
             starttime = System.currentTimeMillis();
-            LOG.warn("通过CommonSplit进行切片，切片效率较低，建议设置channel=1 !!!");
             rangeList = MongodbCommonSplitter.split(adviceNumber, mongoClient, dbName, collName, isObjectId, query);
             endtime = System.currentTimeMillis();
             LOG.info("成功通过CommonSplit进行切片,切片操作耗时:{}毫秒", (endtime - starttime));
