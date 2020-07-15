@@ -82,7 +82,9 @@ public class MongodbVectorSplitter extends MongodbCommonSplitter {
                 .append("force", true));
 
         boolean forceMedianSplit = false;
-        long maxChunkSize = (docCount / splitPointCount - 1) * 2 * avgObjSize / (1024 * 1024);
+        // channel=2时，( splitPointCount - 1)=0，因此需要去掉
+        long maxChunkSize = (docCount / splitPointCount ) * 2 * avgObjSize / (1024 * 1024);
+//        long maxChunkSize = (docCount / splitPointCount - 1) * 2 * avgObjSize / (1024 * 1024);
 //            int maxChunkSize = (docCount / splitPointCount - 1) * 2 * avgObjSize / (1024 * 1024);
         //int maxChunkSize = (chunkDocCount - 1) * 2 * avgObjSize / (1024 * 1024);
         if (maxChunkSize < 1) {
@@ -91,7 +93,7 @@ public class MongodbVectorSplitter extends MongodbCommonSplitter {
         if (!forceMedianSplit) {
             result = database.runCommand(new Document("splitVector", dbName + "." + collName)
                     .append("keyPattern", new Document(KeyConstant.MONGO_PRIMARY_ID, 1))
-                    .append("maxChunkSize", maxChunkSize)
+                    .append("maxChunkSize", maxChunkSize) // 分区后每个chunk的最大大小
                     .append("maxSplitPoints", adviceNumber - 1));
         } else {
             result = database.runCommand(new Document("splitVector", dbName + "." + collName)

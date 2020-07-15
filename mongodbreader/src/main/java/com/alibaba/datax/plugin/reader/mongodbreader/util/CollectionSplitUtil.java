@@ -106,16 +106,16 @@ public class CollectionSplitUtil {
         List<Range> rangeList = null;
         long starttime = System.currentTimeMillis();
         long endtime = 0L;
-        try {
-
-            rangeList = MongodbSampleSplitter.split(adviceNumber, mongoClient, dbName, collName, isObjectId, query);
-            endtime = System.currentTimeMillis();
-            LOG.info("成功通过Sample采样进行切片,切片操作耗时:{}毫秒", (endtime - starttime));
-
-        } catch (Exception e) {
-            rangeList = null;
-            LOG.info(e.getMessage());
-        }
+//        try {
+//
+//            rangeList = MongodbSampleSplitter.split(adviceNumber, mongoClient, dbName, collName, isObjectId, query);
+//            endtime = System.currentTimeMillis();
+//            LOG.info("成功通过Sample采样进行切片,切片操作耗时:{}毫秒", (endtime - starttime));
+//
+//        } catch (Exception e) {
+//            rangeList = null;
+//            LOG.info(e.getMessage());
+//        }
 
 
         if (null == rangeList) {

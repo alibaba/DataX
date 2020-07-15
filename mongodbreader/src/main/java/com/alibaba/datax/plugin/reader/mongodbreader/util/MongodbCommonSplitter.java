@@ -47,8 +47,9 @@ public class MongodbCommonSplitter {
 
         //i=0时，通过first()获取到的objectid并不是最小的，会丢数据，因此跳过
         for (int i = 1; i < adviceNumber; i++) {
-            Document doc  = col.find(filter).skip((int) (i * expectChunkDocCount)).limit((int) expectChunkDocCount).limit(1).iterator().next();
+            Document doc  = col.find(filter).skip((int) (i * expectChunkDocCount)).limit(1).iterator().next();
             Object objectId = doc.get(KeyConstant.MONGO_PRIMARY_ID);
+
             splitPoints.add(objectId.toString());
 
 
