@@ -27,6 +27,7 @@ MongoDBReader通过Datax框架从MongoDB并行的读取数据，通过主控的J
 	                        "userName": "",
 	                        "userPassword": "",
 	                        "dbName": "tag_per_data",
+	                        "authDb": "admin",
 	                        "collectionName": "tag_data12",
 	                        "query": "{\"dateUpdated\": {\"$gte\": {\"$date\": 1593014400000}, \"$lt\": {\"$date\": 1593100800000}}}",
 	                        "column": [
@@ -165,6 +166,7 @@ MongoDBReader通过Datax框架从MongoDB并行的读取数据，通过主控的J
 	                        "userName": "",
 	                        "userPassword": "",
 	                        "dbName": "tag_per_data",
+	                        "authDb": "tag_per_data",
 	                        "collectionName": "tag_data12",
 	                        "column": [
 	                            {
