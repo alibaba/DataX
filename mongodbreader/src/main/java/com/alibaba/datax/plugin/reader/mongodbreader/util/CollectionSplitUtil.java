@@ -77,7 +77,7 @@ public class CollectionSplitUtil {
     }
 
     /**
-     * 通过MongodbSampleSplitter、MongodbVectorSplitter和MongodbCommonSplitter等3个类按照优先顺序进行切片
+     * 通过MongodbSampleSplitter、MongodbCommonSplitter等2个类按照优先顺序进行切片
      *
      * @param adviceNumber
      * @param mongoClient
