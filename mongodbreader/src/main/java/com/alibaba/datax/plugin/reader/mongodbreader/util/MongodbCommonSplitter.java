@@ -1,12 +1,20 @@
 package com.alibaba.datax.plugin.reader.mongodbreader.util;
 
+import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.plugin.reader.mongodbreader.KeyConstant;
+import com.alibaba.datax.plugin.reader.mongodbreader.MongoDBReaderErrorCode;
 import com.mongodb.MongoClient;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
+import org.mortbay.log.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,7 +22,8 @@ import java.util.List;
 
 public class MongodbCommonSplitter {
 
-
+    private static final Logger LOG = LoggerFactory
+            .getLogger(MongodbCommonSplitter.class);
     /**
      * 原始的切片算法 col.find().skip(skipCount).limit(chunkDocCount).first()
      * 在针对数据量非常大的mongodb表时，切片时间太长
@@ -40,44 +49,30 @@ public class MongodbCommonSplitter {
         MongoCollection<Document> col = database.getCollection(collName);
         List<Range> rangeList = new ArrayList<Range>();
 
+        // 这个地方需要对long转成int进行判断，是不是丢失精度
+        long expectChunkDocCount =(int)(docCount / adviceNumber) ;
+        if((int)expectChunkDocCount != expectChunkDocCount){
+            String message = "The split has too many records :"+expectChunkDocCount+". Please let the \"job.setting.speed.channel\" parameter exceed  "+adviceNumber;
+            throw DataXException.asDataXException(MongoDBReaderErrorCode.ILLEGAL_VALUE, message);
+        }
 
-        long expectChunkDocCount = docCount / adviceNumber;
 
+        LOG.info("每个切片期望的文档个数是:{}",expectChunkDocCount);
         ArrayList<String> splitPoints = new ArrayList<String>();
 
-        //i=0时，通过first()获取到的objectid并不是最小的，会丢数据，因此跳过
-        for (int i = 1; i < adviceNumber; i++) {
-            Document doc  = col.find(filter).skip((int) (i * expectChunkDocCount)).limit(1).iterator().next();
-            Object objectId = doc.get(KeyConstant.MONGO_PRIMARY_ID);
-
-            splitPoints.add(objectId.toString());
-
-
-
-        }
-        Collections.sort(splitPoints);
-        Object lastObjectId = splitPoints.get(0).toString();
-
-        Range range = new Range();
-        range.lowerBound = "min";
-        range.upperBound = lastObjectId;
-        rangeList.add(range);
-
-        for (int i = 1; i < splitPoints.size(); i++) {
-            String splitPoint = splitPoints.get(i).toString();
-
-            range = new Range();
-            range.lowerBound = lastObjectId;
-            lastObjectId = splitPoint;
-            range.upperBound = lastObjectId;
+        Range lastRange=null;
+        for (int i = 0; i < adviceNumber; i++) {
+            Range range = new Range();
+            range.setSkip((int) (i * expectChunkDocCount));
+            range.setLimit((int)expectChunkDocCount);
+            range.setSampleType(false);
             rangeList.add(range);
+            lastRange=range;
         }
-
-        range = new Range();
-        range.lowerBound = lastObjectId;
-        range.upperBound = "max";
-        rangeList.add(range);
-
+        int totalSkipDoc=(lastRange.getSkip()+lastRange.getLimit());
+        if(totalSkipDoc<docCount){
+            lastRange.setLimit(lastRange.getLimit()+(int)(docCount-totalSkipDoc));
+        }
 
         return rangeList;
     }

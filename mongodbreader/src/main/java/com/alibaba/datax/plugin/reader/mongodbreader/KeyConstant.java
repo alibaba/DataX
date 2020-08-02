@@ -68,6 +68,7 @@ public class KeyConstant {
 
     public static final String LOWER_BOUND = "lowerBound";
     public static final String UPPER_BOUND = "upperBound";
+    public static final String RANGE = "range";
     public static final String IS_OBJECTID = "isObjectId";
     /**
      * 批量获取的记录数

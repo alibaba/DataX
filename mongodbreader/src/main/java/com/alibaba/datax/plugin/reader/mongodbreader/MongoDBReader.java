@@ -14,6 +14,7 @@ import com.alibaba.datax.common.spi.Reader;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.plugin.reader.mongodbreader.util.CollectionSplitUtil;
 import com.alibaba.datax.plugin.reader.mongodbreader.util.MongoUtil;
+import com.alibaba.datax.plugin.reader.mongodbreader.util.Range;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -103,42 +104,23 @@ public class MongoDBReader extends Reader {
         private String query = null;
 
         private JSONArray mongodbColumnMeta = null;
-        private Object lowerBound = null;
-        private Object upperBound = null;
+        private String range = null;
         private boolean isObjectId = true;
         private int batchSize = 1000;
         private boolean jsonType = false;
 
         @Override
         public void startRead(RecordSender recordSender) {
+            Range range = JSONObject.parseObject(this.range, Range.class);
+            LOG.info("切片为:{}",this.range);
+            MongoCursor<Document> dbCursor =null;
+            if(range.isSampleType()){
+                dbCursor = queryByBound(range.getLowerBound(), range.getUpperBound());
 
-            if (lowerBound == null || upperBound == null ||
-                    mongoClient == null || database == null ||
-                    collection == null || mongodbColumnMeta == null) {
-                throw DataXException.asDataXException(MongoDBReaderErrorCode.ILLEGAL_VALUE,
-                        MongoDBReaderErrorCode.ILLEGAL_VALUE.getDescription());
-            }
+            }else{
+                dbCursor = queryBySkip(range.getSkip(), range.getLimit());
 
-            MongoDatabase db = mongoClient.getDatabase(database);
-            MongoCollection col = db.getCollection(this.collection);
-
-            MongoCursor<Document> dbCursor = null;
-            Document filter = new Document();
-            if (lowerBound.equals("min")) {
-                if (!upperBound.equals("max")) {
-                    filter.append(KeyConstant.MONGO_PRIMARY_ID, new Document("$lt", isObjectId ? new ObjectId(upperBound.toString()) : upperBound));
-                }
-            } else if (upperBound.equals("max")) {
-                filter.append(KeyConstant.MONGO_PRIMARY_ID, new Document("$gte", isObjectId ? new ObjectId(lowerBound.toString()) : lowerBound));
-            } else {
-                filter.append(KeyConstant.MONGO_PRIMARY_ID, new Document("$gte", isObjectId ? new ObjectId(lowerBound.toString()) : lowerBound).append("$lt", isObjectId ? new ObjectId(upperBound.toString()) : upperBound));
             }
-            if (!Strings.isNullOrEmpty(query)) {
-                Document queryFilter = Document.parse(query);
-                filter = new Document("$and", Arrays.asList(filter, queryFilter));
-            }
-            LOG.info("filter by ："+filter.toJson());
-            dbCursor = col.find(filter).batchSize(batchSize).iterator();
 
             JsonWriterSettings settings = CollectionSplitUtil.getJsonWriterSettings();
             while (dbCursor.hasNext()) {
@@ -233,6 +215,57 @@ public class MongoDBReader extends Reader {
             }
         }
 
+
+        private MongoCursor<Document> queryBySkip(int skip,int limit){
+
+            MongoDatabase db = mongoClient.getDatabase(database);
+            MongoCollection col = db.getCollection(this.collection);
+
+            MongoCursor<Document> dbCursor = null;
+            Document filter = new Document();
+
+            if (!Strings.isNullOrEmpty(query)) {
+                Document queryFilter = Document.parse(query);
+                filter = new Document("$and", Arrays.asList(filter, queryFilter));
+            }
+            LOG.info("filter by ："+filter.toJson());
+
+            FindIterable findIterable = col.find(filter);
+            return dbCursor = findIterable.skip(skip).limit(limit).batchSize(batchSize).iterator();
+        }
+
+
+        private MongoCursor<Document> queryByBound(String lowerBound,String upperBound){
+            if (lowerBound == null || upperBound == null ||
+                    mongoClient == null || database == null ||
+                    collection == null || mongodbColumnMeta == null) {
+                throw DataXException.asDataXException(MongoDBReaderErrorCode.ILLEGAL_VALUE,
+                        MongoDBReaderErrorCode.ILLEGAL_VALUE.getDescription());
+            }
+
+            MongoDatabase db = mongoClient.getDatabase(database);
+            MongoCollection col = db.getCollection(this.collection);
+
+            MongoCursor<Document> dbCursor = null;
+            Document filter = new Document();
+            if (lowerBound.equals("min")) {
+                if (!upperBound.equals("max")) {
+                    filter.append(KeyConstant.MONGO_PRIMARY_ID, new Document("$lt", isObjectId ? new ObjectId(upperBound.toString()) : upperBound));
+                }
+            } else if (upperBound.equals("max")) {
+                filter.append(KeyConstant.MONGO_PRIMARY_ID, new Document("$gte", isObjectId ? new ObjectId(lowerBound.toString()) : lowerBound));
+            } else {
+                filter.append(KeyConstant.MONGO_PRIMARY_ID, new Document("$gte", isObjectId ? new ObjectId(lowerBound.toString()) : lowerBound).append("$lt", isObjectId ? new ObjectId(upperBound.toString()) : upperBound));
+            }
+            if (!Strings.isNullOrEmpty(query)) {
+                Document queryFilter = Document.parse(query);
+                filter = new Document("$and", Arrays.asList(filter, queryFilter));
+            }
+            LOG.info("filter by ："+filter.toJson());
+            dbCursor = col.find(filter).batchSize(batchSize).iterator();
+            return dbCursor;
+        }
+
         @Override
         public void init() {
             this.readerSliceConfig = super.getPluginJobConf();
@@ -250,8 +283,7 @@ public class MongoDBReader extends Reader {
             this.query = readerSliceConfig.getString(KeyConstant.MONGO_QUERY);
             this.batchSize = readerSliceConfig.getInt(KeyConstant.BATCH_SIZE,1000);
             this.mongodbColumnMeta = JSON.parseArray(readerSliceConfig.getString(KeyConstant.MONGO_COLUMN));
-            this.lowerBound = readerSliceConfig.get(KeyConstant.LOWER_BOUND);
-            this.upperBound = readerSliceConfig.get(KeyConstant.UPPER_BOUND);
+            this.range = readerSliceConfig.getString(KeyConstant.RANGE);
             this.isObjectId = readerSliceConfig.getBool(KeyConstant.IS_OBJECTID);
 
             // 是否保存数据格式为json类型

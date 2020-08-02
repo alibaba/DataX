@@ -32,7 +32,7 @@ public class MongodbSampleSplitter extends MongodbCommonSplitter {
                                     String dbName, String collName, boolean isObjectId, String query) {
         MongoDatabase database = mongoClient.getDatabase(dbName);
 
-        if(adviceNumber<=1){
+        if (adviceNumber <= 1) {
             return CollectionSplitUtil.getOneSplit();
         }
         Document filter = new Document();
@@ -42,6 +42,12 @@ public class MongodbSampleSplitter extends MongodbCommonSplitter {
 
         // 随机采样取adviceNumber个元素，可能会有重复值。因此取3 * adviceNumber个元素
         BasicDBObject basicDBObject = new BasicDBObject("$sample", new BasicDBObject("size", 3 * adviceNumber));
+
+        Document idDoc = new Document();
+        idDoc.put(KeyConstant.MONGO_PRIMARY_ID, 1);
+        BasicDBObject project = new BasicDBObject("$project", idDoc);
+        BasicDBObject sort = new BasicDBObject("$sort", idDoc);
+
         ArrayList<Bson> list = new ArrayList<Bson>();
 
         Bson match = Aggregates.match(filter
@@ -51,7 +57,10 @@ public class MongodbSampleSplitter extends MongodbCommonSplitter {
         list.add(match);
 
         list.add(basicDBObject);
+        list.add(project);
+        list.add(sort);
         AggregateIterable<Document> aggResult;
+
         try {
             aggResult = database.getCollection(collName).aggregate(list);
 
@@ -69,39 +78,41 @@ public class MongodbSampleSplitter extends MongodbCommonSplitter {
             sampleObjectIdList.add(objectId);
         }
 
-        Collections.sort(sampleObjectIdList);
+
+        long[] indexArr = RangeSplitUtil.doLongSplit(0L, new Long(sampleObjectIdList.size() - 1), adviceNumber);
 
 
-        Range range = new Range();
-        range.lowerBound = "min";
-        String lastObjectId = sampleObjectIdList.get(0).toString();
-        range.upperBound = lastObjectId;
-        splits.add(range);
 
 
-        long[] indexArr = RangeSplitUtil.doLongSplit(0L, new Long(sampleObjectIdList.size() - 1), adviceNumber - 2);
 
-        for (int i = 1; i < indexArr.length; i++) {
-
+        String lastObjectId = null;
+        for (int i = 1; i < indexArr.length - 1; i++) {
             String splitPoint = sampleObjectIdList.get((int) (indexArr[i])).toString();
+            if (i == 1) {
+                Range lowerRange = new Range();
+                lowerRange.setLowerBound("min");
+                lowerRange.setUpperBound(splitPoint);
+                splits.add(lowerRange);
+            }else{
+                Range range = new Range();
+                range.setLowerBound(lastObjectId);
+                range.setUpperBound(splitPoint);
+                splits.add(range);
+            }
 
-            range = new Range();
-            range.lowerBound = lastObjectId;
             lastObjectId = splitPoint;
-            range.upperBound = lastObjectId;
-            splits.add(range);
+
+
         }
 
-        range = new Range();
-        range.lowerBound = lastObjectId;
-        range.upperBound = "max";
-        splits.add(range);
+        Range upperRange = new Range();
+        upperRange.setUpperBound("max");
+        upperRange.setLowerBound(lastObjectId);
+        splits.add(upperRange);
 
 
         return splits;
     }
-
-
 
 
 }

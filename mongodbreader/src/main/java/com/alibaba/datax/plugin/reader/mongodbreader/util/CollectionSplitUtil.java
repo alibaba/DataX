@@ -5,6 +5,7 @@ import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.common.util.RangeSplitUtil;
 import com.alibaba.datax.plugin.reader.mongodbreader.KeyConstant;
 import com.alibaba.datax.plugin.reader.mongodbreader.MongoDBReaderErrorCode;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Strings;
 import com.mongodb.MongoClient;
 import com.mongodb.client.FindIterable;
@@ -50,27 +51,13 @@ public class CollectionSplitUtil {
                     MongoDBReaderErrorCode.ILLEGAL_VALUE.getDescription());
         }
 
-        MongoDatabase database = mongoClient.getDatabase(dbName);
-        MongoCollection<Document> col = database.getCollection(collName);
-        Document doc = col.find().limit(1).first();
-        // empty collection
-        if (null == doc) {
-            List<Configuration> rangeList = new ArrayList<Configuration>();
-            Configuration conf = originalSliceConfig.clone();
-            conf.set(KeyConstant.LOWER_BOUND, "min");
-            conf.set(KeyConstant.UPPER_BOUND, "max");
-            conf.set(KeyConstant.IS_OBJECTID, false);
-            rangeList.add(conf);
-            return rangeList;
-        }
 
         boolean isObjectId = isPrimaryIdObjectId(mongoClient, dbName, collName);
 
         List<Range> rangeList = doSplitCollection(adviceNumber, mongoClient, dbName, collName, isObjectId, query);
         for (Range range : rangeList) {
             Configuration conf = originalSliceConfig.clone();
-            conf.set(KeyConstant.LOWER_BOUND, range.lowerBound);
-            conf.set(KeyConstant.UPPER_BOUND, range.upperBound);
+            conf.set(KeyConstant.RANGE, JSONObject.toJSON(range));
             conf.set(KeyConstant.IS_OBJECTID, isObjectId);
             confList.add(conf);
         }
@@ -115,23 +102,11 @@ public class CollectionSplitUtil {
         } catch (Exception e) {
             rangeList = null;
             LOG.info(e.getMessage());
+            e.printStackTrace();
         }
 
 
-        if (null == rangeList) {
 
-            try {
-                starttime = System.currentTimeMillis();
-                rangeList = MongodbVectorSplitter.split(adviceNumber, mongoClient, dbName, collName, isObjectId, query);
-                endtime = System.currentTimeMillis();
-                LOG.info("成功通过VectorSplit进行切片,切片操作耗时:{}毫秒", (endtime - starttime));
-
-            } catch (Exception e) {
-                rangeList = null;
-                LOG.info(e.getMessage());
-            }
-
-        }
 
         if (null == rangeList) {
             starttime = System.currentTimeMillis();
@@ -146,10 +121,12 @@ public class CollectionSplitUtil {
 
     public static List<Range> getOneSplit() {
         Range range = new Range();
-        range.lowerBound = "min";
-        range.upperBound = "max";
+        range.setLowerBound("min");
+        range.setUpperBound("max");
+        range.setSampleType(true);
         return Arrays.asList(range);
     }
+
 
 
     // bson转json格式设置
@@ -168,7 +145,3 @@ public class CollectionSplitUtil {
 
 }
 
-class Range {
-    Object lowerBound;
-    Object upperBound;
-}
