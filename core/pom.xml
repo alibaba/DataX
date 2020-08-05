@@ -36,7 +36,7 @@
         <dependency>
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils</artifactId>
-            <version>1.9.2</version>
+            <version>1.9.4</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
