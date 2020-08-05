@@ -435,7 +435,7 @@ DataX的内部类型在实现上会选用不同的java类型：
 
 #### 如何处理脏数据
 
-在`Reader.Task`和`Writer.Task`中，功过`AbstractTaskPlugin.getPluginCollector()`可以拿到一个`TaskPluginCollector`，它提供了一系列`collectDirtyRecord`的方法。当脏数据出现时，只需要调用合适的`collectDirtyRecord`方法，把被认为是脏数据的`Record`传入即可。
+在`Reader.Task`和`Writer.Task`中，通过`AbstractTaskPlugin.getTaskPluginCollector()`可以拿到一个`TaskPluginCollector`，它提供了一系列`collectDirtyRecord`的方法。当脏数据出现时，只需要调用合适的`collectDirtyRecord`方法，把被认为是脏数据的`Record`传入即可。
 
 用户可以在任务的配置中指定脏数据限制条数或者百分比限制，当脏数据超出限制时，框架会结束同步任务，退出。插件需要保证脏数据都被收集到，其他工作交给框架就好。
 
