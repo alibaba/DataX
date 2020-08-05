@@ -111,7 +111,7 @@ public class SomeReader extends Reader {
 ```
 
 `Job`接口功能如下：
-- `init`: Job对象初始化工作，测试可以通过`super.getPluginJobConf()`获取与本插件相关的配置。读插件获得配置中`reader`部分，写插件获得`writer`部分。
+- `init`: Job对象初始化工作，此时可以通过`super.getPluginJobConf()`获取与本插件相关的配置。读插件获得配置中`reader`部分，写插件获得`writer`部分。
 - `prepare`: 全局准备工作，比如odpswriter清空目标表。
 - `split`: 拆分`Task`。参数`adviceNumber`框架建议的拆分数，一般是运行时所配置的并发度。值返回的是`Task`的配置列表。
 - `post`: 全局的后置工作，比如mysqlwriter同步完影子表后的rename操作。
@@ -155,7 +155,7 @@ public class SomeReader extends Reader {
 ```
 
 - `name`: 插件名称，大小写敏感。框架根据用户在配置文件中指定的名称来搜寻插件。 **十分重要** 。
-- `class`: 入口类的全限定名称，框架通过反射穿件入口类的实例。**十分重要** 。
+- `class`: 入口类的全限定名称，框架通过反射插件入口类的实例。**十分重要** 。
 - `description`: 描述信息。
 - `developer`: 开发人员。
 
