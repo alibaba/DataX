@@ -110,9 +110,18 @@ This software is free to use under the Apache License [Apache license](https://g
 ````
 钉钉用户群：
 
-- [钉钉群聊DataX开源用户交流群，点击进入查看详情](https://qr.dingtalk.com/action/joingroup?code=v1,k1,jFDN77MJW5l3biuATCChEIWAkPl3zwghL8vvKpCsm04=&_dt_no_comment=1&origin=11)
-- [钉钉群聊DataX开源用户交流群2，点击进入查看详情](https://qr.dingtalk.com/action/joingroup?code=v1,k1,5FrKlj7R/ECgNgcXp1xTz2kPt84G6LlsVAfK1KbE83s=&_dt_no_comment=1&origin=11)
-- [钉钉群聊DataX开源用户交流群3，点击进入查看详情](https://qr.dingtalk.com/action/joingroup?code=v1,k1,knmqnHrcf70ZVV6ue0HLBAzOdvoOwZ6hVAfK1KbE83s=&_dt_no_comment=1&origin=11)
-- [钉钉群聊DataX开源用户交流群4，点击进入查看详情](https://qr.dingtalk.com/action/joingroup?code=v1,k1,YLUnCO3SSji+5AblIC960Hx225T+B6U5VAfK1KbE83s=&_dt_no_comment=1&origin=11)
-- [钉钉群聊DataX开源用户交流群5，点击进入查看详情](https://qr.dingtalk.com/action/joingroup?code=v1,k1,7lmI79zKGbZdUKbIwN0axLH2vpZknilCVAfK1KbE83s=&_dt_no_comment=1&origin=11)
+- DataX开源用户交流群
+    - <img src="https://github.com/alibaba/DataX/blob/master/images/DataX%E5%BC%80%E6%BA%90%E7%94%A8%E6%88%B7%E4%BA%A4%E6%B5%81%E7%BE%A4.jpg" width="20%" height="20%">
+
+- DataX开源用户交流群2
+    - <img src="https://github.com/alibaba/DataX/blob/master/images/DataX%E5%BC%80%E6%BA%90%E7%94%A8%E6%88%B7%E4%BA%A4%E6%B5%81%E7%BE%A42.jpg" width="20%" height="20%">
+
+- DataX开源用户交流群3
+    - <img src="https://github.com/alibaba/DataX/blob/master/images/DataX%E5%BC%80%E6%BA%90%E7%94%A8%E6%88%B7%E4%BA%A4%E6%B5%81%E7%BE%A43.jpg" width="20%" height="20%">
+
+- DataX开源用户交流群4
+    - <img src="https://github.com/alibaba/DataX/blob/master/images/DataX%E5%BC%80%E6%BA%90%E7%94%A8%E6%88%B7%E4%BA%A4%E6%B5%81%E7%BE%A44.jpg" width="20%" height="20%">
+
+- DataX开源用户交流群5
+    - <img src="https://github.com/alibaba/DataX/blob/master/images/DataX%E5%BC%80%E6%BA%90%E7%94%A8%E6%88%B7%E4%BA%A4%E6%B5%81%E7%BE%A45.jpg" width="20%" height="20%">
 
