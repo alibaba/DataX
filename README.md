@@ -108,7 +108,11 @@ This software is free to use under the Apache License [Apache license](https://g
     8. 对高并发、高稳定可用性、高性能、大数据处理有过实际项目及产品经验者优先考虑；
     9. 有大数据产品、云产品、中间件技术解决方案者优先考虑。
 ````
-钉钉用户群：23169395
+钉钉用户群：
 
-
+- [钉钉群聊DataX开源用户交流群，点击进入查看详情](https://qr.dingtalk.com/action/joingroup?code=v1,k1,jFDN77MJW5l3biuATCChEIWAkPl3zwghL8vvKpCsm04=&_dt_no_comment=1&origin=11)
+- [钉钉群聊DataX开源用户交流群2，点击进入查看详情](https://qr.dingtalk.com/action/joingroup?code=v1,k1,5FrKlj7R/ECgNgcXp1xTz2kPt84G6LlsVAfK1KbE83s=&_dt_no_comment=1&origin=11)
+- [钉钉群聊DataX开源用户交流群3，点击进入查看详情](https://qr.dingtalk.com/action/joingroup?code=v1,k1,knmqnHrcf70ZVV6ue0HLBAzOdvoOwZ6hVAfK1KbE83s=&_dt_no_comment=1&origin=11)
+- [钉钉群聊DataX开源用户交流群4，点击进入查看详情](https://qr.dingtalk.com/action/joingroup?code=v1,k1,YLUnCO3SSji+5AblIC960Hx225T+B6U5VAfK1KbE83s=&_dt_no_comment=1&origin=11)
+- [钉钉群聊DataX开源用户交流群5，点击进入查看详情](https://qr.dingtalk.com/action/joingroup?code=v1,k1,7lmI79zKGbZdUKbIwN0axLH2vpZknilCVAfK1KbE83s=&_dt_no_comment=1&origin=11)
 
