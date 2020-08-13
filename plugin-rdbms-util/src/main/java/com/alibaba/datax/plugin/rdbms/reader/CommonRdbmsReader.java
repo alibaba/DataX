@@ -174,6 +174,7 @@ public class CommonRdbmsReader {
                               TaskPluginCollector taskPluginCollector, int fetchSize) {
             String querySql = readerSliceConfig.getString(Key.QUERY_SQL);
             String table = readerSliceConfig.getString(Key.TABLE);
+            querySql = querySql.replaceAll(Constant.TABLE_NAME_PLACEHOLDER, table);
 
             PerfTrace.getInstance().addTaskDetails(taskId, table + "," + basicMsg);
 
