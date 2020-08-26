@@ -29,12 +29,12 @@
             <artifactId>datax-common</artifactId>
             <version>${datax-project-version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.alibaba.datax</groupId>
-            <artifactId>simulator</artifactId>
-            <version>${datax-project-version}</version>
-            <scope>test</scope>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>com.alibaba.datax</groupId>-->
+            <!--<artifactId>simulator</artifactId>-->
+            <!--<version>${datax-project-version}</version>-->
+            <!--<scope>test</scope>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>

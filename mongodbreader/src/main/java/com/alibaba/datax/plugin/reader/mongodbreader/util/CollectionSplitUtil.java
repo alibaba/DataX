@@ -32,6 +32,8 @@ public class CollectionSplitUtil {
 
         String collName = originalSliceConfig.getString(KeyConstant.MONGO_COLLECTION_NAME);
 
+        String query = originalSliceConfig.getString(KeyConstant.MONGO_QUERY);
+
         if(Strings.isNullOrEmpty(dbName) || Strings.isNullOrEmpty(collName) || mongoClient == null) {
             throw DataXException.asDataXException(MongoDBReaderErrorCode.ILLEGAL_VALUE,
                 MongoDBReaderErrorCode.ILLEGAL_VALUE.getDescription());
@@ -39,7 +41,7 @@ public class CollectionSplitUtil {
 
         boolean isObjectId = isPrimaryIdObjectId(mongoClient, dbName, collName);
 
-        List<Range> rangeList = doSplitCollection(adviceNumber, mongoClient, dbName, collName, isObjectId);
+        List<Range> rangeList = doSplitCollection(adviceNumber, mongoClient, dbName, collName, isObjectId,query);
         for(Range range : rangeList) {
             Configuration conf = originalSliceConfig.clone();
             conf.set(KeyConstant.LOWER_BOUND, range.lowerBound);
@@ -64,9 +66,11 @@ public class CollectionSplitUtil {
 
     // split the collection into multiple chunks, each chunk specifies a range
     private static List<Range> doSplitCollection(int adviceNumber, MongoClient mongoClient,
-                                                 String dbName, String collName, boolean isObjectId) {
+                                                 String dbName, String collName, boolean isObjectId, String query) {
 
         MongoDatabase database = mongoClient.getDatabase(dbName);
+
+
         List<Range> rangeList = new ArrayList<Range>();
         if (adviceNumber == 1) {
             Range range = new Range();
@@ -76,10 +80,17 @@ public class CollectionSplitUtil {
         }
 
         Document result = database.runCommand(new Document("collStats", collName));
-        int docCount = result.getInteger("count");
+
+        long docCount = result.getLong("count");
         if (docCount == 0) {
             return rangeList;
         }
+        MongoCollection<Document> col = database.getCollection(collName);
+        ObjectId minId = col.find(Document.parse(query)).limit(1).first().getObjectId(KeyConstant.MONGO_PRIMARY_ID);
+        ObjectId maxId = col.find(Document.parse(query)).limit(1).sort(Document.parse("{_id:-1}")).first().getObjectId(KeyConstant.MONGO_PRIMARY_ID);
+
+        docCount = col.count(Document.parse(query));
+
         int avgObjSize = 1;
         Object avgObjSizeObj = result.get("avgObjSize");
         if (avgObjSizeObj instanceof Integer) {
@@ -88,7 +99,7 @@ public class CollectionSplitUtil {
             avgObjSize = ((Double) avgObjSizeObj).intValue();
         }
         int splitPointCount = adviceNumber - 1;
-        int chunkDocCount = docCount / adviceNumber;
+        int chunkDocCount = (int)(docCount / adviceNumber);
         ArrayList<Object> splitPoints = new ArrayList<Object>();
 
         // test if user has splitVector role(clusterManager)
@@ -104,9 +115,11 @@ public class CollectionSplitUtil {
             }
         }
 
+
+
         if (supportSplitVector) {
             boolean forceMedianSplit = false;
-            int maxChunkSize = (docCount / splitPointCount - 1) * 2 * avgObjSize / (1024 * 1024);
+            long maxChunkSize = (docCount / splitPointCount - 1) * 2 * avgObjSize / (1024 * 1024);
             //int maxChunkSize = (chunkDocCount - 1) * 2 * avgObjSize / (1024 * 1024);
             if (maxChunkSize < 1) {
                 forceMedianSplit = true;
@@ -114,7 +127,10 @@ public class CollectionSplitUtil {
             if (!forceMedianSplit) {
                 result = database.runCommand(new Document("splitVector", dbName + "." + collName)
                     .append("keyPattern", new Document(KeyConstant.MONGO_PRIMARY_ID, 1))
+                    .append("max", new Document(KeyConstant.MONGO_PRIMARY_ID,maxId))
+                    .append("min", new Document(KeyConstant.MONGO_PRIMARY_ID,minId))
                     .append("maxChunkSize", maxChunkSize)
+                    .append("maxChunkObjects",chunkDocCount)
                     .append("maxSplitPoints", adviceNumber - 1));
             } else {
                 result = database.runCommand(new Document("splitVector", dbName + "." + collName)
@@ -135,10 +151,9 @@ public class CollectionSplitUtil {
             }
         } else {
             int skipCount = chunkDocCount;
-            MongoCollection<Document> col = database.getCollection(collName);
 
             for (int i = 0; i < splitPointCount; i++) {
-                Document doc = col.find().skip(skipCount).limit(chunkDocCount).first();
+                Document doc = col.find(Document.parse(query)).skip(skipCount).limit(chunkDocCount).first();
                 Object id = doc.get(KeyConstant.MONGO_PRIMARY_ID);
                 if (isObjectId) {
                     ObjectId oid = (ObjectId)id;
@@ -150,7 +165,7 @@ public class CollectionSplitUtil {
             }
         }
 
-        Object lastObjectId = "min";
+        Object lastObjectId = minId;
         for (Object splitPoint : splitPoints) {
             Range range = new Range();
             range.lowerBound = lastObjectId;
@@ -160,7 +175,7 @@ public class CollectionSplitUtil {
         }
         Range range = new Range();
         range.lowerBound = lastObjectId;
-        range.upperBound = "max";
+        range.upperBound = maxId;
         rangeList.add(range);
 
         return rangeList;

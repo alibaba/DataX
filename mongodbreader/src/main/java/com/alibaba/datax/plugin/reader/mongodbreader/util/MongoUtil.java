@@ -45,7 +45,9 @@ public class MongoUtil {
         }
         try {
             MongoCredential credential = MongoCredential.createCredential(userName, database, password.toCharArray());
-            return new MongoClient(parseServerAddress(addressList), Arrays.asList(credential));
+            MongoClient mongoClient = new MongoClient(parseServerAddress(addressList), Arrays.asList(credential));
+            mongoClient.setReadPreference(com.mongodb.ReadPreference.secondaryPreferred());
+            return mongoClient;
 
         } catch (UnknownHostException e) {
             throw DataXException.asDataXException(MongoDBReaderErrorCode.ILLEGAL_ADDRESS,"不合法的地址");

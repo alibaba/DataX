@@ -91,9 +91,9 @@ warn: test write performance will write data into your table, you can use a temp
 
 def printCopyright():
     DATAX_VERSION = 'UNKNOWN_DATAX_VERSION'
-    print '''
+    print('''
 DataX Util Tools (%s), From Alibaba !
-Copyright (C) 2010-2016, Alibaba Group. All Rights Reserved.''' % DATAX_VERSION
+Copyright (C) 2010-2016, Alibaba Group. All Rights Reserved.''' % DATAX_VERSION)
     sys.stdout.flush()
 
 
@@ -300,7 +300,7 @@ def readJobJsonFromRemote(jobConfigPath):
 def parseJson(strConfig, context):
     try:
         return json.loads(strConfig)
-    except Exception, e:
+    except Exception as e:
         import traceback
         traceback.print_exc()
         sys.stdout.flush()
@@ -355,7 +355,7 @@ def convert(options, args):
         traceWriterDict = parseJson(options.writer, 'writer config')
         return renderDataXJson(traceWriterDict, 'writer', options.channel)
     else:
-        print getUsage()
+        print(getUsage())
         sys.exit(-1)
     #dataxParams = {}
     #for opt, value in options.__dict__.items():
@@ -375,24 +375,24 @@ if __name__ == "__main__":
     dataxJobPath = os.path.join(os.getcwd(), "perftrace-" + str(uuid.uuid1()))
     jobConfigOk = True
     if os.path.exists(dataxJobPath):
-        print "file already exists, truncate and rewrite it? %s" % dataxJobPath
+        print("file already exists, truncate and rewrite it? %s" % dataxJobPath)
         if yesNoChoice():
             jobConfigOk = True
         else:
-            print "exit failed, because of file conflict"
+            print("exit failed, because of file conflict")
             sys.exit(-1)
     fileWriter = open(dataxJobPath, 'w')
     fileWriter.write(dataxTraceJobJson)
     fileWriter.close()
 
 
-    print "trace environments:"
-    print "dataxJobPath:  %s" % dataxJobPath
+    print("trace environments:")
+    print("dataxJobPath:  %s" % dataxJobPath)
     dataxHomePath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    print "dataxHomePath: %s" % dataxHomePath
+    print("dataxHomePath: %s" % dataxHomePath)
 
     dataxCommand = "%s %s" % (os.path.join(dataxHomePath, "bin", "datax.py"), dataxJobPath)
-    print "dataxCommand:  %s" % dataxCommand
+    print("dataxCommand:  %s" % dataxCommand)
 
     returncode = fork(dataxCommand, True)
     if options.delete == 'true':

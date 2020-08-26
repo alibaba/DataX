@@ -158,33 +158,33 @@ def result_analyse():
 
     tasklist.sort(compare)
     for item in tasklist:
-        print '%s\t%s.%s\t%s\t%s\t% 4d\t% 2.1f%%\t% .2f' %(item['stat'], item['host'], item['path'],
+        print('%s\t%s.%s\t%s\t%s\t% 4d\t% 2.1f%%\t% .2f' %(item['stat'], item['host'], item['path'],
                                                            time.strftime('%H:%M:%S', time.localtime(item['wake'])),
                                                            (('D' == item['stat']) and time.strftime('%H:%M:%S', time.localtime(item['done']))) or '--',
-                                                           item['cost'], 100 * item['cost'] / ttl, idx * item['cost'])
+                                                           item['cost'], 100 * item['cost'] / ttl, idx * item['cost']))
 
     if (not len(tasklist) or not statvars['cnt']):
         return
 
-    print '\n--- DataX Profiling Statistics ---'
-    print '%d task(s) on %d server(s), Total elapsed %d second(s), %.2f second(s) per task in average' %(statvars['cnt'],
-                                                                                                         statvars['svr'], statvars['sum'], float(statvars['sum']) / statvars['cnt'])
-    print 'Actually cost %d second(s) (%s - %s), task concurrency: %.2f, tilt index: %.2f' %(ttl,
+    print('\n--- DataX Profiling Statistics ---')
+    print('%d task(s) on %d server(s), Total elapsed %d second(s), %.2f second(s) per task in average' %(statvars['cnt'],
+                                                                                                         statvars['svr'], statvars['sum'], float(statvars['sum']) / statvars['cnt']))
+    print('Actually cost %d second(s) (%s - %s), task concurrency: %.2f, tilt index: %.2f' %(ttl,
                                                                                              time.strftime('%H:%M:%S', time.localtime(statvars['min'])),
                                                                                              time.strftime('%H:%M:%S', time.localtime(statvars['max'])),
-                                                                                             float(statvars['sum']) / ttl, idx * tasklist[0]['cost'])
+                                                                                             float(statvars['sum']) / ttl, idx * tasklist[0]['cost']))
 
     idx_commit = float(statvars_commit['cnt']) / (statvars_commit['sum'] or ttl)
     tasklist_commit.sort(compare)
-    print '%d task(s) done odps comit, Total elapsed %d second(s), %.2f second(s) per task in average, tilt index: %.2f' % (
+    print('%d task(s) done odps comit, Total elapsed %d second(s), %.2f second(s) per task in average, tilt index: %.2f' % (
         statvars_commit['cnt'],
         statvars_commit['sum'], float(statvars_commit['sum']) / statvars_commit['cnt'],
-        idx_commit * tasklist_commit[0]['cost'])
+        idx_commit * tasklist_commit[0]['cost']))
 
 # }}} #
 
 if (len(sys.argv) < 2):
-    print "Usage: %s filename" %(sys.argv[0])
+    print("Usage: %s filename" %(sys.argv[0]))
     quit(1)
 else:
     parse_task(sys.argv[1])
