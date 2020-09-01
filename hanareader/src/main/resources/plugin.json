@@ -1,0 +1,7 @@
+{
+    "name": "hanareader",
+    "class": "com.alibaba.datax.plugin.reader.hanareader.HanaReader",
+    "description": "useScene: prod. mechanism: Scan to read data.",
+    "developer": "lwy"
+}
+
