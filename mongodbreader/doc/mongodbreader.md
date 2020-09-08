@@ -131,6 +131,9 @@ MongoDBReader通过Datax框架从MongoDB并行的读取数据，通过主控的J
 * column：MongoDB的文档列名。【必填】
 * name：Column的名字。【必填】
 * type：Column的类型。【选填】
+    - 基础类型 看 **5 类型转换**
+    - document 嵌套文档字段，通过将`name`设为`nestedDoc.field`格式提取嵌套字段
+    - json 当字段类型为`Document`将字段转为json字符串，仅支持第一层字段
 * splitter：因为MongoDB支持数组类型，但是Datax框架本身不支持数组类型，所以mongoDB读出来的数组类型要通过这个分隔符合并成字符串。【选填】
 * query: MongoDB的额外查询条件。【选填】
 
