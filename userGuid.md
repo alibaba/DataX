@@ -64,7 +64,7 @@ DataX本身作为数据同步框架，将不同数据源的同步抽象为从源
 
 * 配置示例：从stream读取数据并打印到控制台
   
-  * 第一步、创建创业的配置文件（json格式）
+  * 第一步、创建作业的配置文件（json格式）
     
     可以通过命令查看配置模板： python datax.py -r {YOUR_READER} -w {YOUR_WRITER}
     

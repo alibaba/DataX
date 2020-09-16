@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.alibaba.datax</groupId>
     <artifactId>otsstreamreader</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
 
     <dependencies>
         <dependency>

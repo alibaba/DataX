@@ -187,7 +187,6 @@ TxtFileWriter实现了从DataX协议转为本地TXT文件功能，本地文件�
 
 | DataX 内部类型| 本地文件 数据类型    |
 | -------- | -----  |
-|
 | Long     |Long |
 | Double   |Double|
 | String   |String|

@@ -33,47 +33,51 @@ ODPSWriter插件用于实现往ODPS插入或者更新数据，主要提供给etl
 
 ```json
 {
-    "job": {
-        "setting": {
-            "speed": {"byte": 1048576}
+  "job": {
+    "setting": {
+      "speed": {
+        "byte": 1048576
+      }
+    },
+    "content": [
+      {
+        "reader": {
+          "name": "streamreader",
+          "parameter": {
+            "column": [
+              {
+                "value": "DataX",
+                "type": "string"
+              },
+              {
+                "value": "test",
+                "type": "bytes"
+              }
+            ],
+            "sliceRecordCount": 100000
+          }
         },
-        "content": [
-            {
-                 "reader": {
-                    "name": "streamreader",
-                      "parameter": {
-                         "column" : [
-                            {
-                                "value": "DataX",
-                                "type": "string"
-                            },
-                            {
-                                "value": "test",
-                                "type": "bytes"
-                            }
-                        ],
-                        "sliceRecordCount": 100000
-                    }
-                },
-                  "writer": {
-                     "name": "odpswriter",
-                        "parameter": {
-                          "project": "chinan_test",
-                          "table": "odps_write_test00_partitioned",
-                          "partition":"school=SiChuan-School,class=1",
-                          "column": ["id","name"],
-                          "accessId": "xxx",
-                          "accessKey": "xxxx",
-                          "truncate": true,
-                          "odpsServer": "http://sxxx/api",
-                          "tunnelServer": "http://xxx",
-                          "accountType": "aliyun"
-                       }
-                    }
-                }
-            }
-        ]
-    }
+        "writer": {
+          "name": "odpswriter",
+          "parameter": {
+            "project": "chinan_test",
+            "table": "odps_write_test00_partitioned",
+            "partition": "school=SiChuan-School,class=1",
+            "column": [
+              "id",
+              "name"
+            ],
+            "accessId": "xxx",
+            "accessKey": "xxxx",
+            "truncate": true,
+            "odpsServer": "http://sxxx/api",
+            "tunnelServer": "http://xxx",
+            "accountType": "aliyun"
+          }
+        }
+      }
+    ]
+  }
 }
 ```
 
