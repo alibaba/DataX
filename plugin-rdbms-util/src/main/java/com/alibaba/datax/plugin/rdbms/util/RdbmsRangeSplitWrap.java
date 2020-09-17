@@ -11,7 +11,12 @@ public final class RdbmsRangeSplitWrap {
 
     public static List<String> splitAndWrap(String left, String right, int expectSliceNumber,
                                             String columnName, String quote, DataBaseType dataBaseType) {
-        String[] tempResult = RangeSplitUtil.doAsciiStringSplit(left, right, expectSliceNumber);
+        String[] tempResult = null;
+        if (dataBaseType == DataBaseType.MySql) {
+            tempResult = RangeSplitUtil.doUUIDStringSplit(left, right, expectSliceNumber);
+        } else {
+            tempResult = RangeSplitUtil.doAsciiStringSplit(left, right, expectSliceNumber);
+        }
         return RdbmsRangeSplitWrap.wrapRange(tempResult, columnName, quote, dataBaseType);
     }
 
