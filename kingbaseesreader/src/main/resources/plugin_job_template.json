@@ -1,0 +1,13 @@
+{
+    "name": "kingbaseesreader",
+    "parameter": {
+        "username": "",
+        "password": "",
+        "connection": [
+            {
+                "table": [],
+                "jdbcUrl": []
+            }
+        ]
+    }
+}
