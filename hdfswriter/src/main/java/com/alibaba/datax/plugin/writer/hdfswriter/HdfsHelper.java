@@ -26,6 +26,7 @@ import org.apache.hadoop.mapred.*;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -323,7 +324,7 @@ public  class HdfsHelper {
 
     public static MutablePair<Text, Boolean> transportOneRecord(
             Record record, char fieldDelimiter, List<Configuration> columnsConfiguration, TaskPluginCollector taskPluginCollector) {
-        MutablePair<List<Object>, Boolean> transportResultList =  transportOneRecord(record,columnsConfiguration,taskPluginCollector);
+        MutablePair<List<Object>, Boolean> transportResultList =  transportOneRecord(record,columnsConfiguration,taskPluginCollector,"text");
         //保存<转换后的数据,是否是脏数据>
         MutablePair<Text, Boolean> transportResult = new MutablePair<Text, Boolean>();
         transportResult.setRight(false);
@@ -332,6 +333,7 @@ public  class HdfsHelper {
             transportResult.setRight(transportResultList.getRight());
             transportResult.setLeft(recordResult);
         }
+        System.out.println(transportResult.getLeft());
         return transportResult;
     }
 
@@ -384,7 +386,7 @@ public  class HdfsHelper {
             RecordWriter writer = outFormat.getRecordWriter(fileSystem, conf, fileName, Reporter.NULL);
             Record record = null;
             while ((record = lineReceiver.getFromReader()) != null) {
-                MutablePair<List<Object>, Boolean> transportResult =  transportOneRecord(record,columns,taskPluginCollector);
+                MutablePair<List<Object>, Boolean> transportResult =  transportOneRecord(record,columns,taskPluginCollector,"orc");
                 if (!transportResult.getRight()) {
                     writer.write(NullWritable.get(), orcSerde.serialize(transportResult.getLeft(), inspector));
                 }
@@ -448,6 +450,10 @@ public  class HdfsHelper {
                 case DATE:
                     objectInspector = ObjectInspectorFactory.getReflectionObjectInspector(java.sql.Date.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
                     break;
+                case MAP:
+                    ObjectInspector stringInspector = ObjectInspectorFactory.getReflectionObjectInspector(String.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+                    objectInspector = ObjectInspectorFactory.getStandardMapObjectInspector(stringInspector, stringInspector);
+                    break;
                 case STRING:
                 case VARCHAR:
                 case CHAR:
@@ -488,7 +494,7 @@ public  class HdfsHelper {
 
     public static MutablePair<List<Object>, Boolean> transportOneRecord(
             Record record,List<Configuration> columnsConfiguration,
-            TaskPluginCollector taskPluginCollector){
+            TaskPluginCollector taskPluginCollector,String fileType){
 
         MutablePair<List<Object>, Boolean> transportResult = new MutablePair<List<Object>, Boolean>();
         transportResult.setRight(false);
@@ -534,6 +540,14 @@ public  class HdfsHelper {
                             case VARCHAR:
                             case CHAR:
                                 recordList.add(column.asString());
+                                break;
+                            case MAP:
+                                Map map = JSON.parseObject(column.asString(), Map.class);
+                                if(fileType.equalsIgnoreCase("TEXT")){
+                                    recordList.add(map.toString().replaceAll("\\{|}|\\s",""));
+                                }else {
+                                    recordList.add(map);
+                                }
                                 break;
                             case BOOLEAN:
                                 recordList.add(column.asBoolean());

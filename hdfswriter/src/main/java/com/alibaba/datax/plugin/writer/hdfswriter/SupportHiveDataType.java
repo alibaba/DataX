@@ -17,5 +17,7 @@ public enum SupportHiveDataType {
     VARCHAR,
     CHAR,
 
+    MAP,
+
     BOOLEAN
 }
