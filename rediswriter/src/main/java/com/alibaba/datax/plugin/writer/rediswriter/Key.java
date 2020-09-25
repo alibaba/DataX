@@ -26,6 +26,11 @@ public class Key {
     //redis key值的后缀，非必须
     public final static String KEY_SUFFIX = "keySuffix";
 
+    //redis value值的前缀，非必须
+    public final static String VALUE_PREFIX  = "valuePrefix";
+    //redis value值的后缀，非必须
+    public final static String VALUE_SUFFIX = "valueSuffix";
+
     //自定义的redis key值，非hive列
     public final static String STRING_KEY = "strKey";
 

@@ -44,9 +44,11 @@ public class HashTypeWriter extends RedisWriteAbstract {
                 String filed = hashFieldIndex.getString(Key.COL_NAME);
                 Integer index = hashFieldIndex.getInt(Key.COL_INDEX);
                 String value = record.getColumn(index).asString();
+                value = valuePreffix + value + valueSuffix;
                 pipelined.hset(redisKey, filed, value);
                 records++;
             }
+            pipelined.expire(redisKey, expire);
         }
     }
 

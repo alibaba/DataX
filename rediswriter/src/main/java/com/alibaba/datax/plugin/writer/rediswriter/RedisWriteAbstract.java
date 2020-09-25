@@ -20,6 +20,8 @@ public abstract class RedisWriteAbstract {
     protected int records;
     protected String keyPreffix;
     protected String keySuffix;
+    protected String valuePreffix;
+    protected String valueSuffix;
     protected Integer batchSize;
     protected Integer expire;
     protected String strKey;
@@ -51,6 +53,8 @@ public abstract class RedisWriteAbstract {
         batchSize = detailConfig.getInt(Key.BATCH_SIZE, 1000);
         keyPreffix = detailConfig.getString(Key.KEY_PREFIX, "");
         keySuffix = detailConfig.getString(Key.KEY_SUFFIX, "");
+        valuePreffix = detailConfig.getString(Key.VALUE_PREFIX, "");
+        valueSuffix = detailConfig.getString(Key.VALUE_SUFFIX, "");
         expire = detailConfig.getInt(Key.EXPIRE, Integer.MAX_VALUE);
         pipelined = getRedisPipelineBase(configuration);
     }
@@ -114,6 +118,7 @@ public abstract class RedisWriteAbstract {
      * 关闭资源
      */
     public void close() {
+        RedisWriterHelper.syscData(pipelined);
         RedisWriterHelper.close(redisClient);
     }
 }

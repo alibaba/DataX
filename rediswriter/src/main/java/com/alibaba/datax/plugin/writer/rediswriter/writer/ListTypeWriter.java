@@ -32,10 +32,10 @@ public class ListTypeWriter extends RedisWriteAbstract {
         if (StringUtils.isBlank(valueDelimiter)) {
             throw DataXException.asDataXException(CommonErrorCode.CONFIG_ERROR, "valueDelimiter不能为空！请检查配置");
         }
-        if(!Constant.LIST_PUSH_TYPE_LPUSH.equalsIgnoreCase(pushType) &&
+        if (!Constant.LIST_PUSH_TYPE_LPUSH.equalsIgnoreCase(pushType) &&
                 !Constant.LIST_PUSH_TYPE_RPUSH.equalsIgnoreCase(pushType) &&
-                !Constant.LIST_PUSH_TYPE_OVERWRITE.equalsIgnoreCase(pushType)){
-            throw DataXException.asDataXException(CommonErrorCode.CONFIG_ERROR, "pushType不合法！list类型只支持lpush，rpush，overwrite！请检查配置!pushType:"+pushType);
+                !Constant.LIST_PUSH_TYPE_OVERWRITE.equalsIgnoreCase(pushType)) {
+            throw DataXException.asDataXException(CommonErrorCode.CONFIG_ERROR, "pushType不合法！list类型只支持lpush，rpush，overwrite！请检查配置!pushType:" + pushType);
         }
     }
 
@@ -65,6 +65,7 @@ public class ListTypeWriter extends RedisWriteAbstract {
                     pipelined.lpush(redisKey, redisValue);
                     break;
             }
+            pipelined.expire(redisKey, expire);
             records++;
         }
     }
