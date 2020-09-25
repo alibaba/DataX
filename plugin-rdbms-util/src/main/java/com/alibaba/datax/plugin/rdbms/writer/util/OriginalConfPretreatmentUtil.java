@@ -148,6 +148,10 @@ public final class OriginalConfPretreatmentUtil {
 
         // 默认为：insert 方式
         String writeMode = originalConfig.getString(Key.WRITE_MODE, "INSERT");
+        List<String> conflictColumns = null;
+        if (dataBaseType == DataBaseType.KingbaseES && writeMode.trim().toLowerCase().startsWith("update")){
+            conflictColumns = originalConfig.getNecessaryList(Key.CONFLICT_COLUMN, String.class, DBUtilErrorCode.REQUIRED_VALUE);
+        }
 
         List<String> valueHolders = new ArrayList<String>(columns.size());
         for (int i = 0; i < columns.size(); i++) {
@@ -160,7 +164,7 @@ public final class OriginalConfPretreatmentUtil {
             forceUseUpdate = true;
         }
 
-        String writeDataSqlTemplate = WriterUtil.getWriteTemplate(columns, valueHolders, writeMode,dataBaseType, forceUseUpdate);
+        String writeDataSqlTemplate = WriterUtil.getWriteTemplate(columns, valueHolders, conflictColumns, writeMode, dataBaseType, forceUseUpdate);
 
         LOG.info("Write data [\n{}\n], which jdbcUrl like:[{}]", writeDataSqlTemplate, jdbcUrl);
 
