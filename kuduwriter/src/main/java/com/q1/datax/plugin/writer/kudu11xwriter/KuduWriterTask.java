@@ -13,6 +13,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -37,13 +40,14 @@ public class KuduWriterTask {
     private Integer primaryKeyIndexUntil;
 
 
-    public KuduWriterTask(com.alibaba.datax.common.util.Configuration configuration) {
+    public KuduWriterTask(Configuration configuration) {
         this.columns = configuration.getListConfiguration(Key.COLUMN);
         this.encoding = configuration.getString(Key.ENCODING);
         this.insertMode = configuration.getString(Key.INSERT_MODE);
         this.batchSize = configuration.getDouble(Key.WRITE_BATCH_SIZE);
         this.mutationBufferSpace = configuration.getLong(Key.MUTATION_BUFFER_SPACE);
         this.isUpsert = !configuration.getString(Key.INSERT_MODE).equals("insert");
+        this.isSkipFail = configuration.getBool(Key.SKIP_FAIL);
 
         this.kuduClient = Kudu11xHelper.getKuduClient(configuration.getString(Key.KUDU_CONFIG));
         this.table = Kudu11xHelper.getKuduTable(configuration, kuduClient);
@@ -55,6 +59,7 @@ public class KuduWriterTask {
     }
 
     public void startWriter(RecordReceiver lineReceiver, TaskPluginCollector taskPluginCollector) {
+        LOG.info("==kuduwriter began to write!");
         Record record;
         AtomicLong counter = new AtomicLong(0L);
         try {
@@ -146,7 +151,8 @@ public class KuduWriterTask {
                 }
             }
         } catch (Exception e) {
-            throw DataXException.asDataXException(Kudu11xWriterErrorcode.PUT_KUDU_ERROR, e);
+            LOG.error("write failed! the task will exit!");
+            throw DataXException.asDataXException(Kudu11xWriterErrorcode.PUT_KUDU_ERROR, e.getMessage());
         }
         AtomicInteger i = new AtomicInteger(10);
         try {
@@ -170,6 +176,7 @@ public class KuduWriterTask {
             try {
                 session.flush();
             } catch (KuduException e) {
+                LOG.error("==kuduwriter flush error! the results may not be complete！");
                 e.printStackTrace();
             }
         }
