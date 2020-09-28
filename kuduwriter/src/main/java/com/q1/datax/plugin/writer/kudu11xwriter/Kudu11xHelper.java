@@ -58,7 +58,7 @@ public class Kudu11xHelper {
         return kuduClient;
     }
 
-    public static KuduTable getKuduTable(com.alibaba.datax.common.util.Configuration configuration, KuduClient kuduClient) {
+    public static KuduTable getKuduTable(Configuration configuration, KuduClient kuduClient) {
         String tableName = configuration.getString(Key.TABLE);
 
         KuduTable table = null;
@@ -89,7 +89,7 @@ public class Kudu11xHelper {
         return table;
     }
 
-    public static void createTable(com.alibaba.datax.common.util.Configuration configuration) {
+    public static void createTable(Configuration configuration) {
         String tableName = configuration.getString(Key.TABLE);
         String kuduConfig = configuration.getString(Key.KUDU_CONFIG);
         KuduClient kuduClient = Kudu11xHelper.getKuduClient(kuduConfig);
@@ -135,7 +135,7 @@ public class Kudu11xHelper {
         }
     }
 
-    public static boolean isTableExists(com.alibaba.datax.common.util.Configuration configuration) {
+    public static boolean isTableExists(Configuration configuration) {
         String tableName = configuration.getString(Key.TABLE);
         String kuduConfig = configuration.getString(Key.KUDU_CONFIG);
         KuduClient kuduClient = Kudu11xHelper.getKuduClient(kuduConfig);
@@ -160,7 +160,7 @@ public class Kudu11xHelper {
 
     }
 
-    public static Schema getSchema(com.alibaba.datax.common.util.Configuration configuration) {
+    public static Schema getSchema(Configuration configuration) {
         List<Configuration> columns = configuration.getListConfiguration(Key.COLUMN);
         List<ColumnSchema> columnSchemas = new ArrayList<>();
         Schema schema = null;
@@ -206,7 +206,7 @@ public class Kudu11xHelper {
         return i;
     }
 
-    public static void setTablePartition(com.alibaba.datax.common.util.Configuration configuration,
+    public static void setTablePartition(Configuration configuration,
                                          CreateTableOptions tableOptions,
                                          Schema schema) {
         Configuration partition = configuration.getConfiguration(Key.PARTITION);
@@ -243,7 +243,7 @@ public class Kudu11xHelper {
         }
     }
 
-    public static void validateParameter(com.alibaba.datax.common.util.Configuration configuration) {
+    public static void validateParameter(Configuration configuration) {
         configuration.getNecessaryValue(Key.KUDU_CONFIG, Kudu11xWriterErrorcode.REQUIRED_VALUE);
         configuration.getNecessaryValue(Key.TABLE, Kudu11xWriterErrorcode.REQUIRED_VALUE);
         String encoding = configuration.getString(Key.ENCODING, Constant.DEFAULT_ENCODING);
@@ -268,6 +268,7 @@ public class Kudu11xHelper {
 
         Boolean isSkipFail = configuration.getBool(Key.SKIP_FAIL, false);
         configuration.set(Key.SKIP_FAIL, isSkipFail);
+        LOG.info("==validate parameter complete！");
     }
 
     public static void truncateTable(Configuration configuration) {
