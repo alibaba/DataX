@@ -2,7 +2,7 @@
 
 ## Transformer定义
 
-在数据同步、传输过程中，存在用户对于数据传输进行特殊定制化的需求场景，包括裁剪列、转换列等工作，可以借助ETL的T过程实现(Transformer)。DataX包含了完整的E(Extract)、T(Transformer)、L(Load)支持。
+在数据同步、传输过程中，存在用户对于数据传输进行特殊定制化的需求场景，包括裁剪列、转换列等工作，可以借助ETL的T过程实现(Transformer)。DataX包含了完成的E(Extract)、T(Transformer)、L(Load)支持。
 
 ## 运行模型
 
@@ -108,6 +108,16 @@ String code3 = "Column column = record.getColumn(1);\n" +
                 " return record;";
 ```
 
+6. dx_cryp
+
+通过继承和扩展Transformer类，在dataX上实现了几种字段脱敏方法和使用方法如下：
+
+  * 参数：3个
+      * 第一个参数：字段编号，对应record中第几个字段(columnIndex)。
+      * 第二个参数：选择的加密算法的代号。
+      * 第三个参数：加密算法的加密参数，如果需要的话。
+  * 返回： 加密过的数据。如果开始位置非法会抛出异常。如果字段为空值，直接返回（即不参与本transformer）
+
 ## Job定义
 * 本例中，配置3个UDF。
 
@@ -194,8 +204,6 @@ String code3 = "Column column = record.getColumn(1);\n" +
 }
 
 ```
-
-
 
 ## 计量和脏数据
 
