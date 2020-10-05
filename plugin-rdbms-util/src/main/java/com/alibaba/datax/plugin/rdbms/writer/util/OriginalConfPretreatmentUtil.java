@@ -122,7 +122,13 @@ public final class OriginalConfPretreatmentUtil {
                 ListUtil.makeSureNoValueDuplicate(userConfiguredColumns, false);
 
                 // 检查列是否都为数据库表中正确的列（通过执行一次 select column from table 进行判断）
-                DBUtil.getColumnMetaData(connectionFactory.getConnecttion(), oneTable,StringUtils.join(userConfiguredColumns, ","));
+                Connection connection = null;
+                try {
+                    connection = connectionFactory.getConnecttion();
+                    DBUtil.getColumnMetaData(connection, oneTable,StringUtils.join(userConfiguredColumns, ","));
+                } finally {
+                    DBUtil.closeDBResources(null, null, connection);
+                }
             }
         }
     }
