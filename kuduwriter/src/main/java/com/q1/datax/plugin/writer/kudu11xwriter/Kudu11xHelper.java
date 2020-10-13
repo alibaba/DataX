@@ -111,7 +111,7 @@ public class Kudu11xHelper {
         } catch (Exception e) {
             throw DataXException.asDataXException(Kudu11xWriterErrorcode.GREATE_KUDU_TABLE_ERROR, e);
         } finally {
-            AtomicInteger i = new AtomicInteger(5);
+            AtomicInteger i = new AtomicInteger(10);
             while (i.get() > 0) {
                 try {
                     if (kuduClient.isCreateTableDone(tableName)) {
@@ -124,7 +124,7 @@ public class Kudu11xHelper {
                 } catch (KuduException e) {
                     LOG.info("Wait for the table to be created..... " + i);
                     try {
-                        Thread.sleep(1000L);
+                        Thread.sleep(100L);
                     } catch (InterruptedException ex) {
                         ex.printStackTrace();
                     }
