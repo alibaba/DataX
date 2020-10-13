@@ -38,7 +38,7 @@ public class Kudu11xWriter extends Writer {
 
         @Override
         public List<Configuration> split(int i) {
-            List<Configuration> splitResultConfigs = new ArrayList<Configuration>();
+            List<Configuration> splitResultConfigs = new ArrayList<>();
             for (int j = 0; j < i; j++) {
                 splitResultConfigs.add(config.clone());
             }
@@ -76,7 +76,7 @@ public class Kudu11xWriter extends Writer {
                     kuduTaskProxy.session.close();
                 }
             }catch (Exception e){
-                LOG.warn("kudu session is not gracefully closed !");
+                LOG.warn("The \"kudu session\" was not stopped gracefully !");
             }
             Kudu11xHelper.closeClient(kuduTaskProxy.kuduClient);
 

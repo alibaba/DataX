@@ -1,5 +1,5 @@
 {
-    "name": "kudu11xwriter",
+    "name": "kuduwriter",
     "class": "com.q1.datax.plugin.writer.kudu11xwriter.Kudu11xWriter",
     "description": "use put: prod. mechanism: use kudu java api put data.",
     "developer": "com.q1.daizihao"
