@@ -58,7 +58,9 @@ hbase20xsqlreader插件实现了从Phoenix(HBase SQL)读取数据，对应版本
 * **queryServerAddress**
 
 	* 描述：hbase20xsqlreader需要通过Phoenix轻客户端去连接Phoenix QueryServer，因此这里需要填写对应QueryServer地址。
- 
+           增强版/Lindorm 用户若需透传user, password参数，可以在queryServerAddress后增加对应可选属性.
+           格式参考：http://127.0.0.1:8765;user=root;password=root
+            
 	* 必选：是 <br />
  
 	* 默认值：无 <br />
