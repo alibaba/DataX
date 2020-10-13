@@ -9,15 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>hbase20xsqlwriter</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <packaging>jar</packaging>
-
-    <properties>
-        <phoenix.version>5.2.5-HBase-2.x</phoenix.version>
-        <commons-codec.version>1.8</commons-codec.version>
-    </properties>
-
+    <artifactId>kuduwriter</artifactId>
     <dependencies>
         <dependency>
             <groupId>com.alibaba.datax</groupId>
@@ -31,15 +23,14 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.aliyun.phoenix</groupId>
-            <artifactId>ali-phoenix-shaded-thin-client</artifactId>
-            <version>${phoenix.version}</version>
+            <groupId>org.apache.kudu</groupId>
+            <artifactId>kudu-client</artifactId>
+            <version>1.11.1</version>
         </dependency>
-
-        <!-- for test -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <version>4.13</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -54,23 +45,9 @@
             </exclusions>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <version>1.9.5</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>
-        <resources>
-            <resource>
-                <directory>src/main/java</directory>
-                <includes>
-                    <include>**/*.properties</include>
-                </includes>
-            </resource>
-        </resources>
         <plugins>
             <!-- compiler plugin -->
             <plugin>
@@ -81,6 +58,7 @@
                     <encoding>${project-sourceEncoding}</encoding>
                 </configuration>
             </plugin>
+            <!-- assembly plugin -->
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
@@ -101,6 +79,4 @@
             </plugin>
         </plugins>
     </build>
-
-
 </project>

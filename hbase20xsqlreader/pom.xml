@@ -14,7 +14,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <phoenix.version>5.1.0-HBase-2.0.0.2</phoenix.version>
+        <phoenix.version>5.2.5-HBase-2.x</phoenix.version>
     </properties>
 
     <dependencies>
