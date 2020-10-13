@@ -14,21 +14,21 @@
 				<include>plugin.json</include>
 				<include>plugin_job_template.json</include>
 			</includes>
-			<outputDirectory>plugin/writer/kudu11xwriter</outputDirectory>
+			<outputDirectory>plugin/writer/kuduwriter</outputDirectory>
 		</fileSet>
 		<fileSet>
 			<directory>target/</directory>
 			<includes>
-				<include>kudu11xwriter-0.0.1-SNAPSHOT.jar</include>
+				<include>kuduwriter-0.0.1-SNAPSHOT.jar</include>
 			</includes>
-			<outputDirectory>plugin/writer/kudu11xwriter</outputDirectory>
+			<outputDirectory>plugin/writer/kuduwriter</outputDirectory>
 		</fileSet>
 	</fileSets>
 
 	<dependencySets>
 		<dependencySet>
 			<useProjectArtifact>false</useProjectArtifact>
-			<outputDirectory>plugin/writer/kudu11xwriter/libs</outputDirectory>
+			<outputDirectory>plugin/writer/kuduwriter/libs</outputDirectory>
 			<scope>runtime</scope>
 		</dependencySet>
 	</dependencySets>
