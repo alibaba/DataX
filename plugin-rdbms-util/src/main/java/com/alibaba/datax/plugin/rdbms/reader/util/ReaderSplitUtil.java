@@ -68,7 +68,12 @@ public final class ReaderSplitUtil {
                         //eachTableShouldSplittedNumber = eachTableShouldSplittedNumber * 2 + 1;// 不应该加1导致长尾
                         
                         //考虑其他比率数字?(splitPk is null, 忽略此长尾)
-                        eachTableShouldSplittedNumber = eachTableShouldSplittedNumber * 5;
+                        //eachTableShouldSplittedNumber = eachTableShouldSplittedNumber * 5;
+
+                        //为避免导入hive小文件 默认基数为5，也就是channel配置几个就是几个task,可以通过 pkQuota 配置基数
+                        // 最终task数为(channel/tableNum)向上取整*pkQuota
+                        Integer quota = originalSliceConfig.getInt(Key.SPLIT_FACTOR, Constant.SPLIT_FACTOR);
+                        eachTableShouldSplittedNumber = eachTableShouldSplittedNumber * quota;
                     }
                     // 尝试对每个表，切分为eachTableShouldSplittedNumber 份
                     for (String table : tables) {
