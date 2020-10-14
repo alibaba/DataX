@@ -35,12 +35,12 @@
         <dependency>
             <groupId>io.searchbox</groupId>
             <artifactId>jest-common</artifactId>
-            <version>2.4.0</version>
+            <version>6.3.1</version>
         </dependency>
         <dependency>
             <groupId>io.searchbox</groupId>
             <artifactId>jest</artifactId>
-            <version>2.4.0</version>
+            <version>6.3.1</version>
         </dependency>
         <dependency>
             <groupId>joda-time</groupId>
