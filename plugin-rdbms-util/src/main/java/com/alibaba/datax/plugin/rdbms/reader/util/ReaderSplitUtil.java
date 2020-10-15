@@ -72,8 +72,8 @@ public final class ReaderSplitUtil {
 
                         //为避免导入hive小文件 默认基数为5，也就是channel配置几个就是几个task,可以通过 splitFactor 配置基数
                         // 最终task数为(channel/tableNum)向上取整*splitFactor
-                        Integer quota = originalSliceConfig.getInt(Key.SPLIT_FACTOR, Constant.SPLIT_FACTOR);
-                        eachTableShouldSplittedNumber = eachTableShouldSplittedNumber * quota;
+                        Integer splitFactor = originalSliceConfig.getInt(Key.SPLIT_FACTOR, Constant.SPLIT_FACTOR);
+                        eachTableShouldSplittedNumber = eachTableShouldSplittedNumber * splitFactor;
                     }
                     // 尝试对每个表，切分为eachTableShouldSplittedNumber 份
                     for (String table : tables) {
