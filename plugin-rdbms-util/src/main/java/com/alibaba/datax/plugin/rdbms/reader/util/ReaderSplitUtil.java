@@ -70,8 +70,8 @@ public final class ReaderSplitUtil {
                         //考虑其他比率数字?(splitPk is null, 忽略此长尾)
                         //eachTableShouldSplittedNumber = eachTableShouldSplittedNumber * 5;
 
-                        //为避免导入hive小文件 默认基数为5，也就是channel配置几个就是几个task,可以通过 pkQuota 配置基数
-                        // 最终task数为(channel/tableNum)向上取整*pkQuota
+                        //为避免导入hive小文件 默认基数为5，也就是channel配置几个就是几个task,可以通过 splitFactor 配置基数
+                        // 最终task数为(channel/tableNum)向上取整*splitFactor
                         Integer quota = originalSliceConfig.getInt(Key.SPLIT_FACTOR, Constant.SPLIT_FACTOR);
                         eachTableShouldSplittedNumber = eachTableShouldSplittedNumber * quota;
                     }
