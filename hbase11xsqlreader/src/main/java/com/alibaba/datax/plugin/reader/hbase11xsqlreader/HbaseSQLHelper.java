@@ -34,6 +34,14 @@ import java.util.Map;
 public class HbaseSQLHelper {
     private static final Logger LOG = LoggerFactory.getLogger(HbaseSQLHelper.class);
 
+    static {
+        try {
+            Class.forName("org.apache.phoenix.jdbc.PhoenixDriver");
+        } catch (Throwable t) {
+            throw new RuntimeException("faild load org.apache.phoenix.jdbc.PhoenixDriver", t);
+        }
+    }
+
     public static org.apache.hadoop.conf.Configuration generatePhoenixConf(HbaseSQLReaderConfig readerConfig) {
         org.apache.hadoop.conf.Configuration conf = new org.apache.hadoop.conf.Configuration();
 
