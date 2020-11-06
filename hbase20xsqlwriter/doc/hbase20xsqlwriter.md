@@ -120,7 +120,9 @@ HBase20xsqlwriter实现了向hbase中的SQL表(phoenix)批量导入数据的功�
 
 * **queryServerAddress**
 
-   * 描述：Phoenix QueryServer地址，为必填项，格式：http://${hostName}:${ip}，如http://172.16.34.58:8765
+   * 描述：Phoenix QueryServer地址，为必填项，格式：http://${hostName}:${ip}，如http://172.16.34.58:8765。
+          增强版/Lindorm 用户若需透传user, password参数，可以在queryServerAddress后增加对应可选属性.
+              格式参考：http://127.0.0.1:8765;user=root;password=root
    * 必选：是
    * 默认值：无
    

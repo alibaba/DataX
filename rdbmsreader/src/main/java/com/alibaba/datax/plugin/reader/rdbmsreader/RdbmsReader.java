@@ -5,6 +5,7 @@ import com.alibaba.datax.common.plugin.RecordSender;
 import com.alibaba.datax.common.spi.Reader;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.plugin.rdbms.reader.CommonRdbmsReader;
+import com.alibaba.datax.plugin.rdbms.util.DBUtil;
 import com.alibaba.datax.plugin.rdbms.util.DBUtilErrorCode;
 import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
 
@@ -12,7 +13,10 @@ import java.util.List;
 
 public class RdbmsReader extends Reader {
     private static final DataBaseType DATABASE_TYPE = DataBaseType.RDBMS;
-
+    static {
+    	//加载插件下面配置的驱动类
+        DBUtil.loadDriverClass("reader", "rdbms");
+    }
     public static class Job extends Reader.Job {
 
         private Configuration originalConfig;

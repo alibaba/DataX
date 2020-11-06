@@ -21,6 +21,7 @@ public enum DataBaseType {
     ADS("ads","com.mysql.jdbc.Driver"),
     ClickHouse("clickhouse", "ru.yandex.clickhouse.ClickHouseDriver"),
     Informix("informix", "com.informix.jdbc.IfxDriver");
+    KingbaseES("kingbasees", "com.kingbase8.Driver");
 
     private String typeName;
     private String driverClassName;
@@ -59,7 +60,9 @@ public enum DataBaseType {
                 break;
             case RDBMS:
                 break;
-            case Informix:
+             case Informix:
+                 break;
+            case KingbaseES:
                 break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type.");
@@ -102,6 +105,8 @@ public enum DataBaseType {
                 break;
             case Informix:
                 break;
+             case KingbaseES:
+                break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type.");
         }
@@ -126,6 +131,7 @@ public enum DataBaseType {
                 break;
             case DB2:
             case PostgreSQL:
+            case KingbaseES:
             	break;
             case Informix:
                 break;
@@ -151,6 +157,7 @@ public enum DataBaseType {
                 break;
             case DB2:
             case PostgreSQL:
+            case KingbaseES:
                 break;
             case Informix:
                 break;
@@ -177,6 +184,8 @@ public enum DataBaseType {
             case PostgreSQL:
                 break;
             case Informix:
+                break;
+            case KingbaseES:
                 break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type");
