@@ -19,7 +19,7 @@
 		<fileSet>
 			<directory>target/</directory>
 			<includes>
-				<include>kudu11xwriter-0.0.1-SNAPSHOT.jar</include>
+				<include>kuduwriter-0.0.1-SNAPSHOT.jar</include>
 			</includes>
 			<outputDirectory>plugin/writer/kudu11xwriter</outputDirectory>
 		</fileSet>
