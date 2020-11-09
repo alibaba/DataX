@@ -58,7 +58,8 @@ ODPSReader 支持读取分区表、非分区表，不支持读取虚拟视图。
                         ],
                         "packageAuthorizedProject": "yourCurrentProjectName",
                         "splitMode": "record",
-                        "odpsServer": "http://xxx/api"
+                        "odpsServer": "http://xxx/api",
+                        "tunnelServer": "http://dt.odps.aliyun.com"
                     }
                 },
                 "writer": {

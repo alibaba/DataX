@@ -105,7 +105,7 @@ OSSWriter实现了从DataX协议转为OSS中的TXT文件功能，OSS本身是无
  	* 描述：OSSWriter写入的文件名，OSS使用文件名模拟目录的实现。 <br />
 
 		使用"object": "datax"，写入object以datax开头，后缀添加随机字符串。
-		使用"object": "/cdo/datax"，写入的object以/cdo/datax开头，后缀随机添加字符串，/作为OSS模拟目录的分隔符。
+		使用"object": "cdo/datax"，写入的object以cdo/datax开头，后缀随机添加字符串，/作为OSS模拟目录的分隔符。
 
 	* 必选：是 <br />
 

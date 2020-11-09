@@ -4,6 +4,7 @@ import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordReceiver;
 import com.alibaba.datax.common.spi.Writer;
 import com.alibaba.datax.common.util.Configuration;
+import com.alibaba.datax.plugin.rdbms.util.DBUtil;
 import com.alibaba.datax.plugin.rdbms.util.DBUtilErrorCode;
 import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
 import com.alibaba.datax.plugin.rdbms.writer.CommonRdbmsWriter;
@@ -13,7 +14,10 @@ import java.util.List;
 
 public class RdbmsWriter extends Writer {
     private static final DataBaseType DATABASE_TYPE = DataBaseType.RDBMS;
-
+    static {
+    	//加载插件下面配置的驱动类
+        DBUtil.loadDriverClass("writer", "rdbms");
+    }
     public static class Job extends Writer.Job {
         private Configuration originalConfig = null;
         private CommonRdbmsWriter.Job commonRdbmsWriterMaster;

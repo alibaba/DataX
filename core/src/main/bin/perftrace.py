@@ -174,6 +174,9 @@ def parsePluginName(jdbcUrl, pluginType):
     db2Regex = re.compile('jdbc:(db2)://.*')
     if (db2Regex.match(jdbcUrl)):
         name = 'db2'
+    kingbaseesRegex = re.compile('jdbc:(kingbase8)://.*')
+    if (kingbaseesRegex.match(jdbcUrl)):
+        name = 'kingbasees'
     return "%s%s" % (name, pluginType)
 
 def renderDataXJson(paramsDict, readerOrWriter = 'reader', channel = 1):

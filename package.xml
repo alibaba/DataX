@@ -75,6 +75,13 @@
             <outputDirectory>datax</outputDirectory>
         </fileSet>
         <fileSet>
+            <directory>kingbaseesreader/target/datax/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>datax</outputDirectory>
+        </fileSet>
+        <fileSet>
             <directory>rdbmsreader/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
@@ -261,6 +268,13 @@
         </fileSet>
 		<fileSet>
             <directory>postgresqlwriter/target/datax/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>datax</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>kingbaseeswriter/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
             </includes>
