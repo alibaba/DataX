@@ -130,6 +130,14 @@ public final class WriterUtil {
                     .append(")")
                     .append(onDuplicateKeyUpdateString(columnHolders))
                     .toString();
+        } else if (dataBaseType == DataBaseType.PostgreSQL && writeMode.trim().toLowerCase().startsWith("update")) {
+            //针对postgres 增加update
+            writeDataSqlTemplate = new StringBuilder()
+                        .append("INSERT INTO %s (").append(StringUtils.join(columnHolders, ","))
+                        .append(") VALUES(").append(StringUtils.join(valueHolders, ","))
+                        .append(")")
+                        .append(onPostgresDuplicateKeyUpdateString(columnHolders))
+                        .toString();
         } else {
 
             //这里是保护,如果其他错误的使用了update,需要更换为replace
@@ -143,6 +151,29 @@ public final class WriterUtil {
         }
 
         return writeDataSqlTemplate;
+    }
+
+    public static String onPostgresDuplicateKeyUpdateString(List<String> columnHolders){
+        if (columnHolders == null || columnHolders.size() < 1) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(" ON CONFLICT (");
+        sb.append(columnHolders.get(0));
+        sb.append(") DO UPDATE SET ");
+        boolean first = true;
+        for(String column:columnHolders){
+            if(!first){
+                sb.append(",");
+            }else{
+                first = false;
+            }
+            sb.append(column);
+            sb.append("=excluded.");
+            sb.append(column);
+        }
+       
+        return sb.toString();
     }
 
     public static String onDuplicateKeyUpdateString(List<String> columnHolders){

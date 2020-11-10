@@ -23,11 +23,11 @@ public class PostgresqlWriter extends Writer {
 			this.originalConfig = super.getPluginJobConf();
 
 			// warn：not like mysql, PostgreSQL only support insert mode, don't use
-			String writeMode = this.originalConfig.getString(Key.WRITE_MODE);
-			if (null != writeMode) {
-				throw DataXException.asDataXException(DBUtilErrorCode.CONF_ERROR,
-					String.format("写入模式(writeMode)配置有误. 因为PostgreSQL不支持配置参数项 writeMode: %s, PostgreSQL仅使用insert sql 插入数据. 请检查您的配置并作出修改.", writeMode));
-			}
+			// String writeMode = this.originalConfig.getString(Key.WRITE_MODE);
+			// if (null != writeMode) {
+			// 	throw DataXException.asDataXException(DBUtilErrorCode.CONF_ERROR,
+			// 		String.format("写入模式(writeMode)配置有误. 因为PostgreSQL不支持配置参数项 writeMode: %s, PostgreSQL仅使用insert sql 插入数据. 请检查您的配置并作出修改.", writeMode));
+			// }
 
 			this.commonRdbmsWriterMaster = new CommonRdbmsWriter.Job(DATABASE_TYPE);
 			this.commonRdbmsWriterMaster.init(this.originalConfig);
