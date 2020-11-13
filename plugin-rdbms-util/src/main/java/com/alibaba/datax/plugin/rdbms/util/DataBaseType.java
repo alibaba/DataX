@@ -168,7 +168,7 @@ public enum DataBaseType {
         }
         StringBuilder builder = new StringBuilder();
         for (String column : columnName) {
-            builder.append(quoteColumnName(column)).append(",");
+            builder.append(column.contains("`") ? column : quoteColumnName(column)).append(",");
         }
         return builder.substring(0, builder.length() - 1);
     }
