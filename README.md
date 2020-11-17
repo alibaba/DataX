@@ -49,7 +49,7 @@ DataX目前已经有了比较全面的插件体系，主流的RDBMS数据库、N
 |              | Hbase1.1   |     √     |     √     |[读](https://github.com/alibaba/DataX/blob/master/hbase11xreader/doc/hbase11xreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/hbase11xwriter/doc/hbase11xwriter.md)|
 |              | Phoenix4.x   |     √     |     √     |[读](https://github.com/alibaba/DataX/blob/master/hbase11xsqlreader/doc/hbase11xsqlreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/hbase11xsqlwriter/doc/hbase11xsqlwriter.md)|
 |              | Phoenix5.x   |     √     |     √     |[读](https://github.com/alibaba/DataX/blob/master/hbase20xsqlreader/doc/hbase20xsqlreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/hbase20xsqlwriter/doc/hbase20xsqlwriter.md)|
-|              | MongoDB    |     √     |     √     |[读](https://github.com/alibaba/DataX/blob/master/mongoreader/doc/mongoreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/mongowriter/doc/mongowriter.md)|
+|              | MongoDB    |     √     |     √     |[读](https://github.com/alibaba/DataX/blob/master/mongodbreader/doc/mongodbreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/mongodbwriter/doc/mongodbwriter.md)|
 |              | Hive       |     √     |     √     |[读](https://github.com/alibaba/DataX/blob/master/hdfsreader/doc/hdfsreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/hdfswriter/doc/hdfswriter.md)|
 |              | Cassandra       |     √     |     √     |[读](https://github.com/alibaba/DataX/blob/master/cassandrareader/doc/cassandrareader.md) 、[写](https://github.com/alibaba/DataX/blob/master/cassandrawriter/doc/cassandrawriter.md)|
 | 无结构化数据存储     | TxtFile    |     √     |     √     |[读](https://github.com/alibaba/DataX/blob/master/txtfilereader/doc/txtfilereader.md) 、[写](https://github.com/alibaba/DataX/blob/master/txtfilewriter/doc/txtfilewriter.md)|
@@ -59,8 +59,32 @@ DataX目前已经有了比较全面的插件体系，主流的RDBMS数据库、N
 | 时间序列数据库 | OpenTSDB | √ |  |[读](https://github.com/alibaba/DataX/blob/master/opentsdbreader/doc/opentsdbreader.md)|
 |  | TSDB | √ | √ |[读](https://github.com/alibaba/DataX/blob/master/tsdbreader/doc/tsdbreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/tsdbwriter/doc/tsdbhttpwriter.md)|
 
+# 阿里云DataWorks数据集成
+
+目前DataX的已有能力已经全部融和进阿里云的数据集成，并且比DataX更加高效、安全，同时数据集成具备DataX不具备的其它高级特性和功能。可以理解问数据集成是DataX的全面升级的商业化用版本，为企业可以提供稳定、可靠、安全的数据传输服务。于DataX相比，数据集成主要有以下几大突出特点：
+
+支持实时同步：
+
+- 功能简介：https://help.aliyun.com/document_detail/181912.html
+- 支持的数据源：https://help.aliyun.com/document_detail/146778.html
+- 支持数据处理：https://help.aliyun.com/document_detail/146777.html
+
+离线同步数据源种类大幅度扩充：
+
+- 新增比如：DB2、Kafka、Hologres、MetaQ、SAPHANA、达梦等等，持续扩充中
+- 离线同步支持的数据源：https://help.aliyun.com/document_detail/137670.html
+- 具备同步解决方案：
+    - 解决方案系统：https://help.aliyun.com/document_detail/171765.html
+    - 一键全增量：https://help.aliyun.com/document_detail/175676.html
+    - 整库迁移：https://help.aliyun.com/document_detail/137809.html
+    - 批量上云：https://help.aliyun.com/document_detail/146671.html
+    - 更新更多能力请访问：https://help.aliyun.com/document_detail/137663.html
+
+
 # 我要开发新的插件
+
 请点击：[DataX插件开发宝典](https://github.com/alibaba/DataX/blob/master/dataxPluginDev.md)
+
 
 # 项目成员
 
