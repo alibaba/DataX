@@ -319,15 +319,24 @@ public class ESWriter extends Writer {
                     Column column = record.getColumn(i);
                     String columnName = columnList.get(i).getName();
                     ESFieldType columnType = typeList.get(i);
-                    //如果是数组类型，那它传入的必是字符串类型
+                    //如果是数组类型，则根据传入的参数类型来判断相应的数组类型（日期数组、字符串数组、整型数组）
                     if (columnList.get(i).isArray() != null && columnList.get(i).isArray()) {
                         String[] dataList = column.asString().split(splitter);
-                        if (!columnType.equals(ESFieldType.DATE)) {
-                            data.put(columnName, dataList);
-                        } else {
+                        if (columnType.equals(ESFieldType.DATE)) {
+                            // 日期数组
                             for (int pos = 0; pos < dataList.length; pos++) {
                                 dataList[pos] = getDateStr(columnList.get(i), column);
                             }
+                            data.put(columnName, dataList);
+                        } else if (columnType.equals(ESFieldType.INTEGER)) {
+                            // 整型数组
+                            int[] idataList = new int[dataList.length];
+                            for (int j = 0; j < dataList.length; j++) {
+                                idataList[j] = Integer.parseInt(dataList[j]);
+                            }
+                            data.put(columnName, idataList);
+                        } else {
+                            // 字符串数组
                             data.put(columnName, dataList);
                         }
                     } else {
