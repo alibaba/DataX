@@ -53,7 +53,7 @@ public class LoadUtil {
 
     /**
      * 设置pluginConfigs，方便后面插件来获取
-     *
+     * 初始化PluginLoader，可以获取各种插件配置
      * @param pluginConfigs
      */
     public static void bind(Configuration pluginConfigs) {
