@@ -1,5 +1,9 @@
 package com.alibaba.datax.core;
 
+//https://www.mdeditor.tw/pl/puUP
+//https://www.jianshu.com/p/b10fbdee7e56
+//https://aop.pub/artical/database/datax/cancel-python-dependency/
+//https://github.com/zhongjiajie/DataX
 import com.alibaba.datax.common.element.ColumnCast;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.spi.ErrorCode;
