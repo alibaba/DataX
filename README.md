@@ -1,4 +1,4 @@
-![Datax-logo](https://github.com/alibaba/DataX/blob/master/images/DataX-logo.jpg)
+![Datax-logo](https://github.com/waterWang/DataX/blob/master/images/DataX-logo.jpg)
 
 
 # DataX
@@ -19,7 +19,7 @@ DataX本身作为数据同步框架，将不同数据源的同步抽象为从源
 
 # DataX详细介绍
 
-##### 请参考：[DataX-Introduction](https://github.com/alibaba/DataX/blob/master/introduction.md)
+##### 请参考：[DataX-Introduction](https://github.com/waterWang/DataX/blob/master/introduction.md)
 
 
 
@@ -27,40 +27,40 @@ DataX本身作为数据同步框架，将不同数据源的同步抽象为从源
 
 ##### Download [DataX下载地址](http://datax-opensource.oss-cn-hangzhou.aliyuncs.com/datax.tar.gz)
 
-##### 请点击：[Quick Start](https://github.com/alibaba/DataX/blob/master/userGuid.md)
+##### 请点击：[Quick Start](https://github.com/waterWang/DataX/blob/master/userGuid.md)
 
 
 
 # Support Data Channels 
 
-DataX目前已经有了比较全面的插件体系，主流的RDBMS数据库、NOSQL、大数据计算系统都已经接入，目前支持数据如下图，详情请点击：[DataX数据源参考指南](https://github.com/alibaba/DataX/wiki/DataX-all-data-channels)
+DataX目前已经有了比较全面的插件体系，主流的RDBMS数据库、NOSQL、大数据计算系统都已经接入，目前支持数据如下图，详情请点击：[DataX数据源参考指南](https://github.com/waterWang/DataX/wiki/DataX-all-data-channels)
 
 | 类型           | 数据源        | Reader(读) | Writer(写) |文档|
 | ------------ | ---------- | :-------: | :-------: |:-------: |
-| RDBMS 关系型数据库 | MySQL      |     √     |     √     |[读](https://github.com/alibaba/DataX/blob/master/mysqlreader/doc/mysqlreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/mysqlwriter/doc/mysqlwriter.md)|
-|              | Oracle     |     √     |     √     |[读](https://github.com/alibaba/DataX/blob/master/oraclereader/doc/oraclereader.md) 、[写](https://github.com/alibaba/DataX/blob/master/oraclewriter/doc/oraclewriter.md)|
-|              | SQLServer  |     √     |     √     |[读](https://github.com/alibaba/DataX/blob/master/sqlserverreader/doc/sqlserverreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/sqlserverwriter/doc/sqlserverwriter.md)|
-|              | PostgreSQL |     √     |     √     |[读](https://github.com/alibaba/DataX/blob/master/postgresqlreader/doc/postgresqlreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/postgresqlwriter/doc/postgresqlwriter.md)|
-|              | DRDS |     √     |     √     |[读](https://github.com/alibaba/DataX/blob/master/drdsreader/doc/drdsreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/drdswriter/doc/drdswriter.md)|
-|              | 通用RDBMS(支持所有关系型数据库)         |     √     |     √     |[读](https://github.com/alibaba/DataX/blob/master/rdbmsreader/doc/rdbmsreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/rdbmswriter/doc/rdbmswriter.md)|
-| 阿里云数仓数据存储    | ODPS       |     √     |     √     |[读](https://github.com/alibaba/DataX/blob/master/odpsreader/doc/odpsreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/odpswriter/doc/odpswriter.md)|
-|              | ADS        |           |     √     |[写](https://github.com/alibaba/DataX/blob/master/adswriter/doc/adswriter.md)|
-|              | OSS        |     √     |     √     |[读](https://github.com/alibaba/DataX/blob/master/ossreader/doc/ossreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/osswriter/doc/osswriter.md)|
-|              | OCS        |     √     |     √     |[读](https://github.com/alibaba/DataX/blob/master/ocsreader/doc/ocsreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/ocswriter/doc/ocswriter.md)|
-| NoSQL数据存储    | OTS        |     √     |     √     |[读](https://github.com/alibaba/DataX/blob/master/otsreader/doc/otsreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/otswriter/doc/otswriter.md)|
-|              | Hbase0.94  |     √     |     √     |[读](https://github.com/alibaba/DataX/blob/master/hbase094xreader/doc/hbase094xreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/hbase094xwriter/doc/hbase094xwriter.md)|
-|              | Hbase1.1   |     √     |     √     |[读](https://github.com/alibaba/DataX/blob/master/hbase11xreader/doc/hbase11xreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/hbase11xwriter/doc/hbase11xwriter.md)|
-|              | Phoenix4.x   |     √     |     √     |[读](https://github.com/alibaba/DataX/blob/master/hbase11xsqlreader/doc/hbase11xsqlreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/hbase11xsqlwriter/doc/hbase11xsqlwriter.md)|
-|              | Phoenix5.x   |     √     |     √     |[读](https://github.com/alibaba/DataX/blob/master/hbase20xsqlreader/doc/hbase20xsqlreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/hbase20xsqlwriter/doc/hbase20xsqlwriter.md)|
-|              | MongoDB    |     √     |     √     |[读](https://github.com/alibaba/DataX/blob/master/mongodbreader/doc/mongodbreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/mongodbwriter/doc/mongodbwriter.md)|
-|              | Hive       |     √     |     √     |[读](https://github.com/alibaba/DataX/blob/master/hdfsreader/doc/hdfsreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/hdfswriter/doc/hdfswriter.md)|
-|              | Cassandra       |     √     |     √     |[读](https://github.com/alibaba/DataX/blob/master/cassandrareader/doc/cassandrareader.md) 、[写](https://github.com/alibaba/DataX/blob/master/cassandrawriter/doc/cassandrawriter.md)|
-| 无结构化数据存储     | TxtFile    |     √     |     √     |[读](https://github.com/alibaba/DataX/blob/master/txtfilereader/doc/txtfilereader.md) 、[写](https://github.com/alibaba/DataX/blob/master/txtfilewriter/doc/txtfilewriter.md)|
-|              | FTP        |     √     |     √     |[读](https://github.com/alibaba/DataX/blob/master/ftpreader/doc/ftpreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/ftpwriter/doc/ftpwriter.md)|
-|              | HDFS       |     √     |     √     |[读](https://github.com/alibaba/DataX/blob/master/hdfsreader/doc/hdfsreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/hdfswriter/doc/hdfswriter.md)|
-|              | Elasticsearch       |         |     √     |[写](https://github.com/alibaba/DataX/blob/master/elasticsearchwriter/doc/elasticsearchwriter.md)|
-| 时间序列数据库 | OpenTSDB | √ |  |[读](https://github.com/alibaba/DataX/blob/master/opentsdbreader/doc/opentsdbreader.md)|
-|  | TSDB | √ | √ |[读](https://github.com/alibaba/DataX/blob/master/tsdbreader/doc/tsdbreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/tsdbwriter/doc/tsdbhttpwriter.md)|
+| RDBMS 关系型数据库 | MySQL      |     √     |     √     |[读](https://github.com/waterWang/DataX/blob/master/mysqlreader/doc/mysqlreader.md) 、[写](https://github.com/waterWang/DataX/blob/master/mysqlwriter/doc/mysqlwriter.md)|
+|              | Oracle     |     √     |     √     |[读](https://github.com/waterWang/DataX/blob/master/oraclereader/doc/oraclereader.md) 、[写](https://github.com/waterWang/DataX/blob/master/oraclewriter/doc/oraclewriter.md)|
+|              | SQLServer  |     √     |     √     |[读](https://github.com/waterWang/DataX/blob/master/sqlserverreader/doc/sqlserverreader.md) 、[写](https://github.com/waterWang/DataX/blob/master/sqlserverwriter/doc/sqlserverwriter.md)|
+|              | PostgreSQL |     √     |     √     |[读](https://github.com/waterWang/DataX/blob/master/postgresqlreader/doc/postgresqlreader.md) 、[写](https://github.com/waterWang/DataX/blob/master/postgresqlwriter/doc/postgresqlwriter.md)|
+|              | DRDS |     √     |     √     |[读](https://github.com/waterWang/DataX/blob/master/drdsreader/doc/drdsreader.md) 、[写](https://github.com/waterWang/DataX/blob/master/drdswriter/doc/drdswriter.md)|
+|              | 通用RDBMS(支持所有关系型数据库)         |     √     |     √     |[读](https://github.com/waterWang/DataX/blob/master/rdbmsreader/doc/rdbmsreader.md) 、[写](https://github.com/waterWang/DataX/blob/master/rdbmswriter/doc/rdbmswriter.md)|
+| 阿里云数仓数据存储    | ODPS       |     √     |     √     |[读](https://github.com/waterWang/DataX/blob/master/odpsreader/doc/odpsreader.md) 、[写](https://github.com/waterWang/DataX/blob/master/odpswriter/doc/odpswriter.md)|
+|              | ADS        |           |     √     |[写](https://github.com/waterWang/DataX/blob/master/adswriter/doc/adswriter.md)|
+|              | OSS        |     √     |     √     |[读](https://github.com/waterWang/DataX/blob/master/ossreader/doc/ossreader.md) 、[写](https://github.com/waterWang/DataX/blob/master/osswriter/doc/osswriter.md)|
+|              | OCS        |     √     |     √     |[读](https://github.com/waterWang/DataX/blob/master/ocsreader/doc/ocsreader.md) 、[写](https://github.com/waterWang/DataX/blob/master/ocswriter/doc/ocswriter.md)|
+| NoSQL数据存储    | OTS        |     √     |     √     |[读](https://github.com/waterWang/DataX/blob/master/otsreader/doc/otsreader.md) 、[写](https://github.com/waterWang/DataX/blob/master/otswriter/doc/otswriter.md)|
+|              | Hbase0.94  |     √     |     √     |[读](https://github.com/waterWang/DataX/blob/master/hbase094xreader/doc/hbase094xreader.md) 、[写](https://github.com/waterWang/DataX/blob/master/hbase094xwriter/doc/hbase094xwriter.md)|
+|              | Hbase1.1   |     √     |     √     |[读](https://github.com/waterWang/DataX/blob/master/hbase11xreader/doc/hbase11xreader.md) 、[写](https://github.com/waterWang/DataX/blob/master/hbase11xwriter/doc/hbase11xwriter.md)|
+|              | Phoenix4.x   |     √     |     √     |[读](https://github.com/waterWang/DataX/blob/master/hbase11xsqlreader/doc/hbase11xsqlreader.md) 、[写](https://github.com/waterWang/DataX/blob/master/hbase11xsqlwriter/doc/hbase11xsqlwriter.md)|
+|              | Phoenix5.x   |     √     |     √     |[读](https://github.com/waterWang/DataX/blob/master/hbase20xsqlreader/doc/hbase20xsqlreader.md) 、[写](https://github.com/waterWang/DataX/blob/master/hbase20xsqlwriter/doc/hbase20xsqlwriter.md)|
+|              | MongoDB    |     √     |     √     |[读](https://github.com/waterWang/DataX/blob/master/mongodbreader/doc/mongodbreader.md) 、[写](https://github.com/waterWang/DataX/blob/master/mongodbwriter/doc/mongodbwriter.md)|
+|              | Hive       |     √     |     √     |[读](https://github.com/waterWang/DataX/blob/master/hdfsreader/doc/hdfsreader.md) 、[写](https://github.com/waterWang/DataX/blob/master/hdfswriter/doc/hdfswriter.md)|
+|              | Cassandra       |     √     |     √     |[读](https://github.com/waterWang/DataX/blob/master/cassandrareader/doc/cassandrareader.md) 、[写](https://github.com/waterWang/DataX/blob/master/cassandrawriter/doc/cassandrawriter.md)|
+| 无结构化数据存储     | TxtFile    |     √     |     √     |[读](https://github.com/waterWang/DataX/blob/master/txtfilereader/doc/txtfilereader.md) 、[写](https://github.com/waterWang/DataX/blob/master/txtfilewriter/doc/txtfilewriter.md)|
+|              | FTP        |     √     |     √     |[读](https://github.com/waterWang/DataX/blob/master/ftpreader/doc/ftpreader.md) 、[写](https://github.com/waterWang/DataX/blob/master/ftpwriter/doc/ftpwriter.md)|
+|              | HDFS       |     √     |     √     |[读](https://github.com/waterWang/DataX/blob/master/hdfsreader/doc/hdfsreader.md) 、[写](https://github.com/waterWang/DataX/blob/master/hdfswriter/doc/hdfswriter.md)|
+|              | Elasticsearch       |         |     √     |[写](https://github.com/waterWang/DataX/blob/master/elasticsearchwriter/doc/elasticsearchwriter.md)|
+| 时间序列数据库 | OpenTSDB | √ |  |[读](https://github.com/waterWang/DataX/blob/master/opentsdbreader/doc/opentsdbreader.md)|
+|  | TSDB | √ | √ |[读](https://github.com/waterWang/DataX/blob/master/tsdbreader/doc/tsdbreader.md) 、[写](https://github.com/waterWang/DataX/blob/master/tsdbwriter/doc/tsdbhttpwriter.md)|
 
 # 阿里云DataWorks数据集成
 
@@ -86,7 +86,7 @@ DataX目前已经有了比较全面的插件体系，主流的RDBMS数据库、N
 
 # 我要开发新的插件
 
-请点击：[DataX插件开发宝典](https://github.com/alibaba/DataX/blob/master/dataxPluginDev.md)
+请点击：[DataX插件开发宝典](https://github.com/waterWang/DataX/blob/master/dataxPluginDev.md)
 
 
 # 项目成员
@@ -97,17 +97,17 @@ DataX目前已经有了比较全面的插件体系，主流的RDBMS数据库、N
 
 # License
 
-This software is free to use under the Apache License [Apache license](https://github.com/alibaba/DataX/blob/master/license.txt).
+This software is free to use under the Apache License [Apache license](https://github.com/waterWang/DataX/blob/master/license.txt).
 
 # 
-请及时提出issue给我们。请前往：[DataxIssue](https://github.com/alibaba/DataX/issues)
+请及时提出issue给我们。请前往：[DataxIssue](https://github.com/waterWang/DataX/issues)
 
 # 开源版DataX企业用户
 
-![Datax-logo](https://github.com/alibaba/DataX/blob/master/images/datax-enterprise-users.jpg)
+![Datax-logo](https://github.com/waterWang/DataX/blob/master/images/datax-enterprise-users.jpg)
 
 ```
-长期招聘 联系邮箱：datax@alibabacloud.com
+长期招聘 联系邮箱：datax@waterWangcloud.com
 【JAVA开发职位】
 职位名称：JAVA资深开发工程师/专家/高级专家
 工作年限 : 2年以上
@@ -138,17 +138,17 @@ This software is free to use under the Apache License [Apache license](https://g
 钉钉用户群：
 
 - DataX开源用户交流群
-    - <img src="https://github.com/alibaba/DataX/blob/master/images/DataX%E5%BC%80%E6%BA%90%E7%94%A8%E6%88%B7%E4%BA%A4%E6%B5%81%E7%BE%A4.jpg" width="20%" height="20%">
+    - <img src="https://github.com/waterWang/DataX/blob/master/images/DataX%E5%BC%80%E6%BA%90%E7%94%A8%E6%88%B7%E4%BA%A4%E6%B5%81%E7%BE%A4.jpg" width="20%" height="20%">
 
 - DataX开源用户交流群2
-    - <img src="https://github.com/alibaba/DataX/blob/master/images/DataX%E5%BC%80%E6%BA%90%E7%94%A8%E6%88%B7%E4%BA%A4%E6%B5%81%E7%BE%A42.jpg" width="20%" height="20%">
+    - <img src="https://github.com/waterWang/DataX/blob/master/images/DataX%E5%BC%80%E6%BA%90%E7%94%A8%E6%88%B7%E4%BA%A4%E6%B5%81%E7%BE%A42.jpg" width="20%" height="20%">
 
 - DataX开源用户交流群3
-    - <img src="https://github.com/alibaba/DataX/blob/master/images/DataX%E5%BC%80%E6%BA%90%E7%94%A8%E6%88%B7%E4%BA%A4%E6%B5%81%E7%BE%A43.jpg" width="20%" height="20%">
+    - <img src="https://github.com/waterWang/DataX/blob/master/images/DataX%E5%BC%80%E6%BA%90%E7%94%A8%E6%88%B7%E4%BA%A4%E6%B5%81%E7%BE%A43.jpg" width="20%" height="20%">
 
 - DataX开源用户交流群4
-    - <img src="https://github.com/alibaba/DataX/blob/master/images/DataX%E5%BC%80%E6%BA%90%E7%94%A8%E6%88%B7%E4%BA%A4%E6%B5%81%E7%BE%A44.jpg" width="20%" height="20%">
+    - <img src="https://github.com/waterWang/DataX/blob/master/images/DataX%E5%BC%80%E6%BA%90%E7%94%A8%E6%88%B7%E4%BA%A4%E6%B5%81%E7%BE%A44.jpg" width="20%" height="20%">
 
 - DataX开源用户交流群5
-    - <img src="https://github.com/alibaba/DataX/blob/master/images/DataX%E5%BC%80%E6%BA%90%E7%94%A8%E6%88%B7%E4%BA%A4%E6%B5%81%E7%BE%A45.jpg" width="20%" height="20%">
+    - <img src="https://github.com/waterWang/DataX/blob/master/images/DataX%E5%BC%80%E6%BA%90%E7%94%A8%E6%88%B7%E4%BA%A4%E6%B5%81%E7%BE%A45.jpg" width="20%" height="20%">
 
