@@ -6,19 +6,52 @@
     <formats>
         <format>dir</format>
     </formats>
-    <includeBaseDirectory>false</includeBaseDirectory>
+    <includeBaseDirectory>true</includeBaseDirectory>
     <fileSets>
         <!-- for bin -->
         <fileSet>
-            <directory>src/main/bin</directory>
+            <directory>src/main/bin/python</directory>
             <includes>
-                <include>*.*</include>
+                <include>*</include>
             </includes>
             <excludes>
                 <exclude>*.pyc</exclude>
             </excludes>
             <directoryMode>775</directoryMode>
-            <outputDirectory>/bin</outputDirectory>
+            <outputDirectory>/bin/python</outputDirectory>
+        </fileSet>
+        
+        <fileSet>
+            <directory>src/main/bin/python/py3</directory>
+            <includes>
+                <include>*</include>
+            </includes>
+            <excludes>
+                <exclude>*.pyc</exclude>
+            </excludes>
+            <directoryMode>775</directoryMode>
+            <outputDirectory>/bin/python/py3</outputDirectory>
+        </fileSet>
+    
+        <fileSet>
+            <directory>src/main/bin/python/py2</directory>
+            <includes>
+                <include>*</include>
+            </includes>
+            <excludes>
+                <exclude>*.pyc</exclude>
+            </excludes>
+            <directoryMode>775</directoryMode>
+            <outputDirectory>/bin/python/py2</outputDirectory>
+        </fileSet>
+    
+        <fileSet>
+            <directory>src/main/bin/shell</directory>
+            <includes>
+                <include>*</include>
+            </includes>
+            <directoryMode>775</directoryMode>
+            <outputDirectory>/bin/shell</outputDirectory>
         </fileSet>
         <!-- for scripts -->
         <fileSet>
