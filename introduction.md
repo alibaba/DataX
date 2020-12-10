@@ -1,8 +1,8 @@
 # 阿里云开源离线同步工具DataX3.0介绍
 
-## 一. DataX3.0概览
+## 一. DataX3.0概览
 
-​	DataX 是一个异构数据源离线同步工具，致力于实现包括关系型数据库(MySQL、Oracle等)、HDFS、Hive、ODPS、HBase、FTP等各种异构数据源之间稳定高效的数据同步功能。
+	DataX 是一个异构数据源离线同步工具，致力于实现包括关系型数据库(MySQL、Oracle等)、HDFS、Hive、ODPS、HBase、FTP等各种异构数据源之间稳定高效的数据同步功能。
 
 ![datax_why_new](https://cloud.githubusercontent.com/assets/1067175/17879841/93b7fc1c-6927-11e6-8cda-7cf8420fc65f.png)
 
@@ -30,7 +30,7 @@ DataX本身作为离线数据同步框架，采用Framework + plugin架构构建
 
 ## 三. DataX3.0插件体系
 
-​	经过几年积累，DataX目前已经有了比较全面的插件体系，主流的RDBMS数据库、NOSQL、大数据计算系统都已经接入。DataX目前支持数据如下：
+	经过几年积累，DataX目前已经有了比较全面的插件体系，主流的RDBMS数据库、NOSQL、大数据计算系统都已经接入。DataX目前支持数据如下：
 
 | 类型           | 数据源        | Reader(读) | Writer(写) |文档|
 | ------------ | ---------- | :-------: | :-------: |:-------: |
@@ -58,7 +58,7 @@ DataX本身作为离线数据同步框架，采用Framework + plugin架构构建
 
 DataX Framework提供了简单的接口与插件交互，提供简单的插件接入机制，只需要任意加上一种插件，就能无缝对接其他数据源。详情请看：[DataX数据源指南](https://github.com/alibaba/DataX/wiki/DataX-all-data-channels)
 
-## 四、DataX3.0核心架构
+## 四、DataX3.0核心架构
 
 DataX 3.0 开源版本支持单机多线程模式完成同步作业运行，本小节按一个DataX作业生命周期的时序图，从整体架构设计非常简要说明DataX各个模块相互关系。
 
