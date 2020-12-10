@@ -27,12 +27,12 @@ DataX本身作为数据同步框架，将不同数据源的同步抽象为从源
     ```
     自检脚本：
     python {YOUR_DATAX_HOME}/bin/datax.py {YOUR_DATAX_HOME}/job/job.json
-  * 方法二、下载DataX源码，自己编译：[DataX源码](https://github.com/alibaba/DataX)
+  * 方法二、下载DataX源码，自己编译：[DataX源码](https://github.com/waterWang/DataX)
     
     (1)、下载DataX源码：
     
     ``` shell
-    $ git clone git@github.com:alibaba/DataX.git
+    $ git clone git@github.com:waterWang/DataX.git
     ```
     
     (2)、通过maven打包：
