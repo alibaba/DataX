@@ -69,7 +69,6 @@ buildNumber.properties
 out
 gen### Python template
 __pycache__/
-*.py[cod]
 *$py.class
 *.so
 .Python
