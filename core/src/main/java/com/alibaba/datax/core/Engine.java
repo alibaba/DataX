@@ -1,9 +1,5 @@
 package com.alibaba.datax.core;
 
-//https://www.mdeditor.tw/pl/puUP
-//https://www.jianshu.com/p/b10fbdee7e56
-//https://aop.pub/artical/database/datax/cancel-python-dependency/
-//https://github.com/zhongjiajie/DataX
 import com.alibaba.datax.common.element.ColumnCast;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.spi.ErrorCode;
@@ -40,15 +36,15 @@ public class Engine {
     
     private static String RUNTIME_MODE;
     
-    
-    /**
-     * check job model (job/task) first
-     * @param allConf
-     */
+    /* check job model (job/task) first */
     public void start(Configuration allConf) {
         
         // 绑定column转换信息
         ColumnCast.bind(allConf);
+        
+        /**
+         * 初始化PluginLoader，可以获取各种插件配置
+         */
         LoadUtil.bind(allConf);
         
         boolean isJob = !("taskGroup".equalsIgnoreCase(allConf.getString(CoreConstant.DATAX_CORE_CONTAINER_MODEL)));
@@ -90,12 +86,12 @@ public class Engine {
         PerfTrace perfTrace = PerfTrace.getInstance(isJob, instanceId, taskGroupId, priority, traceEnable);
         perfTrace.setJobInfo(jobInfoConfig, perfReportEnable, channelNumber);
         container.start();
-        
     }
     
     
     /**
-     * 过滤Job配置
+     * 过滤job配置信息
+     *
      * @param configuration
      * @return
      */
@@ -109,8 +105,9 @@ public class Engine {
     
     /**
      * 屏蔽敏感信息
+     *
      * @param configuration
-     * @return Configuration
+     * @return
      */
     public static Configuration filterSensitiveConfiguration(Configuration configuration) {
         Set<String> keys = configuration.getKeys();
@@ -132,13 +129,11 @@ public class Engine {
         
         BasicParser parser = new BasicParser();
         CommandLine cl = parser.parse(options, args);
-        
         String jobPath = cl.getOptionValue("job");
         // 如果用户没有明确指定jobid, 则 datax.py 会指定 jobid 默认值为-1
         String jobIdString = cl.getOptionValue("jobid");
         RUNTIME_MODE = cl.getOptionValue("mode");
         Configuration configuration = ConfigParser.parse(jobPath);
-        
         long jobId;
         if (!"-1".equalsIgnoreCase(jobIdString)) {
             jobId = Long.parseLong(jobIdString);
@@ -147,9 +142,9 @@ public class Engine {
             String dscJobUrlPatternString = "/instance/(\\d{1,})/config.xml";
             String dsJobUrlPatternString = "/inner/job/(\\d{1,})/config";
             String dsTaskGroupUrlPatternString = "/inner/job/(\\d{1,})/taskGroup/";
-            List<String> patterns = Arrays
+            List<String> patternStringList = Arrays
                     .asList(dscJobUrlPatternString, dsJobUrlPatternString, dsTaskGroupUrlPatternString);
-            jobId = parseJobIdFromUrl(patterns, jobPath);
+            jobId = parseJobIdFromUrl(patternStringList, jobPath);
         }
         
         boolean isStandAloneMode = "standalone".equalsIgnoreCase(RUNTIME_MODE);
@@ -159,7 +154,6 @@ public class Engine {
                     .asDataXException(FrameworkErrorCode.CONFIG_ERROR, "非 standalone 模式必须在 URL 中提供有效的 jobId.");
         }
         configuration.set(CoreConstant.DATAX_CORE_CONTAINER_JOB_ID, jobId);
-        
         //打印vmInfo
         VMInfo vmInfo = VMInfo.getVmInfo();
         if (vmInfo != null) {
@@ -167,9 +161,7 @@ public class Engine {
         }
         
         LOG.info("\n" + Engine.filterJobConfiguration(configuration) + "\n");
-        
         LOG.debug(configuration.toJSON());
-        
         ConfigurationValidate.doValidate(configuration);
         Engine engine = new Engine();
         engine.start(configuration);
@@ -198,6 +190,7 @@ public class Engine {
         if (matcher.find()) {
             return Long.parseLong(matcher.group(1));
         }
+        
         return -1;
     }
     
@@ -208,13 +201,12 @@ public class Engine {
         } catch (Throwable e) {
             exitCode = 1;
             LOG.error("\n\n经DataX智能分析,该任务最可能的错误原因是:\n" + ExceptionTracker.trace(e));
-            
             if (e instanceof DataXException) {
-                DataXException tmpException = (DataXException) e;
-                ErrorCode errCode = tmpException.getErrorCode();
-                if (errCode instanceof FrameworkErrorCode) {
-                    FrameworkErrorCode tmpErrCode = (FrameworkErrorCode) errCode;
-                    exitCode = tmpErrCode.toExitValue();
+                DataXException tempException = (DataXException) e;
+                ErrorCode errorCode = tempException.getErrorCode();
+                if (errorCode instanceof FrameworkErrorCode) {
+                    FrameworkErrorCode tempErrorCode = (FrameworkErrorCode) errorCode;
+                    exitCode = tempErrorCode.toExitValue();
                 }
             }
             System.exit(exitCode);
