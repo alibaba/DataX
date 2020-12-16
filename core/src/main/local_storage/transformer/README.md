@@ -80,7 +80,7 @@ public class Ipv4ToNum extends Transformer {
 
             //如果字段为空，返回 0
             if (oriValue==null) {
-                oriValue = "";
+                oriValue = "0.0.0.0";
             }
 
             String[] seq = oriValue.split("\\.");
