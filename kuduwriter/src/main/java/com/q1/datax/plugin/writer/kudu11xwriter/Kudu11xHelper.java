@@ -1,19 +1,18 @@
 package com.q1.datax.plugin.writer.kudu11xwriter;
 
-import com.alibaba.datax.common.element.Column;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.kudu.ColumnSchema;
 import org.apache.kudu.Schema;
 import org.apache.kudu.Type;
 import org.apache.kudu.client.*;
-import org.apache.kudu.shaded.org.checkerframework.checker.units.qual.K;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.rmi.runtime.Log;
 
 import java.nio.charset.Charset;
 import java.util.*;
@@ -55,8 +54,8 @@ public class Kudu11xHelper {
         try {
             String masterAddress = (String) conf.get(Key.KUDU_MASTER);
             kuduClient = new KuduClient.KuduClientBuilder(masterAddress)
-                    .defaultAdminOperationTimeoutMs((Long) conf.get(Key.KUDU_ADMIN_TIMEOUT))
-                    .defaultOperationTimeoutMs((Long) conf.get(Key.KUDU_SESSION_TIMEOUT))
+                    .defaultAdminOperationTimeoutMs(Long.parseLong(conf.get(Key.KUDU_ADMIN_TIMEOUT).toString()))
+                    .defaultOperationTimeoutMs(Long.parseLong(conf.get(Key.KUDU_SESSION_TIMEOUT).toString()))
                     .build();
         } catch (Exception e) {
             throw DataXException.asDataXException(Kudu11xWriterErrorcode.GET_KUDU_CONNECTION_ERROR, e);
@@ -260,17 +259,29 @@ public class Kudu11xHelper {
             return;
         }
         //range分区
-        Configuration range = partition.getConfiguration(Key.RANGE);
-        if (range != null) {
-            List<String> rangeColums = new ArrayList<>(range.getKeys());
-            tableOptions.setRangePartitionColumns(rangeColums);
-            for (String rangeColum : rangeColums) {
-                List<Configuration> lowerAndUppers = range.getListConfiguration(rangeColum);
-                for (Configuration lowerAndUpper : lowerAndUppers) {
+        Map<String, JSONArray> range = partition.getMap(Key.RANGE, JSONArray.class);
+        if (range != null && !range.isEmpty()) {
+            Set<Map.Entry<String, JSONArray>> rangeColums = range.entrySet();
+            for (Map.Entry<String, JSONArray> rangeColum : rangeColums) {
+                JSONArray lowerAndUppers = rangeColum.getValue();
+                Iterator<Object> iterator = lowerAndUppers.iterator();
+                String colum = rangeColum.getKey();
+                if (StringUtils.isBlank(colum)) {
+                    throw DataXException.asDataXException(Kudu11xWriterErrorcode.REQUIRED_VALUE,
+                            "range partition column is empty, please check the configuration parameters.");
+                }
+                while (iterator.hasNext()) {
+                    JSONObject lowerAndUpper = (JSONObject) iterator.next();
+                    String lowerValue = lowerAndUpper.getString(Key.LOWER);
+                    String upperValue = lowerAndUpper.getString(Key.UPPER);
+                    if (StringUtils.isBlank(lowerValue) || StringUtils.isBlank(upperValue)) {
+                        throw DataXException.asDataXException(Kudu11xWriterErrorcode.REQUIRED_VALUE,
+                                "\"lower\" or \"upper\" is empty, please check the configuration parameters.");
+                    }
                     PartialRow lower = schema.newPartialRow();
-                    lower.addString(rangeColum, lowerAndUpper.getNecessaryValue(Key.LOWER, Kudu11xWriterErrorcode.REQUIRED_VALUE));
                     PartialRow upper = schema.newPartialRow();
-                    upper.addString(rangeColum, lowerAndUpper.getNecessaryValue(Key.UPPER, Kudu11xWriterErrorcode.REQUIRED_VALUE));
+                    lower.addString(colum, lowerValue);
+                    upper.addString(colum, upperValue);
                     tableOptions.addRangePartition(lower, upper);
                 }
             }
@@ -327,7 +338,7 @@ public class Kudu11xHelper {
                 col.set(Key.INDEX, index);
                 indexFlag++;
             }
-            if(primaryKey != col.getBool(Key.PRIMARYKEY, false)){
+            if (primaryKey != col.getBool(Key.PRIMARYKEY, false)) {
                 primaryKey = col.getBool(Key.PRIMARYKEY, false);
                 primaryKeyFlag++;
             }
@@ -337,7 +348,7 @@ public class Kudu11xHelper {
             throw DataXException.asDataXException(Kudu11xWriterErrorcode.ILLEGAL_VALUE,
                     "\"index\" either has values for all of them, or all of them are null!");
         }
-        if (primaryKeyFlag > 1){
+        if (primaryKeyFlag > 1) {
             throw DataXException.asDataXException(Kudu11xWriterErrorcode.ILLEGAL_VALUE,
                     "\"primaryKey\" must be written in the front！");
         }
