@@ -53,8 +53,8 @@ print("REMOTE_DEBUG_CONFIG===" + REMOTE_DEBUG_CONFIG)
 RET_STATE = {
     "KILL": 143,
     "FAIL": -1,
-    "OK": 0, #无错误退出 不传参数时，默认传0
-    "RUN": 1, #有错误退出
+    "OK": 0,  # 无错误退出 不传参数时，默认传0
+    "RUN": 1,  # 有错误退出
     "RETRY": 2
 }
 
@@ -171,6 +171,8 @@ def generateJobConfigTemplate(reader, writer):
         print("Read writer[%s] template error: : can\'t find file %s" % (writer, writerTemplatePath))
     jobTemplate['job']['content'][0]['reader'] = readerPar
     jobTemplate['job']['content'][0]['writer'] = writerPar
+    # 将 Python 对象编码成 JSON 字符串
+    #indent 缩进字符，sort_keys 是否排序
     print(json.dumps(jobTemplate, indent=4, sort_keys=True))
 
 
@@ -252,7 +254,7 @@ if __name__ == "__main__":
         sys.exit(RET_STATE['FAIL'])
 
     startCommand = buildStartCommand(options, args)
-    print("startCommand===" + startCommand )
+    print("startCommand===" + startCommand)
 
     child_process = subprocess.Popen(startCommand, True)
     register_signal()
