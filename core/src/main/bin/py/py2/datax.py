@@ -42,15 +42,15 @@ RET_STATE = {
     "RETRY": 2
 }
 
-
+# 获取本地ip
 def getLocalIp():
     try:
         return socket.gethostbyname(socket.getfqdn(socket.gethostname()))
     except:
         return "Unknown"
 
-
-def suicide(signum, e):
+# 根据信号值，结束本 子进程
+def suicide(signum):
     global child_process
     print >> sys.stderr, "[Error] DataX receive unexpected signal %d, starts to suicide." % (signum)
 
@@ -61,7 +61,7 @@ def suicide(signum, e):
     print >> sys.stderr, "DataX Process was killed ! you did ?"
     sys.exit(RET_STATE["KILL"])
 
-
+#
 def register_signal():
     if not isWindows():
         global child_process
@@ -69,7 +69,7 @@ def register_signal():
         signal.signal(3, suicide)
         signal.signal(15, suicide)
 
-
+# 构造解析器
 def getOptionParser():
     usage = "usage: %prog [options] job-url-or-path"
     parser = OptionParser(usage=usage)
@@ -108,6 +108,7 @@ def getOptionParser():
     parser.add_option_group(devEnvOptionGroup)
     return parser
 
+# 根据writer和reader名， 从github拉取对应的模板，最终创建出 json任务的模板
 def generateJobConfigTemplate(reader, writer):
     readerRef = "Please refer to the %s document:\n     https://github.com/alibaba/DataX/blob/master/%s/doc/%s.md \n" % (reader,reader,reader)
     writerRef = "Please refer to the %s document:\n     https://github.com/alibaba/DataX/blob/master/%s/doc/%s.md \n " % (writer,writer,writer)
@@ -144,10 +145,12 @@ def generateJobConfigTemplate(reader, writer):
     jobTemplate['job']['content'][0]['writer'] = writerPar;
     print json.dumps(jobTemplate, indent=4, sort_keys=True)
 
+# 根据插件名读取插件模板
 def readPluginTemplate(plugin):
     with open(plugin, 'r') as f:
             return json.load(f)
 
+# 判断入参是否为一个 url
 def isUrl(path):
     if not path:
         return False
@@ -159,7 +162,7 @@ def isUrl(path):
     else:
         return False
 
-
+# 通过各类 if else 构建启动命令。启动命令中包含2部分 JVM参数+环境变量
 def buildStartCommand(options, args):
     commandMap = {}
     tempJVMCommand = DEFAULT_JVM
@@ -196,7 +199,7 @@ def buildStartCommand(options, args):
 
     return Template(ENGINE_COMMAND).substitute(**commandMap)
 
-
+# 打印版权信息
 def printCopyright():
     print '''
 DataX (%s), From Alibaba !
@@ -205,23 +208,34 @@ Copyright (C) 2010-2017, Alibaba Group. All Rights Reserved.
 ''' % DATAX_VERSION
     sys.stdout.flush()
 
-
+# 程序主入口
 if __name__ == "__main__":
+    # 1 打印版权信息
     printCopyright()
+    # 2 获取选项的解析器
     parser = getOptionParser()
+    # 3 根据入参，使用解析器解析出参数值
+    # 3.1 parse_args方法返回俩参，分别为instance类型的options和list类型的args
+    # 3.2 用sys.argv[1:]来获取命令参数，返回一个list类型的返回值
     options, args = parser.parse_args(sys.argv[1:])
     if options.reader is not None and options.writer is not None:
+        # 4 如果解析后，入参的 reader和writer不为空，在从github上构建出一个 json的样例模板
         generateJobConfigTemplate(options.reader,options.writer)
         sys.exit(RET_STATE['OK'])
     if len(args) != 1:
         parser.print_help()
         sys.exit(RET_STATE['FAIL'])
 
+    # 5 根据入参 构建执行脚本
     startCommand = buildStartCommand(options, args)
-    # print startCommand
+    # print startCommand  该命令可以打印出 用户输入的参数+py文件构建的参数，作为整体形成一个执行脚本。（执行脚本最后调用java类）
 
+    # 6 创建并返回一个子进程，并在这个进程中执行指定的shell 脚本
     child_process = subprocess.Popen(startCommand, shell=True)
+    # 7 将执行结果保存在信号量中
     register_signal()
+    # 8 父子进程进行通信，并将通信结果保存到 stdout, stderr
     (stdout, stderr) = child_process.communicate()
 
+    # 9 退出（根据子进程的状态码）
     sys.exit(child_process.returncode)

@@ -123,6 +123,7 @@
                     </archive>
                     <finalName>datax</finalName>
                     <descriptors>
+                        <!--指定装配的配置文件-->
                         <descriptor>src/main/assembly/package.xml</descriptor>
                     </descriptors>
                 </configuration>
