@@ -17,7 +17,6 @@ import com.alibaba.datax.core.util.container.LoadUtil;
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +61,6 @@ public class Engine {
             allConf.set(CoreConstant.DATAX_CORE_CONTAINER_JOB_MODE, RUNTIME_MODE);
             container = new JobContainer(allConf);
             instanceId = allConf.getLong(CoreConstant.DATAX_CORE_CONTAINER_JOB_ID, 0);
-            
         } else {
             container = new TaskGroupContainer(allConf);
             instanceId = allConf.getLong(CoreConstant.DATAX_CORE_CONTAINER_JOB_ID);
@@ -83,8 +81,8 @@ public class Engine {
         try {
             priority = Integer.parseInt(System.getenv("SKYNET_PRIORITY"));
         } catch (NumberFormatException e) {
-            LOG.warn(
-                    "priority set to 0, because NumberFormatException, the value is: " + System.getProperty("PROIORY"));
+            LOG.warn("priority set to 0, because NumberFormatException, the value is: {}",
+                    System.getProperty("PROIORY"));
         }
         
         Configuration jobInfoConfig = allConf.getConfiguration(CoreConstant.DATAX_JOB_JOBINFO);
@@ -126,7 +124,7 @@ public class Engine {
     }
     
     /**
-     * @param args
+     * @param args String[]
      * @throws Throwable
      */
     public static void entry(final String[] args) throws Throwable {
@@ -143,16 +141,16 @@ public class Engine {
         RUNTIME_MODE = cl.getOptionValue("mode");
         Configuration configuration = ConfigParser.parse(jobPath);
         long jobId;
-        if (!"-1".equalsIgnoreCase(jobIdString)) {
+        String defaultJobId = "-1";
+        if (!defaultJobId.equals(jobIdString)) {
             jobId = Long.parseLong(jobIdString);
         } else {
             // only for dsc & ds & datax 3 update
-            String dscJobUrlPatternString = "/instance/(\\d{1,})/config.xml";
-            String dsJobUrlPatternString = "/inner/job/(\\d{1,})/config";
-            String dsTaskGroupUrlPatternString = "/inner/job/(\\d{1,})/taskGroup/";
-            List<String> patternStringList = Arrays
-                    .asList(dscJobUrlPatternString, dsJobUrlPatternString, dsTaskGroupUrlPatternString);
-            jobId = parseJobIdFromUrl(patternStringList, jobPath);
+            String dscJobUrlPatternStr = "/instance/(\\d{1,})/config.xml";
+            String dsJobUrlPatternStr = "/inner/job/(\\d{1,})/config";
+            String dsTaskGroupUrlPatternStr = "/inner/job/(\\d{1,})/taskGroup/";
+            List<String> patterns = Arrays.asList(dscJobUrlPatternStr, dsJobUrlPatternStr, dsTaskGroupUrlPatternStr);
+            jobId = parseJobIdFromUrl(patterns, jobPath);
         }
         
         boolean isStandAloneMode = "standalone".equalsIgnoreCase(RUNTIME_MODE);
@@ -207,7 +205,7 @@ public class Engine {
             Engine.entry(args);
         } catch (Throwable e) {
             exitCode = 1;
-            LOG.error("\n\n经DataX智能分析,该任务最可能的错误原因是:\n" + ExceptionTracker.trace(e));
+            LOG.error("\n\n经DataX智能分析,该任务最可能的错误原因是:\n {}", ExceptionTracker.trace(e));
             if (e instanceof DataXException) {
                 DataXException tempException = (DataXException) e;
                 ErrorCode errorCode = tempException.getErrorCode();
