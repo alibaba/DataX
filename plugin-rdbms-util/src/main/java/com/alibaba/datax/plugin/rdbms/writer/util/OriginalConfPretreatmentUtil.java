@@ -62,7 +62,7 @@ public final class OriginalConfPretreatmentUtil {
                 throw DataXException.asDataXException(DBUtilErrorCode.REQUIRED_VALUE, "您未配置的写入数据库表的 jdbcUrl.");
             }
 
-            jdbcUrl = DATABASE_TYPE.appendJDBCSuffixForReader(jdbcUrl);
+            jdbcUrl = DATABASE_TYPE.appendJDBCSuffixForWriter(jdbcUrl);
             originalConfig.set(String.format("%s[%d].%s", Constant.CONN_MARK, i, Key.JDBC_URL),
                     jdbcUrl);
 
