@@ -153,6 +153,7 @@ public class CoreConstant {
 
 	public static String DATAX_HOME = System.getProperty("datax.home");
 
+	//本地 core.json路径，core里面存储
 	public static String DATAX_CONF_PATH = StringUtils.join(new String[] {
 			DATAX_HOME, "conf", "core.json" }, File.separator);
 
