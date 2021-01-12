@@ -37,7 +37,6 @@ public class Engine {
     
     private static String RUNTIME_MODE;
     
-    
     /**
      * check job model (job/task) first
      *
