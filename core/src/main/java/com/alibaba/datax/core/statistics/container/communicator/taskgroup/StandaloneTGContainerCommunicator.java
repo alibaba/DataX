@@ -6,6 +6,10 @@ import com.alibaba.datax.core.statistics.communication.Communication;
 
 public class StandaloneTGContainerCommunicator extends AbstractTGContainerCommunicator {
 
+    /**
+     * 单机版的容器沟通者
+     * @param configuration
+     */
     public StandaloneTGContainerCommunicator(Configuration configuration) {
         super(configuration);
         super.setReporter(new ProcessInnerReporter());

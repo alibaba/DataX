@@ -22,6 +22,11 @@ public final class ErrorRecordChecker {
     private Long recordLimit;
     private Double percentageLimit;
 
+    /**
+     * 容错记录检查（容错行数+容错百分比）
+     *
+     * @param configuration
+     */
     public ErrorRecordChecker(Configuration configuration) {
         this(configuration.getLong(CoreConstant.DATAX_JOB_SETTING_ERRORLIMIT_RECORD),
                 configuration.getDouble(CoreConstant.DATAX_JOB_SETTING_ERRORLIMIT_PERCENT));

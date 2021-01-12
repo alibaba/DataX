@@ -17,8 +17,8 @@ import java.util.Map;
  */
 public class VMInfo {
     private static final Logger LOG = LoggerFactory.getLogger(VMInfo.class);
-    static final long MB = 1024 * 1024;
-    static final long GB = 1024 * 1024 * 1024;
+    static final long MB = 1024 * 1024L;
+    static final long GB = 1024 * 1024 * 1024L;
     public static Object lock = new Object();
     private static VMInfo vmInfo;
 
@@ -112,6 +112,7 @@ public class VMInfo {
         }
     }
 
+    @Override
     public String toString() {
         return "the machine info  => \n\n"
                 + "\tosInfo:\t" + osInfo + "\n"
@@ -212,6 +213,7 @@ public class VMInfo {
         long maxFileDescriptorCount = -1;
         long currentOpenFileDescriptorCount = -1;
 
+        @Override
         public String toString() {
             return String.format("\ttotalPhysicalMemory:\t%,.2fG\n"
                             + "\tfreePhysicalMemory:\t%,.2fG\n"
@@ -271,8 +273,9 @@ public class VMInfo {
     }
 
     private class ProcessGCStatus {
-        final Map<String, GCStatus> gcStatusMap = new HashMap<String, GCStatus>();
+        final Map<String, GCStatus> gcStatusMap = new HashMap<>();
 
+        @Override
         public String toString() {
             return "\tGC Names\t" + gcStatusMap.keySet() + "\n";
         }
@@ -286,10 +289,10 @@ public class VMInfo {
                 sb.append("\t\t ");
                 sb.append(String.format("%-20s | %-18s | %-18s | %-18s | %-18s | %-18s | %-18s | %-18s | %-18s \n",
                         gc.name, gc.curDeltaGCCount, gc.totalGCCount, gc.maxDeltaGCCount, gc.minDeltaGCCount,
-                        String.format("%,.3fs",(float)gc.curDeltaGCTime/1000),
-                        String.format("%,.3fs",(float)gc.totalGCTime/1000),
-                        String.format("%,.3fs",(float)gc.maxDeltaGCTime/1000),
-                        String.format("%,.3fs",(float)gc.minDeltaGCTime/1000)));
+                        String.format("%,.3fs", (float) gc.curDeltaGCTime / 1000),
+                        String.format("%,.3fs", (float) gc.totalGCTime / 1000),
+                        String.format("%,.3fs", (float) gc.maxDeltaGCTime / 1000),
+                        String.format("%,.3fs", (float) gc.minDeltaGCTime / 1000)));
 
             }
             return sb.toString();
@@ -304,9 +307,9 @@ public class VMInfo {
                 sb.append("\t\t ");
                 sb.append(String.format("%-20s | %-18s | %-18s | %-18s | %-18s | %-18s | %-18s \n",
                         gc.name, gc.totalGCCount, gc.maxDeltaGCCount, gc.minDeltaGCCount,
-                        String.format("%,.3fs",(float)gc.totalGCTime/1000),
-                        String.format("%,.3fs",(float)gc.maxDeltaGCTime/1000),
-                        String.format("%,.3fs",(float)gc.minDeltaGCTime/1000)));
+                        String.format("%,.3fs", (float) gc.totalGCTime / 1000),
+                        String.format("%,.3fs", (float) gc.maxDeltaGCTime / 1000),
+                        String.format("%,.3fs", (float) gc.minDeltaGCTime / 1000)));
 
             }
             return sb.toString();
@@ -314,8 +317,9 @@ public class VMInfo {
     }
 
     private class ProcessMemoryStatus {
-        final Map<String, MemoryStatus> memoryStatusMap = new HashMap<String, MemoryStatus>();
+        final Map<String, MemoryStatus> memoryStatusMap = new HashMap<>();
 
+        @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
             sb.append("\t");

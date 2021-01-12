@@ -19,40 +19,34 @@ import java.util.Set;
 
 public final class ConfigParser {
     private static final Logger LOG = LoggerFactory.getLogger(ConfigParser.class);
+
     /**
      * 指定Job配置路径，ConfigParser会解析Job、Plugin、Core全部信息，并以Configuration返回
      */
     public static Configuration parse(final String jobPath) {
-        Configuration configuration = ConfigParser.parseJobConfig(jobPath);
+        Configuration configuration = parseJobConfig(jobPath);
+        configuration.merge(parseCoreConfig(CoreConstant.DATAX_CONF_PATH), false);
 
-        configuration.merge(
-                ConfigParser.parseCoreConfig(CoreConstant.DATAX_CONF_PATH),
-                false);
         // todo config优化，只捕获需要的plugin
-        String readerPluginName = configuration.getString(
-                CoreConstant.DATAX_JOB_CONTENT_READER_NAME);
-        String writerPluginName = configuration.getString(
-                CoreConstant.DATAX_JOB_CONTENT_WRITER_NAME);
+        String readerPluginName = configuration.getString(CoreConstant.DATAX_JOB_CONTENT_READER_NAME);
+        String writerPluginName = configuration.getString(CoreConstant.DATAX_JOB_CONTENT_WRITER_NAME);
 
-        String preHandlerName = configuration.getString(
-                CoreConstant.DATAX_JOB_PREHANDLER_PLUGINNAME);
+        String preHandlerName = configuration.getString(CoreConstant.DATAX_JOB_PREHANDLER_PLUGINNAME);
+        String postHandlerName = configuration.getString(CoreConstant.DATAX_JOB_POSTHANDLER_PLUGINNAME);
 
-        String postHandlerName = configuration.getString(
-                CoreConstant.DATAX_JOB_POSTHANDLER_PLUGINNAME);
-
-        Set<String> pluginList = new HashSet<String>();
+        Set<String> pluginList = new HashSet<>();
         pluginList.add(readerPluginName);
         pluginList.add(writerPluginName);
 
-        if(StringUtils.isNotEmpty(preHandlerName)) {
+        if (StringUtils.isNotEmpty(preHandlerName)) {
             pluginList.add(preHandlerName);
         }
-        if(StringUtils.isNotEmpty(postHandlerName)) {
+        if (StringUtils.isNotEmpty(postHandlerName)) {
             pluginList.add(postHandlerName);
         }
         try {
-            configuration.merge(parsePluginConfig(new ArrayList<String>(pluginList)), false);
-        }catch (Exception e){
+            configuration.merge(parsePluginConfig(new ArrayList<>(pluginList)), false);
+        } catch (Exception e) {
             //吞掉异常，保持log干净。这里message足够。
             LOG.warn(String.format("插件[%s,%s]加载失败，1s后重试... Exception:%s ", readerPluginName, writerPluginName, e.getMessage()));
             try {
@@ -60,16 +54,25 @@ public final class ConfigParser {
             } catch (InterruptedException e1) {
                 //
             }
-            configuration.merge(parsePluginConfig(new ArrayList<String>(pluginList)), false);
+            configuration.merge(parsePluginConfig(new ArrayList<>(pluginList)), false);
         }
-
         return configuration;
     }
 
+    /**
+     * @param path
+     * @return
+     */
     private static Configuration parseCoreConfig(final String path) {
         return Configuration.from(new File(path));
     }
 
+    /**
+     * 根据path（可能本地文件，可能http文件）解析配置，并解密datax中的加密项
+     *
+     * @param path
+     * @return
+     */
     public static Configuration parseJobConfig(final String path) {
         String jobContent = getJobContent(path);
         Configuration config = Configuration.from(jobContent);
@@ -77,15 +80,18 @@ public final class ConfigParser {
         return SecretUtil.decryptSecretKey(config);
     }
 
+    /**
+     * 根据jobResource的类型（网络文件还是本地文件）获取文件内容
+     *
+     * @param jobResource
+     * @return
+     */
     private static String getJobContent(String jobResource) {
         String jobContent;
-
         boolean isJobResourceFromHttp = jobResource.trim().toLowerCase().startsWith("http");
-
-
         if (isJobResourceFromHttp) {
             //设置httpclient的 HTTP_TIMEOUT_INMILLIONSECONDS
-            Configuration coreConfig = ConfigParser.parseCoreConfig(CoreConstant.DATAX_CONF_PATH);
+            Configuration coreConfig = parseCoreConfig(CoreConstant.DATAX_CONF_PATH);
             int httpTimeOutInMillionSeconds = coreConfig.getInt(
                     CoreConstant.DATAX_CORE_DATAXSERVER_TIMEOUT, 5000);
             HttpClientUtil.setHttpTimeoutInMillionSeconds(httpTimeOutInMillionSeconds);
@@ -96,7 +102,7 @@ public final class ConfigParser {
                 HttpGet httpGet = HttpClientUtil.getGetRequest();
                 httpGet.setURI(url.toURI());
 
-                jobContent = httpClientUtil.executeAndGetWithFailedRetry(httpGet, 1, 1000l);
+                jobContent = httpClientUtil.executeAndGetWithFailedRetry(httpGet, 1, 1000L);
             } catch (Exception e) {
                 throw DataXException.asDataXException(FrameworkErrorCode.CONFIG_ERROR, "获取作业配置信息失败:" + jobResource, e);
             }
@@ -123,7 +129,7 @@ public final class ConfigParser {
         for (final String each : ConfigParser
                 .getDirAsList(CoreConstant.DATAX_PLUGIN_READER_HOME)) {
             Configuration eachReaderConfig = ConfigParser.parseOnePluginConfig(each, "reader", replicaCheckPluginSet, wantPluginNames);
-            if(eachReaderConfig!=null) {
+            if (eachReaderConfig != null) {
                 configuration.merge(eachReaderConfig, true);
                 complete += 1;
             }
@@ -132,7 +138,7 @@ public final class ConfigParser {
         for (final String each : ConfigParser
                 .getDirAsList(CoreConstant.DATAX_PLUGIN_WRITER_HOME)) {
             Configuration eachWriterConfig = ConfigParser.parseOnePluginConfig(each, "writer", replicaCheckPluginSet, wantPluginNames);
-            if(eachWriterConfig!=null) {
+            if (eachWriterConfig != null) {
                 configuration.merge(eachWriterConfig, true);
                 complete += 1;
             }
@@ -154,7 +160,7 @@ public final class ConfigParser {
 
         String pluginPath = configuration.getString("path");
         String pluginName = configuration.getString("name");
-        if(!pluginSet.contains(pluginName)) {
+        if (!pluginSet.contains(pluginName)) {
             pluginSet.add(pluginName);
         } else {
             throw DataXException.asDataXException(FrameworkErrorCode.PLUGIN_INIT_ERROR, "插件加载失败,存在重复插件:" + filePath);

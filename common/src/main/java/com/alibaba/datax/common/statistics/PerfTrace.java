@@ -36,15 +36,15 @@ public class PerfTrace {
     private volatile boolean perfReportEnable = true;
 
     //jobid_jobversion,instanceid,taskid, src_mark, dst_mark,
-    private Map<Integer, String> taskDetails = new ConcurrentHashMap<Integer, String>();
+    private Map<Integer, String> taskDetails = new ConcurrentHashMap<>();
     //PHASE => PerfRecord
-    private ConcurrentHashMap<PHASE, SumPerfRecord4Print> perfRecordMaps4print = new ConcurrentHashMap<PHASE, SumPerfRecord4Print>();
+    private ConcurrentHashMap<PHASE, SumPerfRecord4Print> perfRecordMaps4print = new ConcurrentHashMap<>();
     // job_phase => SumPerf4Report
     private SumPerf4Report sumPerf4Report = new SumPerf4Report();
     private SumPerf4Report sumPerf4Report4NotEnd;
     private Configuration jobInfo;
-    private final Set<PerfRecord> needReportPool4NotEnd = new HashSet<PerfRecord>();
-    private final List<PerfRecord> totalEndReport = new ArrayList<PerfRecord>();
+    private final Set<PerfRecord> needReportPool4NotEnd = new HashSet<>();
+    private final List<PerfRecord> totalEndReport = new ArrayList<>();
 
     /**
      * 单实例
