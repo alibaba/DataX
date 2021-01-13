@@ -124,7 +124,7 @@ public final class ConfigParser {
     public static Configuration parsePluginConfig(List<String> wantPluginNames) {
         Configuration configuration = Configuration.newDefault();
 
-        Set<String> replicaCheckPluginSet = new HashSet<String>();
+        Set<String> replicaCheckPluginSet = new HashSet<>();
         int complete = 0;
         for (final String each : ConfigParser
                 .getDirAsList(CoreConstant.DATAX_PLUGIN_READER_HOME)) {

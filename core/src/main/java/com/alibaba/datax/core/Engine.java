@@ -38,6 +38,7 @@ public class Engine {
     private static String RUNTIME_MODE;
 
     /**
+     * 真正开始执行任务的地方
      * check job model (job/task) first
      *
      * @param allConf Configuration
@@ -71,7 +72,7 @@ public class Engine {
         boolean traceEnable = allConf.getBool(CoreConstant.DATAX_CORE_CONTAINER_TRACE_ENABLE, true);
         boolean perfReportEnable = allConf.getBool(CoreConstant.DATAX_CORE_REPORT_DATAX_PERFLOG, true);
 
-        //standlone模式的 datax shell任务不进行汇报
+        //standalone 模式的 datax shell任务不进行汇报
         if (instanceId == -1) {
             perfReportEnable = false;
         }
