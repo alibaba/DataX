@@ -11,6 +11,7 @@ import java.util.Map;
  * Created by jingxing on 14-9-9.
  */
 public final class DefaultJobPluginCollector implements JobPluginCollector {
+
     private AbstractContainerCommunicator jobCollector;
 
     public DefaultJobPluginCollector(AbstractContainerCommunicator containerCollector) {
