@@ -1,5 +1,28 @@
 package com.alibaba.datax.core.job;
 
+import static com.alibaba.datax.core.statistics.communication.CommunicationTool.BYTE_SPEED;
+import static com.alibaba.datax.core.statistics.communication.CommunicationTool.READ_SUCCEED_BYTES;
+import static com.alibaba.datax.core.statistics.communication.CommunicationTool.READ_SUCCEED_RECORDS;
+import static com.alibaba.datax.core.statistics.communication.CommunicationTool.RECORD_SPEED;
+import static com.alibaba.datax.core.statistics.communication.CommunicationTool.TRANSFORMER_FAILED_RECORDS;
+import static com.alibaba.datax.core.statistics.communication.CommunicationTool.TRANSFORMER_FILTER_RECORDS;
+import static com.alibaba.datax.core.statistics.communication.CommunicationTool.TRANSFORMER_SUCCEED_RECORDS;
+import static com.alibaba.datax.core.util.FrameworkErrorCode.PLUGIN_SPLIT_ERROR;
+import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_CORE_CONTAINER_JOB_ID;
+import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_CORE_CONTAINER_TASKGROUP_CHANNEL;
+import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_HOME;
+import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_JOB_CONTENT;
+import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_JOB_CONTENT_READER_NAME;
+import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_JOB_CONTENT_READER_PARAMETER;
+import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_JOB_CONTENT_TRANSFORMER;
+import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_JOB_CONTENT_WRITER_NAME;
+import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_JOB_CONTENT_WRITER_PARAMETER;
+import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_JOB_POSTHANDLER_PLUGINNAME;
+import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_JOB_POSTHANDLER_PLUGINTYPE;
+import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_JOB_PREHANDLER_PLUGINTYPE;
+import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_JOB_SETTING_DRYRUN;
+import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_JOB_SETTING_SPEED_BYTE;
+
 import com.alibaba.datax.common.constant.PluginType;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.AbstractJobPlugin;
@@ -29,39 +52,14 @@ import com.alibaba.datax.core.util.container.JarLoader;
 import com.alibaba.datax.core.util.container.LoadUtil;
 import com.alibaba.datax.dataxservice.face.domain.enums.ExecuteMode;
 import com.alibaba.fastjson.JSON;
-import java.util.Arrays;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.alibaba.datax.core.statistics.communication.CommunicationTool.BYTE_SPEED;
-import static com.alibaba.datax.core.statistics.communication.CommunicationTool.READ_SUCCEED_BYTES;
-import static com.alibaba.datax.core.statistics.communication.CommunicationTool.READ_SUCCEED_RECORDS;
-import static com.alibaba.datax.core.statistics.communication.CommunicationTool.RECORD_SPEED;
-import static com.alibaba.datax.core.statistics.communication.CommunicationTool.TRANSFORMER_FAILED_RECORDS;
-import static com.alibaba.datax.core.statistics.communication.CommunicationTool.TRANSFORMER_FILTER_RECORDS;
-import static com.alibaba.datax.core.statistics.communication.CommunicationTool.TRANSFORMER_SUCCEED_RECORDS;
-import static com.alibaba.datax.core.util.FrameworkErrorCode.PLUGIN_SPLIT_ERROR;
-import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_CORE_CONTAINER_JOB_ID;
-import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_CORE_CONTAINER_TASKGROUP_CHANNEL;
-import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_HOME;
-import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_JOB_CONTENT;
-import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_JOB_CONTENT_READER_NAME;
-import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_JOB_CONTENT_READER_PARAMETER;
-import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_JOB_CONTENT_TRANSFORMER;
-import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_JOB_CONTENT_WRITER_NAME;
-import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_JOB_CONTENT_WRITER_PARAMETER;
-import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_JOB_POSTHANDLER_PLUGINNAME;
-import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_JOB_POSTHANDLER_PLUGINTYPE;
-import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_JOB_PREHANDLER_PLUGINTYPE;
-import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_JOB_SETTING_DRYRUN;
-import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_JOB_SETTING_SPEED_BYTE;
 
 /**
  * Created by jingxing on 14-8-24.
@@ -126,7 +124,7 @@ public class JobContainer extends AbstractContainer {
       isDryRun = configuration.getBool(DATAX_JOB_SETTING_DRYRUN, false);
       if (isDryRun) {
         LOG.info("jobContainer starts to do preCheck ...");
-        // 空跑，还需要检查什么
+        // 空跑，仍需要检查，保证json格式正确
         this.preCheck();
       } else {
         // 用户自己的配置，没有看到哪里使用
@@ -197,7 +195,7 @@ public class JobContainer extends AbstractContainer {
   }
 
   /**
-   * 预检查（如果检查不通过抛出异常吗，没有看到）
+   * 预检查，检查后将参数值赋给 JobContainer
    */
   private void preCheck() {
     this.preCheckInit();
@@ -210,7 +208,8 @@ public class JobContainer extends AbstractContainer {
   }
 
   /**
-   * 预检查，初始化
+   * 预检查，初始化 <br/> 1 从cfg中获取jobId（如果小于0，则置为0，并设置回cfg中） <br/> 2 给当前限制setName为 job-jobId <br/> 3
+   * 从容器的通信类中构造出 插件集合 <br/> 4 将 插件集合 检查+初始化 最后赋值给reader或writer
    */
   private void preCheckInit() {
     // 从 cfg中获取jobId，如果小于0，则将jobId赋值0
@@ -222,50 +221,47 @@ public class JobContainer extends AbstractContainer {
     }
 
     Thread.currentThread().setName("job-" + this.jobId);
-
     JobPluginCollector jobPluginCollector = new DefaultJobPluginCollector(
         this.getContainerCommunicator());
     this.jobReader = this.preCheckReaderInit(jobPluginCollector);
     this.jobWriter = this.preCheckWriterInit(jobPluginCollector);
   }
 
+  /**
+   * 检查+初始化 reader 1
+   *
+   * @param jobPluginCollector JobPluginCollector
+   * @return Reader.Job
+   */
   private Reader.Job preCheckReaderInit(JobPluginCollector jobPluginCollector) {
-    this.readerPluginName = this.configuration.getString(DATAX_JOB_CONTENT_READER_NAME);
-    classLoaderSwapper.setCurrentThreadClassLoader(
-        LoadUtil.getJarLoader(PluginType.READER, this.readerPluginName));
+    readerPluginName = configuration.getString(DATAX_JOB_CONTENT_READER_NAME);
 
-    Reader.Job jobReader = (Reader.Job) LoadUtil
-        .loadJobPlugin(PluginType.READER, this.readerPluginName);
+    JarLoader jarLoader = LoadUtil.getJarLoader(PluginType.READER, readerPluginName);
+    classLoaderSwapper.setCurrentThreadClassLoader(jarLoader);
 
-    this.configuration.set(DATAX_JOB_CONTENT_READER_PARAMETER + ".dryRun", true);
-
-    // 设置reader的jobConfig
-    jobReader.setPluginJobConf(
-        this.configuration.getConfiguration(DATAX_JOB_CONTENT_READER_PARAMETER));
-    // 设置reader的readerConfig
-    jobReader.setPeerPluginJobConf(this.configuration.getConfiguration(
-        DATAX_JOB_CONTENT_READER_PARAMETER));
-
-    jobReader.setJobPluginCollector(jobPluginCollector);
+    Reader.Job reader = (Reader.Job) LoadUtil.loadJobPlugin(PluginType.READER, readerPluginName);
+    configuration.set(DATAX_JOB_CONTENT_READER_PARAMETER + ".dryRun", true);
+    Configuration cfg = configuration.getConfiguration(DATAX_JOB_CONTENT_READER_PARAMETER);
+    reader.setPluginJobConf(cfg);
+    reader.setPeerPluginJobConf(cfg);
+    reader.setJobPluginCollector(jobPluginCollector);
 
     classLoaderSwapper.restoreCurrentThreadClassLoader();
-    return jobReader;
+    return reader;
   }
 
 
   private Writer.Job preCheckWriterInit(JobPluginCollector jobPluginCollector) {
-    this.writerPluginName = this.configuration.getString(
-        DATAX_JOB_CONTENT_WRITER_NAME);
-    classLoaderSwapper.setCurrentThreadClassLoader(LoadUtil.getJarLoader(
-        PluginType.WRITER, this.writerPluginName));
+    writerPluginName = configuration.getString(DATAX_JOB_CONTENT_WRITER_NAME);
+    JarLoader jarLoader = LoadUtil.getJarLoader(PluginType.WRITER, this.writerPluginName);
+    classLoaderSwapper.setCurrentThreadClassLoader(jarLoader);
 
-    Writer.Job jobWriter = (Writer.Job) LoadUtil.loadJobPlugin(
-        PluginType.WRITER, this.writerPluginName);
+    Writer.Job jobWriter = (Writer.Job) LoadUtil.loadJobPlugin(PluginType.WRITER, writerPluginName);
 
-    this.configuration.set(DATAX_JOB_CONTENT_WRITER_PARAMETER + ".dryRun", true);
+    configuration.set(DATAX_JOB_CONTENT_WRITER_PARAMETER + ".dryRun", true);
 
     // 设置writer的jobConfig
-    jobWriter.setPluginJobConf(this.configuration.getConfiguration(
+    jobWriter.setPluginJobConf(configuration.getConfiguration(
         DATAX_JOB_CONTENT_WRITER_PARAMETER));
     // 设置reader的readerConfig
     jobWriter.setPeerPluginJobConf(this.configuration.getConfiguration(
@@ -278,14 +274,21 @@ public class JobContainer extends AbstractContainer {
     return jobWriter;
   }
 
+  /**
+   * 预检查 reader <br/> 1 先将 当前线程的classLoader 设置为 reader的 classLoader <br/> 2 进行reader的检查 <br/> 3
+   * 恢复reader的 classLoader
+   */
   private void preCheckReader() {
-    classLoaderSwapper.setCurrentThreadClassLoader(LoadUtil.getJarLoader(
-        PluginType.READER, this.readerPluginName));
+    JarLoader jarLoader = LoadUtil.getJarLoader(PluginType.READER, this.readerPluginName);
+    classLoaderSwapper.setCurrentThreadClassLoader(jarLoader);
     LOG.info(String.format("DataX Reader.Job [%s] do preCheck work .", this.readerPluginName));
     this.jobReader.preCheck();
     classLoaderSwapper.restoreCurrentThreadClassLoader();
   }
 
+  /**
+   * 原理同上面 preCheckReader 一样
+   */
   private void preCheckWriter() {
     classLoaderSwapper.setCurrentThreadClassLoader(
         LoadUtil.getJarLoader(PluginType.WRITER, this.writerPluginName));

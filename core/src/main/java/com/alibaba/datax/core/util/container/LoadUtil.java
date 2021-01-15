@@ -10,18 +10,14 @@ import com.alibaba.datax.core.taskgroup.runner.AbstractRunner;
 import com.alibaba.datax.core.taskgroup.runner.ReaderRunner;
 import com.alibaba.datax.core.taskgroup.runner.WriterRunner;
 import com.alibaba.datax.core.util.FrameworkErrorCode;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Created by jingxing on 14-8-24.
  * <p/>
- * 插件加载器，大体上分reader、transformer（还未实现）和writer三中插件类型， reader和writer在执行时又可能出现Job和Task两种运行时（加载的类不同）
+ * 插件加载器，大体上分reader、transformer（还未实现）和writer三种插件类型， reader和writer在执行时又可能出现Job和Task两种运行时（加载的类不同）
  */
 public class LoadUtil {
 
@@ -65,10 +61,25 @@ public class LoadUtil {
     pluginRegisterCenter = pluginConfigs;
   }
 
+  /**
+   * 根据插件类型+插件名称，生成一个 字符串。插件中心根据该字符串找到对应插件
+   *
+   * @param pluginType PluginType
+   * @param pluginName String
+   * @return String
+   */
   private static String generatePluginKey(PluginType pluginType, String pluginName) {
     return String.format(pluginTypeNameFormat, pluginType.toString(), pluginName);
   }
 
+  /**
+   * 根据插件类型和插件名称，获取配置； <br/> 1 根据 插件类型+插件名称，返回string ； <br/>  2 从 pluginRegisterCenter 中根据
+   * string获取配置
+   *
+   * @param pluginType
+   * @param pluginName
+   * @return
+   */
   private static Configuration getPluginConf(PluginType pluginType, String pluginName) {
     Configuration pluginConf = pluginRegisterCenter
         .getConfiguration(generatePluginKey(pluginType, pluginName));
@@ -82,44 +93,42 @@ public class LoadUtil {
   }
 
   /**
-   * 加载JobPlugin，reader、writer都可能要加载
+   * 根据反射使用插件类型+插件名称 返回 插件。加载JobPlugin，reader、writer都可能要加载
    *
-   * @param pluginType
-   * @param pluginName
-   * @return
+   * @param type PluginType
+   * @param name String
+   * @return AbstractJobPlugin
    */
-  public static AbstractJobPlugin loadJobPlugin(PluginType pluginType, String pluginName) {
-    Class<? extends AbstractPlugin> clazz = LoadUtil
-        .loadPluginClass(pluginType, pluginName, ContainerType.Job);
+  public static AbstractJobPlugin loadJobPlugin(PluginType type, String name) {
+    Class<? extends AbstractPlugin> clazz = loadPluginClass(type, name, ContainerType.Job);
 
     try {
       AbstractJobPlugin jobPlugin = (AbstractJobPlugin) clazz.newInstance();
-      jobPlugin.setPluginConf(getPluginConf(pluginType, pluginName));
+      jobPlugin.setPluginConf(getPluginConf(type, name));
       return jobPlugin;
     } catch (Exception e) {
       throw DataXException.asDataXException(FrameworkErrorCode.RUNTIME_ERROR,
-          String.format("DataX找到plugin[%s]的Job配置.", pluginName), e);
+          String.format("DataX找到plugin[%s]的Job配置.", name), e);
     }
   }
 
   /**
-   * 加载taskPlugin，reader、writer都可能加载
+   * 原理类同上面loadJobPlugin 方法。加载taskPlugin，reader、writer都可能加载
    *
-   * @param pluginType
-   * @param pluginName
-   * @return
+   * @param type PluginType
+   * @param name String
+   * @return AbstractTaskPlugin
    */
-  public static AbstractTaskPlugin loadTaskPlugin(PluginType pluginType, String pluginName) {
-    Class<? extends AbstractPlugin> clazz = LoadUtil
-        .loadPluginClass(pluginType, pluginName, ContainerType.Task);
+  public static AbstractTaskPlugin loadTaskPlugin(PluginType type, String name) {
+    Class<? extends AbstractPlugin> clz = LoadUtil.loadPluginClass(type, name, ContainerType.Task);
 
     try {
-      AbstractTaskPlugin taskPlugin = (AbstractTaskPlugin) clazz.newInstance();
-      taskPlugin.setPluginConf(getPluginConf(pluginType, pluginName));
+      AbstractTaskPlugin taskPlugin = (AbstractTaskPlugin) clz.newInstance();
+      taskPlugin.setPluginConf(getPluginConf(type, name));
       return taskPlugin;
     } catch (Exception e) {
       throw DataXException.asDataXException(FrameworkErrorCode.RUNTIME_ERROR,
-          String.format("DataX不能找plugin[%s]的Task配置.", pluginName), e);
+          String.format("DataX不能找plugin[%s]的Task配置.", name), e);
     }
   }
 
@@ -182,8 +191,4 @@ public class LoadUtil {
     return jarLoader;
   }
 
-  public static void main(String[] args) {
-    List<String> a = Arrays.asList("s");
-    System.out.println(a);
-  }
 }
