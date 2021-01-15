@@ -124,7 +124,7 @@ public class JobContainer extends AbstractContainer {
       isDryRun = configuration.getBool(DATAX_JOB_SETTING_DRYRUN, false);
       if (isDryRun) {
         LOG.info("jobContainer starts to do preCheck ...");
-        // 空跑，仍需要检查，保证json格式正确
+        // 空跑，仍需要检查，保证各种参数 正确
         this.preCheck();
       } else {
         // 用户自己的配置，没有看到哪里使用
