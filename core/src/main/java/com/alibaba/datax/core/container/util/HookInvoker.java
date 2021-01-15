@@ -50,11 +50,9 @@ public class HookInvoker {
       throw DataXException.asDataXException(FrameworkErrorCode.HOOK_LOAD_ERROR, "获取HOOK子目录返回null");
     }
 
-
     for (String subDir : subDirs) {
       doInvoke(new File(baseDir, subDir).getAbsolutePath());
     }
-
   }
 
   private void doInvoke(String path) {
