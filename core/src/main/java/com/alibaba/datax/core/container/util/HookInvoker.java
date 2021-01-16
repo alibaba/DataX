@@ -10,18 +10,16 @@ import com.alibaba.datax.common.spi.Hook;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.core.util.FrameworkErrorCode;
 import com.alibaba.datax.core.util.container.JarLoader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
-import java.io.FilenameFilter;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.ServiceLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * 扫描给定目录的所有一级子目录，每个子目录当作一个Hook的目录。 对于每个子目录，必须符合ServiceLoader的标准目录格式，见http://docs.oracle.com/javase/6/docs/api/java/util/ServiceLoader.html。
+ * 扫描给定目录的所有一级子目录，每个子目录当作一个Hook的目录。 对于每个子目录，必须符合ServiceLoader的标准目录格式，
+ * 见http://docs.oracle.com/javase/6/docs/api/java/util/ServiceLoader.html。
  * 加载里头的jar，使用ServiceLoader机制调用。
  */
 public class HookInvoker {
