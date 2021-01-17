@@ -9,8 +9,10 @@ import org.apache.commons.lang.Validate;
  */
 public abstract class AbstractContainer {
 
+
   protected Configuration configuration;
 
+  //抽象的容器抽象类
   protected AbstractContainerCommunicator containerCommunicator;
 
 
