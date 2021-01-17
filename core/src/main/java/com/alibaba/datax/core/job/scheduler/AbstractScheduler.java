@@ -1,5 +1,8 @@
 package com.alibaba.datax.core.job.scheduler;
 
+import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_CORE_CONTAINER_JOB_REPORTINTERVAL;
+import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_CORE_CONTAINER_JOB_SLEEPINTERVAL;
+
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.core.statistics.communication.Communication;
@@ -33,23 +36,24 @@ public abstract class AbstractScheduler {
     this.containerCommunicator = containerCommunicator;
   }
 
-  public void schedule(List<Configuration> configurations) {
-    Validate.notNull(configurations, "scheduler配置不能为空");
-    int jobReportIntervalInMillSec = configurations.get(0).getInt(
-        CoreConstant.DATAX_CORE_CONTAINER_JOB_REPORTINTERVAL, 30000);
-    int jobSleepIntervalInMillSec = configurations.get(0).getInt(
-        CoreConstant.DATAX_CORE_CONTAINER_JOB_SLEEPINTERVAL, 10000);
+  /**
+   * @param cfg List<Configuration>
+   */
+  public void schedule(List<Configuration> cfg) {
+    Validate.notNull(cfg, "scheduler配置不能为空");
+    int reportMillSec = cfg.get(0).getInt(DATAX_CORE_CONTAINER_JOB_REPORTINTERVAL, 30000);
+    int sleepMillSec = cfg.get(0).getInt(DATAX_CORE_CONTAINER_JOB_SLEEPINTERVAL, 10000);
 
-    this.jobId = configurations.get(0).getLong(CoreConstant.DATAX_CORE_CONTAINER_JOB_ID);
-    errorLimit = new ErrorRecordChecker(configurations.get(0));
+    this.jobId = cfg.get(0).getLong(CoreConstant.DATAX_CORE_CONTAINER_JOB_ID);
+    errorLimit = new ErrorRecordChecker(cfg.get(0));
 
     /**
      * 给 taskGroupContainer 的 Communication 注册
      */
-    this.containerCommunicator.registerCommunication(configurations);
-    int totalTasks = calculateTaskCount(configurations);
-    startAllTaskGroup(configurations);
-    Communication lastJobContainerCommunication = new Communication();
+    this.containerCommunicator.registerCommunication(cfg);
+    int taskCnt = calculateTaskCount(cfg);
+    startAllTaskGroup(cfg);
+    Communication lastComm = new Communication();
     long lastReportTimeStamp = System.currentTimeMillis();
     try {
       while (true) {
@@ -65,35 +69,32 @@ public abstract class AbstractScheduler {
          * above steps, some ones should report info to DS
          *
          */
-        Communication nowJobContainerCommunication = this.containerCommunicator.collect();
-        nowJobContainerCommunication.setTimestamp(System.currentTimeMillis());
-        LOG.debug(nowJobContainerCommunication.toString());
+        Communication nowComm = this.containerCommunicator.collect();
+        nowComm.setTimestamp(System.currentTimeMillis());
+        LOG.debug(nowComm.toString());
 
         //汇报周期
         long now = System.currentTimeMillis();
-        if (now - lastReportTimeStamp > jobReportIntervalInMillSec) {
-          Communication reportCommunication = CommunicationTool
-              .getReportCommunication(nowJobContainerCommunication, lastJobContainerCommunication,
-                  totalTasks);
+        if (now - lastReportTimeStamp > reportMillSec) {
+          Communication comm = CommunicationTool.getReportCommunication(nowComm, lastComm, taskCnt);
 
-          this.containerCommunicator.report(reportCommunication);
+          this.containerCommunicator.report(comm);
           lastReportTimeStamp = now;
-          lastJobContainerCommunication = nowJobContainerCommunication;
+          lastComm = nowComm;
         }
 
-        errorLimit.checkRecordLimit(nowJobContainerCommunication);
-
-        if (nowJobContainerCommunication.getState() == State.SUCCEEDED) {
+        errorLimit.checkRecordLimit(nowComm);
+        if (nowComm.getState() == State.SUCCEEDED) {
           LOG.info("Scheduler accomplished all tasks.");
           break;
         }
 
         if (isJobKilling(this.getJobId())) {
-          dealKillingStat(this.containerCommunicator, totalTasks);
-        } else if (nowJobContainerCommunication.getState() == State.FAILED) {
-          dealFailedStat(this.containerCommunicator, nowJobContainerCommunication.getThrowable());
+          dealKillingStat(this.containerCommunicator, taskCnt);
+        } else if (nowComm.getState() == State.FAILED) {
+          dealFailedStat(this.containerCommunicator, nowComm.getThrowable());
         }
-        Thread.sleep(jobSleepIntervalInMillSec);
+        Thread.sleep(sleepMillSec);
       }
     } catch (InterruptedException e) {
       // 以 failed 状态退出
