@@ -57,10 +57,12 @@ public class HookInvoker {
   }
 
   /**
-   * 子调用方法。主要是加在该路径下得 jar
-   * 1 先将当前classLoader暂存
-   * 2 根据入参路径得到一个jarLoader
-   * 3
+   * 子调用方法。主要是加在该路径下得 class <br/>
+   * 1 先将当前classLoader暂存 <br/>
+   * 2 根据入参路径得到一个jarLoader <br/>
+   * 3 将当前线程的上下文类加载器设置为2中的jarLoader <br/>
+   * 4 使用 ServiceLoader获取 hook列表，然后循环调用 <br/>
+   * 5 恢复当前线程的类加载器 <br/>
    * @param path String
    */
   private void doInvoke(String path) {
@@ -85,8 +87,5 @@ public class HookInvoker {
     }
   }
 
-  public static void main(String[] args) {
-    ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
-    System.out.println(oldClassLoader);
-  }
+
 }
