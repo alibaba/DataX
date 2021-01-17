@@ -36,6 +36,9 @@ public class HookInvoker {
     this.msg = msg;
   }
 
+  /**
+   * 总体调用的方法
+   */
   public void invokeAll() {
     if (!baseDir.exists() || baseDir.isFile()) {
       LOG.info("No hook invoked, because base dir not exists or is a file: " + baseDir
@@ -53,6 +56,13 @@ public class HookInvoker {
     }
   }
 
+  /**
+   * 子调用方法。主要是加在该路径下得 jar
+   * 1 先将当前classLoader暂存
+   * 2 根据入参路径得到一个jarLoader
+   * 3
+   * @param path String
+   */
   private void doInvoke(String path) {
     ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
     try {
@@ -75,4 +85,8 @@ public class HookInvoker {
     }
   }
 
+  public static void main(String[] args) {
+    ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
+    System.out.println(oldClassLoader);
+  }
 }
