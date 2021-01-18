@@ -1,5 +1,8 @@
 package com.alibaba.datax.core;
 
+import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_CORE_CONTAINER_MODEL;
+import static org.apache.commons.lang3.StringUtils.endsWithIgnoreCase;
+
 import com.alibaba.datax.common.element.ColumnCast;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.spi.ErrorCode;
@@ -14,19 +17,16 @@ import com.alibaba.datax.core.util.ExceptionTracker;
 import com.alibaba.datax.core.util.FrameworkErrorCode;
 import com.alibaba.datax.core.util.container.CoreConstant;
 import com.alibaba.datax.core.util.container.LoadUtil;
-import org.apache.commons.cli.BasicParser;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Options;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static org.apache.commons.lang3.StringUtils.endsWithIgnoreCase;
+import org.apache.commons.cli.BasicParser;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Options;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Engine是DataX入口类，该类负责初始化Job或者Task的运行容器，并运行插件的Job或者Task逻辑
@@ -50,8 +50,7 @@ public class Engine {
     //初始化PluginLoader，可以获取各种插件配置
     LoadUtil.bind(allConf);
 
-    boolean isJob = !("taskGroup"
-        .equalsIgnoreCase(allConf.getString(CoreConstant.DATAX_CORE_CONTAINER_MODEL)));
+    boolean isJob = !("taskGroup".equalsIgnoreCase(allConf.getString(DATAX_CORE_CONTAINER_MODEL)));
     //JobContainer会在schedule后再行进行设置和调整值
     int channelNumber = 0;
     AbstractContainer container;
@@ -69,7 +68,7 @@ public class Engine {
     }
 
     //缺省打开perfTrace
-    boolean traceEnable = allConf.getBool(CoreConstant.DATAX_CORE_CONTAINER_TRACE_ENABLE, true);
+    boolean isTrace = allConf.getBool(CoreConstant.DATAX_CORE_CONTAINER_TRACE_ENABLE, true);
     boolean perfReportEnable = allConf.getBool(CoreConstant.DATAX_CORE_REPORT_DATAX_PERFLOG, true);
 
     //standalone 模式的 datax shell任务不进行汇报
@@ -85,11 +84,10 @@ public class Engine {
           System.getProperty("PROIORY"));
     }
 
-    Configuration jobInfoConfig = allConf.getConfiguration(CoreConstant.DATAX_JOB_JOBINFO);
-    //初始化PerfTrace
-    PerfTrace perfTrace = PerfTrace
-        .getInstance(isJob, instanceId, taskGroupId, priority, traceEnable);
-    perfTrace.setJobInfo(jobInfoConfig, perfReportEnable, channelNumber);
+    Configuration jobCfg = allConf.getConfiguration(CoreConstant.DATAX_JOB_JOBINFO);
+    //初始化PerfTrace 性能追踪
+    PerfTrace perfTrace = PerfTrace.getInstance(isJob, instanceId, taskGroupId, priority, isTrace);
+    perfTrace.setJobInfo(jobCfg, perfReportEnable, channelNumber);
     container.start();
   }
 
@@ -141,6 +139,7 @@ public class Engine {
     // 如果用户没有明确指定jobid, 则 datax.py 会指定 jobid 默认值为-1
     String jobIdString = cl.getOptionValue("jobid");
     RUNTIME_MODE = cl.getOptionValue("mode");
+    // 解析输入的json，并与 core.json 进行合并
     Configuration conf = ConfigParser.parse(jobPath);
     long jobId;
     String defaultJobId = "-1";

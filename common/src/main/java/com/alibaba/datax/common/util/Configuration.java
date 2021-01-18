@@ -66,13 +66,11 @@ public class Configuration {
   public static Configuration from(String json) {
     json = StrUtil.replaceVariable(json);
     checkJSON(json);
-
     try {
       return new Configuration(json);
     } catch (Exception e) {
       throw DataXException.asDataXException(CommonErrorCode.CONFIG_ERROR, e);
     }
-
   }
 
 
