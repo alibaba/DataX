@@ -69,9 +69,12 @@ public abstract class AbstractContainerCommunicator {
 
   public abstract Communication getCommunication(Integer id);
 
+
   /**
-   * <p/>当 实现是 TGContainerCommunicator 时，返回的 Map: key=taskId, value=Communication 当 实现是
-   * JobContainerCommunicator 时，返回的 Map: key=taskGroupId, value=Communication
+   * 当 实现是 TGContainerCommunicator 时，返回的 Map: key=taskId, value=Communication <br/>
+   * 当 实现是 JobContainerCommunicator 时，返回的 Map: key=taskGroupId, value=Communication
+   *
+   * @return Map<Integer, Communication>
    */
   public abstract Map<Integer, Communication> getCommunicationMap();
 

@@ -13,8 +13,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 检查任务是否到达错误记录限制。有检查条数（recordLimit）和百分比(percentageLimit)两种方式。 1. errorRecord表示出错条数不能大于限制数，当超过时任务失败。比如errorRecord为0表示不容许任何脏数据。
- * 2. errorPercentage表示出错比例，在任务结束时校验。 3. errorRecord优先级高于errorPercentage。
+ * 检查任务是否到达错误记录限制。有检查条数（recordLimit）和百分比(percentageLimit)两种方式。 <br>
+ * 1. errorRecord表示出错条数不能大于限制数，当超过时任务失败。比如errorRecord为0表示不容许任何脏数据。 <br>
+ * 2. errorPercentage表示出错比例，在任务结束时校验。  <br>
+ * 3. errorRecord优先级高于errorPercentage。 <br>
  */
 public final class ErrorRecordChecker {
 

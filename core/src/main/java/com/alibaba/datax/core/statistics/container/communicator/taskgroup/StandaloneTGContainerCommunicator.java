@@ -10,7 +10,7 @@ import com.alibaba.datax.core.statistics.communication.Communication;
 public class StandaloneTGContainerCommunicator extends AbstractTGContainerCommunicator {
 
   /**
-   * 单机版的容器沟通者
+   * 单机版的容器沟通者(独立模式的taskGroup 的通讯类)
    *
    * @param configuration
    */
