@@ -4,15 +4,35 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * 自定义 类加载器
  */
-public class DiskClassLoader extends ClassLoader{
+public class DiskClassLoader extends ClassLoader {
+
+  public static void main(String[] args) {
+    ExecutorService service = Executors.newFixedThreadPool(3);
+    for (int i = 0; i < 5; i++) {
+      int groupId = i;
+      service.execute(() -> {
+        for (int j = 1; j < 5; j++) {
+          try {
+            Thread.sleep(1000);
+          } catch (InterruptedException e) {
+
+          }
+          System.out.println("第 " + groupId + " 组任务，第 " + j + " 次执行完成");
+        }
+      });
+    }
+    service.shutdown();
+  }
 
   private String mLibPath;
 
-  public DiskClassLoader( String libPath) {
+  public DiskClassLoader(String libPath) {
     this.mLibPath = libPath;
   }
 
@@ -22,7 +42,7 @@ public class DiskClassLoader extends ClassLoader{
 
     String fileName = getFileName(name);
 
-    File file = new File(mLibPath,fileName);
+    File file = new File(mLibPath, fileName);
 
     try {
       FileInputStream is = new FileInputStream(file);
@@ -41,7 +61,7 @@ public class DiskClassLoader extends ClassLoader{
       is.close();
       bos.close();
 
-      return defineClass(name,data,0,data.length);
+      return defineClass(name, data, 0, data.length);
 
     } catch (IOException e) {
       // TODO Auto-generated catch block
@@ -55,10 +75,10 @@ public class DiskClassLoader extends ClassLoader{
   private String getFileName(String name) {
     // TODO Auto-generated method stub
     int index = name.lastIndexOf('.');
-    if(index == -1){
-      return name+".class";
-    }else{
-      return name.substring(index+1)+".class";
+    if (index == -1) {
+      return name + ".class";
+    } else {
+      return name.substring(index + 1) + ".class";
     }
   }
 }
