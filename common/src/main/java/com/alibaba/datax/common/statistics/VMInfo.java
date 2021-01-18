@@ -94,16 +94,14 @@ public class VMInfo {
     startPhyOSStatus = new PhyOSStatus();
     LOG.info("VMInfo# operatingSystem class => " + osMXBean.getClass().getName());
     if (VMInfo.isSunOsMBean(osMXBean)) {
-      {
-        startPhyOSStatus.totalPhysicalMemory = VMInfo
-            .getLongFromOperatingSystem(osMXBean, "getTotalPhysicalMemorySize");
-        startPhyOSStatus.freePhysicalMemory = VMInfo
-            .getLongFromOperatingSystem(osMXBean, "getFreePhysicalMemorySize");
-        startPhyOSStatus.maxFileDescriptorCount = VMInfo
-            .getLongFromOperatingSystem(osMXBean, "getMaxFileDescriptorCount");
-        startPhyOSStatus.currentOpenFileDescriptorCount = VMInfo
-            .getLongFromOperatingSystem(osMXBean, "getOpenFileDescriptorCount");
-      }
+      startPhyOSStatus.totalPhysicalMemory = VMInfo
+          .getLongFromOperatingSystem(osMXBean, "getTotalPhysicalMemorySize");
+      startPhyOSStatus.freePhysicalMemory = VMInfo
+          .getLongFromOperatingSystem(osMXBean, "getFreePhysicalMemorySize");
+      startPhyOSStatus.maxFileDescriptorCount = VMInfo
+          .getLongFromOperatingSystem(osMXBean, "getMaxFileDescriptorCount");
+      startPhyOSStatus.currentOpenFileDescriptorCount = VMInfo
+          .getLongFromOperatingSystem(osMXBean, "getOpenFileDescriptorCount");
     }
 
     //初始化processGCStatus;
@@ -127,13 +125,15 @@ public class VMInfo {
 
   @Override
   public String toString() {
-    return "the machine info  => \n\n"
+    return "the machine info  => \n"
+        + "================start==================\n"
         + "\tosInfo:\t" + osInfo + "\n"
         + "\tjvmInfo:\t" + jvmInfo + "\n"
         + "\tcpu num:\t" + totalProcessorCnt + "\n\n"
         + startPhyOSStatus.toString() + "\n"
         + processGCStatus.toString() + "\n"
-        + processMemoryStatus.toString() + "\n";
+        + processMemoryStatus.toString() + "\n"
+        + "=================end=================";
   }
 
   public String totalString() {
@@ -149,18 +149,18 @@ public class VMInfo {
     try {
       if (VMInfo.isSunOsMBean(osMXBean)) {
         long curUptime = runtimeMXBean.getUptime();
-        long curProcessTime = getLongFromOperatingSystem(osMXBean, "getProcessCpuTime");
+        long curPrsTime = getLongFromOperatingSystem(osMXBean, "getProcessCpuTime");
         //百分比， uptime是ms，processTime是nano
-        if ((curUptime > lastUpTime) && (curProcessTime >= lastProcessCpuTime)) {
+        if ((curUptime > lastUpTime) && (curPrsTime >= lastProcessCpuTime)) {
           float curDeltaCpu =
-              (float) (curProcessTime - lastProcessCpuTime) / ((curUptime - lastUpTime)
+              (float) (curPrsTime - lastProcessCpuTime) / ((curUptime - lastUpTime)
                   * totalProcessorCnt * 10000);
           processCpuStatus.setMaxMinCpu(curDeltaCpu);
           processCpuStatus.averageCpu =
-              (float) curProcessTime / (curUptime * totalProcessorCnt * 10000);
+              (float) curPrsTime / (curUptime * totalProcessorCnt * 10000);
 
           lastUpTime = curUptime;
-          lastProcessCpuTime = curProcessTime;
+          lastProcessCpuTime = curPrsTime;
         }
       }
 
@@ -176,8 +176,8 @@ public class VMInfo {
         long curTotalGcCount = garbage.getCollectionCount();
         gcStatus.setCurTotalGcCount(curTotalGcCount);
 
-        long curtotalGcTime = garbage.getCollectionTime();
-        gcStatus.setCurTotalGcTime(curtotalGcTime);
+        long curTotalGcTime = garbage.getCollectionTime();
+        gcStatus.setCurTotalGcTime(curTotalGcTime);
       }
 
       if (memoryPoolMXBeanList != null && !memoryPoolMXBeanList.isEmpty()) {
@@ -212,7 +212,7 @@ public class VMInfo {
     return "com.sun.management.UnixOperatingSystem".equals(className);
   }
 
-  public static long getLongFromOperatingSystem(OperatingSystemMXBean osMxBean,String methodName) {
+  public static long getLongFromOperatingSystem(OperatingSystemMXBean osMxBean, String methodName) {
     try {
       final Method method = osMxBean.getClass().getMethod(methodName, (Class<?>[]) null);
       method.setAccessible(true);

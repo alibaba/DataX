@@ -435,26 +435,22 @@ public class TaskGroupContainer extends AbstractContainer {
        */
       writerRunner = (WriterRunner) generateRunner(PluginType.WRITER);
       this.writerThread = new Thread(writerRunner,
-          String.format("%d-%d-%d-writer",
-              jobId, taskGroupId, this.taskId));
+          String.format("%d-%d-%d-writer", jobId, taskGroupId, this.taskId));
       //通过设置thread的contextClassLoader，即可实现同步和主程序不通的加载器
       this.writerThread.setContextClassLoader(LoadUtil.getJarLoader(
-          PluginType.WRITER, this.taskConfig.getString(
-              JOB_WRITER_NAME)));
+          PluginType.WRITER, this.taskConfig.getString(JOB_WRITER_NAME)));
 
       /**
        * 生成readerThread
        */
       readerRunner = (ReaderRunner) generateRunner(PluginType.READER, transformerInfoExecs);
       this.readerThread = new Thread(readerRunner,
-          String.format("%d-%d-%d-reader",
-              jobId, taskGroupId, this.taskId));
+          String.format("%d-%d-%d-reader", jobId, taskGroupId, this.taskId));
       /**
        * 通过设置thread的contextClassLoader，即可实现同步和主程序不通的加载器
        */
       this.readerThread.setContextClassLoader(LoadUtil.getJarLoader(
-          PluginType.READER, this.taskConfig.getString(
-              JOB_READER_NAME)));
+          PluginType.READER, this.taskConfig.getString(JOB_READER_NAME)));
     }
 
     /**
@@ -557,7 +553,6 @@ public class TaskGroupContainer extends AbstractContainer {
       if (taskCommunication == null || !taskCommunication.isFinished()) {
         return false;
       }
-
       return true;
     }
 
