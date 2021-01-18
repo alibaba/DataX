@@ -18,6 +18,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
+/**
+ * 调度器
+ */
 public abstract class AbstractScheduler {
 
   private static final Logger LOG = LoggerFactory.getLogger(AbstractScheduler.class);
@@ -37,6 +40,10 @@ public abstract class AbstractScheduler {
   }
 
   /**
+   * 默认调度执行方法 <br>
+   *   1 传入多个调度配置，获取报告时间+休息时间+jobId（赋值给全局jobId），生成错误记录检查类
+   *   2 给全局jobId赋值，生成错误记录检查类，生成容器通讯类（反馈任务信息）
+   *   3 根据入参计算task的数量，开始所有taskGroup
    * @param cfg List<Configuration>
    */
   public void schedule(List<Configuration> cfg) {
@@ -46,7 +53,6 @@ public abstract class AbstractScheduler {
 
     this.jobId = cfg.get(0).getLong(CoreConstant.DATAX_CORE_CONTAINER_JOB_ID);
     errorLimit = new ErrorRecordChecker(cfg.get(0));
-
     /**
      * 给 taskGroupContainer 的 Communication 注册
      */
@@ -104,6 +110,10 @@ public abstract class AbstractScheduler {
     }
   }
 
+  /**
+   * 开始所有的taskGroup，只允许本包的类访问
+   * @param configurations
+   */
   protected abstract void startAllTaskGroup(List<Configuration> configurations);
 
   protected abstract void dealFailedStat(AbstractContainerCommunicator frameworkCollector,

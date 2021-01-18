@@ -84,6 +84,7 @@ public class WriterRunner extends AbstractRunner implements Runnable {
     	return taskWriter.supportFailOver();
     }
 
+    @Override
     public void shutdown(){
         recordReceiver.shutdown();
     }
