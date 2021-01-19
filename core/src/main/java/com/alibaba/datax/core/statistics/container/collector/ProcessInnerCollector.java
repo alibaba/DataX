@@ -5,13 +5,18 @@ import com.alibaba.datax.core.statistics.communication.LocalTGCommunicationManag
 
 public class ProcessInnerCollector extends AbstractCollector {
 
-    public ProcessInnerCollector(Long jobId) {
-        super.setJobId(jobId);
-    }
+  public ProcessInnerCollector(Long jobId) {
+    super.setJobId(jobId);
+  }
 
-    @Override
-    public Communication collectFromTaskGroup() {
-        return LocalTGCommunicationManager.getJobCommunication();
-    }
+  /**
+   * 提供搜集所有TaskGroupContainer的信息
+   *
+   * @return Communication
+   */
+  @Override
+  public Communication collectFromTaskGroup() {
+    return LocalTGCommunicationManager.getJobCommunication();
+  }
 
 }
