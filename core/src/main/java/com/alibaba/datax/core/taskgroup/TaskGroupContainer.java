@@ -53,6 +53,9 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * JobContainer将所有的task分配到TaskGroup中执行，TaskGroup启动5个线程去消费所有的task
+ */
 public class TaskGroupContainer extends AbstractContainer {
 
   private static final Logger LOG = LoggerFactory.getLogger(TaskGroupContainer.class);
@@ -108,6 +111,18 @@ public class TaskGroupContainer extends AbstractContainer {
     return taskGroupId;
   }
 
+  /**
+   * 1、初始化task执行相关的状态信息，分别是taskId->Cfg的map、待运行的任务队列taskQueue、运行失败任务taskFailedExecutorMap、
+   * 运行中的任务runTasks、任务开始时间taskStartTimeMap
+   * 2、循环检测所有任务的执行状态
+   * 1）判断是否有失败的task，如果有则放入失败对立中，并查看当前的执行是否支持重跑和failOver，如果支持则重新放回执行队列中；
+   * 如果没有失败，则标记任务执行成功，并从状态轮询map中移除
+   * 2）如果发现有失败的任务，则汇报当前TaskGroup的状态，并抛出异常
+   * 3）查看当前执行队列的长度，如果发现执行队列还有通道，则构建TaskExecutor加入执行队列，并从待运行移除
+   * 4）检查执行队列和所有的任务状态，如果所有的任务都执行成功，则汇报taskGroup的状态并从循环中退出
+   * 5）检查当前时间是否超过汇报时间检测，如果是，则汇报当前状态
+   * 6）当所有的执行完成从while中退出之后，再次全局汇报当前的任务状态
+   */
   @Override
   public void start() {
     try {
@@ -354,15 +369,20 @@ public class TaskGroupContainer extends AbstractContainer {
     return true;
   }
 
-  private Communication reportTaskGroupCommunication(
-      Communication lastTaskGroupContainerCommunication, int taskCount) {
-    Communication nowTaskGroupContainerCommunication = this.containerCommunicator.collect();
-    nowTaskGroupContainerCommunication.setTimestamp(System.currentTimeMillis());
-    Communication reportCommunication = CommunicationTool
-        .getReportCommunication(nowTaskGroupContainerCommunication,
-            lastTaskGroupContainerCommunication, taskCount);
-    this.containerCommunicator.report(reportCommunication);
-    return reportCommunication;
+  /**
+   * TaskGroupContainer向JobContainer汇报
+   *
+   * @param lastTGContainerComm
+   * @param taskCnt
+   * @return
+   */
+  private Communication reportTaskGroupCommunication(Communication lastTGContainerComm,int taskCnt) {
+    Communication nowTGContainerComm = this.containerCommunicator.collect();
+    nowTGContainerComm.setTimestamp(System.currentTimeMillis());
+    Communication reportComm = CommunicationTool
+        .getReportCommunication(nowTGContainerComm, lastTGContainerComm, taskCnt);
+    this.containerCommunicator.report(reportComm);
+    return reportComm;
   }
 
   private void markCommunicationFailed(Integer taskId) {

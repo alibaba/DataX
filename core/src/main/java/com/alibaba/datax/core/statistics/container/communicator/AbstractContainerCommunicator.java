@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 容器通信器，
+ * 抽象类 容器通信器，
  */
 public abstract class AbstractContainerCommunicator {
 
