@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 这里主要是业务层面的处理
+ * 通讯工具类。这里主要是业务层面的处理
  */
 public final class CommunicationTool {
 
@@ -52,8 +52,7 @@ public final class CommunicationTool {
 
   public static Communication getReportCommunication(Communication now, Communication old,
       int totalStage) {
-    Validate.isTrue(now != null && old != null,
-        "为汇报准备的新旧metric不能为null");
+    Validate.isTrue(now != null && old != null, "为汇报准备的新旧metric不能为null");
 
     long totalReadRecords = getTotalReadRecords(now);
     long totalReadBytes = getTotalReadBytes(now);
@@ -66,10 +65,8 @@ public final class CommunicationTool {
 
     long timeInterval = now.getTimestamp() - old.getTimestamp();
     long sec = timeInterval <= 1000 ? 1 : timeInterval / 1000;
-    long bytesSpeed = (totalReadBytes
-        - getTotalReadBytes(old)) / sec;
-    long recordsSpeed = (totalReadRecords
-        - getTotalReadRecords(old)) / sec;
+    long bytesSpeed = (totalReadBytes - getTotalReadBytes(old)) / sec;
+    long recordsSpeed = (totalReadRecords - getTotalReadRecords(old)) / sec;
 
     now.setLongCounter(BYTE_SPEED, bytesSpeed < 0 ? 0 : bytesSpeed);
     now.setLongCounter(RECORD_SPEED, recordsSpeed < 0 ? 0 : recordsSpeed);
@@ -78,7 +75,6 @@ public final class CommunicationTool {
     if (old.getThrowable() != null) {
       now.setThrowable(old.getThrowable());
     }
-
     return now;
   }
 
