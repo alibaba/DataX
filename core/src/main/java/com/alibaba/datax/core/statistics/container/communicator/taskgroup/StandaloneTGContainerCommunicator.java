@@ -5,7 +5,7 @@ import com.alibaba.datax.core.statistics.container.report.ProcessInnerReporter;
 import com.alibaba.datax.core.statistics.communication.Communication;
 
 /**
- * 独立模式的taskGroup 的通讯类
+ * 独立模式的taskGroup 的通讯类 主要处理TaskGroupContainer和Task之间的信息，处理逻辑和StandAloneJobContainerCommunicator差不多
  */
 public class StandaloneTGContainerCommunicator extends AbstractTGContainerCommunicator {
 

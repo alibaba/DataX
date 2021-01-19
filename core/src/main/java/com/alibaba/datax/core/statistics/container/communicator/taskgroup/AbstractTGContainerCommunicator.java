@@ -14,6 +14,7 @@ import java.util.Map;
 /**
  * 该类是用于处理 taskGroupContainer 的 communication 的收集汇报的父类
  * 主要是 taskCommunicationMap 记录了 taskExecutor 的 communication 属性
+ * 主要处理TaskGroupContainer和Task之间的信息
  */
 public abstract class AbstractTGContainerCommunicator extends AbstractContainerCommunicator {
 
