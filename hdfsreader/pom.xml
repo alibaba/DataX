@@ -94,6 +94,21 @@
             <artifactId>plugin-unstructured-storage-util</artifactId>
             <version>${datax-project-version}</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/net.hydromatic/eigenbase-properties -->
+        <dependency>
+            <groupId>eigenbase</groupId>
+            <artifactId>eigenbase-properties</artifactId>
+            <version>1.1.4</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.pentaho/pentaho-aggdesigner-algorithm -->
+        <dependency>
+            <groupId>org.pentaho</groupId>
+            <artifactId>pentaho-aggdesigner-algorithm</artifactId>
+            <version>5.1.5-jhyde</version>
+            <scope>test</scope>
+        </dependency>
+
+
 
     </dependencies>
 
@@ -126,6 +141,14 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <encoding>${project-sourceEncoding}</encoding>
+                </configuration>
             </plugin>
         </plugins>
     </build>
