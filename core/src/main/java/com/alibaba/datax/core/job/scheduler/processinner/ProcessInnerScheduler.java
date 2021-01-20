@@ -23,6 +23,13 @@ public abstract class ProcessInnerScheduler extends AbstractScheduler {
     super(containerCommunicator);
   }
 
+  /**
+   * 1、创建线程池 <br/>
+   * 2、变量传入的cfgs，生成tgRunner，然后线程池执行 <br/>
+   * 3、线程池关闭 <br/>
+   *
+   * @param cfgs List<Configuration>
+   */
   @Override
   public void startAllTaskGroup(List<Configuration> cfgs) {
     this.taskGroupContainerExecutorService = new ThreadPoolExecutor(cfgs.size(), cfgs.size(),
