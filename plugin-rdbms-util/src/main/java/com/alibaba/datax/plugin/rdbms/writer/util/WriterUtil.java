@@ -2,6 +2,7 @@ package com.alibaba.datax.plugin.rdbms.writer.util;
 
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.util.Configuration;
+import com.alibaba.datax.common.util.ListUtil;
 import com.alibaba.datax.plugin.rdbms.util.DBUtil;
 import com.alibaba.datax.plugin.rdbms.util.DBUtilErrorCode;
 import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
@@ -16,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public final class WriterUtil {
     private static final Logger LOG = LoggerFactory.getLogger(WriterUtil.class);
@@ -145,6 +147,36 @@ public final class WriterUtil {
         return writeDataSqlTemplate;
     }
 
+    public static String getWriteTemplate(List<String> columnHolders,List<String> upsertKeys, List<String> valueHolders, String writeMode, DataBaseType dataBaseType) {
+        boolean isWriteModeLegal = writeMode.trim().toLowerCase().startsWith("insert")
+                || writeMode.trim().toLowerCase().startsWith("update");
+
+        if (!isWriteModeLegal||!(dataBaseType == DataBaseType.PostgreSQL)) {
+            throw DataXException.asDataXException(DBUtilErrorCode.ILLEGAL_VALUE,
+                    String.format("您所配置的 writeMode:%s 错误. 因为DataX PostgresqlWriter目前仅支持Postgresql数据库的update 或 insert 方式. 请检查您的配置并作出修改.", writeMode));
+        }
+        if (null == upsertKeys || upsertKeys.isEmpty()) {
+            throw new IllegalArgumentException("您提供的upsertKeys配置有误, update模式下List不能为空.");
+        }
+       String writeDataSqlTemplate = new StringBuilder()
+                .append("INSERT INTO %s (").append(StringUtils.join(columnHolders, ","))
+                .append(") VALUES(").append(StringUtils.join(valueHolders, ","))
+                .append(")")
+                .append(onUpsertKeyUpdateString(columnHolders,upsertKeys))
+                .toString();
+
+        return writeDataSqlTemplate;
+    }
+    public static String onUpsertKeyUpdateString(List<String> columnHolders,List<String> upsertKeys){
+        columnHolders.removeAll(upsertKeys);
+        StringBuilder sb = new StringBuilder();
+        sb.append(" ON CONFLICT (").append(StringUtils.join(upsertKeys, ",")).append(") DO UPDATE SET ");
+        sb.append(columnHolders.
+                    stream().
+                        map(item->String.format("%s=excluded.%s",item,item)).
+                            collect(Collectors.joining(",")));
+        return sb.toString();
+    }
     public static String onDuplicateKeyUpdateString(List<String> columnHolders){
         if (columnHolders == null || columnHolders.size() < 1) {
             return "";

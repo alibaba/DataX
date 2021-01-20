@@ -182,6 +182,7 @@ public class CommonRdbmsWriter {
         protected String jdbcUrl;
         protected String table;
         protected List<String> columns;
+        protected List<String> upsertKeys;
         protected List<String> preSqls;
         protected List<String> postSqls;
         protected int batchSize;
@@ -225,8 +226,8 @@ public class CommonRdbmsWriter {
             this.table = writerSliceConfig.getString(Key.TABLE);
 
             this.columns = writerSliceConfig.getList(Key.COLUMN, String.class);
+            this.upsertKeys = writerSliceConfig.getList("upsertKeys", String.class);
             this.columnNumber = this.columns.size();
-
             this.preSqls = writerSliceConfig.getList(Key.PRE_SQL, String.class);
             this.postSqls = writerSliceConfig.getList(Key.POST_SQL, String.class);
             this.batchSize = writerSliceConfig.getInt(Key.BATCH_SIZE, Constant.DEFAULT_BATCH_SIZE);
@@ -555,8 +556,12 @@ public class CommonRdbmsWriter {
                 if (dataBaseType != null && dataBaseType == DataBaseType.MySql && OriginalConfPretreatmentUtil.isOB10(jdbcUrl)) {
                     forceUseUpdate = true;
                 }
+                if(dataBaseType == DataBaseType.PostgreSQL&& writeMode.trim().toLowerCase().startsWith("update")){
+                    INSERT_OR_REPLACE_TEMPLATE = WriterUtil.getWriteTemplate(columns,upsertKeys, valueHolders, writeMode, dataBaseType);
+                }else{
+                    INSERT_OR_REPLACE_TEMPLATE = WriterUtil.getWriteTemplate(columns, valueHolders, writeMode, dataBaseType, forceUseUpdate);
+                }
 
-                INSERT_OR_REPLACE_TEMPLATE = WriterUtil.getWriteTemplate(columns, valueHolders, writeMode, dataBaseType, forceUseUpdate);
                 writeRecordSql = String.format(INSERT_OR_REPLACE_TEMPLATE, this.table);
             }
         }
