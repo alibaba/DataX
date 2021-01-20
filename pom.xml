@@ -44,65 +44,65 @@
         <module>common</module>
         <module>core</module>
         <module>transformer</module>
-
-        <!-- reader -->
-        <module>mysqlreader</module>
-        <module>drdsreader</module>
-        <module>sqlserverreader</module>
-        <module>postgresqlreader</module>
-        <module>kingbaseesreader</module>
-        <module>oraclereader</module>
-        <module>odpsreader</module>
-        <module>otsreader</module>
-        <module>otsstreamreader</module>
-        <module>txtfilereader</module>
-        <module>hdfsreader</module>
-        <module>streamreader</module>
-        <module>ossreader</module>
-        <module>ftpreader</module>
-        <module>mongodbreader</module>
-        <module>rdbmsreader</module>
-        <module>hbase11xreader</module>
-        <module>hbase094xreader</module>
-        <module>tsdbreader</module>
-        <module>opentsdbreader</module>
-        <module>cassandrareader</module>
-        <module>gdbreader</module>
-
-        <!-- writer -->
-        <module>mysqlwriter</module>
-        <module>drdswriter</module>
-        <module>odpswriter</module>
-        <module>txtfilewriter</module>
-        <module>ftpwriter</module>
-        <module>hdfswriter</module>
-        <module>streamwriter</module>
-        <module>otswriter</module>
-        <module>oraclewriter</module>
-        <module>sqlserverwriter</module>
-        <module>postgresqlwriter</module>
-        <module>kingbaseeswriter</module>
-        <module>osswriter</module>
-        <module>mongodbwriter</module>
-        <module>adswriter</module>
-        <module>ocswriter</module>
-        <module>rdbmswriter</module>
-        <module>hbase11xwriter</module>
-        <module>hbase094xwriter</module>
-        <module>hbase11xsqlwriter</module>
-        <module>hbase11xsqlreader</module>
-        <module>elasticsearchwriter</module>
-        <module>tsdbwriter</module>
-        <module>adbpgwriter</module>
-        <module>gdbwriter</module>
-        <module>cassandrawriter</module>
-        <module>clickhousewriter</module>
         <!-- common support module -->
         <module>plugin-rdbms-util</module>
         <module>plugin-unstructured-storage-util</module>
+
+        <!-- reader -->
+        <module>cassandrareader</module>
+        <module>drdsreader</module>
+        <module>ftpreader</module>
+        <module>gdbreader</module>
+        <module>hbase094xreader</module>
+        <module>hbase11xreader</module>
+        <module>hbase11xsqlreader</module>
         <module>hbase20xsqlreader</module>
+        <module>hdfsreader</module>
+        <module>kingbaseesreader</module>
+        <module>mongodbreader</module>
+        <module>mysqlreader</module>
+        <module>odpsreader</module>
+        <module>opentsdbreader</module>
+        <module>oraclereader</module>
+        <module>ossreader</module>
+        <module>otsreader</module>
+        <module>otsstreamreader</module>
+        <module>postgresqlreader</module>
+        <module>rdbmsreader</module>
+        <module>sqlserverreader</module>
+        <module>streamreader</module>
+        <module>tsdbreader</module>
+        <module>txtfilereader</module>
+
+        <!-- writer -->
+        <module>adbpgwriter</module>
+        <module>adswriter</module>
+        <module>cassandrawriter</module>
+        <module>clickhousewriter</module>
+        <module>drdswriter</module>
+        <module>elasticsearchwriter</module>
+        <module>ftpwriter</module>
+        <module>gdbwriter</module>
+        <module>hbase094xwriter</module>
+        <module>hbase11xsqlwriter</module>
+        <module>hbase11xwriter</module>
         <module>hbase20xsqlwriter</module>
+        <module>hdfswriter</module>
+        <module>kingbaseeswriter</module>
         <module>kuduwriter</module>
+        <module>mongodbwriter</module>
+        <module>mysqlwriter</module>
+        <module>ocswriter</module>
+        <module>odpswriter</module>
+        <module>oraclewriter</module>
+        <module>osswriter</module>
+        <module>otswriter</module>
+        <module>postgresqlwriter</module>
+        <module>rdbmswriter</module>
+        <module>sqlserverwriter</module>
+        <module>streamwriter</module>
+        <module>tsdbwriter</module>
+        <module>txtfilewriter</module>
     </modules>
 
     <dependencyManagement>
@@ -212,7 +212,9 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.6</version>
                 <configuration>
                     <finalName>datax</finalName>
                     <descriptors>

@@ -8,7 +8,6 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>hdfsreader</artifactId>
-    <groupId>com.alibaba.datax</groupId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <properties>
@@ -111,6 +110,7 @@
             <!-- assembly plugin -->
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.6</version>
                 <configuration>
                     <descriptors>
                         <descriptor>src/main/assembly/package.xml</descriptor>
