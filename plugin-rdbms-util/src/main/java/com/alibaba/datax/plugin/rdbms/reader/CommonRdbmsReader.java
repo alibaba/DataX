@@ -22,11 +22,6 @@ import com.alibaba.datax.plugin.rdbms.util.DBUtilErrorCode;
 import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
 import com.alibaba.datax.plugin.rdbms.util.RdbmsException;
 import com.google.common.collect.Lists;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -36,8 +31,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CommonRdbmsReader {
 
@@ -68,11 +68,13 @@ public class CommonRdbmsReader {
       String password = queryConf.getString(Key.PASSWORD);
       ExecutorService exec;
       if (connList.size() < 10) {
-        exec = Executors.newFixedThreadPool(connList.size());
+        exec = new ThreadPoolExecutor(connList.size(), connList.size(),
+            0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
       } else {
-        exec = Executors.newFixedThreadPool(10);
+        exec = new ThreadPoolExecutor(10, 10,
+            0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
       }
-      Collection<PreCheckTask> taskList = new ArrayList<>();
+      Collection<PreCheckTask> taskList = new ArrayList<PreCheckTask>();
       for (int i = 0, len = connList.size(); i < len; i++) {
         Configuration connConf = Configuration.from(connList.get(i).toString());
         PreCheckTask t = new PreCheckTask(username, password, connConf, dataBaseType, splitPK);
@@ -99,7 +101,8 @@ public class CommonRdbmsReader {
     }
 
 
-    public List<Configuration> split(Configuration originalConfig, int adviceNumber) {
+    public List<Configuration> split(Configuration originalConfig,
+        int adviceNumber) {
       return ReaderSplitUtil.doSplit(originalConfig, adviceNumber);
     }
 
@@ -252,7 +255,6 @@ public class CommonRdbmsReader {
       try {
         for (int i = 1; i <= columnNumber; i++) {
           switch (metaData.getColumnType(i)) {
-
             case Types.CHAR:
             case Types.NCHAR:
             case Types.VARCHAR:
@@ -333,8 +335,7 @@ public class CommonRdbmsReader {
 
             default:
               throw DataXException
-                  .asDataXException(
-                      DBUtilErrorCode.UNSUPPORTED_TYPE,
+                  .asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE,
                       String.format(
                           "您的配置文件中的列配置信息有误. 因为DataX 不支持数据库读取这种字段类型. 字段名:[%s], 字段名称:[%s], 字段Java类型:[%s]. 请尝试使用数据库函数将其转换datax支持的类型 或者不同步该字段 .",
                           metaData.getColumnName(i),
@@ -344,8 +345,7 @@ public class CommonRdbmsReader {
         }
       } catch (Exception e) {
         if (IS_DEBUG) {
-          LOG.debug("read data " + record.toString()
-              + " occur exception:", e);
+          LOG.debug("read data " + record.toString() + " occur exception:", e);
         }
         //TODO 这里识别为脏数据靠谱吗？
         taskPluginCollector.collectDirtyRecord(record, e);

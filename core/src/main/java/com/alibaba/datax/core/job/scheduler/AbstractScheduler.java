@@ -116,6 +116,11 @@ public abstract class AbstractScheduler {
    */
   protected abstract void startAllTaskGroup(List<Configuration> configurations);
 
+  /**
+   *
+   * @param frameworkCollector
+   * @param throwable
+   */
   protected abstract void dealFailedStat(AbstractContainerCommunicator frameworkCollector,
       Throwable throwable);
 
