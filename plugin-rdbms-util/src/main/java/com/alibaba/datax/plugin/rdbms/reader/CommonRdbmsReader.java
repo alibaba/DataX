@@ -1,5 +1,8 @@
 package com.alibaba.datax.plugin.rdbms.reader;
 
+import static com.alibaba.datax.plugin.rdbms.writer.Constant.OB10_SPLIT_STRING;
+import static com.alibaba.datax.plugin.rdbms.writer.Constant.OB10_SPLIT_STRING_PATTERN;
+
 import com.alibaba.datax.common.element.BoolColumn;
 import com.alibaba.datax.common.element.BytesColumn;
 import com.alibaba.datax.common.element.DateColumn;
@@ -141,17 +144,14 @@ public class CommonRdbmsReader {
 
     public void init(Configuration readerSliceConfig) {
 
-      /* for database connection */
-
+      //for database connection
       this.username = readerSliceConfig.getString(Key.USERNAME);
       this.password = readerSliceConfig.getString(Key.PASSWORD);
       this.jdbcUrl = readerSliceConfig.getString(Key.JDBC_URL);
 
       //ob10的处理
-      if (this.jdbcUrl.startsWith(com.alibaba.datax.plugin.rdbms.writer.Constant.OB10_SPLIT_STRING)
-          && this.dataBaseType == DataBaseType.MySql) {
-        String[] ss = this.jdbcUrl
-            .split(com.alibaba.datax.plugin.rdbms.writer.Constant.OB10_SPLIT_STRING_PATTERN);
+      if (this.jdbcUrl.startsWith(OB10_SPLIT_STRING) && this.dataBaseType == DataBaseType.MySql) {
+        String[] ss = this.jdbcUrl.split(OB10_SPLIT_STRING_PATTERN);
         if (ss.length != 3) {
           throw DataXException.asDataXException(
               DBUtilErrorCode.JDBC_OB10_ADDRESS_ERROR, "JDBC OB10格式错误，请联系askdatax");
@@ -249,7 +249,6 @@ public class CommonRdbmsReader {
         TaskPluginCollector taskPluginCollector) {
 
       Record record = recordSender.createRecord();
-
       try {
         for (int i = 1; i <= columnNumber; i++) {
           switch (metaData.getColumnType(i)) {
