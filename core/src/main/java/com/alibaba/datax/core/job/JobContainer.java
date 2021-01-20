@@ -427,13 +427,12 @@ public class JobContainer extends AbstractContainer {
     int taskNumber = readerTaskCfgs.size();
     List<Configuration> writerTaskCfs = this.doWriterSplit(taskNumber);
 
-    List<Configuration> transformers = configuration
-        .getListConfiguration(DATAX_JOB_CONTENT_TRANSFORMER);
+    List<Configuration> trsfms = configuration.getListConfiguration(DATAX_JOB_CONTENT_TRANSFORMER);
 
-    LOG.debug("transformer configuration: " + JSON.toJSONString(transformers));
+    LOG.debug("transformer configuration: " + JSON.toJSONString(trsfms));
     //输入是reader和writer的parameter list，输出是content下面元素的list
     List<Configuration> contentCfgs = mergeReaderAndWriterTaskConfigs(readerTaskCfgs, writerTaskCfs,
-        transformers);
+        trsfms);
 
     LOG.debug("contentConfig configuration: " + JSON.toJSONString(contentCfgs));
     this.configuration.set(DATAX_JOB_CONTENT, contentCfgs);
