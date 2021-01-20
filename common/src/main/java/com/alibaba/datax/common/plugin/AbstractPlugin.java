@@ -68,6 +68,7 @@ public abstract class AbstractPlugin extends BaseObject implements Pluginable {
         this.peerPluginName = peerPluginName;
     }
 
+
     public void preCheck() {
     }
 

@@ -14,12 +14,18 @@ import java.util.Map;
 
 /**
  * 抽象类 容器通信器，
+ * 处理JobContainer、TaskGroupContainer和Task的通讯
  */
 public abstract class AbstractContainerCommunicator {
 
 
   private Configuration configuration;
+
+  /**
+   * Collector负责管理下级注册到上级，搜集并合并下级所有的信息
+   */
   private AbstractCollector collector;
+
   private AbstractReporter reporter;
 
   private Long jobId;
