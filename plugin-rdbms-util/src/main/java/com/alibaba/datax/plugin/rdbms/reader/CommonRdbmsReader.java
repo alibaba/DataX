@@ -39,12 +39,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 通用的RDBMS reader
+ */
 public class CommonRdbmsReader {
 
   public static class Job {
 
-    private static final Logger LOG = LoggerFactory
-        .getLogger(Job.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Job.class);
 
     public Job(DataBaseType dataBaseType) {
       OriginalConfPretreatmentUtil.DATABASE_TYPE = dataBaseType;
@@ -52,29 +54,22 @@ public class CommonRdbmsReader {
     }
 
     public void init(Configuration originalConfig) {
-
       OriginalConfPretreatmentUtil.doPretreatment(originalConfig);
-
-      LOG.debug("After job init(), job config now is:[\n{}\n]",
-          originalConfig.toJSON());
+      LOG.debug("After job init(), job config now is:[\n{}\n]", originalConfig.toJSON());
     }
 
     public void preCheck(Configuration originalConfig, DataBaseType dataBaseType) {
-      /*检查每个表是否有读权限，以及querySql跟splik Key是否正确*/
+      /*检查每个表是否有读权限，以及querySql跟split Key是否正确*/
       Configuration queryConf = ReaderSplitUtil.doPreCheckSplit(originalConfig);
       String splitPK = queryConf.getString(Key.SPLIT_PK);
       List<Object> connList = queryConf.getList(Constant.CONN_MARK, Object.class);
       String username = queryConf.getString(Key.USERNAME);
       String password = queryConf.getString(Key.PASSWORD);
-      ExecutorService exec;
-      if (connList.size() < 10) {
-        exec = new ThreadPoolExecutor(connList.size(), connList.size(),
-            0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
-      } else {
-        exec = new ThreadPoolExecutor(10, 10,
-            0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
-      }
-      Collection<PreCheckTask> taskList = new ArrayList<PreCheckTask>();
+      int poolSize = Math.max(connList.size(), 10);
+      ExecutorService exec = new ThreadPoolExecutor(poolSize, poolSize, 0L, TimeUnit.MILLISECONDS,
+          new LinkedBlockingQueue<>());
+
+      Collection<PreCheckTask> taskList = new ArrayList<>();
       for (int i = 0, len = connList.size(); i < len; i++) {
         Configuration connConf = Configuration.from(connList.get(i).toString());
         PreCheckTask t = new PreCheckTask(username, password, connConf, dataBaseType, splitPK);
@@ -118,8 +113,7 @@ public class CommonRdbmsReader {
 
   public static class Task {
 
-    private static final Logger LOG = LoggerFactory
-        .getLogger(Task.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Task.class);
     private static final boolean IS_DEBUG = LOG.isDebugEnabled();
     protected final byte[] EMPTY_CHAR_ARRAY = new byte[0];
 
@@ -139,9 +133,9 @@ public class CommonRdbmsReader {
       this(dataBaseType, -1, -1);
     }
 
-    public Task(DataBaseType dataBaseType, int taskGropuId, int taskId) {
+    public Task(DataBaseType dataBaseType, int taskGroupId, int taskId) {
       this.dataBaseType = dataBaseType;
-      this.taskGroupId = taskGropuId;
+      this.taskGroupId = taskGroupId;
       this.taskId = taskId;
     }
 
@@ -159,9 +153,8 @@ public class CommonRdbmsReader {
         String[] ss = this.jdbcUrl
             .split(com.alibaba.datax.plugin.rdbms.writer.Constant.OB10_SPLIT_STRING_PATTERN);
         if (ss.length != 3) {
-          throw DataXException
-              .asDataXException(
-                  DBUtilErrorCode.JDBC_OB10_ADDRESS_ERROR, "JDBC OB10格式错误，请联系askdatax");
+          throw DataXException.asDataXException(
+              DBUtilErrorCode.JDBC_OB10_ADDRESS_ERROR, "JDBC OB10格式错误，请联系askdatax");
         }
         LOG.info("this is ob1_0 jdbc url.");
         this.username = ss[1].trim() + ":" + this.username;
@@ -170,21 +163,18 @@ public class CommonRdbmsReader {
       }
 
       this.mandatoryEncoding = readerSliceConfig.getString(Key.MANDATORY_ENCODING, "");
-
       basicMsg = String.format("jdbcUrl:[%s]", this.jdbcUrl);
-
     }
 
     public void startRead(Configuration readerSliceConfig,
-        RecordSender recordSender,
-        TaskPluginCollector taskPluginCollector, int fetchSize) {
+        RecordSender recordSender, TaskPluginCollector taskPluginCollector, int fetchSize) {
+
       String querySql = readerSliceConfig.getString(Key.QUERY_SQL);
       String table = readerSliceConfig.getString(Key.TABLE);
 
       PerfTrace.getInstance().addTaskDetails(taskId, table + "," + basicMsg);
 
-      LOG.info("Begin to read record by Sql: [{}\n] {}.",
-          querySql, basicMsg);
+      LOG.info("Begin to read record by Sql: [{}\n] {}.", querySql, basicMsg);
       PerfRecord queryPerfRecord = new PerfRecord(taskGroupId, taskId, PerfRecord.PHASE.SQL_QUERY);
       queryPerfRecord.start();
 
@@ -192,11 +182,10 @@ public class CommonRdbmsReader {
           username, password);
 
       // session config .etc related
-      DBUtil.dealWithSessionConfig(conn, readerSliceConfig,
-          this.dataBaseType, basicMsg);
+      DBUtil.dealWithSessionConfig(conn, readerSliceConfig, this.dataBaseType, basicMsg);
 
-      int columnNumber = 0;
-      ResultSet rs = null;
+      int columnNumber;
+      ResultSet rs;
       try {
         rs = DBUtil.query(conn, querySql, fetchSize);
         queryPerfRecord.end();
@@ -220,8 +209,7 @@ public class CommonRdbmsReader {
 
         allResultPerfRecord.end(rsNextUsedTime);
         //目前大盘是依赖这个打印，而之前这个Finish read record是包含了sql查询和result next的全部时间
-        LOG.info("Finished read record by Sql: [{}\n] {}.",
-            querySql, basicMsg);
+        LOG.info("Finished read record by Sql: [{}\n] {}.", querySql, basicMsg);
 
       } catch (Exception e) {
         throw RdbmsException.asQueryException(this.dataBaseType, e, querySql, table, username);
@@ -238,18 +226,28 @@ public class CommonRdbmsReader {
       // do nothing
     }
 
-    protected Record transportOneRecord(RecordSender recordSender, ResultSet rs,
-        ResultSetMetaData metaData, int columnNumber, String mandatoryEncoding,
+    protected Record transportOneRecord(RecordSender sender, ResultSet rs,
+        ResultSetMetaData metaData, int colNum, String encoding,
         TaskPluginCollector taskPluginCollector) {
-      Record record = buildRecord(recordSender, rs, metaData, columnNumber, mandatoryEncoding,
-          taskPluginCollector);
-      recordSender.sendToWriter(record);
+
+      Record record = buildRecord(sender, rs, metaData, colNum, encoding, taskPluginCollector);
+      sender.sendToWriter(record);
       return record;
     }
 
+    /**
+     * @param recordSender        RecordSender
+     * @param rs                  ResultSet
+     * @param metaData            ResultSetMetaData
+     * @param columnNumber        int
+     * @param mandatoryEncoding   String 强制编码
+     * @param taskPluginCollector TaskPluginCollector
+     * @return Record
+     */
     protected Record buildRecord(RecordSender recordSender, ResultSet rs,
         ResultSetMetaData metaData, int columnNumber, String mandatoryEncoding,
         TaskPluginCollector taskPluginCollector) {
+
       Record record = recordSender.createRecord();
 
       try {
@@ -265,8 +263,8 @@ public class CommonRdbmsReader {
               if (StringUtils.isBlank(mandatoryEncoding)) {
                 rawData = rs.getString(i);
               } else {
-                rawData = new String((rs.getBytes(i) == null ? EMPTY_CHAR_ARRAY :
-                    rs.getBytes(i)), mandatoryEncoding);
+                byte[] bs = rs.getBytes(i) == null ? EMPTY_CHAR_ARRAY : rs.getBytes(i);
+                rawData = new String(bs, mandatoryEncoding);
               }
               record.addColumn(new StringColumn(rawData));
               break;
@@ -300,7 +298,7 @@ public class CommonRdbmsReader {
 
             // for mysql bug, see http://bugs.mysql.com/bug.php?id=35115
             case Types.DATE:
-              if (metaData.getColumnTypeName(i).equalsIgnoreCase("year")) {
+              if ("year".equalsIgnoreCase(metaData.getColumnTypeName(i))) {
                 record.addColumn(new LongColumn(rs.getInt(i)));
               } else {
                 record.addColumn(new DateColumn(rs.getDate(i)));
@@ -338,8 +336,7 @@ public class CommonRdbmsReader {
                   .asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE,
                       String.format(
                           "您的配置文件中的列配置信息有误. 因为DataX 不支持数据库读取这种字段类型. 字段名:[%s], 字段名称:[%s], 字段Java类型:[%s]. 请尝试使用数据库函数将其转换datax支持的类型 或者不同步该字段 .",
-                          metaData.getColumnName(i),
-                          metaData.getColumnType(i),
+                          metaData.getColumnName(i), metaData.getColumnType(i),
                           metaData.getColumnClassName(i)));
           }
         }
