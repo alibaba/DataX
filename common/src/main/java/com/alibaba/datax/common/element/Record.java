@@ -5,19 +5,24 @@ package com.alibaba.datax.common.element;
  */
 
 public interface Record {
-    
-    void addColumn(Column column);
-    
-    void setColumn(int i, final Column column);
-    
-    Column getColumn(int i);
-    
-    String toString();
-    
-    int getColumnNumber();
-    
-    int getByteSize();
-    
-    int getMemorySize();
-    
+
+  /**
+   * 给该record 添加列
+   *
+   * @param column
+   */
+  void addColumn(Column column);
+
+  void setColumn(int i, final Column column);
+
+  Column getColumn(int i);
+
+  String toString();
+
+  int getColumnNumber();
+
+  int getByteSize();
+
+  int getMemorySize();
+
 }

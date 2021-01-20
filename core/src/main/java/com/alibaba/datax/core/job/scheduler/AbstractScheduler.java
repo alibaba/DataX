@@ -2,6 +2,7 @@ package com.alibaba.datax.core.job.scheduler;
 
 import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_CORE_CONTAINER_JOB_REPORTINTERVAL;
 import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_CORE_CONTAINER_JOB_SLEEPINTERVAL;
+import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_JOB_CONTENT;
 
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.util.Configuration;
@@ -25,8 +26,14 @@ public abstract class AbstractScheduler {
 
   private static final Logger LOG = LoggerFactory.getLogger(AbstractScheduler.class);
 
+  /**
+   * 脏数据行数检查器，用于运行中随时检查脏数据是否超过限制（脏数据行数，或脏数据百分比）
+   */
   private ErrorRecordChecker errorLimit;
 
+  /**
+   * 积累容器通讯器，来处理JobContainer、TaskGroupContainer和Task的通讯
+   */
   private AbstractContainerCommunicator containerCommunicator;
 
   private Long jobId;
@@ -54,9 +61,7 @@ public abstract class AbstractScheduler {
 
     this.jobId = cfg.get(0).getLong(CoreConstant.DATAX_CORE_CONTAINER_JOB_ID);
     errorLimit = new ErrorRecordChecker(cfg.get(0));
-    /**
-     * 给 taskGroupContainer 的 Communication 注册
-     */
+    //给 taskGroupContainer 的 Communication 注册
     this.containerCommunicator.registerCommunication(cfg);
     int taskCnt = calculateTaskCount(cfg);
     startAllTaskGroup(cfg);
@@ -106,8 +111,7 @@ public abstract class AbstractScheduler {
     } catch (InterruptedException e) {
       // 以 failed 状态退出
       LOG.error("捕获到InterruptedException异常!", e);
-      throw DataXException.asDataXException(
-          FrameworkErrorCode.RUNTIME_ERROR, e);
+      throw DataXException.asDataXException(FrameworkErrorCode.RUNTIME_ERROR, e);
     }
   }
 
@@ -119,20 +123,33 @@ public abstract class AbstractScheduler {
   protected abstract void startAllTaskGroup(List<Configuration> configurations);
 
   /**
+   * 处理失败的状态
+   *
    * @param frameworkCollector AbstractContainerCommunicator
    * @param throwable          Throwable
    */
   protected abstract void dealFailedStat(AbstractContainerCommunicator frameworkCollector,
       Throwable throwable);
 
+  /**
+   * 处理正在kill的状态
+   *
+   * @param frameworkCollector AbstractContainerCommunicator
+   * @param totalTasks         int
+   */
   protected abstract void dealKillingStat(AbstractContainerCommunicator frameworkCollector,
       int totalTasks);
 
+  /**
+   * 根据传入的配置列表，计算任务总数
+   *
+   * @param configurations List<Configuration>
+   * @return int
+   */
   private int calculateTaskCount(List<Configuration> configurations) {
     int totalTasks = 0;
-    for (Configuration taskGroupConfiguration : configurations) {
-      totalTasks += taskGroupConfiguration.getListConfiguration(
-          CoreConstant.DATAX_JOB_CONTENT).size();
+    for (Configuration taskGroupCfg : configurations) {
+      totalTasks += taskGroupCfg.getListConfiguration(DATAX_JOB_CONTENT).size();
     }
     return totalTasks;
   }
