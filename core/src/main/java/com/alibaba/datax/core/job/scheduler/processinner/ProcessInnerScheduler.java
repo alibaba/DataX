@@ -9,10 +9,11 @@ import com.alibaba.datax.core.statistics.container.communicator.AbstractContaine
 import com.alibaba.datax.core.taskgroup.TaskGroupContainer;
 import com.alibaba.datax.core.taskgroup.runner.TaskGroupContainerRunner;
 import com.alibaba.datax.core.util.FrameworkErrorCode;
-
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public abstract class ProcessInnerScheduler extends AbstractScheduler {
 
@@ -23,9 +24,10 @@ public abstract class ProcessInnerScheduler extends AbstractScheduler {
   }
 
   @Override
-  public void startAllTaskGroup(List<Configuration> configurations) {
-    this.taskGroupContainerExecutorService = Executors.newFixedThreadPool(configurations.size());
-    for (Configuration taskGroupCfg : configurations) {
+  public void startAllTaskGroup(List<Configuration> cfgs) {
+    this.taskGroupContainerExecutorService = new ThreadPoolExecutor(cfgs.size(), cfgs.size(),
+        0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
+    for (Configuration taskGroupCfg : cfgs) {
       TaskGroupContainerRunner taskGroupContainerRunner = newTaskGroupContainerRunner(taskGroupCfg);
       this.taskGroupContainerExecutorService.execute(taskGroupContainerRunner);
     }

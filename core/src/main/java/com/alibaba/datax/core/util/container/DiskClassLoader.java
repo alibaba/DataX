@@ -5,7 +5,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 自定义 类加载器
@@ -13,7 +15,8 @@ import java.util.concurrent.Executors;
 public class DiskClassLoader extends ClassLoader {
 
   public static void main(String[] args) {
-    ExecutorService service = Executors.newFixedThreadPool(3);
+    ExecutorService service = new ThreadPoolExecutor(3,3,
+        0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
     for (int i = 0; i < 5; i++) {
       int groupId = i;
       service.execute(() -> {
