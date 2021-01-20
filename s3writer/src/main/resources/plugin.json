@@ -1,0 +1,7 @@
+{
+  "name": "s3writer",
+  "class": "com.alibaba.datax.plugin.writer.s3writer.S3Writer",
+  "description": "",
+  "developer": "L.cm"
+}
+

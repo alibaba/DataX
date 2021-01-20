@@ -33,6 +33,7 @@
         <junit-version>4.13.1</junit-version>
         <tddl.version>5.1.22-1</tddl.version>
         <swift-version>1.0.0</swift-version>
+        <awssdk-s3-version>2.13.46</awssdk-s3-version>
 
         <project-sourceEncoding>UTF-8</project-sourceEncoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -68,6 +69,7 @@
         <module>opentsdbreader</module>
         <module>cassandrareader</module>
         <module>gdbreader</module>
+		<module>s3reader</module>
 
         <!-- writer -->
         <module>mysqlwriter</module>
@@ -97,6 +99,8 @@
         <module>gdbwriter</module>
         <module>cassandrawriter</module>
         <module>clickhousewriter</module>
+		<module>s3writer</module>
+
         <!-- common support module -->
         <module>plugin-rdbms-util</module>
         <module>plugin-unstructured-storage-util</module>
@@ -164,6 +168,12 @@
                 <groupId>com.alibaba.search.swift</groupId>
                 <artifactId>swift_client</artifactId>
                 <version>${swift-version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>s3</artifactId>
+                <version>${awssdk-s3-version}</version>
             </dependency>
 
             <dependency>
