@@ -20,7 +20,7 @@ Temporary Items
 *.log
 *.ctxt
 .mtj.tmp/
-# *.jar
+#  *.jar
 *.war
 *.nar
 *.ear
@@ -78,7 +78,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+#lib/
 lib64/
 parts/
 sdist/
