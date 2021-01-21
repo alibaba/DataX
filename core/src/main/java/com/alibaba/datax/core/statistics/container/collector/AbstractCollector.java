@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * 状态收集器
+ */
 public abstract class AbstractCollector {
 
   /**
@@ -32,14 +35,15 @@ public abstract class AbstractCollector {
   }
 
   /**
-   * 将TaskGroupContainer注册到JobContainer
+   * 将TaskGroupContainer注册到JobContainer <br>
+   * StandAloneJobContainerCommunicator将taskGroup的cfgs传入该类，该方法将taskGroupID和 comm
+   * 托管到LocalTGCommunicationManager
    *
    * @param taskGroupConfigurationList List<Configuration>
    */
   public void registerTGCommunication(List<Configuration> taskGroupConfigurationList) {
     for (Configuration config : taskGroupConfigurationList) {
-      int taskGroupId = config.getInt(
-          CoreConstant.DATAX_CORE_CONTAINER_TASKGROUP_ID);
+      int taskGroupId = config.getInt(CoreConstant.DATAX_CORE_CONTAINER_TASKGROUP_ID);
       LocalTGCommunicationManager.registerTaskGroupCommunication(taskGroupId, new Communication());
     }
   }
@@ -65,13 +69,17 @@ public abstract class AbstractCollector {
     Communication communication = new Communication();
     communication.setState(State.SUCCEEDED);
 
-    for (Communication taskCommunication :
-        this.taskCommunicationMap.values()) {
+    for (Communication taskCommunication : this.taskCommunicationMap.values()) {
       communication.mergeFrom(taskCommunication);
     }
     return communication;
   }
 
+  /**
+   * 从tg里收集comm信息
+   *
+   * @return communication
+   */
   public abstract Communication collectFromTaskGroup();
 
   public Map<Integer, Communication> getTGCommunicationMap() {
