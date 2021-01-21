@@ -103,8 +103,7 @@ public abstract class AbstractRunner {
   }
 
   public void setRunnerCommunication(final Communication runnerCommunication) {
-    Validate.notNull(runnerCommunication,
-        "插件的Communication不能为空");
+    Validate.notNull(runnerCommunication, "插件的Communication不能为空");
     this.runnerCommunication = runnerCommunication;
   }
 
