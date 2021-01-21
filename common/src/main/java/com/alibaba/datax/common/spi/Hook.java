@@ -20,8 +20,8 @@ public interface Hook {
     /**
      * TODO 文档
      *
-     * @param jobConf
-     * @param msg
+     * @param jobConf  Configuration
+     * @param msg Map<String, Number>
      */
     void invoke(Configuration jobConf, Map<String, Number> msg);
 
