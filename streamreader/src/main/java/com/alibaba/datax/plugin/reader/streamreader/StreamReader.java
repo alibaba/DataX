@@ -40,14 +40,12 @@ public class StreamReader extends Reader {
           .compile(Constant.MIXUP_FUNCTION_PATTERN, Pattern.CASE_INSENSITIVE);
       dealColumn(this.originalConfig);
 
-      Long sliceRecordCount = this.originalConfig
-          .getLong(Key.SLICE_RECORD_COUNT);
+      Long sliceRecordCount = this.originalConfig.getLong(Key.SLICE_RECORD_COUNT);
       if (null == sliceRecordCount) {
         throw DataXException.asDataXException(StreamReaderErrorCode.REQUIRED_VALUE,
             "没有设置参数[sliceRecordCount].");
       } else if (sliceRecordCount < 1) {
-        throw DataXException.asDataXException(ILLEGAL_VALUE,
-            "参数[sliceRecordCount]不能小于1.");
+        throw DataXException.asDataXException(ILLEGAL_VALUE, "参数[sliceRecordCount]不能小于1.");
       }
 
     }
@@ -77,17 +75,14 @@ public class StreamReader extends Reader {
         } else {
           if (Type.DATE.name().equalsIgnoreCase(typeName)) {
             boolean notAssignDateFormat = StringUtils
-                .isBlank(eachColumnConfig
-                    .getString(Constant.DATE_FORMAT_MARK));
+                .isBlank(eachColumnConfig.getString(Constant.DATE_FORMAT_MARK));
             if (notAssignDateFormat) {
-              eachColumnConfig.set(Constant.DATE_FORMAT_MARK,
-                  Constant.DEFAULT_DATE_FORMAT);
+              eachColumnConfig.set(Constant.DATE_FORMAT_MARK, Constant.DEFAULT_DATE_FORMAT);
             }
           }
           if (!Type.isTypeIllegal(typeName)) {
             throw DataXException.asDataXException(
-                StreamReaderErrorCode.NOT_SUPPORT_TYPE,
-                String.format("不支持类型[%s]", typeName));
+                StreamReaderErrorCode.NOT_SUPPORT_TYPE, String.format("不支持类型[%s]", typeName));
           }
         }
         dealedColumns.add(eachColumnConfig.toJSON());
