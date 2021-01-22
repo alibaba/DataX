@@ -1,9 +1,11 @@
 package com.alibaba.datax.plugin.reader.kudureader;
 
+import com.alibaba.datax.common.exception.DataXException;
+import com.alibaba.datax.common.plugin.RecordSender;
+import com.alibaba.datax.common.plugin.TaskPluginCollector;
 import com.alibaba.datax.common.util.Configuration;
-import org.apache.kudu.client.KuduClient;
-import org.apache.kudu.client.KuduSession;
-import org.apache.kudu.client.KuduTable;
+import org.apache.kudu.Schema;
+import org.apache.kudu.client.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,8 +19,11 @@ import java.util.List;
 public class KuduReaderTask {
     private final static Logger LOG = LoggerFactory.getLogger(KuduReaderTask.class);
 
-    private List<String> columns;
+    private List<Configuration> columnConfigs;
+    private boolean isReadAllColumns = false;
     private KuduTable table;
+    private String splitPk;
+    private KuduScanner scanner;
 
     public KuduClient kuduClient;
 
@@ -26,10 +31,46 @@ public class KuduReaderTask {
     public KuduReaderTask(Configuration configuration) {
         this.kuduClient = KuduReaderHelper.getKuduClient(configuration.getString(Key.KUDU_CONFIG));
         this.table = KuduReaderHelper.getKuduTable(configuration, kuduClient);
-        this.columns = configuration.getList(Key.COLUMN, String.class);
+        this.splitPk = configuration.getString(Key.SPLIT_PK);
+        Long upperValue = configuration.getLong(Key.SPLIT_PK_UPPER);
+        Long lowerValue = configuration.getLong(Key.SPLIT_PK_LOWER);
+        List<String> columnNames = KuduReaderHelper.getColumnNames(configuration);
+        if(columnNames == null){
+            isReadAllColumns = true;
+        }
+        if (this.splitPk == null) {
+            this.scanner = kuduClient.newScannerBuilder(table).setProjectedColumnNames(columnNames).build();
+        } else {
+            Schema schema = table.getSchema();
+            PartialRow upper = schema.newPartialRow();
+            PartialRow lower = schema.newPartialRow();
+            upper.addLong(splitPk, upperValue);
+            lower.addLong(splitPk, lowerValue);
+            this.scanner = kuduClient.newScannerBuilder(table)
+                    .setProjectedColumnNames(columnNames)
+                    .lowerBound(lower)
+                    .exclusiveUpperBound(upper)
+                    .build();
+
+        }
+
     }
 
-    public void startRead() {
+    public void startRead(RecordSender recordSender, TaskPluginCollector taskPluginCollector) {
+        try {
+            while (scanner.hasMoreRows()){
+                RowResultIterator results = scanner.nextRows();
+                while (results.hasNext()) {
+                    RowResult result = results.next();
+                    //封装Record并发送给writer
+                    KuduReaderHelper.transportOneRecord(columnConfigs,result,recordSender, taskPluginCollector, isReadAllColumns);
+                }
+            }
+            recordSender.flush();
+        }catch (Exception e){
+            LOG.error("read exception! the task will exit!");
+            throw DataXException.asDataXException(KuduReaderErrorcode.READ_KUDU_ERROR, e.getMessage());
+        }
 
     }
 }

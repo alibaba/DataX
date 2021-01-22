@@ -26,8 +26,7 @@ public class KuduReader extends Reader {
 
         @Override
         public List<Configuration> split(int adviceNumber) {
-//            return KuduReaderHelper.split(this.originConfig);
-            return null;
+            return KuduReaderHelper.split(this.originConfig,adviceNumber);
         }
 
 
@@ -54,6 +53,7 @@ public class KuduReader extends Reader {
 
         @Override
         public void startRead(RecordSender recordSender) {
+            LOG.info("read start");
 
         }
 

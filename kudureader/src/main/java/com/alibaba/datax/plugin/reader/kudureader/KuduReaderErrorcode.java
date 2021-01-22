@@ -10,7 +10,8 @@ public enum KuduReaderErrorcode implements ErrorCode {
     REQUIRED_VALUE("Kudureader-00", "You are missing a required parameter value."),
     ILLEGAL_VALUE("Kudureader-01", "You fill in the parameter values are not legitimate."),
     GET_KUDU_CONNECTION_ERROR("Kudureader-02", "Error getting Kudu connection."),
-    GET_KUDU_TABLE_ERROR("Kudureader-03", "Error getting Kudu table.");
+    GET_KUDU_TABLE_ERROR("Kudureader-03", "Error getting Kudu table."),
+    READ_KUDU_ERROR("Kudureader-04", "Error reading Kudu table.");
 
     private final String code;
     private final String description;

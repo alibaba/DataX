@@ -12,7 +12,12 @@ public class Key {
 
     public final static String TABLE = "table";
     public final static String COLUMN = "column";
+    public static final String NAME = "name";
+    public static final String TYPE = "type";
+    public static final String VALUE = "value";
+    public static final String FORMAT = "format";
+
     public final static String SPLIT_PK = "splitPk";
-    public final static String SPLIT_PK_upper = "splitPkUpper";
-    public final static String SPLIT_PK_lower = "splitPkLower";
+    public final static String SPLIT_PK_UPPER = "splitPkUpper";
+    public final static String SPLIT_PK_LOWER = "splitPkLower";
 }

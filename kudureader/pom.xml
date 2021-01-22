@@ -39,5 +39,7 @@
         <artifactId>kudu-client</artifactId>
         <version>1.11.1</version>
     </dependency>
+
+
 </dependencies>
 </project>
