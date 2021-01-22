@@ -10,7 +10,7 @@ public class ProcessInnerCollector extends AbstractCollector {
   }
 
   /**
-   * 提供搜集所有TaskGroupContainer的信息
+   * 收集所有taskGroup的信息给tgManager
    *
    * @return Communication
    */
