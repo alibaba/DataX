@@ -145,7 +145,6 @@ public class Communication extends BaseObject implements Cloneable {
    */
   public synchronized Long getLongCounter(final String key) {
     Number value = this.counter.get(key);
-
     return value == null ? 0 : value.longValue();
   }
 

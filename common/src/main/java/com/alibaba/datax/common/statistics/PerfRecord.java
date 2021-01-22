@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Date;
 
 /**
- * Created by liqiang on 15/8/23.
+ * Created by liqiang on 15/8/23. <br>
  * 性能记录
  */
 @SuppressWarnings("NullableProblems")
@@ -76,6 +76,9 @@ public class PerfRecord implements Comparable<PerfRecord> {
   private final int taskId;
   private final PHASE phase;
   private volatile ACTION action;
+  /**
+   * volatile 保证可见性，变量的值发生变化，其他可以立马看到
+   */
   private volatile Date startTime;
   private volatile long elapsedTimeInNs = -1;
   private volatile long count = 0;
