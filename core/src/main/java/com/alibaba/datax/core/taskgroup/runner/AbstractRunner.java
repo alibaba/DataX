@@ -55,6 +55,11 @@ public abstract class AbstractRunner {
     this.plugin.setTaskPluginCollector(pluginCollector);
   }
 
+  /**
+   * 给正在运行的communication状态加1，实现标记
+   *
+   * @param state State
+   */
   private void mark(State state) {
     this.runnerCommunication.setState(state);
     if (state == State.SUCCEEDED) {
@@ -111,5 +116,8 @@ public abstract class AbstractRunner {
     return runnerCommunication;
   }
 
+  /**
+   * 任务关闭
+   */
   public abstract void shutdown();
 }
