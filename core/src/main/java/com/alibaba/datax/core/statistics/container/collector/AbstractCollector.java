@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public abstract class AbstractCollector {
 
   /**
-   * askCommunicationMap用于保存Task注册到TaskGroupContainer，当Task注册到TaskGroupContainer的时候将
+   * taskCommunicationMap用于保存Task注册到TaskGroupContainer，当Task注册到TaskGroupContainer的时候将
    * TaskId和新建的Communication对象保存进taskCommunicationMap即可。
    */
   private Map<Integer, Communication> taskCommunicationMap = new ConcurrentHashMap<>();
@@ -61,7 +61,7 @@ public abstract class AbstractCollector {
   }
 
   /**
-   * 搜集所有任务信息的功能
+   * 收集所有task信息
    *
    * @return Communication
    */
