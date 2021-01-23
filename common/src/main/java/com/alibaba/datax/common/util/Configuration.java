@@ -448,7 +448,7 @@ public class Configuration {
       return null;
     }
 
-    List<Configuration> result = new ArrayList<Configuration>();
+    List<Configuration> result = new ArrayList<>();
     for (final Object object : lists) {
       result.add(Configuration.from(Configuration.toJSONString(object)));
     }

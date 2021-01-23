@@ -64,8 +64,7 @@ public class HttpClientUtil {
 
   public static void setBasicAuth(String username, String password) {
     provider = new BasicCredentialsProvider();
-    provider.setCredentials(AuthScope.ANY,
-        new UsernamePasswordCredentials(username, password));
+    provider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
   }
 
   // 创建包含connection pool与超时设置的client
