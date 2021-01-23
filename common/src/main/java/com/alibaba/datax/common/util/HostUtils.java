@@ -28,7 +28,7 @@ public class HostUtils {
       ip = "UNKNOWN";
       hostname = "UNKNOWN";
     }
-    if (ip.equals("127.0.0.1") || ip.equals("::1") || ip.equals("UNKNOWN")) {
+    if ("127.0.0.1".equals(ip) || "::1".equals(ip) || "UNKNOWN".equals(ip)) {
       try {
         Process process = Runtime.getRuntime().exec("hostname -i");
         if (process.waitFor() == 0) {
@@ -46,4 +46,6 @@ public class HostUtils {
     HOSTNAME = hostname;
     log.info("IP {} HOSTNAME {}", IP, HOSTNAME);
   }
+
+
 }

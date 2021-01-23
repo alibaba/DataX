@@ -15,6 +15,7 @@ import java.util.Map;
 
 /**
  * Created by liqiang on 15/11/12.
+ * 获取vm信息类
  */
 public class VMInfo {
 
