@@ -10,10 +10,19 @@ import org.apache.commons.lang.Validate;
 
 public abstract class AbstractRunner {
 
+  /**
+   * 基类任务插件
+   */
   private AbstractTaskPlugin plugin;
 
+  /**
+   * 任务的配置信息
+   */
   private Configuration jobConf;
 
+  /**
+   * runner的通讯类，里面可以记录该runner的信息
+   */
   private Communication runnerCommunication;
 
   private int taskGroupId;
