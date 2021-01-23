@@ -1,6 +1,7 @@
 package com.alibaba.datax.common.statistics;
 
 import com.alibaba.datax.common.util.HostUtils;
+import java.util.Objects;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,7 +69,13 @@ public class PerfRecord implements Comparable<PerfRecord> {
   }
 
   public enum ACTION {
+    /**
+     * 开始状态
+     */
     start,
+    /**
+     * 结束
+     */
     end
   }
 
@@ -157,8 +164,7 @@ public class PerfRecord implements Comparable<PerfRecord> {
     if (o == null) {
       return 1;
     }
-    return this.elapsedTimeInNs > o.elapsedTimeInNs ? 1
-        : this.elapsedTimeInNs == o.elapsedTimeInNs ? 0 : -1;
+    return Long.compare(this.elapsedTimeInNs, o.elapsedTimeInNs);
   }
 
   @Override
@@ -190,10 +196,10 @@ public class PerfRecord implements Comparable<PerfRecord> {
     if (this.taskId != dst.taskId) {
       return false;
     }
-    if (phase != null ? !phase.equals(dst.phase) : dst.phase != null) {
+    if (!Objects.equals(phase, dst.phase)) {
       return false;
     }
-    if (startTime != null ? !startTime.equals(dst.startTime) : dst.startTime != null) {
+    if (!Objects.equals(startTime, dst.startTime)) {
       return false;
     }
     return true;
@@ -262,10 +268,7 @@ public class PerfRecord implements Comparable<PerfRecord> {
   }
 
   public String getDatetime() {
-    if (startTime == null) {
-      return "null time";
-    }
-    return DateFormatUtils.format(startTime, datetimeFormat);
+    return startTime == null ? "null time" : DateFormatUtils.format(startTime, datetimeFormat);
   }
 
   public boolean isReport() {
