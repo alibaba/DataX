@@ -24,7 +24,7 @@ public abstract class Transformer {
   }
 
   /**
-   * 用于具体的处理逻辑的实现
+   * 用于具体的处理逻辑的实现 <br>
    *
    * @param record Record 行记录，UDF进行record的处理后，更新相应的record
    * @param paras  Object transformer函数参数

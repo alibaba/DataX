@@ -107,8 +107,6 @@ public class TransformerUtil {
           , i, transformerInfo.getTransformer().getTransformerName()
           , transformerInfo.isNative(), cfg.getConfiguration("parameter")));
     }
-
     return result;
-
   }
 }

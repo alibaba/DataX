@@ -376,7 +376,8 @@ public class TaskGroupContainer extends AbstractContainer {
    * @param taskCnt
    * @return
    */
-  private Communication reportTaskGroupCommunication(Communication lastTGContainerComm,int taskCnt) {
+  private Communication reportTaskGroupCommunication(Communication lastTGContainerComm,
+      int taskCnt) {
     Communication nowTGContainerComm = this.containerCommunicator.collect();
     nowTGContainerComm.setTimestamp(System.currentTimeMillis());
     Communication reportComm = CommunicationTool
@@ -439,8 +440,7 @@ public class TaskGroupContainer extends AbstractContainer {
           .getCommunication(taskId);
       Validate.notNull(this.taskCommunication,
           String.format("taskId[%d]的Communication没有注册过", taskId));
-      this.channel = ClassUtil.instantiate(channelClz,
-          Channel.class, configuration);
+      this.channel = ClassUtil.instantiate(channelClz, Channel.class, configuration);
       this.channel.setCommunication(this.taskCommunication);
 
       /**
