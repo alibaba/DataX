@@ -11,7 +11,7 @@ import com.alibaba.datax.transformer.Transformer;
 import java.util.Arrays;
 
 /**
- * no comments.
+ * 填充类transformer.
  * Created by liqiang on 16/3/4.
  */
 public class PadTransformer extends Transformer {
