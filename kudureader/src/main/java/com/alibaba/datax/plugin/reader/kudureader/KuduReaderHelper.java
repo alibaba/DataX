@@ -249,14 +249,50 @@ public class KuduReaderHelper {
         return record;
     }
 
-    public static List<Configuration> split(Configuration configuration, int adviceNumber) {
-        String splitPk = configuration.getString(Key.SPLIT_PK);
+    public static List<KuduPredicate> getKuduPredicates(Configuration configuration) {
+        List<KuduPredicate> predicates = new ArrayList<>();
+        String whereSql = configuration.getString(Key.WHERE);
+        if (whereSql == null || "".equals(whereSql.trim())) {
+            return null;
+        }
+        String[] expressions = whereSql.split("and");
+        for (String expression : expressions) {
+
+        }
 
         return null;
     }
 
-    public static Pair<Object, Object> getPkRange(Configuration configuration){
+    public static List<Configuration> split(Configuration configuration) {
+        LOG.info("Kudureader start split!");
+        List<Configuration> splitConfigs = null;
+        KuduClient kuduClient = null;
+        try {
+            kuduClient = KuduReaderHelper.getKuduClient(configuration.getString(Key.KUDU_CONFIG));
+            KuduTable kuduTable = KuduReaderHelper.getKuduTable(configuration, kuduClient);
+            KuduScanToken.KuduScanTokenBuilder tokenBuilder = kuduClient.newScanTokenBuilder(kuduTable)
+                    .setProjectedColumnNames(KuduReaderHelper.getColumnNames(configuration));
+            List<KuduScanToken> tokens = tokenBuilder.build();
+            //目标分区过滤（需补齐）
 
-        return null;
+            splitConfigs = new ArrayList<>(tokens.size());
+
+            //目标kudu表有多少个分区，就会分多少片
+            for (KuduScanToken token : tokens) {
+                List<String> locations = new ArrayList<>(token.getTablet().getReplicas().size());
+                for (LocatedTablet.Replica replica : token.getTablet().getReplicas()) {
+                    locations.add(replica.getRpcHost());
+                }
+                Configuration conf = configuration.clone();
+                conf.set(Key.SPLIT_PK_RPC_HOST, locations);
+                conf.set(Key.SPLIT_PK_TOKEN, token.serialize());
+                splitConfigs.add(conf);
+            }
+        } catch (Exception e) {
+            throw DataXException.asDataXException(KuduReaderErrorcode.GET_KUDU_CONNECTION_ERROR, e.getMessage());
+        } finally {
+            KuduReaderHelper.closeClient(kuduClient);
+        }
+        return splitConfigs;
     }
 }

@@ -26,7 +26,7 @@ public class KuduReader extends Reader {
 
         @Override
         public List<Configuration> split(int adviceNumber) {
-            return KuduReaderHelper.split(this.originConfig,adviceNumber);
+            return KuduReaderHelper.split(this.originConfig);
         }
 
 
@@ -37,13 +37,14 @@ public class KuduReader extends Reader {
 
     }
     public static class Task extends Reader.Task {
-        private Configuration taskConfig;
+
         private static Logger LOG = LoggerFactory.getLogger(Task.class);
+        private Configuration taskConfig;
+        private KuduReaderTask kuduReaderTask;
         @Override
         public void init() {
             this.taskConfig = super.getPluginJobConf();
-
-
+            kuduReaderTask = new KuduReaderTask(taskConfig);
         }
 
         @Override
@@ -54,7 +55,7 @@ public class KuduReader extends Reader {
         @Override
         public void startRead(RecordSender recordSender) {
             LOG.info("read start");
-
+            kuduReaderTask.startRead(recordSender,super.getTaskPluginCollector());
         }
 
         @Override

@@ -16,8 +16,11 @@ public class Key {
     public static final String TYPE = "type";
     public static final String VALUE = "value";
     public static final String FORMAT = "format";
+    public final static String WHERE = "where";
 
     public final static String SPLIT_PK = "splitPk";
+    public final static String SPLIT_PK_RPC_HOST = "splitPkRpcHost";
+    public final static String SPLIT_PK_TOKEN = "splitPkToken";
     public final static String SPLIT_PK_UPPER = "splitPkUpper";
     public final static String SPLIT_PK_LOWER = "splitPkLower";
 }

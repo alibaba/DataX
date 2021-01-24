@@ -11,7 +11,9 @@ public enum KuduReaderErrorcode implements ErrorCode {
     ILLEGAL_VALUE("Kudureader-01", "You fill in the parameter values are not legitimate."),
     GET_KUDU_CONNECTION_ERROR("Kudureader-02", "Error getting Kudu connection."),
     GET_KUDU_TABLE_ERROR("Kudureader-03", "Error getting Kudu table."),
-    READ_KUDU_ERROR("Kudureader-04", "Error reading Kudu table.");
+    READ_KUDU_ERROR("Kudureader-04", "Error reading Kudu table."),
+    TOKEN_DESERIALIZE_ERROR("Kudureader-04", "Error reading Kudu table."),
+    SPLIT_ERROR("Kudureader-05", "Error spiting Kudu table.");
 
     private final String code;
     private final String description;

@@ -9,6 +9,7 @@ import org.apache.kudu.client.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,8 +22,8 @@ public class KuduReaderTask {
 
     private List<Configuration> columnConfigs;
     private boolean isReadAllColumns = false;
-    private KuduTable table;
-    private String splitPk;
+//    private KuduTable table;
+//    private String splitPk;
     private KuduScanner scanner;
 
     public KuduClient kuduClient;
@@ -30,29 +31,22 @@ public class KuduReaderTask {
 
     public KuduReaderTask(Configuration configuration) {
         this.kuduClient = KuduReaderHelper.getKuduClient(configuration.getString(Key.KUDU_CONFIG));
-        this.table = KuduReaderHelper.getKuduTable(configuration, kuduClient);
-        this.splitPk = configuration.getString(Key.SPLIT_PK);
-        Long upperValue = configuration.getLong(Key.SPLIT_PK_UPPER);
-        Long lowerValue = configuration.getLong(Key.SPLIT_PK_LOWER);
+//        this.table = KuduReaderHelper.getKuduTable(configuration, kuduClient);
+//        this.splitPk = configuration.getString(Key.SPLIT_PK);
+//        Long upperValue = configuration.getLong(Key.SPLIT_PK_UPPER);
+//        Long lowerValue = configuration.getLong(Key.SPLIT_PK_LOWER);
+        this.columnConfigs = configuration.getListConfiguration(Key.COLUMN);
         List<String> columnNames = KuduReaderHelper.getColumnNames(configuration);
         if(columnNames == null){
             isReadAllColumns = true;
         }
-        if (this.splitPk == null) {
-            this.scanner = kuduClient.newScannerBuilder(table).setProjectedColumnNames(columnNames).build();
-        } else {
-            Schema schema = table.getSchema();
-            PartialRow upper = schema.newPartialRow();
-            PartialRow lower = schema.newPartialRow();
-            upper.addLong(splitPk, upperValue);
-            lower.addLong(splitPk, lowerValue);
-            this.scanner = kuduClient.newScannerBuilder(table)
-                    .setProjectedColumnNames(columnNames)
-                    .lowerBound(lower)
-                    .exclusiveUpperBound(upper)
-                    .build();
 
+        try {
+            this.scanner = KuduScanToken.deserializeIntoScanner((byte[]) configuration.get(Key.SPLIT_PK_TOKEN), kuduClient);
+        } catch (IOException e) {
+            throw DataXException.asDataXException(KuduReaderErrorcode.TOKEN_DESERIALIZE_ERROR, e.getMessage());
         }
+
 
     }
 
