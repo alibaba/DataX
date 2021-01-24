@@ -40,6 +40,8 @@ public class TransformerRegistry {
     registTransformer(new ReplaceTransformer());
     registTransformer(new FilterTransformer());
     registTransformer(new GroovyTransformer());
+    //将自己写的transformer注册进来
+    registTransformer(new DateTransformer());
   }
 
   public static void loadTransformerFromLocalStorage() {
@@ -184,6 +186,7 @@ public class TransformerRegistry {
    * 该方法存在一定问题， <br>
    * 1 返回值为空，检查结果没处用 <br>
    * 2 校验是否本地方法不太严谨 <br>
+   *
    * @param functionName
    * @param isNative
    */

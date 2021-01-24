@@ -24,7 +24,7 @@
               },
               {
                 "value": "1989-06-04 00:00:00",
-                "type": "date"
+                "type": "string"
               },
               {
                 "value": true,
@@ -47,11 +47,12 @@
         },
         "transformer": [
           {
-            "name": "dx_groovy",
+            "name": "dx_date",
             "parameter": {
-              "code": "Column column = record.getColumn(0);def str = column.asString();def sb = new StringBuffer(str);def header = sb.insert(0,'AA');def strHeader = header.toString();record.setColumn(0, new StringColumn(strHeader));return record",
-              "extraPackage": [
-                "import groovy.json.JsonSlurper;"
+              "columnIndex": 2,
+              "paras": [
+                "yyyy-MM-dd HH:mm:ss",
+                "yyyy年MM月dd日 HH:mm:ss"
               ]
             }
           }
