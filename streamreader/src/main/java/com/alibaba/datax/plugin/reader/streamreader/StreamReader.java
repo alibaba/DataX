@@ -1,5 +1,7 @@
 package com.alibaba.datax.plugin.reader.streamreader;
 
+import static com.alibaba.datax.plugin.reader.streamreader.Constant.DATE_FORMAT_MARK;
+import static com.alibaba.datax.plugin.reader.streamreader.Constant.DEFAULT_DATE_FORMAT;
 import static com.alibaba.datax.plugin.reader.streamreader.StreamReaderErrorCode.ILLEGAL_VALUE;
 
 import com.alibaba.datax.common.element.*;
@@ -27,8 +29,7 @@ public class StreamReader extends Reader {
 
   public static class Job extends Reader.Job {
 
-    private static final Logger LOG = LoggerFactory
-        .getLogger(Job.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Job.class);
     private Pattern mixupFunctionPattern;
     private Configuration originalConfig;
 
@@ -75,9 +76,9 @@ public class StreamReader extends Reader {
         } else {
           if (Type.DATE.name().equalsIgnoreCase(typeName)) {
             boolean notAssignDateFormat = StringUtils
-                .isBlank(eachColumnConfig.getString(Constant.DATE_FORMAT_MARK));
+                .isBlank(eachColumnConfig.getString(DATE_FORMAT_MARK));
             if (notAssignDateFormat) {
-              eachColumnConfig.set(Constant.DATE_FORMAT_MARK, Constant.DEFAULT_DATE_FORMAT);
+              eachColumnConfig.set(DATE_FORMAT_MARK, DEFAULT_DATE_FORMAT);
             }
           }
           if (!Type.isTypeIllegal(typeName)) {
@@ -128,10 +129,10 @@ public class StreamReader extends Reader {
           String typeName = eachColumnConfig.getString(Constant.TYPE);
           if (Type.DATE.name().equalsIgnoreCase(typeName)) {
             String dateFormat = eachColumnConfig
-                .getString(Constant.DATE_FORMAT_MARK, Constant.DEFAULT_DATE_FORMAT);
+                .getString(DATE_FORMAT_MARK, DEFAULT_DATE_FORMAT);
             try {
               SimpleDateFormat format = new SimpleDateFormat(eachColumnConfig
-                  .getString(Constant.DATE_FORMAT_MARK, Constant.DEFAULT_DATE_FORMAT));
+                  .getString(DATE_FORMAT_MARK, DEFAULT_DATE_FORMAT));
               //warn: do no concern int -> long
               param1Int = format.parse(param1).getTime();//milliseconds
               param2Int = format.parse(param2).getTime();//milliseconds
@@ -196,6 +197,8 @@ public class StreamReader extends Reader {
 
   public static class Task extends Reader.Task {
 
+    private static final Logger LOG = LoggerFactory.getLogger(Task.class);
+
     private Configuration readerSliceConfig;
 
     private List<String> columns;
@@ -238,17 +241,15 @@ public class StreamReader extends Reader {
     public void destroy() {
     }
 
-    private Column buildOneColumn(Configuration eachColumnConfig) throws Exception {
-      String columnValue = eachColumnConfig
-          .getString(Constant.VALUE);
-      Type columnType = Type.valueOf(eachColumnConfig.getString(
-          Constant.TYPE).toUpperCase());
-      String columnMixup = eachColumnConfig.getString(Constant.RANDOM);
-      long param1Int = eachColumnConfig.getLong(Constant.MIXUP_FUNCTION_PARAM1, 0L);
-      long param2Int = eachColumnConfig.getLong(Constant.MIXUP_FUNCTION_PARAM2, 1L);
+    private Column buildOneColumn(Configuration eachColCfg) throws Exception {
+      String columnValue = eachColCfg.getString(Constant.VALUE);
+      Type colType = Type.valueOf(eachColCfg.getString(Constant.TYPE).toUpperCase());
+      String columnMixup = eachColCfg.getString(Constant.RANDOM);
+      long param1Int = eachColCfg.getLong(Constant.MIXUP_FUNCTION_PARAM1, 0L);
+      long param2Int = eachColCfg.getLong(Constant.MIXUP_FUNCTION_PARAM2, 1L);
       boolean isColumnMixup = StringUtils.isNotBlank(columnMixup);
 
-      switch (columnType) {
+      switch (colType) {
         case STRING:
           if (isColumnMixup) {
             return new StringColumn(RandomStringUtils
@@ -269,8 +270,9 @@ public class StreamReader extends Reader {
             return new DoubleColumn(columnValue);
           }
         case DATE:
-          SimpleDateFormat format = new SimpleDateFormat(
-              eachColumnConfig.getString(Constant.DATE_FORMAT_MARK, Constant.DEFAULT_DATE_FORMAT));
+          String pattern = eachColCfg.getString(DATE_FORMAT_MARK, DEFAULT_DATE_FORMAT);
+          LOG.error("==================" + pattern);
+          SimpleDateFormat format = new SimpleDateFormat(pattern);
           if (isColumnMixup) {
             return new DateColumn(new Date(RandomUtils.nextLong(param1Int, param2Int + 1)));
           } else {
@@ -304,20 +306,16 @@ public class StreamReader extends Reader {
           }
         default:
           // in fact,never to be here
-          throw new Exception(String.format("不支持类型[%s]", columnType.name()));
+          throw new Exception(String.format("不支持类型[%s]", colType.name()));
       }
     }
 
-    private Record buildOneRecord(RecordSender recordSender,
-        List<String> columns) {
+    private Record buildOneRecord(RecordSender recordSender, List<String> columns) {
       if (null == recordSender) {
-        throw new IllegalArgumentException(
-            "参数[recordSender]不能为空.");
+        throw new IllegalArgumentException("参数[recordSender]不能为空.");
       }
-
       if (null == columns || columns.isEmpty()) {
-        throw new IllegalArgumentException(
-            "参数[column]不能为空.");
+        throw new IllegalArgumentException("参数[column]不能为空.");
       }
 
       Record record = recordSender.createRecord();
