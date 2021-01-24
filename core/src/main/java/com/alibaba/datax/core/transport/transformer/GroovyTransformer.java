@@ -96,9 +96,9 @@ public class GroovyTransformer extends Transformer {
   /**
    * 根据code 和 引用的包，构建出groovy代码片段
    *
-   * @param code
-   * @param extraPackagesStrList
-   * @return
+   * @param code                 String
+   * @param extraPackagesStrList List<String>
+   * @return String
    */
   private String getGroovyRule(String code, List<String> extraPackagesStrList) {
     StringBuffer sb = new StringBuffer();

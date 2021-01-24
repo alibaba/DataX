@@ -1,51 +1,62 @@
 {
-    "job": {
-        "setting": {
-            "speed": {
-                "channel": 1
-            },
-            "errorLimit": {
-                "percentage": 0.02
-            }
+  "job": {
+    "setting": {
+      "speed": {
+        "channel": 1
+      },
+      "errorLimit": {
+        "record": 0
+      }
+    },
+    "content": [
+      {
+        "reader": {
+          "name": "streamreader",
+          "parameter": {
+            "column": [
+              {
+                "value": "Datax",
+                "type": "string"
+              },
+              {
+                "value": 19890604,
+                "type": "long"
+              },
+              {
+                "value": "1989-06-04 00:00:00",
+                "type": "date"
+              },
+              {
+                "value": true,
+                "type": "bool"
+              },
+              {
+                "value": "test",
+                "type": "bytes"
+              }
+            ],
+            "sliceRecordCount": 1
+          }
         },
-        "content": [
-            {
-                "reader": {
-                    "name": "streamreader",
-                    "parameter": {
-                        "column" : [
-                            {
-                                "value": "DataX",
-                                "type": "string"
-                            },
-                            {
-                                "value": 19890604,
-                                "type": "long"
-                            },
-                            {
-                                "value": "1989-06-04 00:00:00",
-                                "type": "date"
-                            },
-                            {
-                                "value": true,
-                                "type": "bool"
-                            },
-                            {
-                                "value": "test",
-                                "type": "bytes"
-                            }
-                        ],
-                        "sliceRecordCount": 100000
-                    }
-                },
-                "writer": {
-                    "name": "streamwriter",
-                    "parameter": {
-                        "print": false,
-                        "encoding": "UTF-8"
-                    }
-                }
+        "writer": {
+          "name": "streamwriter",
+          "parameter": {
+            "print": true,
+            "encoding": "UTF-8"
+          }
+        },
+        "transformer": [
+          {
+            "name": "dx_groovy",
+            "parameter": {
+              "code": "Column column = record.getColumn(0);def str = column.asString();def sb = new StringBuffer(str);def header = sb.insert(0,'AA');def strHeader = header.toString();record.setColumn(0, new StringColumn(strHeader));return record",
+              "extraPackage": [
+                "import groovy.json.JsonSlurper;"
+              ]
             }
+          }
         ]
-    }
+      }
+    ]
+  }
 }
