@@ -36,4 +36,5 @@ public enum ColumnType {
         throw DataXException.asDataXException(KuduReaderErrorcode.ILLEGAL_VALUE,
                 String.format("Kudureader does not support the type:%s, currently supported types are:%s", modeName, Arrays.asList(values())));
     }
+
 }

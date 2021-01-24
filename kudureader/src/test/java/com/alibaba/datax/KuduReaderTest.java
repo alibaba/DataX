@@ -2,6 +2,7 @@ package com.alibaba.datax;
 
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.common.util.RangeSplitUtil;
+import com.alibaba.datax.plugin.reader.kudureader.ColumnType;
 import com.alibaba.datax.plugin.reader.kudureader.Key;
 import com.alibaba.datax.plugin.reader.kudureader.KuduReaderHelper;
 import org.junit.Test;
@@ -14,8 +15,8 @@ import java.util.Arrays;
  **/
 public class KuduReaderTest {
     @Test
-    public void getColumnNamesTest(){
-        String json ="{\n" +
+    public void getColumnNamesTest() {
+        String json = "{\n" +
                 "  \"column\": [" +
                 "    {\n" +
                 "      \"name\": \"0\",\n" +
@@ -44,9 +45,36 @@ public class KuduReaderTest {
     }
 
     @Test
-    public void doAsciiStringSplitTest(){
+    public void doAsciiStringSplitTest() {
         System.out.println(Arrays.toString(RangeSplitUtil.doAsciiStringSplit("aaa", "eee", 2)));
     }
 
+    @Test
+    public void ColumnTypeTest() {
+        ColumnType anInt = ColumnType.getByTypeName("float");
+
+        System.out.println(anInt);
+    }
+
+
+    @Test
+    public void whereTest() {
+        String where = "a  >   1";
+        String[] s = where.split("\\s+");
+
+        switch (s[1].charAt(0)) {
+            case '=':
+                System.out.println("=");
+                break;
+            case '<':
+                System.out.println(">");
+                break;
+            case '>':
+                System.out.println("<");
+                break;
+        }
+
+
+    }
 
 }

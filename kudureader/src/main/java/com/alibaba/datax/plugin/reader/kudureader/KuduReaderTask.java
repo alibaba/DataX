@@ -4,6 +4,7 @@ import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordSender;
 import com.alibaba.datax.common.plugin.TaskPluginCollector;
 import com.alibaba.datax.common.util.Configuration;
+import org.apache.commons.lang3.CharEncoding;
 import org.apache.kudu.Schema;
 import org.apache.kudu.client.*;
 import org.slf4j.Logger;
@@ -42,7 +43,7 @@ public class KuduReaderTask {
         }
 
         try {
-            this.scanner = KuduScanToken.deserializeIntoScanner((byte[]) configuration.get(Key.SPLIT_PK_TOKEN), kuduClient);
+            this.scanner = KuduScanToken.deserializeIntoScanner(configuration.getString(Key.SPLIT_PK_TOKEN).getBytes(CharEncoding.ISO_8859_1), kuduClient);
         } catch (IOException e) {
             throw DataXException.asDataXException(KuduReaderErrorcode.TOKEN_DESERIALIZE_ERROR, e.getMessage());
         }

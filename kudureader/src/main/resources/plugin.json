@@ -1,0 +1,6 @@
+{
+    "name": "kudureader",
+    "class": "com.alibaba.datax.plugin.reader.kudureader.KuduReader",
+    "description": "mechanism: use kudu client java api put data.",
+    "developer": "daizihao"
+}

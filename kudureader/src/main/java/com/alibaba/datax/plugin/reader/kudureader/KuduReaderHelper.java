@@ -6,16 +6,20 @@ import com.alibaba.datax.common.plugin.RecordSender;
 import com.alibaba.datax.common.plugin.TaskPluginCollector;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.fastjson.JSON;
+import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.kudu.ColumnSchema;
 import org.apache.kudu.Schema;
+import org.apache.kudu.Type;
 import org.apache.kudu.client.*;
 import org.apache.kudu.shaded.org.checkerframework.checker.units.qual.K;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -57,8 +61,8 @@ public class KuduReaderHelper {
         try {
             String masterAddress = (String) conf.get(Key.KUDU_MASTER);
             kuduClient = new KuduClient.KuduClientBuilder(masterAddress)
-                    .defaultAdminOperationTimeoutMs((Long) conf.get(Key.KUDU_ADMIN_TIMEOUT))
-                    .defaultOperationTimeoutMs((Long) conf.get(Key.KUDU_SESSION_TIMEOUT))
+                    .defaultAdminOperationTimeoutMs(Long.parseLong(conf.get(Key.KUDU_ADMIN_TIMEOUT).toString()))
+                    .defaultOperationTimeoutMs(Long.parseLong(conf.get(Key.KUDU_SESSION_TIMEOUT).toString()))
                     .build();
         } catch (Exception e) {
             throw DataXException.asDataXException(KuduReaderErrorcode.GET_KUDU_CONNECTION_ERROR, e);
@@ -119,6 +123,41 @@ public class KuduReaderHelper {
         return columnNames;
     }
 
+    public static Object typeConversion(String value, Type type) {
+        Object res = null;
+        switch (type) {
+            case INT8:
+            case INT16:
+            case INT32:
+            case INT64:
+                res = Long.valueOf(value);
+                break;
+            case STRING:
+                res = value;
+                break;
+            case BOOL:
+                res = Boolean.valueOf(value);
+                break;
+            case FLOAT:
+                res = Float.valueOf(value);
+                break;
+            case DOUBLE:
+                res = Double.valueOf(value);
+                break;
+            case UNIXTIME_MICROS:
+                res = new Timestamp(Long.parseLong(value));
+                break;
+            case DECIMAL:
+                res = new BigDecimal(value);
+                break;
+            default:
+                throw DataXException.asDataXException(KuduReaderErrorcode.ILLEGAL_VALUE,
+                        String.format("Kudureader does not support the type:%s, currently supported types are:%s", type.getName(), Arrays.asList(ColumnType.values())));
+        }
+
+        return res;
+    }
+
     public static Record transportOneRecord(List<Configuration> columnConfigs, RowResult rowResult
             , RecordSender recordSender, TaskPluginCollector taskPluginCollector, boolean isReadAllColumns) {
         Record record = recordSender.createRecord();
@@ -146,10 +185,10 @@ public class KuduReaderHelper {
                     String type = columnConfig.getString(Key.TYPE, "string");
                     String value = columnConfig.getString(Key.VALUE);
 
-                    String columnValue = null;
+                    Object columnValue = null;
                     if (null != name) {
-                        if (null != rowResult.getString(name)) {
-                            columnValue = rowResult.getString(name);
+                        if (null != rowResult.getObject(name)) {
+                            columnValue = rowResult.getObject(name);
                         }
                     } else {
                         columnValue = value;
@@ -158,7 +197,7 @@ public class KuduReaderHelper {
                     switch (columnType) {
                         case STRING:
                             try {
-                                columnGenerated = new StringColumn(columnValue);
+                                columnGenerated = new StringColumn(columnValue.toString());
                             } catch (Exception e) {
                                 throw new IllegalArgumentException(String.format(
                                         "类型转换错误, 无法将[%s] 转换为[%s]", columnValue,
@@ -169,16 +208,17 @@ public class KuduReaderHelper {
                         case LONG:
                         case BIGINT:
                             try {
-                                columnGenerated = new LongColumn(columnValue);
+                                columnGenerated = new LongColumn(columnValue.toString());
                             } catch (Exception e) {
                                 throw new IllegalArgumentException(String.format(
                                         "类型转换错误, 无法将[%s] 转换为[%s]", columnValue,
                                         "LONG"));
                             }
-
+                            break;
+                        case FLOAT:
                         case DOUBLE:
                             try {
-                                columnGenerated = new DoubleColumn(columnValue);
+                                columnGenerated = new DoubleColumn(columnValue.toString());
                             } catch (Exception e) {
                                 throw new IllegalArgumentException(String.format(
                                         "类型转换错误, 无法将[%s] 转换为[%s]", columnValue,
@@ -187,7 +227,7 @@ public class KuduReaderHelper {
                             break;
                         case BOOLEAN:
                             try {
-                                columnGenerated = new BoolColumn(columnValue);
+                                columnGenerated = new BoolColumn(columnValue.toString());
                             } catch (Exception e) {
                                 throw new IllegalArgumentException(String.format(
                                         "类型转换错误, 无法将[%s] 转换为[%s]", columnValue,
@@ -207,11 +247,11 @@ public class KuduReaderHelper {
                                         SimpleDateFormat format = new SimpleDateFormat(
                                                 formatString);
                                         columnGenerated = new DateColumn(
-                                                format.parse(columnValue));
+                                                format.parse(columnValue.toString()));
                                     } else {
                                         // 框架尝试转换
                                         columnGenerated = new DateColumn(
-                                                new StringColumn(columnValue)
+                                                new StringColumn(columnValue.toString())
                                                         .asDate());
                                     }
                                 }
@@ -226,7 +266,8 @@ public class KuduReaderHelper {
                                     "Kudureader does not support the type : [%s]", columnType);
                             LOG.error(errorMessage);
                             throw DataXException.asDataXException(KuduReaderErrorcode.ILLEGAL_VALUE,
-                                    String.format("Kudureader does not support the type:%s, currently supported types are:%s", type, Arrays.asList(ColumnType.values())));
+                                    String.format("Kudureader does not support the type:%s, currently supported types are:%s",
+                                            type, Arrays.asList(ColumnType.values())));
                     }
                     record.addColumn(columnGenerated);
                 }
@@ -249,7 +290,7 @@ public class KuduReaderHelper {
         return record;
     }
 
-    public static List<KuduPredicate> getKuduPredicates(Configuration configuration) {
+    public static List<KuduPredicate> getKuduPredicates(Configuration configuration, KuduTable kuduTable) {
         List<KuduPredicate> predicates = new ArrayList<>();
         String whereSql = configuration.getString(Key.WHERE);
         if (whereSql == null || "".equals(whereSql.trim())) {
@@ -257,7 +298,72 @@ public class KuduReaderHelper {
         }
         String[] expressions = whereSql.split("and");
         for (String expression : expressions) {
+            String[] ors = expression.split("or");
+            if (ors.length == 1) {
+                String exp = ors[0];
+                String[] words = exp.split("\\s+");
+                switch (words[1].charAt(0)) {
+                    case '=':
+                        Type type = kuduTable.getSchema().getColumn(words[0]).getType();
+                        KuduPredicate predicate = KuduPredicate.newComparisonPredicate(kuduTable.getSchema().getColumn(words[0]),
+                                KuduPredicate.ComparisonOp.EQUAL, (Object) words[2]);
+                        break;
+                    case '<':
+                        if (words[1].length() == 1) {
+                            System.out.println("<");
+                        } else if ("<>".equals(words[1])) {
+                            System.out.println("<>");
+                        } else if ("<=".equals(words[1])) {
+                            System.out.println("<=");
+                        } else {
+                            LOG.error("Unsupported where expressions", DataXException.asDataXException(KuduReaderErrorcode.SPLIT_ERROR, "Unsupported where expressions"));
+                        }
 
+                        break;
+                    case '>':
+                        if (words[1].length() == 1) {
+                            System.out.println(">");
+                        } else if (">=".equals(words[1])) {
+                            System.out.println(">=");
+                        } else {
+                            LOG.error("Unsupported where expressions", DataXException.asDataXException(KuduReaderErrorcode.SPLIT_ERROR, "Unsupported where expressions"));
+                        }
+                        break;
+                    case 'i':
+                        if ("is".equals(words[1]) && "not".equals(words[2]) && "null".equals(words[3])) {
+                            System.out.println("is not null");
+                        } else if ("is".equals(words[1]) && "null".equals(words[2])) {
+                            System.out.println("is null");
+                        } else {
+                            LOG.error("Unsupported where expressions", DataXException.asDataXException(KuduReaderErrorcode.SPLIT_ERROR, "Unsupported where expressions"));
+                        }
+                        break;
+                    case '!':
+                        if ("!=".equals(words[1])) {
+                            System.out.println("!=");
+                        } else {
+                            LOG.error("Unsupported where expressions", DataXException.asDataXException(KuduReaderErrorcode.SPLIT_ERROR, "Unsupported where expressions"));
+                        }
+                        break;
+                    case 'l':
+                        if ("like".equals(words[1])) {
+                            System.out.println("like");
+                        } else {
+                            LOG.error("Unsupported where expressions", DataXException.asDataXException(KuduReaderErrorcode.SPLIT_ERROR, "Unsupported where expressions"));
+                        }
+                        break;
+                    case 'n':
+                        if ("not".equals(words[1]) && "like".equals(words[2])) {
+                            System.out.println("not like");
+                        } else {
+                            LOG.error("Unsupported where expressions", DataXException.asDataXException(KuduReaderErrorcode.SPLIT_ERROR, "Unsupported where expressions"));
+                        }
+                        break;
+                    default:
+                        LOG.error("Unsupported where expressions", DataXException.asDataXException(KuduReaderErrorcode.SPLIT_ERROR, "Unsupported where expressions"));
+                        break;
+                }
+            }
         }
 
         return null;
@@ -285,11 +391,11 @@ public class KuduReaderHelper {
                 }
                 Configuration conf = configuration.clone();
                 conf.set(Key.SPLIT_PK_RPC_HOST, locations);
-                conf.set(Key.SPLIT_PK_TOKEN, token.serialize());
+                conf.set(Key.SPLIT_PK_TOKEN, new String(token.serialize(), CharEncoding.ISO_8859_1));
                 splitConfigs.add(conf);
             }
         } catch (Exception e) {
-            throw DataXException.asDataXException(KuduReaderErrorcode.GET_KUDU_CONNECTION_ERROR, e.getMessage());
+            throw DataXException.asDataXException(KuduReaderErrorcode.SPLIT_ERROR, e.getMessage());
         } finally {
             KuduReaderHelper.closeClient(kuduClient);
         }

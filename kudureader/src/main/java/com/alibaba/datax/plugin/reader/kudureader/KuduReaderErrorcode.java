@@ -2,6 +2,7 @@ package com.alibaba.datax.plugin.reader.kudureader;
 
 import com.alibaba.datax.common.spi.ErrorCode;
 
+
 /**
  * @author daizihao
  * @create 2021-01-19 15:18
@@ -13,7 +14,8 @@ public enum KuduReaderErrorcode implements ErrorCode {
     GET_KUDU_TABLE_ERROR("Kudureader-03", "Error getting Kudu table."),
     READ_KUDU_ERROR("Kudureader-04", "Error reading Kudu table."),
     TOKEN_DESERIALIZE_ERROR("Kudureader-04", "Error reading Kudu table."),
-    SPLIT_ERROR("Kudureader-05", "Error spiting Kudu table.");
+    SPLIT_ERROR("Kudureader-05", "Error spiting Kudu table."),
+    PREDICATES_ERROR("Kudureader-06", "Error getting Kudu predicates.");
 
     private final String code;
     private final String description;
