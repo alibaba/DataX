@@ -58,7 +58,6 @@ public class TransformerRegistry {
     if (null == files) {
       return;
     }
-
     for (final String transformerFile : files) {
       try {
         if (transformers == null || transformers.contains(transformerFile)) {
