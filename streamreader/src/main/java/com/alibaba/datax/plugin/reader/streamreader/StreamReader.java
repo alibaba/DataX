@@ -4,19 +4,19 @@ import static com.alibaba.datax.plugin.reader.streamreader.Constant.DATE_FORMAT_
 import static com.alibaba.datax.plugin.reader.streamreader.Constant.DEFAULT_DATE_FORMAT;
 import static com.alibaba.datax.plugin.reader.streamreader.StreamReaderErrorCode.ILLEGAL_VALUE;
 
-import com.alibaba.datax.common.element.*;
+import com.alibaba.datax.common.element.BoolColumn;
+import com.alibaba.datax.common.element.BytesColumn;
+import com.alibaba.datax.common.element.Column;
+import com.alibaba.datax.common.element.DateColumn;
+import com.alibaba.datax.common.element.DoubleColumn;
+import com.alibaba.datax.common.element.LongColumn;
+import com.alibaba.datax.common.element.Record;
+import com.alibaba.datax.common.element.StringColumn;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordSender;
 import com.alibaba.datax.common.spi.Reader;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.fastjson.JSONObject;
-
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.RandomUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -24,6 +24,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.RandomUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class StreamReader extends Reader {
 
@@ -332,7 +337,30 @@ public class StreamReader extends Reader {
   }
 
   private enum Type {
-    STRING, LONG, BOOL, DOUBLE, DATE, BYTES;
+    /**
+     * string 类型
+     */
+    STRING,
+    /**
+     * long 类型
+     */
+    LONG,
+    /**
+     * boolean 类型
+     */
+    BOOL,
+    /**
+     * double 类型
+     */
+    DOUBLE,
+    /**
+     * date 类型
+     */
+    DATE,
+    /**
+     * byte 类型
+     */
+    BYTES;
 
     private static boolean isTypeIllegal(String typeString) {
       try {
