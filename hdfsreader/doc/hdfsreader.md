@@ -171,7 +171,7 @@ HdfsReader实现了从Hadoop分布式文件系统Hdfs中读取文件数据并转
 
 		用户可以指定Column字段信息，配置如下：
 
-		```json
+```json
 {
   "type": "long",
   "index": 0    //从本地文件文本第一列获取int字段
@@ -180,9 +180,9 @@ HdfsReader实现了从Hadoop分布式文件系统Hdfs中读取文件数据并转
   "type": "string",
   "value": "alibaba"  //HdfsReader内部生成alibaba的字符串字段作为当前字段
 }
-		```
+```
 
-		对于用户指定Column信息，type必须填写，index/value必须选择其一。
+对于用户指定Column信息，type必须填写，index/value必须选择其一。
 
 	* 必选：是 <br />
 
