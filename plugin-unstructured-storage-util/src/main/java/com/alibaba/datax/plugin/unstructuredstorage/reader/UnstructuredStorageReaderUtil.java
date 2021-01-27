@@ -313,6 +313,15 @@ public class UnstructuredStorageReaderUtil {
     return transportOneRecord(recordSender, column, sourceLine, nullFormat, taskPluginCollector);
   }
 
+  /**
+   *
+   * @param recordSender
+   * @param columnConfigs
+   * @param sourceLine
+   * @param nullFormat
+   * @param taskPluginCollector
+   * @return
+   */
   public static Record transportOneRecord(RecordSender recordSender,
       List<ColumnEntry> columnConfigs, String[] sourceLine,
       String nullFormat, TaskPluginCollector taskPluginCollector) {
