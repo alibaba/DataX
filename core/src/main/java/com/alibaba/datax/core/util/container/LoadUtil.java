@@ -176,7 +176,6 @@ public class LoadUtil {
 
   public static synchronized JarLoader getJarLoader(PluginType pluginType, String pluginName) {
     Configuration pluginConf = getPluginConf(pluginType, pluginName);
-
     JarLoader jarLoader = jarLoaderCenter.get(generatePluginKey(pluginType, pluginName));
     if (null == jarLoader) {
       String pluginPath = pluginConf.getString("path");
@@ -187,8 +186,6 @@ public class LoadUtil {
       jarLoader = new JarLoader(new String[]{pluginPath});
       jarLoaderCenter.put(generatePluginKey(pluginType, pluginName), jarLoader);
     }
-
     return jarLoader;
   }
-
 }
