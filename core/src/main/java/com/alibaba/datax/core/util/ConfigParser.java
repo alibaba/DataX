@@ -184,18 +184,13 @@ public final class ConfigParser {
     if (isDefaultPath) {
       configuration.set("path", path);
     }
-
     Configuration result = Configuration.newDefault();
-
-    result.set(
-        String.format("plugin.%s.%s", type, pluginName),
-        configuration.getInternal());
-
+    result.set(String.format("plugin.%s.%s", type, pluginName), configuration.getInternal());
     return result;
   }
 
   private static List<String> getDirAsList(String path) {
-    List<String> result = new ArrayList<String>();
+    List<String> result = new ArrayList<>();
 
     String[] paths = new File(path).list();
     if (null == paths) {
