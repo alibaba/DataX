@@ -45,10 +45,10 @@
 
 - `Standalone`: 单进程运行，没有外部依赖。
 - `Local`: 单进程运行，统计信息、错误信息汇报到集中存储。
-- `Distrubuted`: 分布式多进程运行，依赖`DataX Service`服务。
+- `Distrubuted（暂时未开源）`: 分布式多进程运行，依赖`DataX Service`服务。
 
 当然，上述三种模式对插件的编写而言没有什么区别，你只需要避开一些小错误，插件就能够在单机/分布式之间无缝切换了。
-当`JobContainer`和`TaskGroupContainer`运行在同一个进程内时，就是单机模式（`Standalone`和`Local`）；当它们分布在不同的进程中执行时，就是分布式（`Distributed`）模式。
+当`JobContainer`和`TaskGroupContainer`运行在`同一个进程内时，就是单机模式`（Standalone和Local）；当它们分布在不同的进程中执行时，就是分布式（`Distributed`）模式。
 
 是不是很简单？
 
@@ -123,7 +123,7 @@ public class SomeReader extends Reader {
 - `startRead`: 从数据源读数据，写入到`RecordSender`中。`RecordSender`会把数据写入连接Reader和Writer的缓存队列。
 - `startWrite`：从`RecordReceiver`中读取数据，写入目标数据源。`RecordReceiver`中的数据来自Reader和Writer之间的缓存队列。
 - `post`: 局部的后置工作。
-- `destroy`: Task象自身的销毁工作。
+- `destroy`: Task对象自身的销毁工作。
 
 需要注意的是：
 - `Job`和`Task`之间一定不能有共享变量，因为分布式运行时不能保证共享变量会被正确初始化。两者之间只能通过配置文件进行依赖。
