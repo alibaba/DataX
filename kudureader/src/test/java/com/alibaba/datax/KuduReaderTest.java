@@ -8,12 +8,14 @@ import com.alibaba.datax.plugin.reader.kudureader.Key;
 import com.alibaba.datax.plugin.reader.kudureader.KuduReaderErrorcode;
 import com.alibaba.datax.plugin.reader.kudureader.KuduReaderHelper;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.kudu.Type;
 import org.apache.kudu.client.KuduPredicate;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.ParseException;
 import java.util.Arrays;
 
 /**
@@ -134,7 +136,8 @@ public class KuduReaderTest {
 
 
     @Test
-    public void t(){
-        System.out.println("a = '1' and b = \"a\" ".replaceAll("[\"']", ""));
+    public void t() throws ParseException {
+        String s = "2021-01-2413:22:45.000000";
+        System.out.println(DateUtils.parseDate(s, "yyyy-MM-ddHH:mm:ss.SSSSSS"));
     }
 }

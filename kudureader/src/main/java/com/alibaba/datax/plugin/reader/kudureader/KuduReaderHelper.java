@@ -256,10 +256,10 @@ public class KuduReaderHelper {
                                 if (columnValue == null) {
                                     columnGenerated = new DateColumn((Date) null);
                                 } else {
-                                        // 框架尝试转换
-                                        columnGenerated = new DateColumn(
-                                                new StringColumn(TimestampUtil.timestampToString(Timestamp.valueOf(columnValue.toString())))
-                                                        .asDate());
+                                    SimpleDateFormat format = new SimpleDateFormat(
+                                            "yyyy-MM-ddHH:mm:ss.SSSSSS");
+                                    columnGenerated = new DateColumn(
+                                            format.parse(TimestampUtil.timestampToString(Timestamp.valueOf(columnValue.toString())).replaceAll("[TZ]","")));
                                 }
                             } catch (Exception e) {
                                 throw new IllegalArgumentException(String.format(
@@ -302,96 +302,96 @@ public class KuduReaderHelper {
         if (whereSql == null || "".equals(whereSql.trim())) {
             return predicates;
         }
-        whereSql=whereSql.replaceAll("[\"']","");
+        whereSql = whereSql.replaceAll("[\"']", "");
         String[] expressions = whereSql.split("and");
         for (String exp : expressions) {
             Type type = null;
             Object value = null;
-                String[] words = exp.split("\\s+");
-                if ("".equals(words[0])) {
-                    words = Arrays.copyOfRange(words, 1, words.length);
-                }
-                switch (words[1].charAt(0)) {
-                    case '=':
+            String[] words = exp.split("\\s+");
+            if ("".equals(words[0])) {
+                words = Arrays.copyOfRange(words, 1, words.length);
+            }
+            switch (words[1].charAt(0)) {
+                case '=':
+                    type = kuduTable.getSchema().getColumn(words[0]).getType();
+                    value = KuduReaderHelper.typeConversion(words[2], type);
+                    predicates.add(KuduPredicate.newComparisonPredicate(kuduTable.getSchema().getColumn(words[0]),
+                            KuduPredicate.ComparisonOp.EQUAL, value));
+                    LOG.info("The filtering condition is [{} EQUAL(=) {}]", words[0], words[2]);
+                    break;
+                case '<':
+                    if (words[1].length() == 1) {
                         type = kuduTable.getSchema().getColumn(words[0]).getType();
                         value = KuduReaderHelper.typeConversion(words[2], type);
                         predicates.add(KuduPredicate.newComparisonPredicate(kuduTable.getSchema().getColumn(words[0]),
-                                KuduPredicate.ComparisonOp.EQUAL, value));
-                        LOG.info("The filtering condition is [{} EQUAL(=) {}]", words[0], words[2]);
-                        break;
-                    case '<':
-                        if (words[1].length() == 1) {
-                            type = kuduTable.getSchema().getColumn(words[0]).getType();
-                            value = KuduReaderHelper.typeConversion(words[2], type);
-                            predicates.add(KuduPredicate.newComparisonPredicate(kuduTable.getSchema().getColumn(words[0]),
-                                    KuduPredicate.ComparisonOp.LESS, value));
-                            LOG.info("The filtering condition is [{} LESS(<) {}]", words[0], words[2]);
-                        } else if ("<>".equals(words[1])) {
-                            type = kuduTable.getSchema().getColumn(words[0]).getType();
-                            value = KuduReaderHelper.typeConversion(words[2], type);
-                            predicates.add(KuduPredicate.newComparisonPredicate(kuduTable.getSchema().getColumn(words[0]),
-                                    KuduPredicate.ComparisonOp.LESS, value));
-                            predicates.add(KuduPredicate.newComparisonPredicate(kuduTable.getSchema().getColumn(words[0]),
-                                    KuduPredicate.ComparisonOp.GREATER, value));
-                            LOG.info("The filtering condition is [{} NOT EQUAL(<>) {}]", words[0], words[2]);
-                        } else if ("<=".equals(words[1])) {
-                            type = kuduTable.getSchema().getColumn(words[0]).getType();
-                            value = KuduReaderHelper.typeConversion(words[2], type);
-                            predicates.add(KuduPredicate.newComparisonPredicate(kuduTable.getSchema().getColumn(words[0]),
-                                    KuduPredicate.ComparisonOp.LESS_EQUAL, value));
-                            LOG.info("The filtering condition is [{} LESS_EQUAL(<=) {}]", words[0], words[2]);
-                        } else {
-                            LOG.error("Unsupported where expressions", DataXException.asDataXException(KuduReaderErrorcode.SPLIT_ERROR, "Unsupported where expressions"));
-                        }
+                                KuduPredicate.ComparisonOp.LESS, value));
+                        LOG.info("The filtering condition is [{} LESS(<) {}]", words[0], words[2]);
+                    } else if ("<>".equals(words[1])) {
+                        type = kuduTable.getSchema().getColumn(words[0]).getType();
+                        value = KuduReaderHelper.typeConversion(words[2], type);
+                        predicates.add(KuduPredicate.newComparisonPredicate(kuduTable.getSchema().getColumn(words[0]),
+                                KuduPredicate.ComparisonOp.LESS, value));
+                        predicates.add(KuduPredicate.newComparisonPredicate(kuduTable.getSchema().getColumn(words[0]),
+                                KuduPredicate.ComparisonOp.GREATER, value));
+                        LOG.info("The filtering condition is [{} NOT EQUAL(<>) {}]", words[0], words[2]);
+                    } else if ("<=".equals(words[1])) {
+                        type = kuduTable.getSchema().getColumn(words[0]).getType();
+                        value = KuduReaderHelper.typeConversion(words[2], type);
+                        predicates.add(KuduPredicate.newComparisonPredicate(kuduTable.getSchema().getColumn(words[0]),
+                                KuduPredicate.ComparisonOp.LESS_EQUAL, value));
+                        LOG.info("The filtering condition is [{} LESS_EQUAL(<=) {}]", words[0], words[2]);
+                    } else {
+                        LOG.error("Unsupported where expressions", DataXException.asDataXException(KuduReaderErrorcode.SPLIT_ERROR, "Unsupported where expressions"));
+                    }
 
-                        break;
-                    case '>':
-                        if (words[1].length() == 1) {
-                            type = kuduTable.getSchema().getColumn(words[0]).getType();
-                            value = KuduReaderHelper.typeConversion(words[2], type);
-                            predicates.add(KuduPredicate.newComparisonPredicate(kuduTable.getSchema().getColumn(words[0]),
-                                    KuduPredicate.ComparisonOp.GREATER, value));
-                            LOG.info("The filtering condition is [{} GREATER(>) {}]", words[0], words[2]);
-                        } else if (">=".equals(words[1])) {
-                            type = kuduTable.getSchema().getColumn(words[0]).getType();
-                            value = KuduReaderHelper.typeConversion(words[2], type);
-                            predicates.add(KuduPredicate.newComparisonPredicate(kuduTable.getSchema().getColumn(words[0]),
-                                    KuduPredicate.ComparisonOp.GREATER_EQUAL, value));
-                            LOG.info("The filtering condition is [{} GREATER_EQUAL(>=) {}]", words[0], words[2]);
-                        } else {
-                            LOG.error("Unsupported where expressions", DataXException.asDataXException(KuduReaderErrorcode.SPLIT_ERROR, "Unsupported where expressions"));
-                        }
-                        break;
-                    case 'i':
-                        if ("is".equals(words[1]) && "not".equals(words[2]) && "null".equals(words[3])) {
-                            predicates.add(KuduPredicate.newIsNotNullPredicate(kuduTable.getSchema().getColumn(words[0])));
-                            LOG.info("The filtering condition is [{} IS NOT {}]", words[0], "null");
-                        } else if ("is".equals(words[1]) && "null".equals(words[2])) {
-                            predicates.add(KuduPredicate.newIsNullPredicate(kuduTable.getSchema().getColumn(words[0])));
-                            LOG.info("The filtering condition is [{} IS {}]", words[0], "null");
-                        }
+                    break;
+                case '>':
+                    if (words[1].length() == 1) {
+                        type = kuduTable.getSchema().getColumn(words[0]).getType();
+                        value = KuduReaderHelper.typeConversion(words[2], type);
+                        predicates.add(KuduPredicate.newComparisonPredicate(kuduTable.getSchema().getColumn(words[0]),
+                                KuduPredicate.ComparisonOp.GREATER, value));
+                        LOG.info("The filtering condition is [{} GREATER(>) {}]", words[0], words[2]);
+                    } else if (">=".equals(words[1])) {
+                        type = kuduTable.getSchema().getColumn(words[0]).getType();
+                        value = KuduReaderHelper.typeConversion(words[2], type);
+                        predicates.add(KuduPredicate.newComparisonPredicate(kuduTable.getSchema().getColumn(words[0]),
+                                KuduPredicate.ComparisonOp.GREATER_EQUAL, value));
+                        LOG.info("The filtering condition is [{} GREATER_EQUAL(>=) {}]", words[0], words[2]);
+                    } else {
+                        LOG.error("Unsupported where expressions", DataXException.asDataXException(KuduReaderErrorcode.SPLIT_ERROR, "Unsupported where expressions"));
+                    }
+                    break;
+                case 'i':
+                    if ("is".equals(words[1]) && "not".equals(words[2]) && "null".equals(words[3])) {
+                        predicates.add(KuduPredicate.newIsNotNullPredicate(kuduTable.getSchema().getColumn(words[0])));
+                        LOG.info("The filtering condition is [{} IS NOT {}]", words[0], "null");
+                    } else if ("is".equals(words[1]) && "null".equals(words[2])) {
+                        predicates.add(KuduPredicate.newIsNullPredicate(kuduTable.getSchema().getColumn(words[0])));
+                        LOG.info("The filtering condition is [{} IS {}]", words[0], "null");
+                    }
 //                        else if ("in".equals(words[1])) {
 //                            predicates.add(KuduPredicate.newInListPredicate(kuduTable.getSchema().getColumn(words[0]),));
 //                            LOG.info("The filtering condition is [{} IS NOT {}]", words[0], "null");
 //                        }
-                        else {
-                            LOG.error("Unsupported where expressions", DataXException.asDataXException(KuduReaderErrorcode.SPLIT_ERROR, "Unsupported where expressions"));
-                        }
+                    else {
+                        LOG.error("Unsupported where expressions", DataXException.asDataXException(KuduReaderErrorcode.SPLIT_ERROR, "Unsupported where expressions"));
+                    }
 
-                        break;
-                    case '!':
-                        if ("!=".equals(words[1])) {
-                            type = kuduTable.getSchema().getColumn(words[0]).getType();
-                            value = KuduReaderHelper.typeConversion(words[2], type);
-                            predicates.add(KuduPredicate.newComparisonPredicate(kuduTable.getSchema().getColumn(words[0]),
-                                    KuduPredicate.ComparisonOp.LESS, value));
-                            predicates.add(KuduPredicate.newComparisonPredicate(kuduTable.getSchema().getColumn(words[0]),
-                                    KuduPredicate.ComparisonOp.GREATER, value));
-                            LOG.info("The filtering condition is [{} NOT EQUAL(!=) {}]", words[0], words[2]);
-                        } else {
-                            LOG.error("Unsupported where expressions", DataXException.asDataXException(KuduReaderErrorcode.SPLIT_ERROR, "Unsupported where expressions"));
-                        }
-                        break;
+                    break;
+                case '!':
+                    if ("!=".equals(words[1])) {
+                        type = kuduTable.getSchema().getColumn(words[0]).getType();
+                        value = KuduReaderHelper.typeConversion(words[2], type);
+                        predicates.add(KuduPredicate.newComparisonPredicate(kuduTable.getSchema().getColumn(words[0]),
+                                KuduPredicate.ComparisonOp.LESS, value));
+                        predicates.add(KuduPredicate.newComparisonPredicate(kuduTable.getSchema().getColumn(words[0]),
+                                KuduPredicate.ComparisonOp.GREATER, value));
+                        LOG.info("The filtering condition is [{} NOT EQUAL(!=) {}]", words[0], words[2]);
+                    } else {
+                        LOG.error("Unsupported where expressions", DataXException.asDataXException(KuduReaderErrorcode.SPLIT_ERROR, "Unsupported where expressions"));
+                    }
+                    break;
 //                    case 'n':
 //                        if ("not".equals(words[1]) && "in".equals(words[2])) {
 //                            System.out.println("not in");
@@ -399,10 +399,10 @@ public class KuduReaderHelper {
 //                            LOG.error("Unsupported where expressions", DataXException.asDataXException(KuduReaderErrorcode.SPLIT_ERROR, "Unsupported where expressions"));
 //                        }
 //                        break;
-                    default:
-                        LOG.error("Unsupported where expressions", DataXException.asDataXException(KuduReaderErrorcode.SPLIT_ERROR, "Unsupported where expressions"));
-                        break;
-                }
+                default:
+                    LOG.error("Unsupported where expressions", DataXException.asDataXException(KuduReaderErrorcode.SPLIT_ERROR, "Unsupported where expressions"));
+                    break;
+            }
         }
 
         return predicates;
