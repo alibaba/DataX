@@ -16,6 +16,7 @@ import org.apache.kudu.Schema;
 import org.apache.kudu.Type;
 import org.apache.kudu.client.*;
 import org.apache.kudu.shaded.org.checkerframework.checker.units.qual.K;
+import org.apache.kudu.util.TimestampUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -150,12 +151,12 @@ public class KuduReaderHelper {
                 Long timestamp = null;
                 try {
                     SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-                    format.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+                    format.setTimeZone(TimeZone.getTimeZone("Europe/London"));
                     timestamp = format.parse(value).getTime();
 //                    timestamp = DateUtils.parseDate(value,Locale.UK, "yyyy-MM-dd").getTime();
                 } catch (ParseException e) {
-                    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-                    format.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+                    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    format.setTimeZone(TimeZone.getTimeZone("Europe/London"));
                     timestamp = format.parse(value).getTime();
 //                    timestamp = DateUtils.parseDate(value,Locale.UK, "yyyy-MM-dd HH:mm:ss").getTime();
                 }
@@ -255,20 +256,10 @@ public class KuduReaderHelper {
                                 if (columnValue == null) {
                                     columnGenerated = new DateColumn((Date) null);
                                 } else {
-                                    String formatString = columnConfig.getString(Key.FORMAT);
-                                    if (StringUtils.isNotBlank(formatString)) {
-                                        // 用户自己配置的格式转换
-                                        SimpleDateFormat format = new SimpleDateFormat(
-                                                formatString);
-                                        format.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
-                                        columnGenerated = new DateColumn(
-                                                format.parse(columnValue.toString()));
-                                    } else {
                                         // 框架尝试转换
                                         columnGenerated = new DateColumn(
-                                                new StringColumn(columnValue.toString())
+                                                new StringColumn(TimestampUtil.timestampToString(Timestamp.valueOf(columnValue.toString())))
                                                         .asDate());
-                                    }
                                 }
                             } catch (Exception e) {
                                 throw new IllegalArgumentException(String.format(
@@ -437,12 +428,12 @@ public class KuduReaderHelper {
 
             //目标kudu表有多少个分区，就会分多少片
             for (KuduScanToken token : tokens) {
-                List<String> locations = new ArrayList<>(token.getTablet().getReplicas().size());
-                for (LocatedTablet.Replica replica : token.getTablet().getReplicas()) {
-                    locations.add(replica.getRpcHost());
-                }
+//                List<String> locations = new ArrayList<>(token.getTablet().getReplicas().size());
+//                for (LocatedTablet.Replica replica : token.getTablet().getReplicas()) {
+//                    locations.add(replica.getRpcHost());
+//                }
                 Configuration conf = configuration.clone();
-                conf.set(Key.SPLIT_PK_RPC_HOST, locations);
+//                conf.set(Key.SPLIT_PK_RPC_HOST, locations);
                 conf.set(Key.SPLIT_PK_TOKEN, new String(token.serialize(), CharEncoding.ISO_8859_1));
                 splitConfigs.add(conf);
             }
