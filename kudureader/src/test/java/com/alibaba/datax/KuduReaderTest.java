@@ -137,7 +137,7 @@ public class KuduReaderTest {
 
     @Test
     public void t() throws ParseException {
-        String s = "2021-01-2413:22:45.000000";
-        System.out.println(DateUtils.parseDate(s, "yyyy-MM-ddHH:mm:ss.SSSSSS"));
+        String s = "2021-01-24T13:22:45.000000Z";
+        System.out.println(DateUtils.parseDate(s, "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
     }
 }

@@ -257,9 +257,9 @@ public class KuduReaderHelper {
                                     columnGenerated = new DateColumn((Date) null);
                                 } else {
                                     SimpleDateFormat format = new SimpleDateFormat(
-                                            "yyyy-MM-ddHH:mm:ss.SSSSSS");
+                                            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
                                     columnGenerated = new DateColumn(
-                                            format.parse(TimestampUtil.timestampToString(Timestamp.valueOf(columnValue.toString())).replaceAll("[TZ]","")));
+                                            format.parse(TimestampUtil.timestampToString(Timestamp.valueOf(columnValue.toString()))));
                                 }
                             } catch (Exception e) {
                                 throw new IllegalArgumentException(String.format(
