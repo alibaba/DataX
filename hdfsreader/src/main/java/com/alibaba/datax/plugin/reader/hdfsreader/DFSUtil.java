@@ -458,6 +458,14 @@ public class DFSUtil {
                                         "DATE"));
                             }
                             break;
+                        case BINARY:
+                            String [] array = columnValue.split("\\s");
+                            byte[] bytes = new byte[array.length];
+                            for (int i = 0; i<array.length;i++){
+                                bytes[i] = (byte) Integer.parseInt(array[i], 16);
+                            }
+                            columnGenerated = new BytesColumn(bytes);
+                            break;
                         default:
                             String errorMessage = String.format(
                                     "您配置的列类型暂不支持 : [%s]", columnType);
@@ -517,7 +525,7 @@ public class DFSUtil {
     }
 
     private enum Type {
-        STRING, LONG, BOOLEAN, DOUBLE, DATE,
+        STRING, LONG, BOOLEAN, DOUBLE, DATE, BINARY
     }
 
     public boolean checkHdfsFileType(String filepath, String specifiedFileType) {
