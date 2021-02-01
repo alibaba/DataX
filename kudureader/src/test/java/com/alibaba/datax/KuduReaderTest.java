@@ -1,12 +1,21 @@
 package com.alibaba.datax;
 
+import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.common.util.RangeSplitUtil;
 import com.alibaba.datax.plugin.reader.kudureader.ColumnType;
 import com.alibaba.datax.plugin.reader.kudureader.Key;
+import com.alibaba.datax.plugin.reader.kudureader.KuduReaderErrorcode;
 import com.alibaba.datax.plugin.reader.kudureader.KuduReaderHelper;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
+import org.apache.kudu.Type;
+import org.apache.kudu.client.KuduPredicate;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.text.ParseException;
 import java.util.Arrays;
 
 /**
@@ -49,32 +58,86 @@ public class KuduReaderTest {
         System.out.println(Arrays.toString(RangeSplitUtil.doAsciiStringSplit("aaa", "eee", 2)));
     }
 
-    @Test
-    public void ColumnTypeTest() {
-        ColumnType anInt = ColumnType.getByTypeName("float");
 
-        System.out.println(anInt);
-    }
-
+    private static final Logger LOG = LoggerFactory.getLogger(KuduReaderTest.class);
 
     @Test
     public void whereTest() {
-        String where = "a  >   1";
-        String[] s = where.split("\\s+");
+        String whereSql = "a  >=   1 and  b > 1 and c = 2 and d <> 3 and e != 4 and f is null and g is not null";
 
-        switch (s[1].charAt(0)) {
-            case '=':
-                System.out.println("=");
-                break;
-            case '<':
-                System.out.println(">");
-                break;
-            case '>':
-                System.out.println("<");
-                break;
+        if (whereSql == null || "".equals(whereSql.trim())) {
+            return;
         }
+        String[] expressions = whereSql.split("and");
 
+        for (String expression : expressions) {
+            System.out.println(expression);
+            String[] ors = expression.split("or");
+            Type type = null;
+            Object value = null;
+            if (ors.length == 1) {
+                String exp = ors[0];
+                String[] words = exp.split("\\s+");
+                if ("".equals(words[0])){
+                    words = Arrays.copyOfRange(words, 1, words.length);
+                }
+                switch (words[1].charAt(0)) {
+                    case '=':
+                        LOG.info("The filtering condition is [{} EQUAL(=) {}]", words[0], words[2]);
+                        break;
+                    case '<':
+                        if (words[1].length() == 1) {
+                            LOG.info("The filtering condition is [{} LESS(<) {}]", words[0], words[2]);
+                        } else if ("<>".equals(words[1])) {
+                            LOG.info("The filtering condition is [{} NOT EQUAL(<>) {}]", words[0], words[2]);
+                        } else if ("<=".equals(words[1])) {
+                            LOG.info("The filtering condition is [{} LESS_EQUAL(<=) {}]", words[0], words[2]);
+                        } else {
+                            LOG.error("Unsupported where expressions", DataXException.asDataXException(KuduReaderErrorcode.SPLIT_ERROR, "Unsupported where expressions"));
+                        }
+
+                        break;
+                    case '>':
+                        if (words[1].length() == 1) {
+                            LOG.info("The filtering condition is [{} GREATER(>) {}]", words[0], words[2]);
+                        } else if (">=".equals(words[1])) {
+                            LOG.info("The filtering condition is [{} GREATER_EQUAL(>=) {}]", words[0], words[2]);
+                        } else {
+                            LOG.error("Unsupported where expressions", DataXException.asDataXException(KuduReaderErrorcode.SPLIT_ERROR, "Unsupported where expressions"));
+                        }
+                        break;
+                    case 'i':
+                        if ("is".equals(words[1]) && "not".equals(words[2]) && "null".equals(words[3])) {
+                            LOG.info("The filtering condition is [{} IS NOT {}]", words[0], "null");
+                        } else if ("is".equals(words[1]) && "null".equals(words[2])) {
+                            LOG.info("The filtering condition is [{} IS {}]", words[0], "null");
+                        } else {
+                            LOG.error("Unsupported where expressions", DataXException.asDataXException(KuduReaderErrorcode.SPLIT_ERROR, "Unsupported where expressions"));
+                        }
+
+                        break;
+                    case '!':
+                        if ("!=".equals(words[1])) {
+                            LOG.info("The filtering condition is [{} NOT EQUAL(!=) {}]", words[0], words[2]);
+                        } else {
+                            LOG.error("Unsupported where expressions", DataXException.asDataXException(KuduReaderErrorcode.SPLIT_ERROR, "Unsupported where expressions"));
+                        }
+                        break;
+                    default:
+                        LOG.error("Unsupported where expressions", DataXException.asDataXException(KuduReaderErrorcode.SPLIT_ERROR, "Unsupported where expressions"));
+                        break;
+                }
+            }
+
+
+        }
 
     }
 
+
+    @Test
+    public void t() throws ParseException {
+        String s = "2021-01-24T13:22:45.000000Z";
+        System.out.println(DateUtils.parseDate(s, "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
+    }
 }
