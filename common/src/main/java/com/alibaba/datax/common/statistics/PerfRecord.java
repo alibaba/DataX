@@ -1,6 +1,7 @@
 package com.alibaba.datax.common.statistics;
 
 import com.alibaba.datax.common.util.HostUtils;
+import java.util.Objects;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,251 +9,273 @@ import org.slf4j.LoggerFactory;
 import java.util.Date;
 
 /**
- * Created by liqiang on 15/8/23.
+ * Created by liqiang on 15/8/23. <br>
+ * 性能记录
  */
 @SuppressWarnings("NullableProblems")
 public class PerfRecord implements Comparable<PerfRecord> {
-    private static Logger perf = LoggerFactory.getLogger(PerfRecord.class);
-    private static String datetimeFormat = "yyyy-MM-dd HH:mm:ss";
+
+  private static Logger perf = LoggerFactory.getLogger(PerfRecord.class);
+  private static String datetimeFormat = "yyyy-MM-dd HH:mm:ss";
 
 
-    public enum PHASE {
-        /**
-         * task total运行的时间，前10为框架统计，后面为部分插件的个性统计
-         */
-        TASK_TOTAL(0),
+  public enum PHASE {
+    /**
+     * task total运行的时间，前10为框架统计，后面为部分插件的个性统计
+     */
+    TASK_TOTAL(0),
 
-        READ_TASK_INIT(1),
-        READ_TASK_PREPARE(2),
-        READ_TASK_DATA(3),
-        READ_TASK_POST(4),
-        READ_TASK_DESTROY(5),
+    READ_TASK_INIT(1),
+    READ_TASK_PREPARE(2),
+    READ_TASK_DATA(3),
+    READ_TASK_POST(4),
+    READ_TASK_DESTROY(5),
 
-        WRITE_TASK_INIT(6),
-        WRITE_TASK_PREPARE(7),
-        WRITE_TASK_DATA(8),
-        WRITE_TASK_POST(9),
-        WRITE_TASK_DESTROY(10),
+    WRITE_TASK_INIT(6),
+    WRITE_TASK_PREPARE(7),
+    WRITE_TASK_DATA(8),
+    WRITE_TASK_POST(9),
+    WRITE_TASK_DESTROY(10),
 
-        /**
-         * SQL_QUERY: sql query阶段, 部分reader的个性统计
-         */
-        SQL_QUERY(100),
-        /**
-         * 数据从sql全部读出来
-         */
-        RESULT_NEXT_ALL(101),
+    /**
+     * SQL_QUERY: sql query阶段, 部分reader的个性统计
+     */
+    SQL_QUERY(100),
+    /**
+     * 数据从sql全部读出来
+     */
+    RESULT_NEXT_ALL(101),
 
-        /**
-         * only odps block close
-         */
-        ODPS_BLOCK_CLOSE(102),
+    /**
+     * only odps block close
+     */
+    ODPS_BLOCK_CLOSE(102),
 
-        WAIT_READ_TIME(103),
+    WAIT_READ_TIME(103),
 
-        WAIT_WRITE_TIME(104),
+    WAIT_WRITE_TIME(104),
 
-        TRANSFORMER_TIME(201);
+    TRANSFORMER_TIME(201);
 
-        private int val;
+    private int val;
 
-        PHASE(int val) {
-            this.val = val;
-        }
-
-        public int toInt(){
-            return val;
-        }
+    PHASE(int val) {
+      this.val = val;
     }
 
-    public enum ACTION{
-        start,
-        end
+    public int toInt() {
+      return val;
     }
+  }
 
-    private final int taskGroupId;
-    private final int taskId;
-    private final PHASE phase;
-    private volatile ACTION action;
-    private volatile Date startTime;
-    private volatile long elapsedTimeInNs = -1;
-    private volatile long count = 0;
-    private volatile long size = 0;
+  public enum ACTION {
+    /**
+     * 开始状态
+     */
+    start,
+    /**
+     * 结束
+     */
+    end
+  }
 
-    private volatile long startTimeInNs;
-    private volatile boolean isReport = false;
+  private final int taskGroupId;
+  private final int taskId;
+  private final PHASE phase;
+  private volatile ACTION action;
+  /**
+   * volatile 保证可见性，变量的值发生变化，其他可以立马看到
+   */
+  private volatile Date startTime;
+  private volatile long elapsedTimeInNs = -1;
+  private volatile long count = 0;
+  private volatile long size = 0;
 
-    public PerfRecord(int taskGroupId, int taskId, PHASE phase) {
-        this.taskGroupId = taskGroupId;
-        this.taskId = taskId;
-        this.phase = phase;
+  private volatile long startTimeInNs;
+  private volatile boolean isReport = false;
+
+  public PerfRecord(int taskGroupId, int taskId, PHASE phase) {
+    this.taskGroupId = taskGroupId;
+    this.taskId = taskId;
+    this.phase = phase;
+  }
+
+  public static void addPerfRecord(int taskGroupId, int taskId, PHASE phase, long startTime,
+      long elapsedTimeInNs) {
+    if (PerfTrace.getInstance().isEnable()) {
+      PerfRecord perfRecord = new PerfRecord(taskGroupId, taskId, phase);
+      perfRecord.elapsedTimeInNs = elapsedTimeInNs;
+      perfRecord.action = ACTION.end;
+      perfRecord.startTime = new Date(startTime);
+      //在PerfTrace里注册
+      PerfTrace.getInstance().tracePerfRecord(perfRecord);
+      perf.info(perfRecord.toString());
     }
+  }
 
-    public static void addPerfRecord(int taskGroupId, int taskId, PHASE phase, long startTime,long elapsedTimeInNs) {
-        if(PerfTrace.getInstance().isEnable()) {
-            PerfRecord perfRecord = new PerfRecord(taskGroupId, taskId, phase);
-            perfRecord.elapsedTimeInNs = elapsedTimeInNs;
-            perfRecord.action = ACTION.end;
-            perfRecord.startTime = new Date(startTime);
-            //在PerfTrace里注册
-            PerfTrace.getInstance().tracePerfRecord(perfRecord);
-            perf.info(perfRecord.toString());
-        }
+  public void start() {
+    if (PerfTrace.getInstance().isEnable()) {
+      this.startTime = new Date();
+      this.startTimeInNs = System.nanoTime();
+      this.action = ACTION.start;
+      //在PerfTrace里注册
+      PerfTrace.getInstance().tracePerfRecord(this);
+      perf.info(toString());
     }
+  }
 
-    public void start() {
-        if(PerfTrace.getInstance().isEnable()) {
-            this.startTime = new Date();
-            this.startTimeInNs = System.nanoTime();
-            this.action = ACTION.start;
-            //在PerfTrace里注册
-            PerfTrace.getInstance().tracePerfRecord(this);
-            perf.info(toString());
-        }
+  public void addCount(long count) {
+    this.count += count;
+  }
+
+  public void addSize(long size) {
+    this.size += size;
+  }
+
+  public void end() {
+    if (PerfTrace.getInstance().isEnable()) {
+      this.elapsedTimeInNs = System.nanoTime() - startTimeInNs;
+      this.action = ACTION.end;
+      PerfTrace.getInstance().tracePerfRecord(this);
+      perf.info(toString());
     }
+  }
 
-    public void addCount(long count) {
-        this.count += count;
+  public void end(long elapsedTimeInNs) {
+    if (PerfTrace.getInstance().isEnable()) {
+      this.elapsedTimeInNs = elapsedTimeInNs;
+      this.action = ACTION.end;
+      PerfTrace.getInstance().tracePerfRecord(this);
+      perf.info(toString());
     }
+  }
 
-    public void addSize(long size) {
-        this.size += size;
+  @Override
+  public String toString() {
+    return String.format("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s"
+        , getInstId(), taskGroupId, taskId, phase, action,
+        DateFormatUtils.format(startTime, datetimeFormat), elapsedTimeInNs, count, size,
+        getHostIP());
+  }
+
+
+  @Override
+  public int compareTo(PerfRecord o) {
+    if (o == null) {
+      return 1;
     }
+    return Long.compare(this.elapsedTimeInNs, o.elapsedTimeInNs);
+  }
 
-    public void end() {
-        if(PerfTrace.getInstance().isEnable()) {
-            this.elapsedTimeInNs = System.nanoTime() - startTimeInNs;
-            this.action = ACTION.end;
-            PerfTrace.getInstance().tracePerfRecord(this);
-            perf.info(toString());
-        }
+  @Override
+  public int hashCode() {
+    long jobId = getInstId();
+    int result = (int) (jobId ^ (jobId >>> 32));
+    result = 31 * result + taskGroupId;
+    result = 31 * result + taskId;
+    result = 31 * result + phase.toInt();
+    result = 31 * result + (startTime != null ? startTime.hashCode() : 0);
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
     }
-
-    public void end(long elapsedTimeInNs) {
-        if(PerfTrace.getInstance().isEnable()) {
-            this.elapsedTimeInNs = elapsedTimeInNs;
-            this.action = ACTION.end;
-            PerfTrace.getInstance().tracePerfRecord(this);
-            perf.info(toString());
-        }
+    if (!(o instanceof PerfRecord)) {
+      return false;
     }
-
-    public String toString() {
-        return String.format("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s"
-                , getInstId(), taskGroupId, taskId, phase, action,
-                DateFormatUtils.format(startTime, datetimeFormat), elapsedTimeInNs, count, size,getHostIP());
+    PerfRecord dst = (PerfRecord) o;
+    if (this.getInstId() != dst.getInstId()) {
+      return false;
     }
-
-
-    @Override
-    public int compareTo(PerfRecord o) {
-        if (o == null) {
-            return 1;
-        }
-        return this.elapsedTimeInNs > o.elapsedTimeInNs ? 1 : this.elapsedTimeInNs == o.elapsedTimeInNs ? 0 : -1;
+    if (this.taskGroupId != dst.taskGroupId) {
+      return false;
     }
-
-    @Override
-    public int hashCode() {
-        long jobId = getInstId();
-        int result = (int) (jobId ^ (jobId >>> 32));
-        result = 31 * result + taskGroupId;
-        result = 31 * result + taskId;
-        result = 31 * result + phase.toInt();
-        result = 31 * result + (startTime != null ? startTime.hashCode() : 0);
-        return result;
+    if (this.taskId != dst.taskId) {
+      return false;
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if(!(o instanceof PerfRecord)){
-            return false;
-        }
-
-        PerfRecord dst = (PerfRecord)o;
-
-        if (this.getInstId() != dst.getInstId()) return false;
-        if (this.taskGroupId != dst.taskGroupId) return false;
-        if (this.taskId != dst.taskId) return false;
-        if (phase != null ? !phase.equals(dst.phase) : dst.phase != null) return false;
-        if (startTime != null ? !startTime.equals(dst.startTime) : dst.startTime != null) return false;
-        return true;
+    if (!Objects.equals(phase, dst.phase)) {
+      return false;
     }
+    if (!Objects.equals(startTime, dst.startTime)) {
+      return false;
+    }
+    return true;
+  }
 
-    public PerfRecord copy() {
-        PerfRecord copy = new PerfRecord(this.taskGroupId, this.getTaskId(), this.phase);
-        copy.action = this.action;
-        copy.startTime = this.startTime;
-        copy.elapsedTimeInNs = this.elapsedTimeInNs;
-        copy.count = this.count;
-        copy.size = this.size;
-        return copy;
-    }
-    public int getTaskGroupId() {
-        return taskGroupId;
-    }
+  public PerfRecord copy() {
+    PerfRecord copy = new PerfRecord(this.taskGroupId, this.getTaskId(), this.phase);
+    copy.action = this.action;
+    copy.startTime = this.startTime;
+    copy.elapsedTimeInNs = this.elapsedTimeInNs;
+    copy.count = this.count;
+    copy.size = this.size;
+    return copy;
+  }
 
-    public int getTaskId() {
-        return taskId;
-    }
+  public int getTaskGroupId() {
+    return taskGroupId;
+  }
 
-    public PHASE getPhase() {
-        return phase;
-    }
+  public int getTaskId() {
+    return taskId;
+  }
 
-    public ACTION getAction() {
-        return action;
-    }
+  public PHASE getPhase() {
+    return phase;
+  }
 
-    public long getElapsedTimeInNs() {
-        return elapsedTimeInNs;
-    }
+  public ACTION getAction() {
+    return action;
+  }
 
-    public long getCount() {
-        return count;
-    }
+  public long getElapsedTimeInNs() {
+    return elapsedTimeInNs;
+  }
 
-    public long getSize() {
-        return size;
-    }
+  public long getCount() {
+    return count;
+  }
 
-    public long getInstId(){
-        return PerfTrace.getInstance().getInstId();
-    }
+  public long getSize() {
+    return size;
+  }
 
-    public String getHostIP(){
-       return HostUtils.IP;
-    }
+  public long getInstId() {
+    return PerfTrace.getInstance().getInstId();
+  }
 
-    public String getHostName(){
-        return HostUtils.HOSTNAME;
-    }
+  public String getHostIP() {
+    return HostUtils.IP;
+  }
 
-    public Date getStartTime() {
-        return startTime;
-    }
+  public String getHostName() {
+    return HostUtils.HOSTNAME;
+  }
 
-    public long getStartTimeInMs() {
-        return startTime.getTime();
-    }
+  public Date getStartTime() {
+    return startTime;
+  }
 
-    public long getStartTimeInNs() {
-        return startTimeInNs;
-    }
+  public long getStartTimeInMs() {
+    return startTime.getTime();
+  }
 
-    public String getDatetime(){
-        if(startTime == null){
-            return "null time";
-        }
-        return DateFormatUtils.format(startTime, datetimeFormat);
-    }
+  public long getStartTimeInNs() {
+    return startTimeInNs;
+  }
 
-    public boolean isReport() {
-        return isReport;
-    }
+  public String getDatetime() {
+    return startTime == null ? "null time" : DateFormatUtils.format(startTime, datetimeFormat);
+  }
 
-    public void setIsReport(boolean isReport) {
-        this.isReport = isReport;
-    }
+  public boolean isReport() {
+    return isReport;
+  }
+
+  public void setIsReport(boolean isReport) {
+    this.isReport = isReport;
+  }
 }

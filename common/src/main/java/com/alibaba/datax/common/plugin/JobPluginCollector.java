@@ -8,15 +8,13 @@ import java.util.Map;
  */
 public interface JobPluginCollector extends PluginCollector {
 
-	/**
-	 * 从Task获取自定义收集信息
-	 * 
-	 * */
-	Map<String, List<String>> getMessage();
+  /**
+   * 从Task获取自定义收集信息
+   */
+  Map<String, List<String>> getMessage();
 
-	/**
-	 * 从Task获取自定义收集信息
-	 * 
-	 * */
-	List<String> getMessage(String key);
+  /**
+   * 从Task获取自定义收集信息
+   */
+  List<String> getMessage(String key);
 }

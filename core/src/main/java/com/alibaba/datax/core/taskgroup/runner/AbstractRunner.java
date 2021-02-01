@@ -9,107 +9,124 @@ import com.alibaba.datax.dataxservice.face.domain.enums.State;
 import org.apache.commons.lang.Validate;
 
 public abstract class AbstractRunner {
-    private AbstractTaskPlugin plugin;
 
-    private Configuration jobConf;
+  /**
+   * 基类任务插件
+   */
+  private AbstractTaskPlugin plugin;
 
-    private Communication runnerCommunication;
+  /**
+   * 任务的配置信息
+   */
+  private Configuration jobConf;
 
-    private int taskGroupId;
+  /**
+   * runner的通讯类，里面可以记录该runner的信息
+   */
+  private Communication runnerCommunication;
 
-    private int taskId;
+  private int taskGroupId;
 
-    public AbstractRunner(AbstractTaskPlugin taskPlugin) {
-        this.plugin = taskPlugin;
+  private int taskId;
+
+  public AbstractRunner(AbstractTaskPlugin taskPlugin) {
+    this.plugin = taskPlugin;
+  }
+
+  public void destroy() {
+    if (this.plugin != null) {
+      this.plugin.destroy();
     }
+  }
 
-    public void destroy() {
-        if (this.plugin != null) {
-            this.plugin.destroy();
-        }
+  public State getRunnerState() {
+    return this.runnerCommunication.getState();
+  }
+
+  public AbstractTaskPlugin getPlugin() {
+    return plugin;
+  }
+
+  public void setPlugin(AbstractTaskPlugin plugin) {
+    this.plugin = plugin;
+  }
+
+  public Configuration getJobConf() {
+    return jobConf;
+  }
+
+  public void setJobConf(Configuration jobConf) {
+    this.jobConf = jobConf;
+    this.plugin.setPluginJobConf(jobConf);
+  }
+
+  public void setTaskPluginCollector(TaskPluginCollector pluginCollector) {
+    this.plugin.setTaskPluginCollector(pluginCollector);
+  }
+
+  /**
+   * 给正在运行的communication状态加1，实现标记
+   *
+   * @param state State
+   */
+  private void mark(State state) {
+    this.runnerCommunication.setState(state);
+    if (state == State.SUCCEEDED) {
+      // 对 stage + 1
+      this.runnerCommunication.setLongCounter(CommunicationTool.STAGE,
+          this.runnerCommunication.getLongCounter(CommunicationTool.STAGE) + 1);
     }
+  }
 
-    public State getRunnerState() {
-        return this.runnerCommunication.getState();
-    }
+  public void markRun() {
+    mark(State.RUNNING);
+  }
 
-    public AbstractTaskPlugin getPlugin() {
-        return plugin;
-    }
+  public void markSuccess() {
+    mark(State.SUCCEEDED);
+  }
 
-    public void setPlugin(AbstractTaskPlugin plugin) {
-        this.plugin = plugin;
-    }
+  public void markFail(final Throwable throwable) {
+    mark(State.FAILED);
+    this.runnerCommunication.setTimestamp(System.currentTimeMillis());
+    this.runnerCommunication.setThrowable(throwable);
+  }
 
-    public Configuration getJobConf() {
-        return jobConf;
-    }
+  /**
+   * @param taskGroupId the taskGroupId to set
+   */
+  public void setTaskGroupId(int taskGroupId) {
+    this.taskGroupId = taskGroupId;
+    this.plugin.setTaskGroupId(taskGroupId);
+  }
 
-    public void setJobConf(Configuration jobConf) {
-        this.jobConf = jobConf;
-        this.plugin.setPluginJobConf(jobConf);
-    }
+  /**
+   * @return the taskGroupId
+   */
+  public int getTaskGroupId() {
+    return taskGroupId;
+  }
 
-    public void setTaskPluginCollector(TaskPluginCollector pluginCollector) {
-        this.plugin.setTaskPluginCollector(pluginCollector);
-    }
+  public int getTaskId() {
+    return taskId;
+  }
 
-    private void mark(State state) {
-        this.runnerCommunication.setState(state);
-        if (state == State.SUCCEEDED) {
-            // 对 stage + 1
-            this.runnerCommunication.setLongCounter(CommunicationTool.STAGE,
-                    this.runnerCommunication.getLongCounter(CommunicationTool.STAGE) + 1);
-        }
-    }
+  public void setTaskId(int taskId) {
+    this.taskId = taskId;
+    this.plugin.setTaskId(taskId);
+  }
 
-    public void markRun() {
-        mark(State.RUNNING);
-    }
+  public void setRunnerCommunication(final Communication runnerCommunication) {
+    Validate.notNull(runnerCommunication, "插件的Communication不能为空");
+    this.runnerCommunication = runnerCommunication;
+  }
 
-    public void markSuccess() {
-        mark(State.SUCCEEDED);
-    }
+  public Communication getRunnerCommunication() {
+    return runnerCommunication;
+  }
 
-    public void markFail(final Throwable throwable) {
-        mark(State.FAILED);
-        this.runnerCommunication.setTimestamp(System.currentTimeMillis());
-        this.runnerCommunication.setThrowable(throwable);
-    }
-
-    /**
-     * @param taskGroupId the taskGroupId to set
-     */
-    public void setTaskGroupId(int taskGroupId) {
-        this.taskGroupId = taskGroupId;
-        this.plugin.setTaskGroupId(taskGroupId);
-    }
-
-    /**
-     * @return the taskGroupId
-     */
-    public int getTaskGroupId() {
-        return taskGroupId;
-    }
-
-    public int getTaskId() {
-        return taskId;
-    }
-
-    public void setTaskId(int taskId) {
-        this.taskId = taskId;
-        this.plugin.setTaskId(taskId);
-    }
-
-    public void setRunnerCommunication(final Communication runnerCommunication) {
-        Validate.notNull(runnerCommunication,
-                "插件的Communication不能为空");
-        this.runnerCommunication = runnerCommunication;
-    }
-
-    public Communication getRunnerCommunication() {
-        return runnerCommunication;
-    }
-
-    public abstract void shutdown();
+  /**
+   * 任务关闭
+   */
+  public abstract void shutdown();
 }

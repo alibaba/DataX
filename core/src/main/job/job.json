@@ -1,52 +1,63 @@
 {
-    "job": {
-        "setting": {
-            "speed": {
-                "byte":10485760
-            },
-            "errorLimit": {
-                "record": 0,
-                "percentage": 0.02
-            }
+  "job": {
+    "setting": {
+      "speed": {
+        "channel": 1
+      },
+      "errorLimit": {
+        "record": 0
+      }
+    },
+    "content": [
+      {
+        "reader": {
+          "name": "streamreader",
+          "parameter": {
+            "column": [
+              {
+                "value": "Datax",
+                "type": "string"
+              },
+              {
+                "value": 59880504,
+                "type": "long"
+              },
+              {
+                "value": "2010-05-04 00:00:00",
+                "type": "string"
+              },
+              {
+                "value": true,
+                "type": "bool"
+              },
+              {
+                "value": "test",
+                "type": "bytes"
+              }
+            ],
+            "sliceRecordCount": 1
+          }
         },
-        "content": [
-            {
-                "reader": {
-                    "name": "streamreader",
-                    "parameter": {
-                        "column" : [
-                            {
-                                "value": "DataX",
-                                "type": "string"
-                            },
-                            {
-                                "value": 19890604,
-                                "type": "long"
-                            },
-                            {
-                                "value": "1989-06-04 00:00:00",
-                                "type": "date"
-                            },
-                            {
-                                "value": true,
-                                "type": "bool"
-                            },
-                            {
-                                "value": "test",
-                                "type": "bytes"
-                            }
-                        ],
-                        "sliceRecordCount": 100000
-                    }
-                },
-                "writer": {
-                    "name": "streamwriter",
-                    "parameter": {
-                        "print": false,
-                        "encoding": "UTF-8"
-                    }
-                }
+        "writer": {
+          "name": "streamwriter",
+          "parameter": {
+            "print": true,
+            "encoding": "UTF-8"
+          }
+        },
+        "transformer": [
+          {
+            "name": "dx_date",
+            "parameter": {
+              "columnIndex": 2,
+              "paras": [
+                "yyyy-MM-dd HH:mm:ss",
+                "yyyy年MM月dd日 HH:mm:ss"
+              ]
             }
+          }
         ]
-    }
+      }
+    ]
+  }
 }

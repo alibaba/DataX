@@ -9,16 +9,51 @@
     <includeBaseDirectory>false</includeBaseDirectory>
     <fileSets>
         <!-- for bin -->
+<!--        <fileSet>-->
+<!--            <directory>src/main/bin</directory>-->
+<!--            <includes>-->
+<!--                <include>*.*</include>-->
+<!--            </includes>-->
+<!--            <excludes>-->
+<!--                <exclude>*.pyc</exclude>-->
+<!--            </excludes>-->
+<!--            <directoryMode>775</directoryMode>-->
+<!--            <outputDirectory>/bin</outputDirectory>-->
+<!--        </fileSet>-->
+    
         <fileSet>
             <directory>src/main/bin</directory>
             <includes>
-                <include>*.*</include>
+                <include>*</include>
             </includes>
             <excludes>
                 <exclude>*.pyc</exclude>
             </excludes>
             <directoryMode>775</directoryMode>
             <outputDirectory>/bin</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/bin/py/py2</directory>
+            <includes>
+                <include>*</include>
+            </includes>
+            <excludes>
+                <exclude>*.pyc</exclude>
+            </excludes>
+            <directoryMode>775</directoryMode>
+            <outputDirectory>/bin/py/py2</outputDirectory>
+        </fileSet>
+        
+        <fileSet>
+            <directory>src/main/bin/py/py3</directory>
+            <includes>
+                <include>*</include>
+            </includes>
+            <excludes>
+                <exclude>*.pyc</exclude>
+            </excludes>
+            <directoryMode>775</directoryMode>
+            <outputDirectory>/bin/py/py3</outputDirectory>
         </fileSet>
         <!-- for scripts -->
         <fileSet>
@@ -45,22 +80,6 @@
             </includes>
             <outputDirectory>/lib</outputDirectory>
         </fileSet>
-
-        <!--<fileSet>-->
-            <!--<directory>src/main/log/</directory>-->
-            <!--<includes>-->
-                <!--<include>*.log</include>-->
-            <!--</includes>-->
-            <!--<outputDirectory>/log</outputDirectory>-->
-        <!--</fileSet>-->
-
-        <!--<fileSet>-->
-            <!--<directory>src/main/log/</directory>-->
-            <!--<includes>-->
-                <!--<include>*.log</include>-->
-            <!--</includes>-->
-            <!--<outputDirectory>/log_perf</outputDirectory>-->
-        <!--</fileSet>-->
 
         <fileSet>
             <directory>src/main/job/</directory>

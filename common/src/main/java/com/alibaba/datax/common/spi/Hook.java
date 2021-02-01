@@ -6,6 +6,7 @@ import java.util.Map;
 
 /**
  * Created by xiafei.qiuxf on 14/12/17.
+ * 钩子类
  */
 public interface Hook {
 
@@ -14,14 +15,14 @@ public interface Hook {
      *
      * @return
      */
-    public String getName();
+    String getName();
 
     /**
      * TODO 文档
      *
-     * @param jobConf
-     * @param msg
+     * @param jobConf  Configuration
+     * @param msg Map<String, Number>
      */
-    public void invoke(Configuration jobConf, Map<String, Number> msg);
+    void invoke(Configuration jobConf, Map<String, Number> msg);
 
 }

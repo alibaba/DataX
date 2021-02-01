@@ -17,13 +17,15 @@ public final class ClassLoaderSwapper {
     }
 
     /**
-     * 保存当前classLoader，并将当前线程的classLoader设置为所给classLoader
+     * 保存当前classLoader，并将当前线程的classLoader设置为 传入的classLoader（实现classLoader互换）
      *
      * @param
      * @return
      */
     public ClassLoader setCurrentThreadClassLoader(ClassLoader classLoader) {
+        // 1 将当前线程的 classLoader 先保持到 本类的 storeClassLoader 中
         this.storeClassLoader = Thread.currentThread().getContextClassLoader();
+        // 2 将当前线程的 classLoader 设置为 传入的 classLoader
         Thread.currentThread().setContextClassLoader(classLoader);
         return this.storeClassLoader;
     }
@@ -33,8 +35,7 @@ public final class ClassLoaderSwapper {
      * @return
      */
     public ClassLoader restoreCurrentThreadClassLoader() {
-        ClassLoader classLoader = Thread.currentThread()
-                .getContextClassLoader();
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(this.storeClassLoader);
         return classLoader;
     }

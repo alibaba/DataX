@@ -20,7 +20,7 @@ Temporary Items
 *.log
 *.ctxt
 .mtj.tmp/
-*.jar
+#  *.jar
 *.war
 *.nar
 *.ear
@@ -69,7 +69,6 @@ buildNumber.properties
 out
 gen### Python template
 __pycache__/
-*.py[cod]
 *$py.class
 *.so
 .Python
@@ -79,7 +78,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+#lib/
 lib64/
 parts/
 sdist/
@@ -130,7 +129,6 @@ venv.bak/
 /site
 .mypy_cache/
 .metadata
-bin/
 tmp/
 *.tmp
 *.bak

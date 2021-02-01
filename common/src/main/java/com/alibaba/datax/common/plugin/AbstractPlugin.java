@@ -4,84 +4,86 @@ import com.alibaba.datax.common.base.BaseObject;
 import com.alibaba.datax.common.util.Configuration;
 
 public abstract class AbstractPlugin extends BaseObject implements Pluginable {
-	//作业的config
-    private Configuration pluginJobConf;
 
-    //插件本身的plugin
-	private Configuration pluginConf;
+  //作业的config
+  private Configuration pluginJobConf;
 
-    // by qiangsi.lq。 修改为对端的作业configuration
-    private Configuration peerPluginJobConf;
+  //插件本身的plugin
+  private Configuration pluginConf;
 
-    private String peerPluginName;
+  // by qiangsi.lq。 修改为对端的作业configuration
+  private Configuration peerPluginJobConf;
 
-    @Override
-	public String getPluginName() {
-		assert null != this.pluginConf;
-		return this.pluginConf.getString("name");
-	}
+  private String peerPluginName;
 
-    @Override
-	public String getDeveloper() {
-		assert null != this.pluginConf;
-		return this.pluginConf.getString("developer");
-	}
+  @Override
+  public String getPluginName() {
+    assert null != this.pluginConf;
+    return this.pluginConf.getString("name");
+  }
 
-    @Override
-	public String getDescription() {
-		assert null != this.pluginConf;
-		return this.pluginConf.getString("description");
-	}
+  @Override
+  public String getDeveloper() {
+    assert null != this.pluginConf;
+    return this.pluginConf.getString("developer");
+  }
 
-    @Override
-	public Configuration getPluginJobConf() {
-		return pluginJobConf;
-	}
+  @Override
+  public String getDescription() {
+    assert null != this.pluginConf;
+    return this.pluginConf.getString("description");
+  }
 
-    @Override
-	public void setPluginJobConf(Configuration pluginJobConf) {
-		this.pluginJobConf = pluginJobConf;
-	}
+  @Override
+  public Configuration getPluginJobConf() {
+    return pluginJobConf;
+  }
 
-    @Override
-	public void setPluginConf(Configuration pluginConf) {
-		this.pluginConf = pluginConf;
-	}
+  @Override
+  public void setPluginJobConf(Configuration pluginJobConf) {
+    this.pluginJobConf = pluginJobConf;
+  }
 
-    @Override
-    public Configuration getPeerPluginJobConf() {
-        return peerPluginJobConf;
-    }
+  @Override
+  public void setPluginConf(Configuration pluginConf) {
+    this.pluginConf = pluginConf;
+  }
 
-    @Override
-    public void setPeerPluginJobConf(Configuration peerPluginJobConf) {
-        this.peerPluginJobConf = peerPluginJobConf;
-    }
+  @Override
+  public Configuration getPeerPluginJobConf() {
+    return peerPluginJobConf;
+  }
 
-    @Override
-    public String getPeerPluginName() {
-        return peerPluginName;
-    }
+  @Override
+  public void setPeerPluginJobConf(Configuration peerPluginJobConf) {
+    this.peerPluginJobConf = peerPluginJobConf;
+  }
 
-    @Override
-    public void setPeerPluginName(String peerPluginName) {
-        this.peerPluginName = peerPluginName;
-    }
+  @Override
+  public String getPeerPluginName() {
+    return peerPluginName;
+  }
 
-    public void preCheck() {
-    }
+  @Override
+  public void setPeerPluginName(String peerPluginName) {
+    this.peerPluginName = peerPluginName;
+  }
 
-	public void prepare() {
-	}
 
-	public void post() {
-	}
+  public void preCheck() {
+  }
 
-    public void preHandler(Configuration jobConfiguration){
+  public void prepare() {
+  }
 
-    }
+  public void post() {
+  }
 
-    public void postHandler(Configuration jobConfiguration){
+  public void preHandler(Configuration jobConfiguration) {
 
-    }
+  }
+
+  public void postHandler(Configuration jobConfiguration) {
+
+  }
 }
