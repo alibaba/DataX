@@ -181,8 +181,7 @@ public class StandardFtpHelperImpl implements IFtpHelper {
     public OutputStream getOutputStream(String filePath) {
         try {
             this.printWorkingDirectory();
-            String parentDir = filePath.substring(0,
-                    StringUtils.lastIndexOf(filePath, IOUtils.DIR_SEPARATOR));
+            String parentDir = FilenameUtils.getFullPathNoEndSeparator(filePath);
             this.ftpClient.changeWorkingDirectory(parentDir);
             this.printWorkingDirectory();
             OutputStream writeOutputStream = this.ftpClient

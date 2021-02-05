@@ -195,8 +195,7 @@ public class SftpHelperImpl implements IFtpHelper {
     public OutputStream getOutputStream(String filePath) {
         try {
             this.printWorkingDirectory();
-            String parentDir = filePath.substring(0,
-                    StringUtils.lastIndexOf(filePath, IOUtils.DIR_SEPARATOR));
+            String parentDir = FilenameUtils.getFullPathNoEndSeparator(filePath);
             this.channelSftp.cd(parentDir);
             this.printWorkingDirectory();
             OutputStream writeOutputStream = this.channelSftp.put(filePath,
