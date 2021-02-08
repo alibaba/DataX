@@ -19,10 +19,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * @author daixinxuan
- * @date 2019/10/26 17:17
- */
+
 public class HiveReader extends Reader {
 
     /**

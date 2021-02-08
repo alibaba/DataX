@@ -13,10 +13,6 @@ import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 
-/**
- * @author daixinxuan
- * @date 2019/10/29 10:54
- */
 public class DBUtil {
     private static final Logger LOG = LoggerFactory.getLogger(DBUtil.class);
 

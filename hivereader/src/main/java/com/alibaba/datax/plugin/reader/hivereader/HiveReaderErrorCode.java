@@ -2,10 +2,7 @@ package com.alibaba.datax.plugin.reader.hivereader;
 
 import com.alibaba.datax.common.spi.ErrorCode;
 
-/**
- * @author daixinxuan
- * @date 2019/10/27 14:03
- */
+
 public enum HiveReaderErrorCode implements ErrorCode {
 
     BAD_CONFIG_VALUE("HiveReader-00", "您配置的值不合法."),
