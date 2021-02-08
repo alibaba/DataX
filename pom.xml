@@ -52,6 +52,7 @@
         <module>postgresqlreader</module>
         <module>oraclereader</module>
         <module>odpsreader</module>
+        <module>hivereader</module>
         <module>otsreader</module>
         <module>otsstreamreader</module>
         <module>txtfilereader</module>

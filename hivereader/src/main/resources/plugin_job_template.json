@@ -1,0 +1,11 @@
+{
+    "name": "hivereader",
+    "parameter": {
+        "sqls": [
+            "select * from table1"
+        ],
+        "user": "user",
+        "password": "pass",
+        "jdbcUrl": "jdbc:hive2://ip:port"
+    }
+}
