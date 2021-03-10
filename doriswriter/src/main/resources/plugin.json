@@ -1,0 +1,6 @@
+{
+    "name": "doriswriter",
+    "class": "com.dorisdb.connector.datax.plugin.writer.doriswriter.DorisWriter",
+    "description": "useScene: prod. mechanism: DorisStreamLoad. warn: The more you know about the database, the less problems you encounter.",
+    "developer": "dorisdb"
+}
