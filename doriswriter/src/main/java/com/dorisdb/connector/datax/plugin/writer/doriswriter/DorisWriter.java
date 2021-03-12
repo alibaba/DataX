@@ -112,7 +112,8 @@ public class DorisWriter extends Writer {
                     }
                     StringBuilder sb = new StringBuilder();
                     for (int i = 0; i < record.getColumnNumber(); i++) {
-                        sb.append(record.getColumn(i).getRawData().toString());
+                        Object value = record.getColumn(i).getRawData();
+                        sb.append(null == value ? "\\N" : value);
                         if (i < record.getColumnNumber() - 1) {
                             sb.append("\t");
                         }
