@@ -1,7 +1,6 @@
 package com.dorisdb.connector.datax.plugin.writer.doriswriter.manager;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -27,9 +26,7 @@ import java.util.List;
 import java.util.Map;
 
  
-public class DorisStreamLoadVisitor implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class DorisStreamLoadVisitor {
 
     private static final Logger LOG = LoggerFactory.getLogger(DorisStreamLoadVisitor.class);
 
@@ -57,9 +54,10 @@ public class DorisStreamLoadVisitor implements Serializable {
         if (null == loadResult || !loadResult.containsKey(keyStatus)) {
             throw new IOException("Unable to flush data to doris: unknown result status.");
         }
+        LOG.debug(new StringBuilder("StreamLoad response:\n").append(JSON.toJSONString(loadResult)).toString());
         if (loadResult.get(keyStatus).equals("Fail")) {
             throw new IOException(
-                new StringBuilder("Failed to flush data to doris.").append(loadResult.get("Message").toString()).toString()
+                new StringBuilder("Failed to flush data to doris.\n").append(JSON.toJSONString(loadResult)).toString()
             );
         }
     }

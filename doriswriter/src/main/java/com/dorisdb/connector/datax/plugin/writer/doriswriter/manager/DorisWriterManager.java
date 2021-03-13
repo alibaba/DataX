@@ -4,16 +4,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import com.dorisdb.connector.datax.plugin.writer.doriswriter.DorisWriterOptions;
 
-public class DorisWriterManager implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class DorisWriterManager {
     
     private static final Logger LOG = LoggerFactory.getLogger(DorisWriterManager.class);
 
