@@ -7,6 +7,7 @@ import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.plugin.rdbms.util.DBUtilErrorCode;
 
 import java.util.List;
+import java.util.Map;
 
 public class DorisWriterOptions implements Serializable {
 
@@ -17,6 +18,11 @@ public class DorisWriterOptions implements Serializable {
     private static final int BATCH_ROWS = 500000;
     private static final long BATCH_BYTES = 100 * MEGA_BYTES_SCALE;
 
+    private static final String KEY_LOAD_PROPS_FORMAT = "format";
+    public enum StreamLoadFormat {
+        CSV, JSON;
+    }
+
     private static final String KEY_USERNAME = "username";
     private static final String KEY_PASSWORD = "password";
     private static final String KEY_DATABASE = "database";
@@ -26,6 +32,7 @@ public class DorisWriterOptions implements Serializable {
     private static final String KEY_POST_SQL = "postSql";
     private static final String KEY_JDBC_URL = "jdbcUrl";
     private static final String KEY_LOAD_URL = "loadUrl";
+    private static final String KEY_LOAD_PROPS = "loadProps";
 
     private final Configuration options;
 
@@ -74,6 +81,10 @@ public class DorisWriterOptions implements Serializable {
         return options.getList(KEY_POST_SQL, String.class);
     }
 
+    public Map<String, Object> getLoadProps() {
+        return options.getMap(KEY_LOAD_PROPS);
+    }
+
     public int getMaxRetries() {
         return MAX_RETRIES;
     }
@@ -84,6 +95,18 @@ public class DorisWriterOptions implements Serializable {
 
     public long getBatchSize() {
         return BATCH_BYTES;
+    }
+
+    public StreamLoadFormat getStreamLoadFormat() {
+        Map<String, Object> loadProps = getLoadProps();
+        if (null == loadProps) {
+            return StreamLoadFormat.CSV;
+        }
+        if (loadProps.containsKey(KEY_LOAD_PROPS_FORMAT) 
+            && StreamLoadFormat.JSON.name().equalsIgnoreCase(String.valueOf(loadProps.get(KEY_LOAD_PROPS_FORMAT)))) {
+            return StreamLoadFormat.JSON;
+        }
+        return StreamLoadFormat.CSV;
     }
 
     private void validateStreamLoadUrl() {
@@ -102,6 +125,7 @@ public class DorisWriterOptions implements Serializable {
             KEY_PASSWORD,
             KEY_DATABASE,
             KEY_TABLE,
+            KEY_COLUMN,
             KEY_LOAD_URL
         };
         for (String optionKey : requiredOptionKeys) {

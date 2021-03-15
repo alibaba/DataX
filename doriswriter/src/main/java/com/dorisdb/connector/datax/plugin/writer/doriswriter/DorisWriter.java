@@ -9,6 +9,8 @@ import com.alibaba.datax.plugin.rdbms.util.DBUtil;
 import com.alibaba.datax.plugin.rdbms.util.DBUtilErrorCode;
 import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
 import com.dorisdb.connector.datax.plugin.writer.doriswriter.manager.DorisWriterManager;
+import com.dorisdb.connector.datax.plugin.writer.doriswriter.row.DorisISerializer;
+import com.dorisdb.connector.datax.plugin.writer.doriswriter.row.DorisSerializerFactory;
 import com.dorisdb.connector.datax.plugin.writer.doriswriter.util.DorisWriterUtil;
 
 import org.slf4j.Logger;
@@ -86,11 +88,13 @@ public class DorisWriter extends Writer {
     public static class Task extends Writer.Task {
         private DorisWriterManager writerManager;
         private DorisWriterOptions options;
+        private DorisISerializer rowSerializer;
 
         @Override
         public void init() {
             options = new DorisWriterOptions(super.getPluginJobConf());
             writerManager = new DorisWriterManager(options);
+            rowSerializer = DorisSerializerFactory.createSerializer(options);
         }
 
         @Override
@@ -110,15 +114,7 @@ public class DorisWriter extends Writer {
                                                 record.getColumnNumber(),
                                                 options.getColumns().size()));
                     }
-                    StringBuilder sb = new StringBuilder();
-                    for (int i = 0; i < record.getColumnNumber(); i++) {
-                        Object value = record.getColumn(i).getRawData();
-                        sb.append(null == value ? "\\N" : value);
-                        if (i < record.getColumnNumber() - 1) {
-                            sb.append("\t");
-                        }
-                    }
-                    writerManager.writeRecord(sb.toString());
+                    writerManager.writeRecord(rowSerializer.serialize(record));
                 }
             } catch (Exception e) {
                 throw DataXException.asDataXException(DBUtilErrorCode.WRITE_DATA_ERROR, e);

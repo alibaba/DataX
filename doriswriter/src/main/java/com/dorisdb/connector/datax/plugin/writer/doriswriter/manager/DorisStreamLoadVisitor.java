@@ -91,7 +91,13 @@ public class DorisStreamLoadVisitor {
     }
 
     private byte[] joinRows(List<String> rows) {
-        return String.join("\n", rows).getBytes(StandardCharsets.UTF_8);
+        if (DorisWriterOptions.StreamLoadFormat.CSV.equals(writerOptions.getStreamLoadFormat())) {
+            return String.join("\n", rows).getBytes(StandardCharsets.UTF_8);
+        }
+        if (DorisWriterOptions.StreamLoadFormat.JSON.equals(writerOptions.getStreamLoadFormat())) {
+            return new StringBuilder("[").append(String.join(",", rows)).append("]").toString().getBytes(StandardCharsets.UTF_8);
+        }
+        throw new RuntimeException("Failed to join rows data, unsupported `format` from stream load properties:");
     }
 
     @SuppressWarnings("unchecked")
@@ -109,6 +115,11 @@ public class DorisStreamLoadVisitor {
             List<String> cols = writerOptions.getColumns();
             if (null != cols && !cols.isEmpty()) {
                 httpPut.setHeader("columns", String.join(",", cols));
+            }
+            if (null != writerOptions.getLoadProps()) {
+                for (Map.Entry<String, Object> entry : writerOptions.getLoadProps().entrySet()) {
+                    httpPut.setHeader(entry.getKey(), String.valueOf(entry.getValue()));
+                }
             }
             httpPut.setHeader("Expect", "100-continue");
             httpPut.setHeader("label", label);
