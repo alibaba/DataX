@@ -67,7 +67,8 @@ DorisWriter 插件实现了写入数据到 Doris 主库的目的表的功能。�
                         "preSql": [],
                         "postSql": [], 
                         "jdbcUrl": "jdbc:mysql://172.28.17.100:9030/",
-                        "loadUrl": ["172.28.17.100:8030", "172.28.17.100:8030"]
+                        "loadUrl": ["172.28.17.100:8030", "172.28.17.100:8030"],
+                        "loadProps": {}
                     }
                 }
             }
@@ -151,6 +152,14 @@ DorisWriter 插件实现了写入数据到 Doris 主库的目的表的功能。�
 * **jdbcUrl**
 
 	* 描述：目的数据库的 JDBC 连接信息，用于执行`preSql`及`postSql`。 <br />
+
+ 	* 必选：否 <br />
+
+	* 默认值：无 <br />
+
+* **loadProps**
+
+	* 描述：StreamLoad 的请求参数，详情参照StreamLoad介绍页面。 <br />
 
  	* 必选：否 <br />
 

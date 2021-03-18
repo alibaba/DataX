@@ -33,7 +33,7 @@ public class DorisWriterManager {
         try {
             buffer.add(record);
             batchCount++;
-            batchSize += record.length();
+            batchSize += record.getBytes().length;
             if (batchCount >= writerOptions.getBatchRows() || batchSize >= writerOptions.getBatchSize()) {
                 flush(createBatchLabel());
             }
