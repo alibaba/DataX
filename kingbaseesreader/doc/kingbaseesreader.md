@@ -231,10 +231,10 @@ KingbaseesReader插件实现了从KingbaseES读取数据。在底层实现上，
 | -------- | -----  |
 | Long     |bigint, bigserial, integer, smallint, serial |
 | Double   |double precision, money, numeric, real |
-| String   |varchar, char, text, bit, inet|
+| String   |varchar, char, text, bit, inet, clob|
 | Date     |date, time, timestamp |
 | Boolean  |bool|
-| Bytes    |bytea|
+| Bytes    |bytea, blob|
 
 请注意:
 

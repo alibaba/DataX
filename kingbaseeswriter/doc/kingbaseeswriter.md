@@ -13,16 +13,18 @@ KingbaseesWriter面向ETL开发工程师，他们使用KingbaseesWriter从数仓
 
 ## 2 实现原理
 
-KingbaseesWriter通过 DataX 框架获取 Reader 生成的协议数据，根据你配置生成相应的SQL插入语句
+KingbaseesWriter通过 DataX 框架获取 Reader 生成的协议数据，根据你配置的 `writeMode` 生成语句
 
 
 * `insert into...`(当主键/唯一性索引冲突时会写不进去冲突的行)
 
+##### 或者
+
+* `insert into... ON CONFLICT(xxx) DO UPDATE...`(没有遇到主键/唯一性索引冲突时，与 insert into 行为一致，冲突时会用新行替换原有行所有字段) 的语句写入数据到KingbaseES。
+
 <br />
 
-    注意：
-    1. 目的表所在数据库必须是主库才能写入数据；整个任务至少需具备 insert into...的权限，是否需要其他权限，取决于你任务配置中在 preSql 和 postSql 中指定的语句。
-    2. KingbaseesWriter和MysqlWriter不同，不支持配置writeMode参数。
+    注意：目的表所在数据库必须是主库才能写入数据；整个任务至少需要具备 insert的权限，如果是第二种形式还需要具备update权限以及冲突约束字段的select权限。是否需要其他权限，取决于你任务配置中在 preSql 和 postSql 中指定的语句。
 
 
 ## 3 功能说明
@@ -72,6 +74,7 @@ KingbaseesWriter通过 DataX 框架获取 Reader 生成的协议数据，根据�
                 "writer": {
                     "name": "kingbaseeswriter",
                     "parameter": {
+                        "writeMode": "insert",
                         "username": "xx",
                         "password": "xx",
                         "column": [
@@ -83,7 +86,7 @@ KingbaseesWriter通过 DataX 框架获取 Reader 生成的协议数据，根据�
                         ],
                         "connection": [
                             {
-                                "jdbcUrl": "jdbc:kingbase8://127.0.0.1:3002/datax",
+                                "jdbcUrl": "jdbc:kingbase8://127.0.0.1:3002/DATAX",
                                 "table": [
                                     "test"
                                 ]
@@ -166,6 +169,26 @@ KingbaseesWriter通过 DataX 框架获取 Reader 生成的协议数据，根据�
 
   * 默认值：无 <br />
 
+* **writeMode**
+
+    * 描述：控制写入数据到目标表采用 `insert into` 或者 `ON CONFLICT(xxx) DO UPDATE` 语句<br />
+
+    * 必选：是 <br />
+
+    * 所有选项：insert/update <br />
+
+    * 默认值：insert <br />
+
+* **conflictColumn**
+
+  * 描述：当writeMode为update时指定约束字段,如有多个，字段之间用英文逗号分隔。例如: "conflictColumn": ["id","name"]<br />
+
+               注意：1、指定的约束字段必须为主键或唯一索引
+
+  * 必选：writeMode为update时必选 <br />
+
+  * 默认值：否 <br />
+
 * **batchSize**
 
 	* 描述：一次性批量提交的记录数大小，该值可以极大减少DataX与KingbaseES的网络交互次数，并提升整体吞吐量。但是该值设置过大可能会造成DataX运行进程OOM情况。<br />
@@ -184,10 +207,10 @@ KingbaseesWriter通过 DataX 框架获取 Reader 生成的协议数据，根据�
 | -------- | -----  |
 | Long     |bigint, bigserial, integer, smallint, serial |
 | Double   |double precision, money, numeric, real |
-| String   |varchar, char, text, bit|
+| String   |varchar, char, text, bit, clob|
 | Date     |date, time, timestamp |
 | Boolean  |bool|
-| Bytes    |bytea|
+| Bytes    |bytea, blob|
 
 
 ## FAQ

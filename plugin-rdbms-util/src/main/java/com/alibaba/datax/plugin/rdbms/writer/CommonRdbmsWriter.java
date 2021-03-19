@@ -198,6 +198,7 @@ public class CommonRdbmsWriter {
         protected String writeMode;
         protected boolean emptyAsNull;
         protected Triple<List<String>, List<Integer>, List<String>> resultSetMetaData;
+        protected List<String> conflictColumns;
 
         public Task(DataBaseType dataBaseType) {
             this.dataBaseType = dataBaseType;
@@ -233,6 +234,10 @@ public class CommonRdbmsWriter {
             this.batchByteSize = writerSliceConfig.getInt(Key.BATCH_BYTE_SIZE, Constant.DEFAULT_BATCH_BYTE_SIZE);
 
             writeMode = writerSliceConfig.getString(Key.WRITE_MODE, "INSERT");
+            if (dataBaseType == DataBaseType.KingbaseES && writeMode.trim().toLowerCase().startsWith("update")){
+                conflictColumns = writerSliceConfig.getNecessaryList(Key.CONFLICT_COLUMN, String.class, DBUtilErrorCode.REQUIRED_VALUE);
+            }
+
             emptyAsNull = writerSliceConfig.getBool(Key.EMPTY_AS_NULL, true);
             INSERT_OR_REPLACE_TEMPLATE = writerSliceConfig.getString(Constant.INSERT_OR_REPLACE_TEMPLATE_MARK);
             this.writeRecordSql = String.format(INSERT_OR_REPLACE_TEMPLATE, this.table);
@@ -403,6 +408,9 @@ public class CommonRdbmsWriter {
             for (int i = 0; i < this.columnNumber; i++) {
                 int columnSqltype = this.resultSetMetaData.getMiddle().get(i);
                 preparedStatement = fillPreparedStatementColumnType(preparedStatement, i, columnSqltype, record.getColumn(i));
+                if (dataBaseType == DataBaseType.KingbaseES && writeMode.trim().toLowerCase().startsWith("update")){
+                    preparedStatement = fillPreparedStatementColumnType(preparedStatement, i + this.columnNumber, columnSqltype, record.getColumn(i));
+                }
             }
 
             return preparedStatement;
@@ -451,7 +459,7 @@ public class CommonRdbmsWriter {
 
                 // for mysql bug, see http://bugs.mysql.com/bug.php?id=35115
                 case Types.DATE:
-                    if (this.resultSetMetaData.getRight().get(columnIndex)
+                    if (this.resultSetMetaData.getRight().get(columnIndex > this.columnNumber ? columnIndex - this.columnNumber : columnIndex)
                             .equalsIgnoreCase("year")) {
                         if (column.asBigInteger() == null) {
                             preparedStatement.setString(columnIndex + 1, null);
@@ -556,7 +564,7 @@ public class CommonRdbmsWriter {
                     forceUseUpdate = true;
                 }
 
-                INSERT_OR_REPLACE_TEMPLATE = WriterUtil.getWriteTemplate(columns, valueHolders, writeMode, dataBaseType, forceUseUpdate);
+                INSERT_OR_REPLACE_TEMPLATE = WriterUtil.getWriteTemplate(columns, valueHolders, conflictColumns, writeMode, dataBaseType, forceUseUpdate);
                 writeRecordSql = String.format(INSERT_OR_REPLACE_TEMPLATE, this.table);
             }
         }

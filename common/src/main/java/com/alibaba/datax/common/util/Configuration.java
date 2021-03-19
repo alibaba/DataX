@@ -156,6 +156,17 @@ public class Configuration {
         return value;
     }
 
+    @SuppressWarnings("unchecked")
+    public <T> List<T> getNecessaryList(final String path, Class<T> t, ErrorCode errorCode) {
+        List<T> result = (List<T>) this.getList(path, List.class);
+        if (result == null || result.size() == 0) {
+            throw DataXException.asDataXException(errorCode,
+                    String.format("您提供配置文件有误，[%s]是必填参数，不允许为空或者留白 .", path));
+        }
+
+        return result;
+    }
+
 	/**
 	 * 根据用户提供的json path，寻址具体的对象。
 	 * <p/>

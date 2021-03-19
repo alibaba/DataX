@@ -108,7 +108,7 @@ public final class WriterUtil {
         }
     }
 
-    public static String getWriteTemplate(List<String> columnHolders, List<String> valueHolders, String writeMode, DataBaseType dataBaseType, boolean forceUseUpdate) {
+    public static String getWriteTemplate(List<String> columnHolders, List<String> valueHolders, List<String> conflictColumnHolders, String writeMode, DataBaseType dataBaseType, boolean forceUseUpdate) {
         boolean isWriteModeLegal = writeMode.trim().toLowerCase().startsWith("insert")
                 || writeMode.trim().toLowerCase().startsWith("replace")
                 || writeMode.trim().toLowerCase().startsWith("update");
@@ -120,7 +120,8 @@ public final class WriterUtil {
         // && writeMode.trim().toLowerCase().startsWith("replace")
         String writeDataSqlTemplate;
         if (forceUseUpdate ||
-                ((dataBaseType == DataBaseType.MySql || dataBaseType == DataBaseType.Tddl) && writeMode.trim().toLowerCase().startsWith("update"))
+                ((dataBaseType == DataBaseType.MySql || dataBaseType == DataBaseType.Tddl || dataBaseType == DataBaseType.KingbaseES)
+                && writeMode.trim().toLowerCase().startsWith("update"))
                 ) {
             //update只在mysql下使用
 
@@ -128,13 +129,17 @@ public final class WriterUtil {
                     .append("INSERT INTO %s (").append(StringUtils.join(columnHolders, ","))
                     .append(") VALUES(").append(StringUtils.join(valueHolders, ","))
                     .append(")")
-                    .append(onDuplicateKeyUpdateString(columnHolders))
+                    .append(dataBaseType == DataBaseType.KingbaseES ? onConflictKeyUpdateString(columnHolders, valueHolders, conflictColumnHolders):onDuplicateKeyUpdateString(columnHolders))
                     .toString();
         } else {
 
             //这里是保护,如果其他错误的使用了update,需要更换为replace
             if (writeMode.trim().toLowerCase().startsWith("update")) {
                 writeMode = "replace";
+            }
+            //金仓数据库只支持insert/update两种模式,如果错误地使用了replace需要修改为insert
+            if (dataBaseType == DataBaseType.KingbaseES && writeMode.trim().toLowerCase().startsWith("replace")) {
+                writeMode = "insert";
             }
             writeDataSqlTemplate = new StringBuilder().append(writeMode)
                     .append(" INTO %s (").append(StringUtils.join(columnHolders, ","))
@@ -162,6 +167,31 @@ public final class WriterUtil {
             sb.append("=VALUES(");
             sb.append(column);
             sb.append(")");
+        }
+
+        return sb.toString();
+    }
+
+    public static String onConflictKeyUpdateString(List<String> columnHolders, List<String> valueHolders, List<String> conflictColumnHolders){
+        if (columnHolders == null || columnHolders.size() < 1) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        //for KingbaseES: ON CONFLICT (id) DO UPDATE SET column=values
+        sb.append(" ON CONFLICT (");
+        sb.append(StringUtils.join(conflictColumnHolders, ","));
+        sb.append(") DO UPDATE SET ");
+        boolean first = true;
+        int col = 0;
+        for (String column : columnHolders) {
+            if (!first) {
+                sb.append(",");
+            } else {
+                first = false;
+            }
+            sb.append(column);
+            sb.append(" = ");
+            sb.append(valueHolders.get(col++));
         }
 
         return sb.toString();
