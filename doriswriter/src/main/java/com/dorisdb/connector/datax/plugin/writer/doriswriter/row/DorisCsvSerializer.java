@@ -6,7 +6,7 @@ import com.alibaba.datax.common.element.Record;
 
 import com.google.common.base.Strings;
 
-public class DorisCsvSerializer implements DorisISerializer {
+public class DorisCsvSerializer extends DorisBaseSerializer implements DorisISerializer {
     
     private static final long serialVersionUID = 1L;
 
@@ -22,7 +22,7 @@ public class DorisCsvSerializer implements DorisISerializer {
     public String serialize(Record row) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < row.getColumnNumber(); i++) {
-            Object value = row.getColumn(i).getRawData();
+            String value = fieldConvertion(row.getColumn(i));
             sb.append(null == value ? "\\N" : value);
             if (i < row.getColumnNumber() - 1) {
                 sb.append(columnSeparator);

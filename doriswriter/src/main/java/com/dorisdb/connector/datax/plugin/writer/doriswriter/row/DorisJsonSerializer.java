@@ -7,7 +7,7 @@ import java.util.Map;
 import com.alibaba.datax.common.element.Record;
 import com.alibaba.fastjson.JSON;
 
-public class DorisJsonSerializer implements DorisISerializer {
+public class DorisJsonSerializer extends DorisBaseSerializer implements DorisISerializer {
 
     private static final long serialVersionUID = 1L;
     
@@ -25,7 +25,8 @@ public class DorisJsonSerializer implements DorisISerializer {
         Map<String, Object> rowMap = new HashMap<>(fieldNames.size());
         int idx = 0;
         for (String fieldName : fieldNames) {
-            rowMap.put(fieldName, row.getColumn(idx++).getRawData());
+            rowMap.put(fieldName, fieldConvertion(row.getColumn(idx)));
+            idx++;
         }
         return JSON.toJSONString(rowMap);
     }
