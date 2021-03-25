@@ -124,7 +124,7 @@ public class DorisWriter extends Writer {
         @Override
         public void post() {
             try {
-                writerManager.flush(writerManager.createBatchLabel());
+                writerManager.close();
             } catch (Exception e) {
                 throw DataXException.asDataXException(DBUtilErrorCode.WRITE_DATA_ERROR, e);
             }

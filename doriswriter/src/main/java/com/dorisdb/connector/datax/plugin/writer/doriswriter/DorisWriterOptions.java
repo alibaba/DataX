@@ -32,6 +32,7 @@ public class DorisWriterOptions implements Serializable {
     private static final String KEY_POST_SQL = "postSql";
     private static final String KEY_JDBC_URL = "jdbcUrl";
     private static final String KEY_LOAD_URL = "loadUrl";
+    private static final String KEY_FLUSH_QUEUE_LENGTH = "flushQueueLength";
     private static final String KEY_LOAD_PROPS = "loadProps";
 
     private final Configuration options;
@@ -95,6 +96,11 @@ public class DorisWriterOptions implements Serializable {
 
     public long getBatchSize() {
         return BATCH_BYTES;
+    }
+    
+    public int getFlushQueueLength() {
+        Integer len = options.getInt(KEY_FLUSH_QUEUE_LENGTH);
+        return null == len ? 1 : len;
     }
 
     public StreamLoadFormat getStreamLoadFormat() {

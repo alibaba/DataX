@@ -37,7 +37,7 @@ public class DorisStreamLoadVisitor {
         this.writerOptions = writerOptions;
     }
 
-    public void doStreamLoad(String label, List<String> labeledRows) throws IOException {
+    public void doStreamLoad(DorisFlushTuple flushData) throws IOException {
         String host = getAvailableHost();
         if (null == host) {
             throw new IOException("None of the host in `load_url` could be connected.");
@@ -49,7 +49,8 @@ public class DorisStreamLoadVisitor {
             .append(writerOptions.getTable())
             .append("/_stream_load")
             .toString();
-        Map<String, Object> loadResult = doHttpPut(loadUrl, label, joinRows(labeledRows));
+        LOG.debug(String.format("Start to join batch data: rows[%d] bytes[%d] label[%s].", flushData.getRows().size(), flushData.getBytes(), flushData.getLabel()));
+        Map<String, Object> loadResult = doHttpPut(loadUrl, flushData.getLabel(), joinRows(flushData.getRows()));
         final String keyStatus = "Status";
         if (null == loadResult || !loadResult.containsKey(keyStatus)) {
             throw new IOException("Unable to flush data to doris: unknown result status.");
