@@ -320,7 +320,7 @@ public class ESWriter extends Writer {
                     String columnName = columnList.get(i).getName();
                     ESFieldType columnType = typeList.get(i);
                     //如果是数组类型，那它传入的必是字符串类型
-                    if (columnList.get(i).isArray() != null && columnList.get(i).isArray()) {
+                    if (columnList.get(i).isArray() != null && columnList.get(i).isArray() && column.asString() != null) {
                         String[] dataList = column.asString().split(splitter);
                         if (!columnType.equals(ESFieldType.DATE)) {
                             data.put(columnName, dataList);
