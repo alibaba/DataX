@@ -169,8 +169,14 @@ DorisWriter 插件实现了写入数据到 Doris 主库的目的表的功能。�
 ### 3.3 类型转换
 
 默认传入的数据均会被转为字符串，并以`\t`作为列分隔符，`\n`作为行分隔符，组成`csv`文件进行StreamLoad导入操作。
+如需更改列分隔符， 则正确配置 `loadProps` 即可：
+```json
+"loadProps": {
+    "column_separator": "\\x01"
+}
+```
 
-如需更改导入格式为`json`, 则正确配置 `loadProps` 即可：
+如需更改导入格式为`json`， 则正确配置 `loadProps` 即可：
 ```json
 "loadProps": {
     "format": "json",
