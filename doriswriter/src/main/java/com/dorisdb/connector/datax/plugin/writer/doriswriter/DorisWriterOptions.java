@@ -16,7 +16,7 @@ public class DorisWriterOptions implements Serializable {
     private static final long MEGA_BYTES_SCALE = KILO_BYTES_SCALE * KILO_BYTES_SCALE;
     private static final int MAX_RETRIES = 1;
     private static final int BATCH_ROWS = 500000;
-    private static final long BATCH_BYTES = 100 * MEGA_BYTES_SCALE;
+    private static final long BATCH_BYTES = 90 * MEGA_BYTES_SCALE;
 
     private static final String KEY_LOAD_PROPS_FORMAT = "format";
     public enum StreamLoadFormat {
