@@ -70,7 +70,7 @@
         <module>cassandrareader</module>
         <module>gdbreader</module>
         <module>oscarreader</module>
-        
+
         <!-- writer -->
         <module>mysqlwriter</module>
         <module>drdswriter</module>

@@ -42,8 +42,10 @@
         </dependency>
         <dependency>
             <groupId>com.oscar</groupId>
-            <artifactId>oscarJDBC</artifactId>
-            <version>1.0.0</version>
+            <artifactId>oscar</artifactId>
+            <version>7.0.8</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/src/main/lib/oscarJDBC.jar</systemPath>
         </dependency>
     </dependencies>
 

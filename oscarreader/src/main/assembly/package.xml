@@ -19,6 +19,7 @@
          <fileSet>
             <directory>src/main/lib</directory>
             <includes>
+                <include>oscarJDBC.jar</include>
             </includes>
             <outputDirectory>plugin/reader/oscarreader/libs</outputDirectory>
         </fileSet>
