@@ -1,0 +1,14 @@
+{
+    "name": "oscarreader",
+    "parameter": {
+        "username": "",
+        "password": "",
+        "column": [],
+        "connection": [
+            {
+                "table": [],
+                "jdbcUrl": []
+            }
+        ]
+    }
+}
