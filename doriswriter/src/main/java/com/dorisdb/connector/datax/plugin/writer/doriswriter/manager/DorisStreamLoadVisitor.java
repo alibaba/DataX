@@ -3,10 +3,12 @@ package com.dorisdb.connector.datax.plugin.writer.doriswriter.manager;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 import com.alibaba.fastjson.JSON;
 import com.dorisdb.connector.datax.plugin.writer.doriswriter.DorisWriterOptions;
+import com.dorisdb.connector.datax.plugin.writer.doriswriter.row.DorisDelimiterParser;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpEntity;
@@ -93,7 +95,12 @@ public class DorisStreamLoadVisitor {
 
     private byte[] joinRows(List<String> rows) {
         if (DorisWriterOptions.StreamLoadFormat.CSV.equals(writerOptions.getStreamLoadFormat())) {
-            return String.join("\n", rows).getBytes(StandardCharsets.UTF_8);
+            Map<String, Object> props = writerOptions.getLoadProps();
+            String lineDelimiter = "\n";
+            if (null != props && props.containsKey("row_delimiter")) {
+                lineDelimiter = DorisDelimiterParser.parse(String.valueOf(props.get("row_delimiter")), "\n");
+            }
+            return (String.join(lineDelimiter, rows) + lineDelimiter).getBytes(StandardCharsets.UTF_8);
         }
         if (DorisWriterOptions.StreamLoadFormat.JSON.equals(writerOptions.getStreamLoadFormat())) {
             return new StringBuilder("[").append(String.join(",", rows)).append("]").toString().getBytes(StandardCharsets.UTF_8);

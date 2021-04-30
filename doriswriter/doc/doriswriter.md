@@ -157,6 +157,22 @@ DorisWriter 插件实现了写入数据到 Doris 主库的目的表的功能。�
 
 	* 默认值：无 <br />
 
+* **maxBatchRows**
+
+	* 描述：单次StreamLoad导入的最大行数 <br />
+
+ 	* 必选：否 <br />
+
+	* 默认值：500000 (50W) <br />
+
+* **maxBatchSize**
+
+	* 描述：单次StreamLoad导入的最大字节数。 <br />
+
+ 	* 必选：否 <br />
+
+	* 默认值：104857600 (100M)
+
 * **loadProps**
 
 	* 描述：StreamLoad 的请求参数，详情参照StreamLoad介绍页面。 <br />
@@ -172,7 +188,8 @@ DorisWriter 插件实现了写入数据到 Doris 主库的目的表的功能。�
 如需更改列分隔符， 则正确配置 `loadProps` 即可：
 ```json
 "loadProps": {
-    "column_separator": "\\x01"
+    "column_separator": "\\x01",
+    "row_delimiter": "\\x02"
 }
 ```
 
