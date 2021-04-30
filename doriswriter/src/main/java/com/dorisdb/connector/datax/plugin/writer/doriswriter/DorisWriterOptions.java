@@ -31,6 +31,8 @@ public class DorisWriterOptions implements Serializable {
     private static final String KEY_PRE_SQL = "preSql";
     private static final String KEY_POST_SQL = "postSql";
     private static final String KEY_JDBC_URL = "jdbcUrl";
+    private static final String KEY_MAX_BATCH_ROWS = "maxBatchRows";
+    private static final String KEY_MAX_BATCH_SIZE = "maxBatchSize";
     private static final String KEY_LOAD_URL = "loadUrl";
     private static final String KEY_FLUSH_QUEUE_LENGTH = "flushQueueLength";
     private static final String KEY_LOAD_PROPS = "loadProps";
@@ -91,11 +93,13 @@ public class DorisWriterOptions implements Serializable {
     }
 
     public int getBatchRows() {
-        return BATCH_ROWS;
+        Integer rows = options.getInt(KEY_MAX_BATCH_ROWS);
+        return null == rows ? BATCH_ROWS : rows;
     }
 
     public long getBatchSize() {
-        return BATCH_BYTES;
+        Long size = options.getLong(KEY_MAX_BATCH_SIZE);
+        return null == size ? BATCH_BYTES : size;
     }
     
     public int getFlushQueueLength() {
