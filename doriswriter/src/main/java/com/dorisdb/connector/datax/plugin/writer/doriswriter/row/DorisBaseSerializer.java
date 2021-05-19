@@ -33,6 +33,9 @@ public class DorisBaseSerializer {
         if (null == col.getRawData()) {
             return null;
         }
+        if (Type.BOOL == col.getType()) {
+            return String.valueOf(col.asLong());
+        }
         if (Type.DATE != col.getType()) {
             return col.asString();
         }
