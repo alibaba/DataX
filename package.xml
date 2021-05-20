@@ -33,7 +33,7 @@
             <outputDirectory>datax</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>oceanbasereader/target/datax/</directory>
+            <directory>oceanbasev10reader/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
             </includes>
@@ -380,6 +380,13 @@
         </fileSet>
         <fileSet>
             <directory>oscarwriter/target/datax/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>datax</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>oceanbasev10writer/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
             </includes>

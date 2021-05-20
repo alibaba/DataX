@@ -21,7 +21,8 @@ public enum DataBaseType {
     ADS("ads","com.mysql.jdbc.Driver"),
     ClickHouse("clickhouse", "ru.yandex.clickhouse.ClickHouseDriver"),
     KingbaseES("kingbasees", "com.kingbase8.Driver"),
-    Oscar("oscar", "com.oscar.Driver");
+    Oscar("oscar", "com.oscar.Driver"),
+    OceanBase("oceanbase", "com.alipay.oceanbase.jdbc.Driver");
 
 
     private String typeName;
@@ -42,6 +43,7 @@ public enum DataBaseType {
         switch (this) {
             case MySql:
             case DRDS:
+            case OceanBase:
                 suffix = "yearIsDateType=false&zeroDateTimeBehavior=convertToNull&tinyInt1isBit=false&rewriteBatchedStatements=true";
                 if (jdbc.contains("?")) {
                     result = jdbc + "&" + suffix;
@@ -107,6 +109,14 @@ public enum DataBaseType {
             case KingbaseES:
                 break;
             case Oscar:
+                break;
+            case OceanBase:
+                suffix = "yearIsDateType=false&zeroDateTimeBehavior=convertToNull&tinyInt1isBit=false&rewriteBatchedStatements=true";
+                if (jdbc.contains("?")) {
+                    result = jdbc + "&" + suffix;
+                } else {
+                    result = jdbc + "?" + suffix;
+                }
                 break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type.");
