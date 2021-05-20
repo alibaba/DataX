@@ -358,7 +358,7 @@ public final class DBUtil {
                                                    String url, String user, String pass, String socketTimeout) {
 
         //ob10的处理
-        if (url.startsWith(com.alibaba.datax.plugin.rdbms.writer.Constant.OB10_SPLIT_STRING) && dataBaseType == DataBaseType.MySql) {
+        if (url.startsWith(com.alibaba.datax.plugin.rdbms.writer.Constant.OB10_SPLIT_STRING)) {
             String[] ss = url.split(com.alibaba.datax.plugin.rdbms.writer.Constant.OB10_SPLIT_STRING_PATTERN);
             if (ss.length != 3) {
                 throw DataXException
@@ -367,7 +367,7 @@ public final class DBUtil {
             }
             LOG.info("this is ob1_0 jdbc url.");
             user = ss[1].trim() +":"+user;
-            url = ss[2];
+            url = ss[2].replace("jdbc:mysql:", "jdbc:oceanbase:");
             LOG.info("this is ob1_0 jdbc url. user="+user+" :url="+url);
         }
 
