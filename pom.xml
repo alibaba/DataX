@@ -107,6 +107,7 @@
         <module>hbase20xsqlreader</module>
         <module>hbase20xsqlwriter</module>
         <module>kuduwriter</module>
+        <module>doriswriter</module>
     </modules>
 
     <dependencyManagement>
