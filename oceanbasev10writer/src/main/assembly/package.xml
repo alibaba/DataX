@@ -23,6 +23,13 @@
             </includes>
             <outputDirectory>plugin/writer/oceanbasev10writer</outputDirectory>
         </fileSet>
+        <fileSet>
+            <directory>src/main/libs</directory>
+            <includes>
+                <include>*.jar</include>
+            </includes>
+            <outputDirectory>plugin/writer/oceanbasev10writer/libs</outputDirectory>
+        </fileSet>
     </fileSets>
 
     <dependencySets>
