@@ -17,6 +17,11 @@ public class KeyConstant {
      */
     public static final String DOCUMENT_TYPE = "document";
     /**
+     * 与{@link #DOCUMENT_TYPE}一样，都作用于{@link org.bson.Document}，
+     * 但会将字段解析为json，并且不支持提取嵌套字段
+     */
+    public static final String JSON_TYPE = "json";
+    /**
      * mongodb 的 host 地址
      */
     public static final String MONGO_ADDRESS = "address";
@@ -93,5 +98,9 @@ public class KeyConstant {
 
     public static boolean isDocumentType(String type) {
         return type.startsWith(DOCUMENT_TYPE);
+    }
+
+    public static boolean isJsonType(String type) {
+        return type.startsWith(JSON_TYPE);
     }
 }
