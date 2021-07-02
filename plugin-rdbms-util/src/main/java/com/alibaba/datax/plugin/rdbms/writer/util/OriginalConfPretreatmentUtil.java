@@ -100,9 +100,9 @@ public final class OriginalConfPretreatmentUtil {
             boolean isPreCheck = originalConfig.getBool(Key.DRYRUN, false);
             List<String> allColumns;
             if (isPreCheck){
-                allColumns = DBUtil.getTableColumnsByConn(DATABASE_TYPE,connectionFactory.getConnecttionWithoutRetry(), oneTable, connectionFactory.getConnectionInfo());
+                allColumns = DBUtil.getTableColumnsByConn(DATABASE_TYPE,connectionFactory.getConnectionWithoutRetry(), oneTable, connectionFactory.getConnectionInfo());
             }else{
-                allColumns = DBUtil.getTableColumnsByConn(DATABASE_TYPE,connectionFactory.getConnecttion(), oneTable, connectionFactory.getConnectionInfo());
+                allColumns = DBUtil.getTableColumnsByConn(DATABASE_TYPE,connectionFactory.getConnection(), oneTable, connectionFactory.getConnectionInfo());
             }
 
             LOG.info("table:[{}] all columns:[\n{}\n].", oneTable,
@@ -122,7 +122,7 @@ public final class OriginalConfPretreatmentUtil {
                 ListUtil.makeSureNoValueDuplicate(userConfiguredColumns, false);
 
                 // 检查列是否都为数据库表中正确的列（通过执行一次 select column from table 进行判断）
-                DBUtil.getColumnMetaData(connectionFactory.getConnecttion(), oneTable,StringUtils.join(userConfiguredColumns, ","));
+                DBUtil.getColumnMetaData(connectionFactory.getConnection(), oneTable,StringUtils.join(userConfiguredColumns, ","));
             }
         }
     }
