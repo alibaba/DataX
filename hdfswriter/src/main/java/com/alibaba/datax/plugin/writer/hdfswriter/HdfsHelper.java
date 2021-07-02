@@ -12,6 +12,7 @@ import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.hadoop.fs.*;
+import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -25,6 +26,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -422,6 +424,7 @@ public  class HdfsHelper {
                     objectInspector = ObjectInspectorFactory.getReflectionObjectInspector(Short.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
                     break;
                 case INT:
+                case INTEGER:
                     objectInspector = ObjectInspectorFactory.getReflectionObjectInspector(Integer.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
                     break;
                 case BIGINT:
@@ -433,6 +436,9 @@ public  class HdfsHelper {
                 case DOUBLE:
                     objectInspector = ObjectInspectorFactory.getReflectionObjectInspector(Double.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
                     break;
+                case DECIMAL:
+                	objectInspector = ObjectInspectorFactory.getReflectionObjectInspector(BigDecimal.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+                	break;
                 case TIMESTAMP:
                     objectInspector = ObjectInspectorFactory.getReflectionObjectInspector(java.sql.Timestamp.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
                     break;
@@ -504,6 +510,7 @@ public  class HdfsHelper {
                                 recordList.add(Short.valueOf(rowData));
                                 break;
                             case INT:
+                            case INTEGER:
                                 recordList.add(Integer.valueOf(rowData));
                                 break;
                             case BIGINT:
@@ -515,6 +522,9 @@ public  class HdfsHelper {
                             case DOUBLE:
                                 recordList.add(column.asDouble());
                                 break;
+                            case DECIMAL:
+                            	recordList.add(column.asBigDecimal());
+                            	break;
                             case STRING:
                             case VARCHAR:
                             case CHAR:

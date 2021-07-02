@@ -24,6 +24,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by haiwei.luo on 14-9-17.
@@ -63,6 +65,17 @@ public class TxtFileWriter extends Writer {
             String path = this.writerSliceConfig.getNecessaryValue(Key.PATH,
                     TxtFileWriterErrorCode.REQUIRED_VALUE);
 
+            String fieldDelimiter = this.writerSliceConfig.getString(com.alibaba.datax.plugin.unstructuredstorage.writer.Key.FIELD_DELIMITER);
+            if(null != fieldDelimiter) {
+            	String pattern = "&#(\\d{1,3});";
+        		Pattern r = Pattern.compile(pattern);
+        		Matcher m = r.matcher(fieldDelimiter);
+        		if (m.find()) {
+        			char code = (char)Integer.parseInt(m.group(1));
+        			this.writerSliceConfig.set(com.alibaba.datax.plugin.unstructuredstorage.writer.Key.FIELD_DELIMITER, code);
+        			LOG.info(String.format("fieldDelimiter配置为ASCII实体编码[%s], 转换为字符[%c]", fieldDelimiter, code));
+        		}
+            }
             try {
                 // warn: 这里用户需要配一个目录
                 File dir = new File(path);
