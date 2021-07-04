@@ -16,6 +16,7 @@ import io.searchbox.indices.DeleteIndex;
 import io.searchbox.indices.IndicesExists;
 import io.searchbox.indices.aliases.*;
 import io.searchbox.indices.mapping.PutMapping;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,7 @@ import java.util.concurrent.TimeUnit;
  * Created by xiongfeng.bxf on 17/2/8.
  */
 public class ESClient {
+
     private static final Logger log = LoggerFactory.getLogger(ESClient.class);
 
     private JestClient jestClient;
@@ -49,7 +51,6 @@ public class ESClient {
         JestClientFactory factory = new JestClientFactory();
         Builder httpClientConfig = new HttpClientConfig
                 .Builder(endpoint)
-                .setPreemptiveAuth(new HttpHost(endpoint))
                 .multiThreaded(multiThread)
                 .connTimeout(30000)
                 .readTimeout(readTimeout)
@@ -58,8 +59,9 @@ public class ESClient {
                 .discoveryEnabled(discovery)
                 .discoveryFrequency(5l, TimeUnit.MINUTES);
 
-        if (!("".equals(user) || "".equals(passwd))) {
+        if (!(StringUtils.isBlank(user) || StringUtils.isBlank(passwd))) {
             httpClientConfig.defaultCredentials(user, passwd);
+            httpClientConfig.setPreemptiveAuth(HttpHost.create(endpoint));
         }
 
         factory.setHttpClientConfig(httpClientConfig.build());
