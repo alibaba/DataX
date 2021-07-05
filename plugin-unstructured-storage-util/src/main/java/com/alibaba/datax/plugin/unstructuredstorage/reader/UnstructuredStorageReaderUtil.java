@@ -434,7 +434,7 @@ public class UnstructuredStorageReaderUtil {
 							break;
 						case DATE:
 							try {
-								if (columnValue == null) {
+								if(StringUtils.isBlank(columnValue)) {
 									Date date = null;
 									columnGenerated = new DateColumn(date);
 								} else {
