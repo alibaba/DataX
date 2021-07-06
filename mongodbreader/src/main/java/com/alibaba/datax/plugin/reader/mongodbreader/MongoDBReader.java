@@ -6,12 +6,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import com.alibaba.datax.common.element.BoolColumn;
-import com.alibaba.datax.common.element.DateColumn;
-import com.alibaba.datax.common.element.DoubleColumn;
-import com.alibaba.datax.common.element.LongColumn;
-import com.alibaba.datax.common.element.Record;
-import com.alibaba.datax.common.element.StringColumn;
+import com.alibaba.datax.common.element.*;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordSender;
 import com.alibaba.datax.common.spi.Reader;
@@ -127,6 +122,7 @@ public class MongoDBReader extends Reader {
                 Iterator columnItera = mongodbColumnMeta.iterator();
                 while (columnItera.hasNext()) {
                     JSONObject column = (JSONObject)columnItera.next();
+                    String columnType = column.getString(KeyConstant.COLUMN_TYPE).toLowerCase();
                     Object tempCol = item.get(column.getString(KeyConstant.COLUMN_NAME));
                     if (tempCol == null) {
                         if (KeyConstant.isDocumentType(column.getString(KeyConstant.COLUMN_TYPE))) {
@@ -149,8 +145,28 @@ public class MongoDBReader extends Reader {
                         }
                     }
                     if (tempCol == null) {
-                        //continue; 这个不能直接continue会导致record到目的端错位
-                        record.addColumn(new StringColumn(null));
+//                        continue;//如果没有这个字段，就跳过
+                        if ("int".equals(columnType)) {
+                            record.addColumn(new LongColumn(0));
+                        }
+                        else if ("long".equals(columnType)) {
+                            record.addColumn(new LongColumn(0));
+                        }
+                        else if ("boolean".equals(columnType)) {
+                            record.addColumn(new BoolColumn(false));
+                        }
+                        else if ("double".equals(columnType)) {
+                            record.addColumn(new DoubleColumn(0.0));
+                        }
+                        else if ("date".equals(columnType)) {
+                            record.addColumn(new DateColumn(0L));
+                        }
+                        else if ("bytes".equals(columnType)) {
+                            record.addColumn(new BytesColumn(new byte[0]));
+                        }
+                        else {
+                            record.addColumn(new StringColumn(""));
+                        }
                     }else if (tempCol instanceof Double) {
                         //TODO deal with Double.isNaN()
                         record.addColumn(new DoubleColumn((Double) tempCol));
