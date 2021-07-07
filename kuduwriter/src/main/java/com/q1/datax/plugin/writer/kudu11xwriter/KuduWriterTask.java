@@ -134,7 +134,30 @@ public class KuduWriterTask {
                                         break;
                                     case BOOLEAN:
                                         synchronized (lock) {
-                                            row.addBoolean(name, Boolean.getBoolean(rawData));
+                                            if("1".equals(rawData) || "true".equalsIgnoreCase(rawData)){
+                                                row.addBoolean(name, true);
+                                            }else if("0".equals(rawData) || "false".equalsIgnoreCase(rawData)){
+                                                row.addBoolean(name, false);
+                                            }else{
+                                                row.addBoolean(name, Boolean.getBoolean(rawData));
+                                            }
+                                        }
+                                        break;
+                                    case TIMESTAMP:
+                                        synchronized (lock) {
+                                            if (column instanceof DateColumn){
+                                                DateColumn cols = (DateColumn)column;
+                                                switch(cols.getSubType()) {
+                                                    case DATE:
+                                                        row.addTimestamp(name,TimestampUtil.microsToTimestamp(cols.asLong()));
+                                                    case TIME:
+                                                        row.setNull(name);
+                                                    case DATETIME:
+                                                        row.addTimestamp(name,TimestampUtil.microsToTimestamp(cols.asLong()));
+                                                    default:
+                                                        row.setNull(name);                                                }
+                                            }
+
                                         }
                                         break;
                                     case STRING:
