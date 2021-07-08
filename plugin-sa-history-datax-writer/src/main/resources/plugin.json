@@ -1,0 +1,6 @@
+{
+    "name": "sahistorywriter",
+    "class": "cn.sensorsdata.datax.plugin.writer.SaWriter",
+    "description": "sa writer",
+    "developer": "cocowqw"
+}

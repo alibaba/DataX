@@ -1,0 +1,22 @@
+{
+    "name": "sahistoryreader",
+    "parameter": {
+        "username": "",
+        "password": "",
+        "column": [""],
+        "startTime": "",
+        "endTime": "",
+        "timeFieldName": "",
+        "timeInterval": 1000,
+        "datePattern": "",
+        "taskNum": 10,
+        "receivePageSize": 5,
+        "sa":{
+            "hiveUrl": "",
+            "table": ""
+         },
+        "where": "",
+        "useRowNumber": false,
+        "pageSize": 10000
+    }
+}

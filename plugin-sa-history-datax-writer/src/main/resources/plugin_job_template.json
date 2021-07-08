@@ -1,0 +1,50 @@
+{
+    "name": "sahistorywriter",
+    "parameter": {
+        "sdkDataAddress": "",
+        "saColumn": [
+            {
+                "index":0,
+                "targetColumnName": "",
+                "dataConverters":[
+                    {
+                        "type": "",
+                        "param": {
+                            "flag": true
+                        }
+                    },
+                    {
+                        "type": "",
+                        "param": {
+                            "format": ""
+                        }
+                    }
+                ]
+            },
+            {
+                "index":1,
+                "targetColumnName": "",
+                "dataConverters":[
+                    {
+                        "type": ""
+                    }
+                ]
+            }
+        ],
+        "type": "",
+        "track": {
+            "distinctIdColumn": "",
+            "isLoginId": true,
+            "eventName": ""
+        },
+        "user": {
+            "distinctIdColumn": "",
+            "isLoginId": true
+        },
+        "item": {
+            "itemType": "",
+            "itemIdColumn": "",
+            "typeIsColumn": false
+        }
+    }
+}

@@ -1,0 +1,6 @@
+{
+    "name": "sahistoryreader",
+    "class": "cn.sensorsdata.datax.plugin.reader.HiveReader",
+    "description": "hive reader",
+    "developer": "cocowqw"
+}
