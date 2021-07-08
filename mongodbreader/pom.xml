@@ -38,10 +38,10 @@
         </dependency>
         <!-- mongodb 依赖 -->
         <dependency>
-		  <groupId>org.mongodb</groupId>
-		  <artifactId>mongo-java-driver</artifactId>
-		  <version>3.2.2</version>
-		</dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongo-java-driver</artifactId>
+            <version>3.12.5</version>
+        </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
