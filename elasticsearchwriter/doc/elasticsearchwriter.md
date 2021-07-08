@@ -39,6 +39,7 @@
             "index": "test-1",
             "type": "default",
             "cleanup": true,
+            "delete": false,
             "settings": {"index" :{"number_of_shards": 1, "number_of_replicas": 0}},
             "discovery": false,
             "batchSize": 1000,
@@ -96,7 +97,12 @@
  * 默认值：index名
 
 * cleanup
- * 描述：是否删除原表
+ * 描述：是否清空原表(保留 index mapping)
+ * 必选：否
+ * 默认值：false
+ 
+* delete
+ * 描述：是否删除原表(不保留 index mapping)
  * 必选：否
  * 默认值：false
 

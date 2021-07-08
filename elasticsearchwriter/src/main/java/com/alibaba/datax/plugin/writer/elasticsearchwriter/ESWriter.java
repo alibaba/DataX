@@ -13,6 +13,7 @@ import com.alibaba.fastjson.TypeReference;
 import io.searchbox.client.JestResult;
 import io.searchbox.core.Bulk;
 import io.searchbox.core.BulkResult;
+import io.searchbox.core.DeleteByQuery;
 import io.searchbox.core.Index;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -65,8 +66,19 @@ public class ESWriter extends Writer {
 
             try {
                 boolean isIndicesExists = esClient.indicesExists(indexName);
-                if (Key.isCleanup(this.conf) && isIndicesExists) {
+                if (Key.isDelete(this.conf) && isIndicesExists) {
                     esClient.deleteIndex(indexName);
+                    log.info(String.format("Delete Elasticsearch index %s", indexName));
+                } else if (Key.isCleanup(this.conf) && !Key.isDelete(this.conf) && isIndicesExists) {
+                    String type = Key.getTypeName(this.conf);
+                    String query = "{\"query\": {\"match_all\" : {}}}";
+                    DeleteByQuery deleteAllDoc = new DeleteByQuery.Builder(query)
+                            .addIndex(indexName)
+                            .addType(type)
+                            .build();
+                    esClient.execute(deleteAllDoc);
+                    log.info(String.format("Truncate Elasticsearch index document but without" +
+                            "delete it mapping, with query sentence %s", deleteAllDoc));
                 }
                 // 强制创建,内部自动忽略已存在的情况
                 if (!esClient.createIndex(indexName, typeName, mappings, settings, dynamic)) {
