@@ -333,22 +333,25 @@ public class DFSUtil {
                 //TODO multy threads
                 InputSplit[] splits = in.getSplits(conf, 1);
 
-                RecordReader reader = in.getRecordReader(splits[0], conf, Reporter.NULL);
-                Object key = reader.createKey();
-                Object value = reader.createValue();
-                // 获取列信息
-                List<? extends StructField> fields = inspector.getAllStructFieldRefs();
+                RecordReader reader = null;
+                for (InputSplit is: splits) {
+                    reader = in.getRecordReader(is, conf, Reporter.NULL);
+                    Object key = reader.createKey();
+                    Object value = reader.createValue();
+                    // 获取列信息
+                    List<? extends StructField> fields = inspector.getAllStructFieldRefs();
 
-                List<Object> recordFields;
-                while (reader.next(key, value)) {
-                    recordFields = new ArrayList<Object>();
+                    List<Object> recordFields;
+                    while (reader.next(key, value)) {
+                        recordFields = new ArrayList<Object>();
 
-                    for (int i = 0; i <= columnIndexMax; i++) {
-                        Object field = inspector.getStructFieldData(value, fields.get(i));
-                        recordFields.add(field);
+                        for (int i = 0; i <= columnIndexMax; i++) {
+                            Object field = inspector.getStructFieldData(value, fields.get(i));
+                            recordFields.add(field);
+                        }
+                        transportOneRecord(column, recordFields, recordSender,
+                                taskPluginCollector, isReadAllColumns, nullFormat);
                     }
-                    transportOneRecord(column, recordFields, recordSender,
-                            taskPluginCollector, isReadAllColumns, nullFormat);
                 }
                 reader.close();
             } catch (Exception e) {
