@@ -1,0 +1,6 @@
+{
+    "name": "kudureader",
+    "class": "com.alibaba.datax.plugin.reader.kudureader.KuduReader",
+    "description": "useScene: prod. mechanism: via kuduclient connect kudu reader data concurrent.",
+    "developer": "alibaba"
+}
