@@ -301,9 +301,15 @@ public class ESWriter extends Writer {
                 DateTimeFormatter formatter = DateTimeFormat.forPattern(esColumn.getFormat());
                 date = formatter.withZone(dtz).parseDateTime(column.asString());
                 return date.toString();
-            } else if (column.getType() == Column.Type.DATE) {
+            } else if (column.getType() == Column.Type.DATE && column.getRawData() != null) {
                 date = new DateTime(column.asLong(), dtz);
-                return date.toString();
+                if (esColumn.getFormat() != null) {
+                    DateTimeFormatter dtf = DateTimeFormat.forPattern(esColumn.getFormat());
+                    return dtf.print(date);
+                } else {
+                    return date.toString();
+                }
+
             } else {
                 return column.asString();
             }
