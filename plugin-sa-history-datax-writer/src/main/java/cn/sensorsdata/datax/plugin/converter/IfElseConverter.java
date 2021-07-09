@@ -46,10 +46,16 @@ public class IfElseConverter implements Converter {
 
             } else {
 
-                String ifStr = (String) param.get("if");
-                String valStr = (String) param.get("value");
-                String elseStr = (String) param.get("else");
-                String sharedPool = (String) param.get("sharedPool");
+                String ifStr = null;
+                String valStr = null;
+                String elseStr = null;
+                String sharedPool = null;
+                try {
+                    ifStr = (String) param.get("if");
+                    valStr = (String) param.get("value");
+                    elseStr = (String) param.get("else");
+                    sharedPool = (String) param.get("sharedPool");
+                }catch (Exception e){}
                 if (StrUtil.isBlank(ifStr)) {
                     ifStr = RETURN_FALSE;
                 }

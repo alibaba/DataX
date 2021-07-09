@@ -30,7 +30,10 @@ public class IfNull2DefaultConverter implements Converter {
                 }
                 return trans(targetColumnName, o);
             } else {
-                JSONArray dataConvertersJsonArray = (JSONArray) param.get("dataConverters");
+                JSONArray dataConvertersJsonArray = null;
+                try {
+                    dataConvertersJsonArray = (JSONArray) param.get("dataConverters");
+                }catch (Exception e){}
                 if (Objects.isNull(dataConvertersJsonArray)) {
                     return o;
                 }

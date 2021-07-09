@@ -3,6 +3,7 @@ package cn.sensorsdata.datax.plugin.util;
 import cn.hutool.core.util.StrUtil;
 import cn.sensorsdata.datax.plugin.KeyConstant;
 import com.sensorsdata.analytics.javasdk.SensorsAnalytics;
+import com.sensorsdata.analytics.javasdk.consumer.BatchConsumer;
 import com.sensorsdata.analytics.javasdk.consumer.ConcurrentLoggingConsumer;
 import lombok.extern.slf4j.Slf4j;
 
@@ -12,12 +13,23 @@ import java.util.Map;
 @Slf4j
 public class SaUtil {
 
+    /**
+     * 若生成json文件则该参数为文件地址，否则是神策系统接收接口地址
+     */
     private static String sdkDataAddress;
+    /**
+     * 该参数确定是否要生成神策json文件，否则直接通过神策系统接收接口地址传输到神策系统,如：http://localhost:8106/sa?project=default
+     */
+    private static boolean isGenerateLog = true;
 
     private static volatile SensorsAnalytics instance;
 
     public static void setSdkDataAddress(String sdkDataAddress) {
         SaUtil.sdkDataAddress = sdkDataAddress;
+    }
+
+    public static void setIsGenerateLog(boolean isGenerateLog) {
+        SaUtil.isGenerateLog = isGenerateLog;
     }
 
     /**
@@ -31,8 +43,12 @@ public class SaUtil {
             synchronized (SaUtil.class) {
                 if (instance == null) {
                     try {
-                        instance = new SensorsAnalytics(new ConcurrentLoggingConsumer(sdkDataAddress));
-                        log.info("日志生产");
+                        if(isGenerateLog){
+                            instance = new SensorsAnalytics(new ConcurrentLoggingConsumer(sdkDataAddress));
+                        }else{
+                            instance = new SensorsAnalytics(new BatchConsumer(sdkDataAddress));
+                        }
+                        log.info("SensorsAnalytics初始化完成");
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

@@ -95,5 +95,9 @@ public class KeyConstant {
      * 内部item类型使用
      */
     public static final String ITEM_ITEM_ID_COLUMN = "itemItemIdColumn";
+    /**
+     * 是否要生成神策json文件，否则直接通过神策系统接收接口地址传输到神策系统
+     */
+    public static final String IS_GENERATE_LOG = "isGenerateLog";
 
 }

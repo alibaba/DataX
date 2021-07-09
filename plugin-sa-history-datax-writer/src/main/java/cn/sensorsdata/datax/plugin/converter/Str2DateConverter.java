@@ -5,11 +5,13 @@ import cn.sensorsdata.datax.plugin.Converter;
 import cn.sensorsdata.datax.plugin.util.DateUtil;
 import cn.sensorsdata.datax.plugin.util.NullUtil;
 import com.alibaba.fastjson.JSONArray;
+import lombok.extern.slf4j.Slf4j;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+@Slf4j
 public class Str2DateConverter implements Converter {
 
     private Set<String> formatsSet = new HashSet<>();
@@ -19,9 +21,15 @@ public class Str2DateConverter implements Converter {
         if (NullUtil.isNullOrBlank(value)) {
             return (Date) null;
         }
-        String pattern = (String) param.get("pattern");
+        String pattern = null;
+        try {
+            pattern = (String) param.get("pattern");
+        }catch (Exception e){}
         if (!formatsSet.contains(targetColumnName)) {
-            JSONArray formatsJsonArray = (JSONArray) param.get("formats");
+            JSONArray formatsJsonArray = null;
+            try {
+                formatsJsonArray = (JSONArray) param.get("formats");
+            }catch (Exception e){}
             if (!Objects.isNull(formatsJsonArray)) {
                 formatsJsonArray.forEach(f -> {
                     if (!DateUtil.hasFormatCustomize(f.toString())) {

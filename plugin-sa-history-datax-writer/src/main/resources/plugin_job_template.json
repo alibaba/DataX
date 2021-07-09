@@ -2,6 +2,7 @@
     "name": "sahistorywriter",
     "parameter": {
         "sdkDataAddress": "",
+        "isGenerateLog": false,
         "saColumn": [
             {
                 "index":0,
