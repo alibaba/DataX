@@ -152,6 +152,7 @@ public class CoreConstant {
 	// ----------------------------- 环境变量 ---------------------------------
 
 	public static String DATAX_HOME = System.getProperty("datax.home");
+	//	public static String DATAX_HOME = "F:\\ideaWorkSpace\\DataX\\target\\datax\\datax";
 
 	public static String DATAX_CONF_PATH = StringUtils.join(new String[] {
 			DATAX_HOME, "conf", "core.json" }, File.separator);
