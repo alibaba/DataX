@@ -70,6 +70,7 @@
         <module>cassandrareader</module>
         <module>gdbreader</module>
         <module>oceanbasev10reader</module>
+        <module>plugin-sa-history-datax-reader</module>
 
         <!-- writer -->
         <module>mysqlwriter</module>
@@ -107,6 +108,7 @@
         <module>hbase20xsqlreader</module>
         <module>hbase20xsqlwriter</module>
         <module>kuduwriter</module>
+        <module>plugin-sa-history-datax-writer</module>
     </modules>
 
     <dependencyManagement>
