@@ -6,13 +6,12 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-
     <artifactId>hdfsreader</artifactId>
     <groupId>com.alibaba.datax</groupId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <properties>
-        <hive.version>1.1.1</hive.version>
+        <hive.version>2.1.1</hive.version>
         <hadoop.version>2.7.1</hadoop.version>
     </properties>
     <dependencies>
@@ -95,6 +94,13 @@
             <version>${datax-project-version}</version>
         </dependency>
 
+
+        <!-- https://mvnrepository.com/artifact/com.twitter/parquet-tools -->
+        <dependency>
+            <groupId>org.apache.parquet</groupId>
+            <artifactId>parquet-tools</artifactId>
+            <version>1.8.1</version>
+        </dependency>
     </dependencies>
 
     <build>
