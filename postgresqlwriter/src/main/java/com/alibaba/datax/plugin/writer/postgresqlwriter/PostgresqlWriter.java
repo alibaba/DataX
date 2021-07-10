@@ -69,7 +69,9 @@ public class PostgresqlWriter extends Writer {
 						return "?::int";
 					}else if("bit".equalsIgnoreCase(columnType)){
 						return "?::bit varying";
-					}
+					}else if("bigserial".equalsIgnoreCase(columnType)){
+                                                return "?::bigint";
+                                        }
 					return "?::" + columnType;
 				}
 			};
