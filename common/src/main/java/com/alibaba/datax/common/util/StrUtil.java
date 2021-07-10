@@ -57,7 +57,10 @@ public class StrUtil {
         while (matcher.find()) {
             String variable = matcher.group(2);
             String value = System.getProperty(variable);
-            if (StringUtils.isBlank(value)) {
+            String envValue = System.getenv(variable);
+            if (StringUtils.isBlank(value) && !StringUtils.isBlank(envValue)) {
+                value = envValue;
+            } else if (StringUtils.isBlank(value)) {
                 value = matcher.group();
             }
             mapping.put(matcher.group(), value);
@@ -76,7 +79,7 @@ public class StrUtil {
         Validate.isTrue(headLength > 0, "Head length must be larger than 0");
         Validate.isTrue(tailLength > 0, "Tail length must be larger than 0");
 
-        if(headLength + tailLength >= s.length()) {
+        if (headLength + tailLength >= s.length()) {
             return s;
         }
         return s.substring(0, headLength) + "..." + s.substring(s.length() - tailLength);
