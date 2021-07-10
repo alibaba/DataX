@@ -23,7 +23,8 @@ public abstract class HbaseAbstractTask {
     protected Table htable;
     protected String encoding;
     protected int scanCacheSize;
-    protected int  scanBatchSize;
+    protected int scanBatchSize;
+    protected long maxResultSize;
 
     protected Result lastResult = null;
     protected Scan scan;
@@ -39,6 +40,7 @@ public abstract class HbaseAbstractTask {
         this.endKey =  Hbase11xHelper.convertInnerEndRowkey(configuration);
         this.scanCacheSize = configuration.getInt(Key.SCAN_CACHE_SIZE,Constant.DEFAULT_SCAN_CACHE_SIZE);
         this.scanBatchSize = configuration.getInt(Key.SCAN_BATCH_SIZE,Constant.DEFAULT_SCAN_BATCH_SIZE);
+        this.maxResultSize = configuration.getLong(Key.MAX_RESULT_SIZE, Constant.DEFAULT_MAX_RESULT_SIZE);
     }
 
     public abstract boolean fetchLine(Record record) throws Exception;
@@ -50,6 +52,7 @@ public abstract class HbaseAbstractTask {
     public void prepare() throws Exception {
         this.scan = new Scan();
         this.scan.setSmall(false);
+        this.scan.setMaxResultSize(maxResultSize);
         this.scan.setStartRow(startKey);
         this.scan.setStopRow(endKey);
         LOG.info("The task set startRowkey=[{}], endRowkey=[{}].", Bytes.toStringBinary(this.startKey), Bytes.toStringBinary(this.endKey));

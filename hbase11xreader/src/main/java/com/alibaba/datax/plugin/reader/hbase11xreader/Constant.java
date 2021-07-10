@@ -12,5 +12,7 @@ public final class Constant {
     public static final int DEFAULT_SCAN_CACHE_SIZE = 256;
 
     public static final int DEFAULT_SCAN_BATCH_SIZE = 100;
-    
+
+    public static final long DEFAULT_MAX_RESULT_SIZE = 210241024;
+
 }
