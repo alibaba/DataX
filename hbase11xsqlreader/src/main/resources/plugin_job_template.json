@@ -2,9 +2,11 @@
     "name": "hbase11sqlreader",
     "parameter": {
         "hbaseConfig": {
-            "hbase.zookeeper.quorum": "hb-proxy-pub-xxx-001.hbase.rds.aliyuncs.com,hb-proxy-pub-xxx-002.hbase.rds.aliyuncs.com,hb-proxy-pub-xxx-003.hbase.rds.aliyuncs.com"
+            "hbase.zookeeper.quorum": "hb-proxy-pub-xxx-001.hbase.rds.aliyuncs.com,hb-proxy-pub-xxx-002.hbase.rds.aliyuncs.com,hb-proxy-pub-xxx-003.hbase.rds.aliyuncs.com",
+            //如果这个参数为true,那么table的形式就为NAMESPACE.TABLE,否则与正常一致
+            "phoenix.schema.isNamespaceMappingEnabled":"true"
         },
-        "table": "TABLE1",
+        "table": "NAMESPACE.TABLE1",
         "column": [
             "ID",
             "COL1"

@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 public class HbaseSQLReaderConfig {
     private final static Logger LOG = LoggerFactory.getLogger(HbaseSQLReaderConfig.class);
@@ -20,6 +21,9 @@ public class HbaseSQLReaderConfig {
     public String getZkUrl() {
         return zkUrl;
     }
+
+
+    public Map<String,String> hbaseConfig;
 
     private String zkUrl;
 
@@ -110,13 +114,18 @@ public class HbaseSQLReaderConfig {
     }
 
     private static void parseTableConfig(HbaseSQLReaderConfig cfg, Configuration dataxCfg) {
+        String hconfig = dataxCfg.getString(Key.HBASE_CONFIG);
+        Map<String, String> hbaseConfig2 = HbaseSQLHelper.getHbaseConfig2(hconfig);
+
+        cfg.hbaseConfig = hbaseConfig2;
+
         // 解析并检查表名
         cfg.tableName = dataxCfg.getString(Key.TABLE);
+//        dataxCfg.getString()
         if (cfg.tableName == null || cfg.tableName.isEmpty()) {
             throw DataXException.asDataXException(
                     HbaseSQLReaderErrorCode.ILLEGAL_VALUE, "HBase的tableName配置不能为空,请检查并修改配置." );
         }
-
         // 解析列配置,列为空时，补全所有的列
         cfg.columns = dataxCfg.getList(Key.COLUMN, String.class);
         if (cfg.columns == null) {
@@ -124,7 +133,7 @@ public class HbaseSQLReaderConfig {
                     HbaseSQLReaderErrorCode.ILLEGAL_VALUE, "您配置的tableName含有非法字符{0}，请检查您的配置.");
         } else if (cfg.columns.isEmpty()) {
             try {
-                cfg.columns = HbaseSQLHelper.getPColumnNames(cfg.connectionString, cfg.tableName);
+                cfg.columns = HbaseSQLHelper.getPColumnNames(cfg.connectionString, cfg.tableName,hbaseConfig2);
                 dataxCfg.set(Key.COLUMN, cfg.columns);
             } catch (SQLException e) {
                 throw DataXException.asDataXException(
