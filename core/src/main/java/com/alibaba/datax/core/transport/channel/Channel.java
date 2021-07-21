@@ -155,7 +155,7 @@ public abstract class Channel {
 
         // record为终止对象时，该记录不算入统计数量
         long recordSize = rs.stream().filter(record -> !(record instanceof TerminateRecord)).count();
-        this.statPull(rs.size(), this.getByteSize(rs));
+        this.statPull(recordSize, this.getByteSize(rs));
     }
 
     protected abstract void doPush(Record r);
