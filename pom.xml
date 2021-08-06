@@ -70,6 +70,7 @@
         <module>cassandrareader</module>
         <module>gdbreader</module>
         <module>oceanbasev10reader</module>
+        <module>s3reader</module>
 
         <!-- writer -->
         <module>mysqlwriter</module>
@@ -101,12 +102,14 @@
         <module>clickhousewriter</module>
         <module>oscarwriter</module>
         <module>oceanbasev10writer</module>
+        <module>s3writer</module>
         <!-- common support module -->
         <module>plugin-rdbms-util</module>
         <module>plugin-unstructured-storage-util</module>
         <module>hbase20xsqlreader</module>
         <module>hbase20xsqlwriter</module>
         <module>kuduwriter</module>
+        <module>s3common</module>
     </modules>
 
     <dependencyManagement>

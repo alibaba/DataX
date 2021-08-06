@@ -1,0 +1,14 @@
+{
+    "name": "s3reader",
+    "parameter": {
+        "accessKey": "",
+        "secretKey": "",
+        "region": "",
+        "bucket": "",
+        "object": [],
+        "column": [],
+        "encoding": "",
+        "fieldDelimiter": "",
+        "compress": ""
+    }
+}
