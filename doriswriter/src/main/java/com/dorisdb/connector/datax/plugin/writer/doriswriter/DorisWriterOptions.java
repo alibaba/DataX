@@ -8,6 +8,7 @@ import com.alibaba.datax.plugin.rdbms.util.DBUtilErrorCode;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class DorisWriterOptions implements Serializable {
 
@@ -73,7 +74,7 @@ public class DorisWriterOptions implements Serializable {
     }
 
     public List<String> getColumns() {
-        return options.getList(KEY_COLUMN, String.class);
+        return options.getList(KEY_COLUMN, String.class).stream().map(str -> str.replace("`", "")).collect(Collectors.toList());
     }
 
     public List<String> getPreSqlList() {
