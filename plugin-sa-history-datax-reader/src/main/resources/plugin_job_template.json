@@ -8,15 +8,17 @@
         "endTime": "",
         "timeFieldName": "",
         "timeInterval": 1000,
+        "maxQueryNum": 50000,
         "datePattern": "",
         "taskNum": 10,
         "receivePageSize": 5,
         "sa":{
             "hiveUrl": "",
             "table": ""
-         },
+        },
         "where": "",
         "useRowNumber": false,
-        "pageSize": 10000
+        "pageSize": 10000,
+        "timeFieldCount": true
     }
 }

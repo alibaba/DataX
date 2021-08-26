@@ -72,7 +72,7 @@
                     <descriptors>
                         <descriptor>src/main/assembly/package.xml</descriptor>
                     </descriptors>
-                    <finalName>plugin-sa-history-datax</finalName>
+                    <finalName>datax</finalName>
                 </configuration>
                 <executions>
                     <execution>

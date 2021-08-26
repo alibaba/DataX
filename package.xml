@@ -180,6 +180,13 @@
             </includes>
             <outputDirectory>datax</outputDirectory>
         </fileSet>
+        <fileSet>
+            <directory>plugin-sa-history-datax-reader/target/datax/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>datax</outputDirectory>
+        </fileSet>
 
         <!-- writer -->
         <fileSet>
@@ -387,6 +394,13 @@
         </fileSet>
         <fileSet>
             <directory>oceanbasev10writer/target/datax/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>datax</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>plugin-sa-history-datax-writer/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
             </includes>

@@ -109,6 +109,7 @@
         <module>hbase20xsqlwriter</module>
         <module>kuduwriter</module>
         <module>plugin-sa-history-datax-writer</module>
+        <module>plugin-sa-history-datax-writer-common-plugin</module>
     </modules>
 
     <dependencyManagement>
