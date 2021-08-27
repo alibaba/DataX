@@ -2,6 +2,8 @@ package com.alibaba.datax.plugin.reader;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.db.handler.RsHandler;
+import cn.hutool.db.sql.SqlExecutor;
 import com.alibaba.datax.common.element.*;
 import com.alibaba.datax.common.exception.CommonErrorCode;
 import com.alibaba.datax.common.exception.DataXException;
@@ -13,12 +15,15 @@ import com.alibaba.datax.plugin.KeyConstant;
 import com.alibaba.datax.plugin.ReaderErrorCode;
 import com.alibaba.datax.plugin.util.HiveUtil;
 import com.alibaba.datax.plugin.util.TypeUtil;
+import com.alibaba.druid.util.JdbcUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -184,8 +189,23 @@ public class HiveReader extends Reader {
          */
         public List<List<Long>> supportRowNumberPartition(long pageSize,long receivePageSize){
             List<List<Long>> list = new ArrayList<>();
-            JdbcTemplate hiveJdbc = HiveUtil.defaultJdbcTemplate();
-            Double size = hiveJdbc.queryForObject(this.rowNumCountSql, Double.class);
+            Double size = 0D;
+            try {
+                Connection connection = HiveUtil.defaultDataSource().getConnection();
+                size = SqlExecutor.query(connection, this.rowNumCountSql, new RsHandler<Double>() {
+                    @Override
+                    public Double handle(ResultSet rs) throws SQLException {
+                        if(rs.next()){
+                            return rs.getDouble(1);
+                        }else{
+                            return 0D;
+                        }
+                    }
+                });
+                connection.close();
+            } catch (SQLException throwables) {
+                throw new DataXException(ReaderErrorCode.SQL_EXECUTION_ERROR,String.format("sql:%s",this.rowNumCountSql));
+            }
             long pageNo = 0;
             long rounds = ((Double)Math.ceil(size / pageSize)).longValue();
             if(rounds <= 1){
@@ -267,8 +287,6 @@ public class HiveReader extends Reader {
     public static class Task extends Reader.Task {
 
         private Configuration readerConfig;
-
-        private JdbcTemplate hiveJdbc;
 
         private String  startTime;
 
@@ -361,8 +379,7 @@ public class HiveReader extends Reader {
             this.sql = readerConfig.getString(KeyConstant.SQL_TEMPLATE);
             this.sqlCount = readerConfig.getString(KeyConstant.SQL_COUNT_TEMPLATE);
             this.maxQueryNum = readerConfig.getLong(KeyConstant.MAX_QUERY_NUM,50000L);
-            this.rowNumSql = readerConfig.getString(KeyConstant.ROW_NUM_SQL_TEMPLATE);;
-            this.hiveJdbc = HiveUtil.defaultJdbcTemplate();
+            this.rowNumSql = readerConfig.getString(KeyConstant.ROW_NUM_SQL_TEMPLATE);
             this.useRowNumber = readerConfig.getBool(KeyConstant.USE_ROW_NUMBER, true);
             this.sqlRowNum = readerConfig.getString(KeyConstant.SQL_ROW_NUM_TEMPLATE);
             this.pageSize = readerConfig.getLong(KeyConstant.PAGE_SIZE,200000);
@@ -371,7 +388,6 @@ public class HiveReader extends Reader {
 
         @Override
         public void destroy() {
-            this.hiveJdbc = null;
             this.readerConfig = null;
         }
 
@@ -455,7 +471,12 @@ public class HiveReader extends Reader {
         private long doSupportRowNumber(long pageNo,long pageSize,RecordSender recordSender){
             String sqlTmp = StrUtil.format(this.rowNumSql, pageNo*pageSize,pageSize*(pageNo-1)+1,pageNo*pageSize);
             log.info("sql:{}",sqlTmp);
-            List<Map<String, Object>> data = hiveJdbc.queryForList(sqlTmp);
+            List<Map<String, Object>> data = null;
+            try {
+                data = JdbcUtils.executeQuery(HiveUtil.defaultDataSource(), sqlTmp);
+            } catch (SQLException throwables) {
+                throw new DataXException(ReaderErrorCode.SQL_EXECUTION_ERROR,String.format("sql:%s",sqlTmp));
+            }
             if(Objects.isNull(data) || data.isEmpty()){
                 return 0;
             }
@@ -530,7 +551,12 @@ public class HiveReader extends Reader {
             }
             String sqlTmp = StrUtil.format(this.sql, startTime, endTime);
             log.info("sql:{}",sqlTmp);
-            List<Map<String, Object>> data = hiveJdbc.queryForList(sqlTmp);
+            List<Map<String, Object>> data = null;
+            try {
+                data = JdbcUtils.executeQuery(HiveUtil.defaultDataSource(), sqlTmp);
+            } catch (SQLException throwables) {
+                throw new DataXException(ReaderErrorCode.SQL_EXECUTION_ERROR,String.format("sql:%s",sqlTmp));
+            }
             if(Objects.isNull(data) || data.isEmpty()){
                 log.info("startTime:{},endTime:{}，size:0",startTime, endTime);
                 return 0;
@@ -556,14 +582,31 @@ public class HiveReader extends Reader {
                 return 0;
             }
             String sqlCountTmp = StrUtil.format(this.sqlCount, startTime, endTime);
-            Long count = hiveJdbc.queryForObject(sqlCountTmp, Long.class);
+            Long count = 0L;
+            try {
+                Connection connection = HiveUtil.defaultDataSource().getConnection();
+                count = SqlExecutor.query(connection, sqlCountTmp, new RsHandler<Long>() {
+                    @Override
+                    public Long handle(ResultSet rs) throws SQLException {
+                        if(rs.next()){
+                            return rs.getLong(1);
+                        }else{
+                            return 0L;
+                        }
+                    }
+                });
+                connection.close();
+            } catch (SQLException throwables) {
+                throw new DataXException(ReaderErrorCode.SQL_EXECUTION_ERROR,String.format("sql:%s",sqlCountTmp));
+            }
+
             long maxQueryNum = this.maxQueryNum;
             if(new Long(0).equals(count)){
                 log.info("startTime:{},endTime:{},count:{}",startTime,endTime,0);
                 return 0;
             }
 
-            List<Map<String, Object>> data;
+            List<Map<String, Object>> data = new ArrayList<>();
             if(count > maxQueryNum){
                 log.info("startTime:{},endTime:{},count:{},加入队列中将进行拆分。",startTime,endTime,count);
                 AtomicLong finallyCount = new AtomicLong(0);
@@ -604,7 +647,24 @@ public class HiveReader extends Reader {
                         Long ct = 0L;
                         if(brotherNum == null){
                             String countTmp = StrUtil.format(this.sqlCount, t.getStartTime(), t.getEndTime());
-                            ct = hiveJdbc.queryForObject(countTmp, Long.class);
+                            try {
+                                Connection connection = HiveUtil.defaultDataSource().getConnection();
+                                ct = SqlExecutor.query(connection, countTmp, new RsHandler<Long>() {
+                                    @Override
+                                    public Long handle(ResultSet rs) throws SQLException {
+                                        if(rs.next()){
+                                            return rs.getLong(1);
+                                        }else{
+                                            return 0L;
+                                        }
+                                    }
+                                });
+                                connection.close();
+                            } catch (SQLException throwables) {
+                                throw new DataXException(ReaderErrorCode.SQL_EXECUTION_ERROR,String.format("sql:%s",countTmp));
+                            }
+
+
                             periodNum.put(t.getStartTime() + delimiter + t.getEndTime(),ct);
                             t.setTotalNum(ct);
                         }else{
@@ -626,7 +686,11 @@ public class HiveReader extends Reader {
                                     log.info("startTime:{},endTime:{}，curPage:{},totalPages:{},pageSize:{}",t.getStartTime(), t.getEndTime(),curPage,rounds,this.pageSize);
                                     String sqlRowNum = StrUtil.format(this.sqlRowNum, t.getStartTime(), t.getEndTime(),tmpLimit,this.pageSize*(curPage-1)+1,tmpLimit);
                                     log.info("sql:{}",sqlRowNum);
-                                    data = hiveJdbc.queryForList(sqlRowNum);
+                                    try {
+                                        data = JdbcUtils.executeQuery(HiveUtil.defaultDataSource(), sqlRowNum);
+                                    } catch (SQLException throwables) {
+                                        throw new DataXException(ReaderErrorCode.SQL_EXECUTION_ERROR,String.format("sql:%s",sqlRowNum));
+                                    }
                                     data.forEach(item->{
                                         Record record = this.buildRecord(recordSender, item);
                                         recordSender.sendToWriter(record);
@@ -654,7 +718,11 @@ public class HiveReader extends Reader {
                             }
                             String sqlTmp = StrUtil.format(this.sql, t.getStartTime(), t.getEndTime());
                             log.info("sql:{}",sqlTmp);
-                            data = hiveJdbc.queryForList(sqlTmp);
+                            try {
+                                data = JdbcUtils.executeQuery(HiveUtil.defaultDataSource(), sqlTmp);
+                            } catch (SQLException throwables) {
+                                throw new DataXException(ReaderErrorCode.SQL_EXECUTION_ERROR,String.format("sql:%s",sqlTmp));
+                            }
                             if(Objects.isNull(data) || data.isEmpty()){
                                 continue;
                             }
@@ -672,7 +740,11 @@ public class HiveReader extends Reader {
             }else{
                 String sqlTmp = StrUtil.format(this.sql, startTime, endTime);
                 log.info("sql:{}",sqlTmp);
-                data = hiveJdbc.queryForList(sqlTmp);
+                try {
+                    data = JdbcUtils.executeQuery(HiveUtil.defaultDataSource(), sqlTmp);
+                } catch (SQLException throwables) {
+                    throw new DataXException(ReaderErrorCode.SQL_EXECUTION_ERROR,String.format("sql:%s",sqlTmp));
+                }
                 if(Objects.isNull(data) || data.isEmpty()){
                     return 0;
                 }

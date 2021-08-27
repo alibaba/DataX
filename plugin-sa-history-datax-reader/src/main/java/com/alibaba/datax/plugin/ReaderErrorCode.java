@@ -7,7 +7,8 @@ import com.alibaba.datax.common.spi.ErrorCode;
  */
 public enum ReaderErrorCode implements ErrorCode {
 
-    UNSUPPORTED_TYPE("UNSUPPORTED_TYPE", "参数不合法");
+    UNSUPPORTED_TYPE("UNSUPPORTED_TYPE", "参数不合法"),
+    SQL_EXECUTION_ERROR("SQL_EXECUTION_ERROR", "sql执行出错");
 
     private final String code;
 

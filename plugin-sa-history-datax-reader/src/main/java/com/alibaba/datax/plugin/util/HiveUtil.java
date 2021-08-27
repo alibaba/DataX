@@ -4,7 +4,6 @@ package com.alibaba.datax.plugin.util;
 import cn.hutool.core.lang.Assert;
 import com.alibaba.druid.pool.DruidDataSource;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
 
@@ -20,8 +19,6 @@ public class HiveUtil {
     private static String driverClassName = "org.apache.hive.jdbc.HiveDriver";
 
     private static DataSource defaultDataSource;
-
-    private static JdbcTemplate defaultJdbcTemplate;
 
     public static void setUrl(String url) {
         HiveUtil.url = url;
@@ -52,11 +49,6 @@ public class HiveUtil {
         return HiveUtil.getDataSource(url, user, password, "org.apache.hive.jdbc.HiveDriver");
     }
 
-    public static JdbcTemplate getJdbcTemplate(DataSource dataSource) {
-        return new JdbcTemplate(dataSource);
-    }
-
-
     public static DataSource defaultDataSource() {
         Assert.notBlank(url, "url不能为空");
         Assert.notBlank(driverClassName, "driverClassName不能为空");
@@ -68,17 +60,6 @@ public class HiveUtil {
             }
         }
         return defaultDataSource;
-    }
-
-    public static JdbcTemplate defaultJdbcTemplate() {
-        if (defaultJdbcTemplate == null) {
-            synchronized (HiveUtil.class) {
-                if (defaultJdbcTemplate == null) {
-                    defaultJdbcTemplate = getJdbcTemplate(defaultDataSource());
-                }
-            }
-        }
-        return defaultJdbcTemplate;
     }
 
 }
