@@ -131,7 +131,7 @@ public class HiveReader extends Reader {
             HiveUtil.setUser(this.userName);
             HiveUtil.setPassword(this.password);
 
-            String timeFieldName = originalConfig.getString(KeyConstant.TIME_FIELD_NAME);
+            String timeFieldName = originalConfig.getString(KeyConstant.TIME_FIELD_NAME,"");
             this.columnList = originalConfig.getList(KeyConstant.COLUMN, String.class);
             if(Objects.isNull(columnList) || columnList.isEmpty() ){
                 throw new DataXException(CommonErrorCode.CONFIG_ERROR,"column不能为空！");
