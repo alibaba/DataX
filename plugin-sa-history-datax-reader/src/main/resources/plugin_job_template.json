@@ -1,6 +1,7 @@
 {
     "name": "sahistoryreader",
     "parameter": {
+        "hiveVersion": "1.1.0",
         "username": "",
         "password": "",
         "column": [""],

@@ -115,4 +115,8 @@ public class KeyConstant {
      * 时间分片方式是否统计拆分，默认值true,表示优先使用先统计数量再拉取值，当数据量大时可防止OOM,若为false,则直接拉取数据，不在进行统计，可能导致OOM
      */
     public static final String TIME_FIELD_COUNT = "timeFieldCount";
+    /**
+     * 兼容hive版本
+     */
+    public static final String HIVE_VERSION = "hiveVersion";
 }

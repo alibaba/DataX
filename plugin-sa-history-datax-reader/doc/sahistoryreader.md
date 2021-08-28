@@ -23,6 +23,7 @@
                         "column": [
                             "name","age","id","update_date","date_str"
                         ],
+                        "hiveVersion": "1.0.0",
                         "pageSize": 15,
                         "password": "",
                         "receivePageSize": 10,
@@ -67,6 +68,7 @@
                         "column": [
                             "name","age","id","update_date","date_str"
                         ],
+                        "hiveVersion": "1.0.0",
                         "datePattern": "yyyy-MM-dd",
                         "endTime": "2021-06-24",
                         "password": "",
@@ -103,6 +105,16 @@
 ## **参数说明**
 
 ### ``read``
+
+​		```hiveVersion```：需要使用的hive版本，该属性取值为读插件的hivelib目录下的某一文件夹名称，在该文件夹下放入配置的hive版本所需要的依赖（不要存在子文件夹）,该值必须配置。例如：在该读插件的hivelib有文件夹1.0.0，则该参数值为1.0.0，在1.0.0目录下需要放置以下两个主依赖（hive-jdbc、hadoop-common）下的所有依赖。
+
+```xml
+<groupId>org.apache.hive</groupId>
+<artifactId>hive-jdbc</artifactId>
+
+<groupId>org.apache.hadoop</groupId>
+<artifactId>hadoop-common</artifactId>
+```
 
 ​		`column`：hive表中需要查询的字段名列表
 

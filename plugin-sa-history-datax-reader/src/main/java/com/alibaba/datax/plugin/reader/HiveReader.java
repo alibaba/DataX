@@ -13,6 +13,7 @@ import com.alibaba.datax.common.spi.Reader;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.plugin.KeyConstant;
 import com.alibaba.datax.plugin.ReaderErrorCode;
+import com.alibaba.datax.plugin.classloader.HiveDependencyClassLoader;
 import com.alibaba.datax.plugin.util.HiveUtil;
 import com.alibaba.datax.plugin.util.TypeUtil;
 import com.alibaba.druid.util.JdbcUtils;
@@ -21,6 +22,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -128,6 +130,26 @@ public class HiveReader extends Reader {
             this.userName = originalConfig.getString(KeyConstant.USER_NAME,"");
             this.password = originalConfig.getString(KeyConstant.PASSWORD,"");
             this.hiveUrl = originalConfig.getString(KeyConstant.SA.concat(KeyConstant.POINT).concat(KeyConstant.SA_HIVE_URL));
+            String hiveVersion = originalConfig.getString(KeyConstant.HIVE_VERSION,"");
+//            校验hive版本
+            String curClassPath = HiveDependencyClassLoader.class.getResource("").getFile();
+            String rootPath = curClassPath.substring(curClassPath.lastIndexOf(":")+1, curClassPath.lastIndexOf("!"));
+            String path = rootPath.substring(0, rootPath.lastIndexOf("/")).concat("/hivelib/");
+            File f = new File(path);
+            File[] files = f.listFiles();
+            List<String> optionalValueList = new ArrayList<>();
+            if(f.exists() && files != null && files.length > 0){
+                for (File file : files) {
+                    if(file.isDirectory()){
+                        optionalValueList.add(file.getName());
+                    }
+                }
+            }
+            if(StrUtil.isBlank(hiveVersion) || !optionalValueList.contains(hiveVersion)){
+                throw new DataXException(CommonErrorCode.CONFIG_ERROR,"hiveVersion不存在或为空,可选值："+optionalValueList);
+            }
+            //动态加载hive相关依赖，解决hive版本兼容
+            HiveDependencyClassLoader.loadClassJar(hiveVersion);
             if(StrUtil.isBlank(this.tableName) || StrUtil.isBlank(this.hiveUrl)){
                 throw new DataXException(CommonErrorCode.CONFIG_ERROR,"hiveUrl和table不能为空");
             }
@@ -204,6 +226,7 @@ public class HiveReader extends Reader {
                 });
                 connection.close();
             } catch (SQLException throwables) {
+                throwables.printStackTrace();
                 throw new DataXException(ReaderErrorCode.SQL_EXECUTION_ERROR,String.format("sql:%s",this.rowNumCountSql));
             }
             long pageNo = 0;
@@ -555,6 +578,7 @@ public class HiveReader extends Reader {
             try {
                 data = JdbcUtils.executeQuery(HiveUtil.defaultDataSource(), sqlTmp);
             } catch (SQLException throwables) {
+                throwables.printStackTrace();
                 throw new DataXException(ReaderErrorCode.SQL_EXECUTION_ERROR,String.format("sql:%s",sqlTmp));
             }
             if(Objects.isNull(data) || data.isEmpty()){
@@ -597,6 +621,7 @@ public class HiveReader extends Reader {
                 });
                 connection.close();
             } catch (SQLException throwables) {
+                throwables.printStackTrace();
                 throw new DataXException(ReaderErrorCode.SQL_EXECUTION_ERROR,String.format("sql:%s",sqlCountTmp));
             }
 
@@ -661,6 +686,7 @@ public class HiveReader extends Reader {
                                 });
                                 connection.close();
                             } catch (SQLException throwables) {
+                                throwables.printStackTrace();
                                 throw new DataXException(ReaderErrorCode.SQL_EXECUTION_ERROR,String.format("sql:%s",countTmp));
                             }
 
@@ -721,6 +747,7 @@ public class HiveReader extends Reader {
                             try {
                                 data = JdbcUtils.executeQuery(HiveUtil.defaultDataSource(), sqlTmp);
                             } catch (SQLException throwables) {
+                                throwables.printStackTrace();
                                 throw new DataXException(ReaderErrorCode.SQL_EXECUTION_ERROR,String.format("sql:%s",sqlTmp));
                             }
                             if(Objects.isNull(data) || data.isEmpty()){
@@ -743,6 +770,7 @@ public class HiveReader extends Reader {
                 try {
                     data = JdbcUtils.executeQuery(HiveUtil.defaultDataSource(), sqlTmp);
                 } catch (SQLException throwables) {
+                    throwables.printStackTrace();
                     throw new DataXException(ReaderErrorCode.SQL_EXECUTION_ERROR,String.format("sql:%s",sqlTmp));
                 }
                 if(Objects.isNull(data) || data.isEmpty()){
