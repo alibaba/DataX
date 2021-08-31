@@ -27,15 +27,15 @@
                             "itemType": "couse",
                             "typeIsColumn": false
                         },
-                        "saColumn": [
+                        "column": [
                             {
                                 "index":0,
-                                "targetColumnName": "name1",
+                                "name": "name1",
                                 "ifNullGiveUp" : true
                             },
                             {
                                 "index":1,
-                                "targetColumnName": "age1",
+                                "name": "age1",
                                 "dataConverters":[
                                     {
                                         "type": "Number2Str"
@@ -44,7 +44,7 @@
                             },
                             {
                                 "index":2,
-                                "targetColumnName": "id1",
+                                "name": "id1",
                                 "dataConverters":[
                                     {
                                         "type": "BigInt2Date"
@@ -53,7 +53,7 @@
                             },
                             {
                                 "index":2,
-                                "targetColumnName": "id2",
+                                "name": "id2",
                                 "dataConverters":[
                                     {
                                         "type": "BigInt2Date"
@@ -68,7 +68,7 @@
                             },
                             {
                                 "index":3,
-                                "targetColumnName": "update_date1",
+                                "name": "update_date1",
                                 "dataConverters":[
                                     {
                                         "type": "IfNull2Default",
@@ -91,7 +91,7 @@
                             },
                             {
                                 "index":4,
-                                "targetColumnName": "date_str1",
+                                "name": "date_str1",
                                 "dataConverters":[
                                     {
                                         "type": "IfNull2Default",
@@ -146,11 +146,11 @@
 
 ​		`type`：导入神策分析的数据类型，可取值有：track/user/item，分别对应神策的事件/用户/属性。
 
-​		`saColumn`：导入神策分析的属性列表。
+​		`column`：导入神策分析的属性列表。
 
 ​		`saColumn.index`：该列使用读插件字段的下标索引，从0开始。
 
-​		`saColumn.targetColumnName`：导入神策分析的属性名称。
+​		`saColumn.name`：导入神策分析的属性名称。
 
 ​		```saColumn.ifNullGiveUp```：当该列值经过转换器转换后为空时，是否丢弃该行数据，默认值为false。
 
