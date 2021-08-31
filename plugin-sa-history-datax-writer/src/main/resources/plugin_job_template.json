@@ -3,10 +3,10 @@
     "parameter": {
         "sdkDataAddress": "",
         "isGenerateLog": false,
-        "saColumn": [
+        "column": [
             {
                 "index":0,
-                "targetColumnName": "",
+                "name": "",
                 "ifNullGiveUp": false,
                 "dataConverters":[
                     {
@@ -25,7 +25,7 @@
             },
             {
                 "index":1,
-                "targetColumnName": "",
+                "name": "",
                 "ifNullGiveUp": true,
                 "dataConverters":[
                     {

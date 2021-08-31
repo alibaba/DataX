@@ -60,25 +60,28 @@ public class SaWriter extends Writer {
 
             String type = originalConfig.getString(KeyConstant.TYPE);
             JSONArray saColumnJsonArray = originalConfig.get(KeyConstant.SA_COLUMN, JSONArray.class);
+            if(Objects.isNull(saColumnJsonArray)){
+                throw new DataXException(CommonErrorCode.CONFIG_ERROR,"column不应该为空！");
+            }
             String saColumnStr = saColumnJsonArray.toJSONString();
             List<SaColumnItem> saColumnList = JSONObject.parseArray(saColumnStr, SaColumnItem.class);
             if(Objects.isNull(saColumnList) || saColumnList.isEmpty()){
-                throw new DataXException(CommonErrorCode.CONFIG_ERROR,"saColumn不应该为空！");
+                throw new DataXException(CommonErrorCode.CONFIG_ERROR,"column不应该为空！");
             }
-            List<String> saColumnNameList = saColumnList.stream().map(SaColumnItem::getTargetColumnName).collect(Collectors.toList());
+            List<String> saColumnNameList = saColumnList.stream().map(SaColumnItem::getName).collect(Collectors.toList());
             if(KeyConstant.TRACK.equalsIgnoreCase(type)){
                 String distinctId = originalConfig.getString(KeyConstant.TRACK.concat(KeyConstant.POINT).concat(KeyConstant.DISTINCT_ID_COLUMN));
                 Boolean isLoginId = originalConfig.getBool(KeyConstant.TRACK.concat(KeyConstant.POINT).concat(KeyConstant.IS_LOGIN_ID));
                 String eventName = originalConfig.getString(KeyConstant.TRACK.concat(KeyConstant.POINT).concat(KeyConstant.EVENT_NAME));
                 if(StrUtil.isBlank(distinctId) || Objects.isNull(isLoginId) ||
                         StrUtil.isBlank(eventName) || !saColumnNameList.contains(distinctId)){
-                    throw new DataXException(CommonErrorCode.CONFIG_ERROR,"type为:track时，track属性配置错误或者distinctIdColumn属性未在saColumn中.");
+                    throw new DataXException(CommonErrorCode.CONFIG_ERROR,"type为:track时，track属性配置错误或者distinctIdColumn属性未在column中.");
                 }
             }else if(KeyConstant.USER.equalsIgnoreCase(type)){
                 String distinctId = originalConfig.getString(KeyConstant.USER.concat(KeyConstant.POINT).concat(KeyConstant.DISTINCT_ID_COLUMN));
                 Boolean isLoginId = originalConfig.getBool(KeyConstant.USER.concat(KeyConstant.POINT).concat(KeyConstant.IS_LOGIN_ID));
                 if(StrUtil.isBlank(distinctId) || Objects.isNull(isLoginId) ||  !saColumnNameList.contains(distinctId)){
-                    throw new DataXException(CommonErrorCode.CONFIG_ERROR,"type为:user时，user属性配置错误或者distinctIdColumn属性未在saColumn中.");
+                    throw new DataXException(CommonErrorCode.CONFIG_ERROR,"type为:user时，user属性配置错误或者distinctIdColumn属性未在column中.");
                 }
             }else if(KeyConstant.ITEM.equalsIgnoreCase(type)){
                 String itemType = originalConfig.getString(KeyConstant.ITEM.concat(KeyConstant.POINT).concat(KeyConstant.ITEM_TYPE));
@@ -86,7 +89,7 @@ public class SaWriter extends Writer {
                 String itemIdColumn = originalConfig.getString(KeyConstant.ITEM.concat(KeyConstant.POINT).concat(KeyConstant.ITEM_ID_COLUMN));
                 if(StrUtil.isBlank(itemType) || Objects.isNull(typeIsColumn) ||
                         StrUtil.isBlank(itemIdColumn) || !saColumnNameList.contains(itemIdColumn) || (typeIsColumn && !saColumnNameList.contains(itemType))){
-                    throw new DataXException(CommonErrorCode.CONFIG_ERROR,"type为:item时，item属性配置错误或者itemType或者itemIdColumn属性未在saColumn中.若typeIsColumn为false，itemType可以不在saColumn中");
+                    throw new DataXException(CommonErrorCode.CONFIG_ERROR,"type为:item时，item属性配置错误或者itemType或者itemIdColumn属性未在column中.若typeIsColumn为false，itemType可以不在column中");
                 }
             }else{
                 throw new DataXException(CommonErrorCode.CONFIG_ERROR,"不支持的type类型");
@@ -133,54 +136,54 @@ public class SaWriter extends Writer {
                     Column column = record.getColumn(col.getIndex());
                     if(column instanceof StringColumn){
                         String v = column.asString();
-                        Object value = ConverterUtil.convert(col.getTargetColumnName(),v,col,properties);
+                        Object value = ConverterUtil.convert(col.getName(),v,col,properties);
                         if(NullUtil.isNullOrBlank(value)){
                             if(!NullUtil.isNullOrBlank(col.getIfNullGiveUp()) && col.getIfNullGiveUp()){
                                 continue A;
                             }
                             continue;
                         }
-                        properties.put(col.getTargetColumnName(),value);
+                        properties.put(col.getName(),value);
                     }else if(column instanceof BoolColumn){
                         Boolean v = column.asBoolean();
-                        Object value = ConverterUtil.convert(col.getTargetColumnName(),v,col,properties);
+                        Object value = ConverterUtil.convert(col.getName(),v,col,properties);
                         if(NullUtil.isNullOrBlank(value)){
                             if(!NullUtil.isNullOrBlank(col.getIfNullGiveUp()) && col.getIfNullGiveUp()){
                                 continue A;
                             }
                             continue;
                         }
-                        properties.put(col.getTargetColumnName(),value);
+                        properties.put(col.getName(),value);
                     }else if(column instanceof DoubleColumn){
                         BigDecimal v = column.asBigDecimal();
-                        Object value = ConverterUtil.convert(col.getTargetColumnName(),v,col,properties);
+                        Object value = ConverterUtil.convert(col.getName(),v,col,properties);
                         if(NullUtil.isNullOrBlank(value)){
                             if(!NullUtil.isNullOrBlank(col.getIfNullGiveUp()) && col.getIfNullGiveUp()){
                                 continue A;
                             }
                             continue;
                         }
-                        properties.put(col.getTargetColumnName(),value);
+                        properties.put(col.getName(),value);
                     }else if(column instanceof LongColumn){
                         BigInteger v = column.asBigInteger();
-                        Object value = ConverterUtil.convert(col.getTargetColumnName(),v,col,properties);
+                        Object value = ConverterUtil.convert(col.getName(),v,col,properties);
                         if(NullUtil.isNullOrBlank(value)){
                             if(!NullUtil.isNullOrBlank(col.getIfNullGiveUp()) && col.getIfNullGiveUp()){
                                 continue A;
                             }
                             continue;
                         }
-                        properties.put(col.getTargetColumnName(),value);
+                        properties.put(col.getName(),value);
                     }else if(column instanceof DateColumn){
                         Date v = column.asDate();
-                        Object value = ConverterUtil.convert(col.getTargetColumnName(),v,col,properties);
+                        Object value = ConverterUtil.convert(col.getName(),v,col,properties);
                         if(NullUtil.isNullOrBlank(value)){
                             if(!NullUtil.isNullOrBlank(col.getIfNullGiveUp()) && col.getIfNullGiveUp()){
                                 continue A;
                             }
                             continue;
                         }
-                        properties.put(col.getTargetColumnName(),value);
+                        properties.put(col.getName(),value);
                     }
                 }
                 boolean process = true;
@@ -201,10 +204,13 @@ public class SaWriter extends Writer {
             this.type = readerConfig.getString(KeyConstant.TYPE);
 
             JSONArray saColumnJsonArray = readerConfig.get(KeyConstant.SA_COLUMN, JSONArray.class);
+            if(Objects.isNull(saColumnJsonArray)){
+                throw new DataXException(CommonErrorCode.CONFIG_ERROR,"column不应该为空！");
+            }
             String saColumnStr = saColumnJsonArray.toJSONString();
             this.saColumnList = JSONObject.parseArray(saColumnStr, SaColumnItem.class);
             if(Objects.isNull(saColumnList) || saColumnList.isEmpty()){
-                throw new DataXException(CommonErrorCode.CONFIG_ERROR,"saColumn不应该为空！");
+                throw new DataXException(CommonErrorCode.CONFIG_ERROR,"column不应该为空！");
             }
             for (SaColumnItem col : saColumnList) {
                 List<DataConverter> dataConverters = col.getDataConverters();

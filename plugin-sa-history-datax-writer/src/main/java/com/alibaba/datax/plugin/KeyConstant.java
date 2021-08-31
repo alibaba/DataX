@@ -17,7 +17,7 @@ public class KeyConstant {
     /**
      * 导入神策的列
      */
-    public static final String SA_COLUMN = "saColumn";
+    public static final String SA_COLUMN = "column";
     /**
      * 同步的类型（track/user/item）
      */

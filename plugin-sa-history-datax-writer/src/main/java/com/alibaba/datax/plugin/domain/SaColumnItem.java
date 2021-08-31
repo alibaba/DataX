@@ -16,7 +16,7 @@ public class SaColumnItem implements Serializable {
 
     private Integer index;
 
-    private String targetColumnName;
+    private String name;
 
     private Boolean ifNullGiveUp = false;
 
