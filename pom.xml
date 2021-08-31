@@ -71,7 +71,7 @@
 
         <!-- writer -->
         <module>mysqlwriter</module>
-        <module>doriswriter</module>
+        <module>starrockswriter</module>
         <module>drdswriter</module>
         <module>odpswriter</module>
         <module>txtfilewriter</module>
