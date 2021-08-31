@@ -148,33 +148,33 @@
 
 ​		`column`：导入神策分析的属性列表。
 
-​		`saColumn.index`：该列使用读插件字段的下标索引，从0开始。
+​		`column.index`：该列使用读插件字段的下标索引，从0开始。
 
-​		`saColumn.name`：导入神策分析的属性名称。
+​		`column.name`：导入神策分析的属性名称。
 
-​		```saColumn.ifNullGiveUp```：当该列值经过转换器转换后为空时，是否丢弃该行数据，默认值为false。
+​		```column.ifNullGiveUp```：当该列值经过转换器转换后为空时，是否丢弃该行数据，默认值为false。
 
-​		`saColumn.dataConverters`：将dataX读出的数据转换为其他类型或者值，所使用的数据转换器。插件支持的数据转换器见下文``内置数据转换器``，支持多个联合使用。
+​		`column.dataConverters`：将dataX读出的数据转换为其他类型或者值，所使用的数据转换器。插件支持的数据转换器见下文``内置数据转换器``，支持多个联合使用。
 
-​		`saColumn.dataConverters.type`：使用内置转换器的名称，见下文``内置数据转换器`` ``转换器type``列。
+​		``column.dataConverters.type``：使用内置转换器的名称，见下文``内置数据转换器`` ``转换器type``列。
 
-​		`saColumn.dataConverters.param`：使用内置转换器时，转换器必要的参数列表，参数key根据不同转换器不同而不同，见下文``内置数据转换器参数说明``。
+​		`column.dataConverters.param`：使用内置转换器时，转换器必要的参数列表，参数key根据不同转换器不同而不同，见下文``内置数据转换器参数说明``。
 
-​		`track.distinctIdColumn`：type为track时，作为神策distinctId的列，该属性应该在saColumn列表中，并且该属性不能存在空值。
+​		`track.distinctIdColumn`：type为track时，作为神策distinctId的列，该属性应该在column列表中，并且该属性不能存在空值。
 
-​		`track.eventName`：type为track时，导入神策分析的事件名，当该列值为动态的在```saColumn```中时，可将```saColumn```中的列名改为```eventEventName```（该列不能存在空值），即可达到动态的效果。
+​		`track.eventName`：type为track时，导入神策分析的事件名，当该列值为动态的在column中时，可将column中的列名改为```eventEventName```（该列不能存在空值），即可达到动态的效果,该配置项任意即可，将不再生效。
 
-​		`track.isLoginId`：type为track时，作为神策distinctId的列是否是登录ID，即用户的唯一标识，布尔值，当该列值为动态的在```saColumn```中时，可将```saColumn```中的列名改为```eventIsLoginId```（该列不能存在空值），即可达到动态的效果。
+​		`track.isLoginId`：type为track时，作为神策distinctId的列是否是登录ID，即用户的唯一标识，布尔值，当该列值为动态的在```column```中时，可将```saColumn```中的列名改为```eventIsLoginId```（该列不能存在空值），即可达到动态的效果,该配置项任意即可，将不再生效。
 
-​		`user.distinctIdColumn`：type为user时，作为神策distinctId的列，该属性应该在saColumn列表中，并且该属性不能存在空值。
+​		`user.distinctIdColumn`：type为user时，作为神策distinctId的列，该属性应该在column列表中，并且该属性不能存在空值。
 
-​		`user.isLoginId`：type为user时，作为神策distinctId的列是否是登录ID，即用户的唯一标识，布尔值，当该列值为动态的在```saColumn```中时，可将```saColumn```中的列名改为```userIsLoginId```（该列不能存在空值），即可达到动态的效果。
+​		`user.isLoginId`：type为user时，作为神策distinctId的列是否是登录ID，即用户的唯一标识，布尔值，当该列值为动态的在```column```中时，可将```column```中的列名改为```userIsLoginId```（该列不能存在空值），即可达到动态的效果,该配置项任意即可，将不再生效。
 
-​		`item.itemIdColumn`：type为item时，作为神策itemId的列，该属性应该在saColumn列表中，并且该属性不能存在空值。
+​		`item.itemIdColumn`：type为item时，作为神策itemId的列，该属性应该在column列表中，并且该属性不能存在空值。
 
-​		`item.itemType`：type为item时，作为神策itemType的列，如该配置项的值在saColumn列表中，该属性不能存在空值并且`item.typeIsColumn`配置项应该为`true`，否则将以常量值作为神策itemType。
+​		`item.itemType`：type为item时，作为神策itemType的列，如该配置项的值在column列表中，该属性不能存在空值并且`item.typeIsColumn`配置项应该为`true`，否则将以常量值作为神策itemType。
 
-​		`item.typeIsColumn`：type为item时，`item.itemType`配置项是否在`saColumn`配置项的列表中。
+​		`item.typeIsColumn`：type为item时，`item.itemType`配置项是否在`column`配置项的列表中。
 
 ​		```plugin```：神策写插件的插件列表数组，开发规范见**神策写插件插件规范**。
 
