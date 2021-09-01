@@ -93,6 +93,11 @@ public class StarRocksWriter extends Writer {
         @Override
         public void init() {
             options = new StarRocksWriterOptions(super.getPluginJobConf());
+            if (options.isWildcardColumn()) {
+                Connection conn = DBUtil.getConnection(DataBaseType.MySql, options.getJdbcUrl(), options.getUsername(), options.getPassword());
+                List<String> columns = StarRocksWriterUtil.getStarRocksColumns(conn, options.getDatabase(), options.getTable());
+                options.setInfoCchemaColumns(columns);
+            }
             writerManager = new StarRocksWriterManager(options);
             rowSerializer = StarRocksSerializerFactory.createSerializer(options);
         }

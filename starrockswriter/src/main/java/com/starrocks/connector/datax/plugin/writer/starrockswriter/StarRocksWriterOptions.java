@@ -39,9 +39,16 @@ public class StarRocksWriterOptions implements Serializable {
     private static final String KEY_LOAD_PROPS = "loadProps";
 
     private final Configuration options;
+    private List<String> infoCchemaColumns;
+    private List<String> userSetColumns;
+    private boolean isWildcardColumn;
 
     public StarRocksWriterOptions(Configuration options) {
         this.options = options;
+        this.userSetColumns = options.getList(KEY_COLUMN, String.class).stream().map(str -> str.replace("`", "")).collect(Collectors.toList());
+        if (1 == options.getList(KEY_COLUMN, String.class).size() && "*".trim().equals(options.getList(KEY_COLUMN, String.class).get(0))) {
+            this.isWildcardColumn = true;
+        }
     }
 
     public void doPretreatment() {
@@ -74,7 +81,18 @@ public class StarRocksWriterOptions implements Serializable {
     }
 
     public List<String> getColumns() {
-        return options.getList(KEY_COLUMN, String.class).stream().map(str -> str.replace("`", "")).collect(Collectors.toList());
+        if (isWildcardColumn) {
+            return this.infoCchemaColumns;
+        }
+        return this.userSetColumns;
+    }
+
+    public boolean isWildcardColumn() {
+        return this.isWildcardColumn;
+    }
+
+    public void setInfoCchemaColumns(List<String> cols) {
+        this.infoCchemaColumns = cols;
     }
 
     public List<String> getPreSqlList() {

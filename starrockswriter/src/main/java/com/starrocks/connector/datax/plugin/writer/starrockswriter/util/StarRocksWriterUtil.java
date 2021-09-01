@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.*;
 
@@ -19,6 +20,24 @@ public final class StarRocksWriterUtil {
     private static final Logger LOG = LoggerFactory.getLogger(StarRocksWriterUtil.class);
 
     private StarRocksWriterUtil() {}
+
+    public static List<String> getStarRocksColumns(Connection conn, String databaseName, String tableName) {
+        String currentSql = String.format("SELECT COLUMN_NAME FROM `information_schema`.`COLUMNS` WHERE `TABLE_SCHEMA` = '%s' AND `TABLE_NAME` = '%s' ORDER BY `ORDINAL_POSITION` ASC;", databaseName, tableName);
+        List<String> columns = new ArrayList<>();
+        ResultSet rs = null;
+        try {
+            rs = DBUtil.query(conn, currentSql);
+            while (DBUtil.asyncResultSetNext(rs)) {
+                String colName = rs.getString("COLUMN_NAME");
+                columns.add(colName);
+            }
+            return columns;
+        } catch (Exception e) {
+            throw RdbmsException.asQueryException(DataBaseType.MySql, e, currentSql, null, null);
+        } finally {
+            DBUtil.closeDBResources(rs, null, null);
+        }
+    }
 
     public static List<String> renderPreOrPostSqls(List<String> preOrPostSqls, String tableName) {
         if (null == preOrPostSqls) {
