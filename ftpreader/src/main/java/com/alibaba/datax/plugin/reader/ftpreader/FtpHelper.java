@@ -110,9 +110,9 @@ public abstract class FtpHelper {
 	 * @Description: 删除相应的文件
 	 * @param @param filePath 文件路径
 	 * @param @return
-	 * @return boolean
+	 * @return void
 	 * @throws
 	 */
-	public abstract boolean deleteFile(String filePath);
+	public abstract void deleteFile(String filePath);
 
 }
