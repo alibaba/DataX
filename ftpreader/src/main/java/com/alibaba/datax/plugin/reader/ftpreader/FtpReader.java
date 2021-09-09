@@ -247,7 +247,7 @@ public class FtpReader extends Reader {
 				// 如果deletesrc为true，则删除源文件
 				if(readerSliceConfig.getBool(Key.DELETESRC,Constant.DEFAULT_FTP_DELETE_SRC)){
 					ftpHelper.deleteFile(fileName);
-					LOG.info(String.format("deleted file : [%s]", fileName));
+					LOG.info(String.format("deleted src file : [%s]", fileName));
 				}
 			}
 
