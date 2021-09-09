@@ -96,7 +96,7 @@ public class StarRocksStreamLoadVisitor {
     private byte[] joinRows(List<String> rows, int totalBytes) {
         if (StarRocksWriterOptions.StreamLoadFormat.CSV.equals(writerOptions.getStreamLoadFormat())) {
             Map<String, Object> props = writerOptions.getLoadProps();
-            byte[] lineDelimiter = (props.containsKey("row_delimiter") ? StarRocksDelimiterParser.parse(String.valueOf(props.get("row_delimiter")), "\n") : "\n").getBytes(StandardCharsets.UTF_8);
+            byte[] lineDelimiter = StarRocksDelimiterParser.parse((String)props.get("row_delimiter"), "\n").getBytes(StandardCharsets.UTF_8);
             ByteBuffer bos = ByteBuffer.allocate(totalBytes + rows.size() * lineDelimiter.length);
             for (String row : rows) {
                 bos.put(row.getBytes(StandardCharsets.UTF_8));
