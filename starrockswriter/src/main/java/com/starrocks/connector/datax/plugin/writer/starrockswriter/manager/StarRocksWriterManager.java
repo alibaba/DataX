@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -38,7 +39,7 @@ public class StarRocksWriterManager {
         try {
             buffer.add(record);
             batchCount++;
-            batchSize += record.getBytes().length;
+            batchSize += record.getBytes(StandardCharsets.UTF_8).length;
             if (batchCount >= writerOptions.getBatchRows() || batchSize >= writerOptions.getBatchSize()) {
                 String label = createBatchLabel();
                 LOG.debug(String.format("StarRocks buffer Sinking triggered: rows[%d] label[%s].", batchCount, label));
