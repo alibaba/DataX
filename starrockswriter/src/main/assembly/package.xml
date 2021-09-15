@@ -19,7 +19,7 @@
 		<fileSet>
 			<directory>target/</directory>
 			<includes>
-				<include>starrockswriter-0.0.1-SNAPSHOT.jar</include>
+				<include>starrockswriter-1.1.0.jar</include>
 			</includes>
 			<outputDirectory>plugin/writer/starrockswriter</outputDirectory>
 		</fileSet>
