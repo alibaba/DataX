@@ -194,7 +194,7 @@
 
   ```xml
   <dependency>
-      <groupId>cn.sensorsdata</groupId>
+      <groupId>com.alibaba</groupId>
       <artifactId>plugin-sa-history-datax-writer-common-plugin</artifactId>
       <version>1.0-SNAPSHOT</version>
   </dependency>
