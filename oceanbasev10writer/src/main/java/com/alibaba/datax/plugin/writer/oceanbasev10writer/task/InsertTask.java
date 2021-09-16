@@ -165,7 +165,6 @@ public class InsertTask implements Runnable {
 					} catch (InterruptedException e) {
 						LOG.info("thread interrupted ..., ignore");
 					}
-					connHolder.initConnection();
 					conn = connHolder.getConn();
 					LOG.info("retry {}, start do batch insert, size={}", i, buffer.size());
 					checkMemstore();
