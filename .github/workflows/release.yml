@@ -1,0 +1,30 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Maven Central Repository
+        uses: actions/setup-java@v2
+        with:
+          java-version: '8'
+          distribution: 'adopt'
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - run: |
+          git checkout main
+          mvn -U -pl starrockswriter -am clean package assembly:assembly -Dmaven.test.skip=true
+          cd target/datax/datax/plugin/writer/
+          tar -czvf starrockswriter.tar.gz starrockswriter
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            target/datax/datax/plugin/writer/starrockswriter.tar.gz
