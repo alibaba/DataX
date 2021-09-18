@@ -152,3 +152,6 @@ This software is free to use under the Apache License [Apache license](https://g
 - DataX开源用户交流群5
     - <img src="https://github.com/alibaba/DataX/blob/master/images/DataX%E5%BC%80%E6%BA%90%E7%94%A8%E6%88%B7%E4%BA%A4%E6%B5%81%E7%BE%A45.jpg" width="20%" height="20%">
 
+- DataX开源用户交流群6 
+    - <img src="https://user-images.githubusercontent.com/1905000/124073771-139cbd00-da75-11eb-9a3f-598cba145a76.png" width="20%" height="20%">
+
