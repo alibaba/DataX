@@ -31,7 +31,7 @@ public class ServerConnectInfo {
 	}
 
 	private void parseJdbcUrl(final String jdbcUrl) {
-		Pattern pattern = Pattern.compile("//([\\w\\.\\-]+:\\d+)/([\\w]+)\\?");
+		Pattern pattern = Pattern.compile("//([\\w\\.\\-]+:\\d+)/([\\w-]+)\\?");
 		Matcher matcher = pattern.matcher(jdbcUrl);
 		if (matcher.find()) {
 			String ipPort = matcher.group(1);
