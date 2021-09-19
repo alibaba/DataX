@@ -1,7 +1,0 @@
-{
-    "name": "cassandrawriter",
-    "class": "com.alibaba.datax.plugin.writer.cassandrawriter.CassandraWriter",
-    "description": "useScene: prod. mechanism: use datax driver, execute insert sql.",
-    "developer": "alibaba"
-}
-
