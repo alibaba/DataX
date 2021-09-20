@@ -1,6 +1,0 @@
-{
-  "name": "tsdbwriter",
-  "parameter": {
-    "endpoint": "http://localhost:8242"
-  }
-}
