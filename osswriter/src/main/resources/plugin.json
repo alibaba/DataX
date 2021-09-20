@@ -1,7 +1,0 @@
-{
-    "name": "osswriter",
-    "class": "com.alibaba.datax.plugin.writer.osswriter.OssWriter",
-    "description": "",
-    "developer": "alibaba"
-}
-
