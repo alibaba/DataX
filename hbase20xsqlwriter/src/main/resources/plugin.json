@@ -1,7 +1,0 @@
-{
-    "name": "hbase20xsqlwriter",
-    "class": "com.alibaba.datax.plugin.writer.hbase20xsqlwriter.HBase20xSQLWriter",
-    "description": "useScene: prod. mechanism: use hbase sql UPSERT to put data, index tables will be updated too.",
-    "developer": "bake"
-}
-
