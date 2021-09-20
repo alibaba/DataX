@@ -1,6 +1,0 @@
-{
-    "name": "otsreader",
-    "class": "com.alibaba.datax.plugin.reader.otsreader.OtsReader",
-    "description": "",
-    "developer": "alibaba"
-}
