@@ -1,7 +1,0 @@
-{
-    "name": "hbase11xsqlreader",
-    "class": "com.alibaba.datax.plugin.reader.hbase11xsqlreader.HbaseSQLReader",
-    "description": "useScene: prod. mechanism: Scan to read data.",
-    "developer": "liwei.li, bug reported to : liwei.li@alibaba-inc.com"
-}
-
