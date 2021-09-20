@@ -1,6 +1,0 @@
-{
-    "name": "mongodbreader",
-    "class": "com.alibaba.datax.plugin.reader.mongodbreader.MongoDBReader",
-    "description": "useScene: prod. mechanism: via mongoclient connect mongodb reader data concurrent.",
-    "developer": "alibaba"
-}
