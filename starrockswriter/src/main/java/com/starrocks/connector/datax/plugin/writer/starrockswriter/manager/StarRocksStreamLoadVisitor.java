@@ -93,13 +93,13 @@ public class StarRocksStreamLoadVisitor {
         }
     }
 
-    private byte[] joinRows(List<String> rows, int totalBytes) {
+    private byte[] joinRows(List<byte[]> rows, int totalBytes) {
         if (StarRocksWriterOptions.StreamLoadFormat.CSV.equals(writerOptions.getStreamLoadFormat())) {
             Map<String, Object> props = writerOptions.getLoadProps();
             byte[] lineDelimiter = StarRocksDelimiterParser.parse((String)props.get("row_delimiter"), "\n").getBytes(StandardCharsets.UTF_8);
             ByteBuffer bos = ByteBuffer.allocate(totalBytes + rows.size() * lineDelimiter.length);
-            for (String row : rows) {
-                bos.put(row.getBytes(StandardCharsets.UTF_8));
+            for (byte[] row : rows) {
+                bos.put(row);
                 bos.put(lineDelimiter);
             }
             return bos.array();
@@ -110,11 +110,11 @@ public class StarRocksStreamLoadVisitor {
             bos.put("[".getBytes(StandardCharsets.UTF_8));
             byte[] jsonDelimiter = ",".getBytes(StandardCharsets.UTF_8);
             boolean isFirstElement = true;
-            for (String row : rows) {
+            for (byte[] row : rows) {
                 if (!isFirstElement) {
                     bos.put(jsonDelimiter);
                 }
-                bos.put(row.getBytes(StandardCharsets.UTF_8));
+                bos.put(row);
                 isFirstElement = false;
             }
             bos.put("]".getBytes(StandardCharsets.UTF_8));

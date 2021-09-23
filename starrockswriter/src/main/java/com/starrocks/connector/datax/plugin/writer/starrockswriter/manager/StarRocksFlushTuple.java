@@ -6,9 +6,9 @@ public class StarRocksFlushTuple {
     
     private String label;
     private Long bytes;
-    private List<String> rows;
+    private List<byte[]> rows;
 
-    public StarRocksFlushTuple(String label, Long bytes, List<String> rows) {
+    public StarRocksFlushTuple(String label, Long bytes, List<byte[]> rows) {
         this.label = label;
         this.bytes = bytes;
         this.rows = rows;
@@ -16,5 +16,5 @@ public class StarRocksFlushTuple {
 
     public String getLabel() { return label; }
     public Long getBytes() { return bytes; }
-    public List<String> getRows() { return rows; }
+    public List<byte[]> getRows() { return rows; }
 }

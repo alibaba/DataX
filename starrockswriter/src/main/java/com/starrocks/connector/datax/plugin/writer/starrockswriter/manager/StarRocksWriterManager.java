@@ -20,7 +20,7 @@ public class StarRocksWriterManager {
     private final StarRocksStreamLoadVisitor starrocksStreamLoadVisitor;
     private final StarRocksWriterOptions writerOptions;
 
-    private final List<String> buffer = new ArrayList<>();
+    private final List<byte[]> buffer = new ArrayList<>();
     private int batchCount = 0;
     private long batchSize = 0;
     private volatile boolean closed = false;
@@ -37,9 +37,10 @@ public class StarRocksWriterManager {
     public final synchronized void writeRecord(String record) throws IOException {
         checkFlushException();
         try {
-            buffer.add(record);
+            byte[] bts = record.getBytes(StandardCharsets.UTF_8);
+            buffer.add(bts);
             batchCount++;
-            batchSize += record.getBytes(StandardCharsets.UTF_8).length;
+            batchSize += bts.length;
             if (batchCount >= writerOptions.getBatchRows() || batchSize >= writerOptions.getBatchSize()) {
                 String label = createBatchLabel();
                 LOG.debug(String.format("StarRocks buffer Sinking triggered: rows[%d] label[%s].", batchCount, label));
