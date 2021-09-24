@@ -202,7 +202,7 @@ HbaseWriter 插件实现了从向Hbase中写取数据。在底层实现上，Hba
 
 	* 描述：要写入的hbase字段。index：指定该列对应reader端column的索引，从0开始；name：指定hbase表中的列，必须为 列族:列名 的格式；type：指定写入数据类型，用于转换HBase byte[]。配置格式如下：
 	
-	```
+```
 "column": [
               {
                 "index":1,
