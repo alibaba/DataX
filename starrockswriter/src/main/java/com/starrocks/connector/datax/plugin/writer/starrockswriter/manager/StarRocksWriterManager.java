@@ -1,5 +1,6 @@
 package com.starrocks.connector.datax.plugin.writer.starrockswriter.manager;
 
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -8,7 +9,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Strings;
 import com.starrocks.connector.datax.plugin.writer.starrockswriter.StarRocksWriterOptions;
@@ -26,12 +31,43 @@ public class StarRocksWriterManager {
     private volatile boolean closed = false;
     private volatile Exception flushException;
     private final LinkedBlockingDeque<StarRocksFlushTuple> flushQueue;
+    private ScheduledExecutorService scheduler;
+    private ScheduledFuture<?> scheduledFuture;
 
     public StarRocksWriterManager(StarRocksWriterOptions writerOptions) {
         this.writerOptions = writerOptions;
         this.starrocksStreamLoadVisitor = new StarRocksStreamLoadVisitor(writerOptions);
         flushQueue = new LinkedBlockingDeque<>(writerOptions.getFlushQueueLength()); 
+        this.startScheduler();
         this.startAsyncFlushing();
+    }
+
+    public void startScheduler() {
+        stopScheduler();
+        this.scheduler = Executors.newScheduledThreadPool(1, new BasicThreadFactory.Builder().namingPattern("starrocks-interval-flush").daemon(true).build());
+        this.scheduledFuture = this.scheduler.schedule(() -> {
+            synchronized (StarRocksWriterManager.this) {
+                if (!closed) {
+                    try {
+                        String label = createBatchLabel();
+                        LOG.info(String.format("StarRocks interval Sinking triggered: label[%s].", label));
+                        if (batchCount == 0) {
+                            startScheduler();
+                        }
+                        flush(label, false);
+                    } catch (Exception e) {
+                        flushException = e;
+                    }
+                }
+            }
+        }, writerOptions.getFlushInterval(), TimeUnit.MILLISECONDS);
+    }
+
+    public void stopScheduler() {
+        if (this.scheduledFuture != null) {
+            scheduledFuture.cancel(false);
+            this.scheduler.shutdown();
+        }
     }
 
     public final synchronized void writeRecord(String record) throws IOException {
@@ -109,6 +145,7 @@ public class StarRocksWriterManager {
         for (int i = 0; i <= writerOptions.getFlushQueueLength(); i++) {
             flushQueue.put(new StarRocksFlushTuple("", 0l, null));
         }
+        checkFlushException();
     }
 
     private void asyncFlush() throws Exception {
@@ -116,12 +153,14 @@ public class StarRocksWriterManager {
         if (Strings.isNullOrEmpty(flushData.getLabel())) {
             return;
         }
+        stopScheduler();
         LOG.debug(String.format("Async stream load: rows[%d] bytes[%d] label[%s].", flushData.getRows().size(), flushData.getBytes(), flushData.getLabel()));
         for (int i = 0; i <= writerOptions.getMaxRetries(); i++) {
             try {
                 // flush to StarRocks with stream load
                 starrocksStreamLoadVisitor.doStreamLoad(flushData);
                 LOG.info(String.format("Async stream load finished: label[%s].", flushData.getLabel()));
+                startScheduler();
                 break;
             } catch (Exception e) {
                 LOG.warn("Failed to flush batch data to StarRocks, retry times = {}", i, e);

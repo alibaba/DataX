@@ -18,6 +18,7 @@ public class StarRocksWriterOptions implements Serializable {
     private static final int MAX_RETRIES = 1;
     private static final int BATCH_ROWS = 500000;
     private static final long BATCH_BYTES = 90 * MEGA_BYTES_SCALE;
+    private static final long FLUSH_INTERVAL = 300000;
 
     private static final String KEY_LOAD_PROPS_FORMAT = "format";
     public enum StreamLoadFormat {
@@ -34,6 +35,7 @@ public class StarRocksWriterOptions implements Serializable {
     private static final String KEY_JDBC_URL = "jdbcUrl";
     private static final String KEY_MAX_BATCH_ROWS = "maxBatchRows";
     private static final String KEY_MAX_BATCH_SIZE = "maxBatchSize";
+    private static final String KEY_FLUSH_INTERVAL = "flushInterval";
     private static final String KEY_LOAD_URL = "loadUrl";
     private static final String KEY_FLUSH_QUEUE_LENGTH = "flushQueueLength";
     private static final String KEY_LOAD_PROPS = "loadProps";
@@ -119,6 +121,11 @@ public class StarRocksWriterOptions implements Serializable {
     public long getBatchSize() {
         Long size = options.getLong(KEY_MAX_BATCH_SIZE);
         return null == size ? BATCH_BYTES : size;
+    }
+
+    public long getFlushInterval() {
+        Long interval = options.getLong(KEY_FLUSH_INTERVAL);
+        return null == interval ? FLUSH_INTERVAL : interval;
     }
     
     public int getFlushQueueLength() {
