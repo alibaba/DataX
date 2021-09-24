@@ -219,9 +219,9 @@ HbaseWriter 插件实现了从向Hbase中写取数据。在底层实现上，Hba
 		            
 ```
 
-	* 必选：是<br />
+* 必选：是<br />
  
-	* 默认值：无 <br />
+* 默认值：无 <br />
 
 * **rowkeyColumn**
 
