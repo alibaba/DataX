@@ -150,7 +150,7 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
 				partCalculator = new ObPartitionIdCalculator(connectInfo.ipPort, tableEntryKey);
 			} catch (Exception ex) {
 				++retry;
-				LOG.warn("create new part calculator failed, retry ... {}", retry, ex);
+				LOG.warn("create new part calculator failed, retry {}: {}", retry, ex.getMessage());
 			}
 		} while (partCalculator == null && retry < 3); // try 3 times
 	}
