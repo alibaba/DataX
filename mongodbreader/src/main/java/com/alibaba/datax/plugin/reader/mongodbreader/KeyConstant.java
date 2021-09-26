@@ -68,6 +68,7 @@ public class KeyConstant {
 
     public static final String LOWER_BOUND = "lowerBound";
     public static final String UPPER_BOUND = "upperBound";
+    public static final String RANGE = "range";
     public static final String IS_OBJECTID = "isObjectId";
     /**
      * 批量获取的记录数
@@ -82,12 +83,19 @@ public class KeyConstant {
      */
     public static final int MONGO_UNAUTHORIZED_ERR_CODE = 13;
     public static final int MONGO_ILLEGALOP_ERR_CODE = 20;
+
+    /**
+     * 扫描mongo整行数据,true时，将忽略用户配置的column
+     */
+    public static final String JSON_TYPE = "jsonType";
+
     /**
      * 判断是否为数组类型
      * @param type 数据类型
      * @return
      */
     public static boolean isArrayType(String type) {
+
         return ARRAY_TYPE.equals(type) || DOCUMENT_ARRAY_TYPE.equals(type);
     }
 
