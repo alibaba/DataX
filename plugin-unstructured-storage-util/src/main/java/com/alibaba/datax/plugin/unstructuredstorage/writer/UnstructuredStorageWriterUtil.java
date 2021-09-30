@@ -309,7 +309,11 @@ public class UnstructuredStorageWriterUtil {
                     if (null != column.getRawData()) {
                         boolean isDateColumn = column instanceof DateColumn;
                         if (!isDateColumn) {
-                            splitedRows.add(column.asString());
+                            if(nullFormat.equals(column.asString())) {
+                                splitedRows.add(null);
+                            }else {
+                                splitedRows.add(column.asString());
+                            }
                         } else {
                             if (null != dateParse) {
                                 splitedRows.add(dateParse.format(column
