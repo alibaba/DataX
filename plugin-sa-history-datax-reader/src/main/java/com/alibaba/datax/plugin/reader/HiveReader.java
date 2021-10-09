@@ -392,9 +392,9 @@ public class HiveReader extends Reader {
             List<String>  columnNames = new ArrayList<>();
             for (int i = 0; i < this.columnList.size(); i++) {
                 String col = this.columnList.get(i);
-                columnIndexMap.put(col,i);
                 col = col.contains(".")?col.substring(col.lastIndexOf(".")+1):col;
                 col = col.contains(" ")?col.substring(col.lastIndexOf(" ")+1):col;
+                columnIndexMap.put(col,i);
                 columnNames.add(col);
             }
             this.columnNameList = columnNames;
