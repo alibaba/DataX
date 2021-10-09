@@ -48,7 +48,7 @@ PostgresqlReader插件实现了从PostgreSQL读取数据。在底层实现上，
                         // 数据库连接密码
                         "password": "xx",
                         "column": [
-                            "id"，"name"
+                            "id","name"
                         ],
                         //切分主键
                         "splitPk": "id",

@@ -50,7 +50,7 @@ DRDS的插件目前DataX只适配了Mysql引擎的场景，DRDS对于DataX而言
                         // 数据库连接密码
                         "password": "root",
                         "column": [
-                            "id"，"name"
+                            "id","name"
                         ],
                         "connection": [
                             {
