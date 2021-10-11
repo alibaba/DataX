@@ -24,6 +24,10 @@ public class ConverterFactory {
         converterMap.put("NotNull2Null",new NotNull2NullConverter());
         converterMap.put("IfElse",new IfElseConverter());
         converterMap.put("IfNull2Column",new IfNull2ColumnConverter());
+        converterMap.put("Number2Long",new Number2LongConverter());
+        converterMap.put("StrEnum",new StrEnumConverter());
+        converterMap.put("NumEnum",new NumberEnumConverter());
+        converterMap.put("BytesArr2Str",new BytesArr2StrConverter());
     }
 
     public static Converter converter(String type){

@@ -143,7 +143,9 @@ public class SaWriter extends Writer {
                             }
                             continue;
                         }
-                        properties.put(col.getName(),value);
+                        if(Objects.isNull(col.getExclude()) || !col.getExclude()){
+                            properties.put(col.getName(),value);
+                        }
                     }else if(column instanceof BoolColumn){
                         Boolean v = column.asBoolean();
                         Object value = ConverterUtil.convert(col.getName(),v,col,properties);
@@ -153,7 +155,9 @@ public class SaWriter extends Writer {
                             }
                             continue;
                         }
-                        properties.put(col.getName(),value);
+                        if(Objects.isNull(col.getExclude()) || !col.getExclude()){
+                            properties.put(col.getName(),value);
+                        }
                     }else if(column instanceof DoubleColumn){
                         BigDecimal v = column.asBigDecimal();
                         Object value = ConverterUtil.convert(col.getName(),v,col,properties);
@@ -163,7 +167,9 @@ public class SaWriter extends Writer {
                             }
                             continue;
                         }
-                        properties.put(col.getName(),value);
+                        if(Objects.isNull(col.getExclude()) || !col.getExclude()){
+                            properties.put(col.getName(),value);
+                        }
                     }else if(column instanceof LongColumn){
                         BigInteger v = column.asBigInteger();
                         Object value = ConverterUtil.convert(col.getName(),v,col,properties);
@@ -173,7 +179,9 @@ public class SaWriter extends Writer {
                             }
                             continue;
                         }
-                        properties.put(col.getName(),value);
+                        if(Objects.isNull(col.getExclude()) || !col.getExclude()){
+                            properties.put(col.getName(),value);
+                        }
                     }else if(column instanceof DateColumn){
                         Date v = column.asDate();
                         Object value = ConverterUtil.convert(col.getName(),v,col,properties);
@@ -183,7 +191,21 @@ public class SaWriter extends Writer {
                             }
                             continue;
                         }
-                        properties.put(col.getName(),value);
+                        if(Objects.isNull(col.getExclude()) || !col.getExclude()){
+                            properties.put(col.getName(),value);
+                        }
+                    }else if(column instanceof BytesColumn){
+                        byte[] v = column.asBytes();
+                        Object value = ConverterUtil.convert(col.getName(),v,col,properties);
+                        if(NullUtil.isNullOrBlank(value)){
+                            if(!NullUtil.isNullOrBlank(col.getIfNullGiveUp()) && col.getIfNullGiveUp()){
+                                continue A;
+                            }
+                            continue;
+                        }
+                        if(Objects.isNull(col.getExclude()) || !col.getExclude()){
+                            properties.put(col.getName(),value);
+                        }
                     }
                 }
                 boolean process = true;

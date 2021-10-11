@@ -20,6 +20,11 @@ public class SaColumnItem implements Serializable {
 
     private Boolean ifNullGiveUp = false;
 
+    /**
+     * 是否排除该字段的导入
+     */
+    private Boolean exclude = false;
+
     private List<DataConverter> dataConverters;
 
 }

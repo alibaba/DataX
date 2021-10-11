@@ -31,7 +31,8 @@
                             {
                                 "index":0,
                                 "name": "name1",
-                                "ifNullGiveUp" : true
+                                "ifNullGiveUp" : true,
+                                "exclude": true
                             },
                             {
                                 "index":1,
@@ -154,6 +155,8 @@
 
 ​		```column.ifNullGiveUp```：当该列值经过转换器转换后为空时，是否丢弃该行数据，默认值为false。
 
+​		`column.exclude`：是否排除该字段的导入，默认值false。与```column.ifNullGiveUp```搭配使用可用于校验该行数据是否符合业务规则（规范），使用```IfElse```转换器定义规则校验逻辑，符合规则返回非空值，不符合规则返回空值，exclude属性保证非空值不会导入，ifNullGiveUp属性保证空值时丢弃该行数据。
+
 ​		`column.dataConverters`：将dataX读出的数据转换为其他类型或者值，所使用的数据转换器。插件支持的数据转换器见下文``内置数据转换器``，支持多个联合使用。
 
 ​		``column.dataConverters.type``：使用内置转换器的名称，见下文``内置数据转换器`` ``转换器type``列。
@@ -222,6 +225,7 @@
 | DoubleColumn | java.math.BigDecimal |
 |  DateColumn  |    java.util.Date    |
 |     null     |         丢弃         |
+| BytesColumn  |        byte[]        |
 
 ## 内置数据转换器
 
@@ -241,6 +245,10 @@
 |  NotNull2Null  |  NotNull2NullConverter   |                   将不为null的值转换为null                   |
 |     IfElse     |     IfElseConverter      | if表达式条件成立返回特定表达式值，否则返回else表达式值，使用JavaScript引擎解析 |
 | IfNull2Column  |  IfNull2ColumnConverter  | 如果该列的值为空，则取该转换器配置的列（注意：该转换器配置的列必须配置在该列之前） |
+|  Number2Long   |   Number2LongConverter   | 将数值转换为long数值，支持三种模式。<br />向下取整:默认模式，如值为3.4，转换后为3<br />向上取整：如值为3.6，转换后为4<br />四舍五入：如值为3.6，转换后为4 |
+|    StrEnum     |     StrEnumConverter     |                   将字符串的枚举值执行转换                   |
+|    NumEnum     |   NumberEnumConverter    |                    将数字的枚举值执行转换                    |
+|  BytesArr2Str  |  BytesArr2StrConverter   |                    将byte数组转换为字符串                    |
 
 
 
@@ -490,6 +498,106 @@
         "param": {
             "targetColumnName":"age1"
         }
+    }
+]
+```
+
+### Number2Long
+
+```model```：转换为整数时的模式
+
+功能：将数字转换为整数，支持三种模式，分别为：``向下取整``模式（默认）、``向上取整``模式、``四舍五入``模式。
+
+``向下取整``：默认模式，可不配置``model``参数，将丢弃小数点后所有数。
+
+``向上取整``：``model``参数为：``up``，小数点后一位超过5时，整数部分加1。
+
+``四舍五入``：``model``参数为：``half_up``。
+
+#### 示例
+
+```json
+"dataConverters": [
+    {
+        "type": "IfNull2Column",
+        "param": {
+            "model":"up"
+        }
+    }
+]
+```
+
+### StrEnum
+
+```enum```：转换的枚举键值对列表。
+
+```nullValue```：该列值为null时，填充的值。
+
+```default```：当该列值既不是null，也不在enum中时，填充的值。
+
+功能：将字符串的枚举值执行转换。
+
+#### 示例
+
+```json
+"dataConverters": [
+    {
+        "type": "StrEnum",
+        "param": {
+            "enum":{
+              "student":"学生",
+              "teacher":"老师",
+              "president":"校长"
+            },
+            "nullValue":"未知角色",
+            "default":"职工"
+        }
+    }
+]
+```
+
+### NumEnum
+
+```enum```：转换的枚举键值对列表。
+
+```nullValue```：该列值为null时，填充的值。
+
+```default```：当该列值既不是null，也不在enum中时，填充的值。
+
+```nanValue```：当该列值不能转换为数字时，填充的值。
+
+功能：将数字（支持浮点数）的枚举值执行转换。
+
+#### 示例
+
+```json
+"dataConverters": [
+    {
+        "type": "NumEnum",
+        "param": {
+             "enum":{
+              "01":"学生",
+              "02":"老师",
+              "23.5":"校长"
+            },
+            "nullValue":"未知角色",
+            "default":"职工",
+            "nanValue":"错误类型"
+        }
+    }
+]
+```
+
+### BytesArr2Str
+
+无参数要求
+
+#### 示例
+
+```json
+"dataConverters":[
+    {
+        "type": "BytesArr2Str"
     }
 ]
 ```
