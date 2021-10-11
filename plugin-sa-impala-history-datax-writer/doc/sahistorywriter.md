@@ -112,7 +112,7 @@
 
 ​		`column.name`：导入目的表的列名。
 
-​		`column.exclude`：是否排除该字段的导入，默认值false。
+​		`column.exclude`：是否排除该字段的导入，默认值false。与```column.ifNullGiveUp```搭配使用可用于校验该行数据是否符合业务规则（规范），使用```IfElse```转换器定义规则校验逻辑，符合规则返回非空值，不符合规则返回空值，exclude属性保证非空值不会导入，ifNullGiveUp属性保证空值时丢弃该行数据。
 
 ​		```column.ifNullGiveUp```：当该列值经过转换器转换后为空时，是否丢弃该行数据，默认值为false。
 
@@ -134,6 +134,7 @@
 | DoubleColumn | java.math.BigDecimal |
 |  DateColumn  |    java.util.Date    |
 |     null     |         丢弃         |
+| BytesColumn  |        byte[]        |
 
 ## 内置数据转换器
 
@@ -484,7 +485,7 @@
         "type": "NumEnum",
         "param": {
              "enum":{
-              "01"":"学生",
+              "01":"学生",
               "02":"老师",
               "23.5":"校长"
             },
@@ -510,4 +511,3 @@
 ]
 ```
 
-### 

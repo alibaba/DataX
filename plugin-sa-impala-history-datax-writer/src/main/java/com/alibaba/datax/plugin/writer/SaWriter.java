@@ -47,7 +47,6 @@ public class SaWriter extends Writer {
 
         public void init() {
             this.originalConfig = super.getPluginJobConf();
-            log.info("123345666556666");
             String url = originalConfig.getString(KeyConstant.URL);
             String table = originalConfig.getString(KeyConstant.TABLE);
             if(Objects.isNull(url) || Objects.equals("",url) ){
