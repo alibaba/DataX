@@ -1,0 +1,6 @@
+{
+    "name": "saimpalawriter",
+    "class": "com.alibaba.datax.plugin.writer.SaWriter",
+    "description": "sa impala writer",
+    "developer": "cocowqw"
+}

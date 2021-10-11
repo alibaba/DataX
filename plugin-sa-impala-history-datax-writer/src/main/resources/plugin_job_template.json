@@ -1,0 +1,42 @@
+{
+    "name": "saimpalawriter",
+    "parameter": {
+        "url": "jdbc:impala://10.120.17.177:21050/dimensions",
+        "table": "",
+        "model": "insert",
+        "batchSize": 100,
+        "column": [
+            {
+                "index":0,
+                "name": "",
+                "ifNullGiveUp": false,
+                "exclude": true,
+                "dataConverters":[
+                    {
+                        "type": "",
+                        "param": {
+                            "flag": true
+                        }
+                    },
+                    {
+                        "type": "",
+                        "param": {
+                            "format": ""
+                        }
+                    }
+                ]
+            },
+            {
+                "index":1,
+                "name": "",
+                "ifNullGiveUp": true,
+                "dataConverters":[
+                    {
+                        "type": ""
+                    }
+                ]
+            }
+        ],
+        "updateWhereColumn": [""]
+    }
+}

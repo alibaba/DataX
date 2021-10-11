@@ -1,0 +1,25 @@
+{
+    "name": "samysqlreader",
+    "parameter": {
+        "mysqlVersion": "1.1.0",
+        "username": "",
+        "password": "",
+        "column": [""],
+        "startTime": "",
+        "endTime": "",
+        "timeFieldName": "",
+        "timeInterval": 1000,
+        "maxQueryNum": 50000,
+        "datePattern": "",
+        "taskNum": 10,
+        "receivePageSize": 5,
+        "sa":{
+            "mysqlUrl": "",
+            "table": ""
+        },
+        "where": "",
+        "useRowNumber": false,
+        "pageSize": 10000,
+        "timeFieldCount": true
+    }
+}

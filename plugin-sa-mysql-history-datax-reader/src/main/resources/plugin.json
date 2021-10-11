@@ -1,0 +1,6 @@
+{
+    "name": "samysqlreader",
+    "class": "com.alibaba.datax.plugin.reader.SaMysqlReader",
+    "description": "mysql reader",
+    "developer": "cocowqw"
+}
