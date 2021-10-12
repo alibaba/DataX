@@ -1,6 +1,6 @@
 package com.alibaba.datax.plugin.classloader;
 
-import cn.sensorsdata.BasePlugin;
+import com.alibaba.datax.BasePlugin;
 import com.alibaba.datax.common.exception.CommonErrorCode;
 import com.alibaba.datax.common.exception.DataXException;
 import sun.net.www.ParseUtil;

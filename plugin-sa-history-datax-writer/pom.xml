@@ -38,9 +38,9 @@
         </dependency>
 
         <dependency>
-            <groupId>cn.sensorsdata</groupId>
+            <groupId>com.alibaba.datax</groupId>
             <artifactId>plugin-sa-history-datax-writer-common-plugin</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
     </dependencies>

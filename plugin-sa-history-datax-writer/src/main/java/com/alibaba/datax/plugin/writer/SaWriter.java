@@ -1,6 +1,6 @@
 package com.alibaba.datax.plugin.writer;
 
-import cn.sensorsdata.BasePlugin;
+import com.alibaba.datax.BasePlugin;
 import com.alibaba.datax.plugin.domain.SaPlugin;
 import com.alibaba.datax.plugin.util.ConverterUtil;
 import com.alibaba.datax.plugin.util.SaUtil;
