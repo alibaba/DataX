@@ -1,0 +1,34 @@
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "name": "opentsdbreader",
+          "parameter": {
+            "endpoint": "http://192.168.1.180:4242",
+            "column": [
+              "weather.temperature"
+            ],
+            "beginDateTime": "2021-01-01 00:00:00",
+            "endDateTime": "2021-01-01 01:00:00"
+          }
+        },
+        "writer": {
+          "name": "tdenginewriter",
+          "parameter": {
+            "host": "192.168.56.105",
+            "port": 6030,
+            "db": "test",
+            "user": "root",
+            "password": "taosdata"
+          }
+        }
+      }
+    ],
+    "setting": {
+      "speed": {
+        "channel": 1
+      }
+    }
+  }
+}

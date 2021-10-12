@@ -1,0 +1,10 @@
+{
+    "name": "tdenginewriter",
+    "parameter": {
+        "host": "",
+        "port": 6030,
+        "db": "",
+        "user": "",
+        "password": ""
+    }
+}
