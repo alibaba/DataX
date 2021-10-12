@@ -368,9 +368,9 @@
 
 ```if```：if条件表达式，使用JavaScript引擎解析，确保返回值为boolean类型，导入神策分析的当前列名，和当前读插件获取到的value值，dataConverters下配置的param参数，以及已解析的列（map结构），会传递到```if```表达式中,可通过`targetColumnName`、`value`、`param`、`resolvedValues`分别获取对应的值
 
-```value```：if条件表达式成立时，返回转换后的值，使用JavaScript引擎解析，导入神策分析的当前列名，和当前读插件获取到的value值，dataConverters下配置的param参数，以及已解析的列（map结构），会传递到```if```表达式中,可通过`targetColumnName`、`value`、`param`、`resolvedValues`分别获取对应的值
+```value```：if条件表达式成立时，返回转换后的值，使用JavaScript引擎解析，导入神策分析的当前列名，和当前读插件获取到的value值，dataConverters下配置的param参数，以及已解析的列（map结构），会传递到```value```表达式中,可通过`targetColumnName`、`value`、`param`、`resolvedValues`分别获取对应的值
 
-```else```：if条件表达式不成立时，返回转换后的值，使用JavaScript引擎解析，导入神策分析的当前列名，和当前读插件获取到的value值，dataConverters下配置的param参数，以及已解析的列（map结构），会传递到```if```表达式中,可通过`targetColumnName`、`value`、`param`、`resolvedValues`分别获取对应的值
+```else```：if条件表达式不成立时，返回转换后的值，使用JavaScript引擎解析，导入神策分析的当前列名，和当前读插件获取到的value值，dataConverters下配置的param参数，以及已解析的列（map结构），会传递到```else```表达式中,可通过`targetColumnName`、`value`、`param`、`resolvedValues`分别获取对应的值
 
 ```sharedPool```：共享区，使用JavaScript引擎解析，该值定义的变量或常量在```if```、```value```、```else```中都能使用
 
