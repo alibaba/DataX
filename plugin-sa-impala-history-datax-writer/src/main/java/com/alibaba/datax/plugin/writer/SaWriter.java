@@ -2,6 +2,7 @@ package com.alibaba.datax.plugin.writer;
 
 import cn.hutool.db.handler.BeanListHandler;
 import cn.hutool.db.sql.SqlExecutor;
+import com.alibaba.datax.BasePlugin;
 import com.alibaba.datax.common.element.*;
 import com.alibaba.datax.common.exception.CommonErrorCode;
 import com.alibaba.datax.common.exception.DataXException;
@@ -10,8 +11,10 @@ import com.alibaba.datax.common.spi.Writer;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.plugin.ConverterFactory;
 import com.alibaba.datax.plugin.KeyConstant;
+import com.alibaba.datax.plugin.classloader.PluginClassLoader;
 import com.alibaba.datax.plugin.domain.DataConverter;
 import com.alibaba.datax.plugin.domain.SaColumnItem;
+import com.alibaba.datax.plugin.domain.SaPlugin;
 import com.alibaba.datax.plugin.domain.TableColumnMetaData;
 import com.alibaba.datax.plugin.util.ColumnDataUtil;
 import com.alibaba.datax.plugin.util.ConverterUtil;
@@ -113,6 +116,8 @@ public class SaWriter extends Writer {
 
         private List<String> tableColumnOrderList = new ArrayList<>();
 
+        private List<BasePlugin.SAPlugin> basePluginList;
+
         private String tableName;
         private String model;
         private int batchSize;
@@ -193,6 +198,15 @@ public class SaWriter extends Writer {
                             continue;
                         }
                         properties.put(col.getName(),value);
+                    }
+                }
+                boolean process = true;
+                if(!Objects.isNull(this.basePluginList) && !this.basePluginList.isEmpty()){
+                    for (BasePlugin.SAPlugin saPlugin : this.basePluginList) {
+                        process = saPlugin.process(properties);
+                        if(!process){
+                            continue A;
+                        }
                     }
                 }
                 String sql = generateSql(tableName, tableColumnOrderList, this.tableColumnMetaDataMap, properties, batchList);
@@ -324,8 +338,26 @@ public class SaWriter extends Writer {
             }
 
             List<TableColumnMetaData> tableColumnMetaDataList = JSONObject.parseArray(tableColumnMetaDataStr, TableColumnMetaData.class);
-            this.tableColumnMetaDataMap = tableColumnMetaDataList.stream().collect(Collectors.toMap(TableColumnMetaData::getName, a -> a,(k1, k2)->k1));
 
+            this.tableColumnMetaDataMap = tableColumnMetaDataList.stream().collect(Collectors.toMap(TableColumnMetaData::getName, a -> a,(k1, k2)->k1));
+            String SaPluginStr = readerConfig.getString(KeyConstant.PLUGIN,"[]");
+            List<SaPlugin> SaPluginList = JSONObject.parseArray(SaPluginStr, SaPlugin.class);
+            if(!Objects.isNull(SaPluginList) && !SaPluginList.isEmpty()){
+                basePluginList = new ArrayList<>();
+            }
+
+            SaPluginList.forEach(saPlugin -> {
+                String pluginName = saPlugin.getName();
+                String pluginClass = saPlugin.getClassName();
+                Map<String, Object> pluginParam = saPlugin.getParam();
+                if(!NullUtil.isNullOrBlank(pluginName) && !NullUtil.isNullOrBlank(pluginClass)){
+                    if(Objects.isNull(pluginParam)){
+                        pluginParam = new HashMap<>();
+                    }
+                    basePluginList.add(PluginClassLoader.getBasePlugin(saPlugin.getName(), pluginClass, pluginParam));
+                }
+
+            });
         }
 
         public void destroy() {}

@@ -37,6 +37,15 @@
                 ]
             }
         ],
-        "updateWhereColumn": [""]
+        "updateWhereColumn": [""],
+        "plugin": [
+            {
+                "name": "",
+                "className": "",
+                "param": {
+                    "ip":""
+                }
+            }
+        ]
     }
 }

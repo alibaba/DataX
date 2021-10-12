@@ -122,6 +122,40 @@
 
 ​		`column.dataConverters.param`：使用内置转换器时，转换器必要的参数列表，参数key根据不同转换器不同而不同，见下文``内置数据转换器参数说明``。
 
+​		```plugin```：神策写插件的插件列表数组，开发规范见**神策写插件插件规范**。
+
+​		```plugin.name```：插件的名称。
+
+​		```plugin.className```：插件的全限定名。
+
+​		```plugin.param```：插件所需要的参数，具体参数根据插件不同而不同。
+
+## **神策写插件插件规范**
+
+​			引入插件机制目的：业务上的ETL清洗是多样的，在当前插件不支持转换时，可自定义插件进行转换。
+
+- ​	引入common依赖
+
+  ```xml
+  <dependency>
+      <groupId>com.alibaba</groupId>
+      <artifactId>plugin-sa-history-datax-writer-common-plugin</artifactId>
+      <version>1.0-SNAPSHOT</version>
+  </dependency>
+  ```
+
+- 编写代码
+
+  继承com.alibaba.BasePlugin类，重写instance方法（配置文件中plugin.param的配置项会被传递到该方法中），以及定义内部类继承com.alibaba.BasePlugin的内部类BasePlugin.SAPlugin，重写process方法。
+
+- 部署插件
+
+  将插件连同依赖一起打包生成jar包，在datax的```saimpalawriter```插件下新建plugin文件夹，然后再新建一个放置该插件的文件夹，命名无要求，配置文件中```plugin.name```参数为该文件夹名，最后将生成的jar包放置到该文件夹下。
+
+  ***实现原理***
+
+  神策写插件会实例化该类，并调用instance方法获取到BasePlugin.SAPlugin插件实例，然后调用SAPlugin的process方法（经过转换器转换后的值会被传递到该方法中，空值将会被丢弃）。
+
 ## **类型转换**
 
 插件支持的impala数据类型有：string、varchar、char、int、bigint、float、integer、double、decimal、tinyint、smallint、real、boolean、timestamp、datetime、date
