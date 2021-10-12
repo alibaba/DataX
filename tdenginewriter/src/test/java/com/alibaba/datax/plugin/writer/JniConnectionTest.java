@@ -10,8 +10,10 @@ public class JniConnectionTest {
     public void test() {
         JniConnection connection = new JniConnection(new Properties());
 
-        long psql = connection.open("192.168.56.107", 6030, "log", "root", "taosdata");
-        System.out.println("psql: " + psql);
+        connection.open("192.168.56.105", 6030, "log", "root", "taosdata");
+
+        String json = "{\"metric\":\"weather.temperature\",\"timestamp\":1609430400000,\"value\":123,\"tags\":{\"location\":\"beijing\",\"id\":123}}";
+        connection.insertOpentsdbJson(json);
 
         connection.close();
     }

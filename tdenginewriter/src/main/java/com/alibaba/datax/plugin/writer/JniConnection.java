@@ -38,7 +38,7 @@ public class JniConnection {
         }
     }
 
-    public long open(String host, int port, String dbname, String user, String password) {
+    public void open(String host, int port, String dbname, String user, String password) {
         if (this.psql != JNI_NULL_POINTER) {
             close();
             this.psql = JNI_NULL_POINTER;
@@ -49,7 +49,13 @@ public class JniConnection {
             String errMsg = getErrMsgImp(0);
             throw new RuntimeException(errMsg);
         }
-        return this.psql;
+    }
+
+    public long insertOpentsdbJson(String json) {
+        if (this.psql == JNI_NULL_POINTER) {
+            throw new RuntimeException("JNI connection is NULL");
+        }
+        return insertOpentsdbJson(json, this.psql);
     }
 
     public void close() {

@@ -73,11 +73,6 @@ public class TDengineWriter extends Writer {
             String user = this.writerSliceConfig.getString(USER);
             String password = this.writerSliceConfig.getString(PASSWORD);
 
-            JniConnection connection = new JniConnection(new Properties());
-            long psql = connection.open(host, port, dbname, user, password);
-            System.out.println("psql: " + psql);
-            connection.close();
-
             try {
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(System.out, StandardCharsets.UTF_8));
 
