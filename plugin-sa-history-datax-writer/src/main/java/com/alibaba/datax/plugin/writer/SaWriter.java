@@ -134,7 +134,13 @@ public class SaWriter extends Writer {
                 }
                 for (SaColumnItem col : saColumnList) {
                     Column column = record.getColumn(col.getIndex());
-                    if(column instanceof StringColumn){
+                    if(Objects.isNull(column)){
+                        //这里为空，很大的原因是index配置不正确
+                        if(!NullUtil.isNullOrBlank(col.getIfNullGiveUp()) && col.getIfNullGiveUp()){
+                            continue A;
+                        }
+                        continue;
+                    }else if(column instanceof StringColumn){
                         String v = column.asString();
                         Object value = ConverterUtil.convert(col.getName(),v,col,properties);
                         if(NullUtil.isNullOrBlank(value)){
@@ -143,9 +149,7 @@ public class SaWriter extends Writer {
                             }
                             continue;
                         }
-                        if(Objects.isNull(col.getExclude()) || !col.getExclude()){
-                            properties.put(col.getName(),value);
-                        }
+                        properties.put(col.getName(),value);
                     }else if(column instanceof BoolColumn){
                         Boolean v = column.asBoolean();
                         Object value = ConverterUtil.convert(col.getName(),v,col,properties);
@@ -155,9 +159,7 @@ public class SaWriter extends Writer {
                             }
                             continue;
                         }
-                        if(Objects.isNull(col.getExclude()) || !col.getExclude()){
-                            properties.put(col.getName(),value);
-                        }
+                        properties.put(col.getName(),value);
                     }else if(column instanceof DoubleColumn){
                         BigDecimal v = column.asBigDecimal();
                         Object value = ConverterUtil.convert(col.getName(),v,col,properties);
@@ -167,9 +169,7 @@ public class SaWriter extends Writer {
                             }
                             continue;
                         }
-                        if(Objects.isNull(col.getExclude()) || !col.getExclude()){
-                            properties.put(col.getName(),value);
-                        }
+                        properties.put(col.getName(),value);
                     }else if(column instanceof LongColumn){
                         BigInteger v = column.asBigInteger();
                         Object value = ConverterUtil.convert(col.getName(),v,col,properties);
@@ -179,9 +179,7 @@ public class SaWriter extends Writer {
                             }
                             continue;
                         }
-                        if(Objects.isNull(col.getExclude()) || !col.getExclude()){
-                            properties.put(col.getName(),value);
-                        }
+                        properties.put(col.getName(),value);
                     }else if(column instanceof DateColumn){
                         Date v = column.asDate();
                         Object value = ConverterUtil.convert(col.getName(),v,col,properties);
@@ -191,9 +189,7 @@ public class SaWriter extends Writer {
                             }
                             continue;
                         }
-                        if(Objects.isNull(col.getExclude()) || !col.getExclude()){
-                            properties.put(col.getName(),value);
-                        }
+                        properties.put(col.getName(),value);
                     }else if(column instanceof BytesColumn){
                         byte[] v = column.asBytes();
                         Object value = ConverterUtil.convert(col.getName(),v,col,properties);
@@ -203,9 +199,7 @@ public class SaWriter extends Writer {
                             }
                             continue;
                         }
-                        if(Objects.isNull(col.getExclude()) || !col.getExclude()){
-                            properties.put(col.getName(),value);
-                        }
+                        properties.put(col.getName(),value);
                     }
                 }
                 boolean process = true;
@@ -215,6 +209,12 @@ public class SaWriter extends Writer {
                         if(!process){
                             continue A;
                         }
+                    }
+                }
+                //在这里排除需要导入的字段是因为IfElse转换器会使用到已转换的列，在这里排除的话，IfElse转换器就可以使用到需要排除的列做判断
+                for (SaColumnItem col : saColumnList) {
+                    if(!Objects.isNull(col.getExclude()) && col.getExclude()){
+                        properties.remove(col.getName());
                     }
                 }
                 SaUtil.process(sa,type,properties);
