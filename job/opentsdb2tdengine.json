@@ -7,7 +7,7 @@
           "parameter": {
             "endpoint": "http://192.168.1.180:4242",
             "column": [
-              "weather.temperature"
+              "weather_temperature"
             ],
             "beginDateTime": "2021-01-01 00:00:00",
             "endDateTime": "2021-01-01 01:00:00"

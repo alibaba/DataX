@@ -6,10 +6,10 @@ public class JniConnection {
 
     private static final long JNI_NULL_POINTER = 0L;
     private static final int JNI_SUCCESSFUL = 0;
-    private static final String PROPERTY_KEY_CONFIG_DIR = "cfgdir";
-    private static final String PROPERTY_KEY_LOCALE = "locale";
-    private static final String PROPERTY_KEY_CHARSET = "charset";
-    private static final String PROPERTY_KEY_TIME_ZONE = "timezone";
+    public static final String PROPERTY_KEY_CONFIG_DIR = "cfgdir";
+    public static final String PROPERTY_KEY_LOCALE = "locale";
+    public static final String PROPERTY_KEY_CHARSET = "charset";
+    public static final String PROPERTY_KEY_TIME_ZONE = "timezone";
 
     private long conn;
 
@@ -17,7 +17,7 @@ public class JniConnection {
         System.loadLibrary("taos");
     }
 
-    public JniConnection(Properties props) {
+    public JniConnection(Properties props) throws Exception {
         if (this.conn != JNI_NULL_POINTER) {
             close();
             this.conn = JNI_NULL_POINTER;
@@ -27,19 +27,19 @@ public class JniConnection {
 
         String locale = props.getProperty(PROPERTY_KEY_LOCALE);
         if (setOptions(0, locale) < 0) {
-            throw new RuntimeException("Failed to set locale: " + locale + ". System default will be used.");
+            throw new Exception("Failed to set locale: " + locale + ". System default will be used.");
         }
         String charset = props.getProperty(PROPERTY_KEY_CHARSET);
         if (setOptions(1, charset) < 0) {
-            throw new RuntimeException("Failed to set charset: " + charset + ". System default will be used.");
+            throw new Exception("Failed to set charset: " + charset + ". System default will be used.");
         }
         String timezone = props.getProperty(PROPERTY_KEY_TIME_ZONE);
         if (setOptions(2, timezone) < 0) {
-            throw new RuntimeException("Failed to set timezone: " + timezone + ". System default will be used.");
+            throw new Exception("Failed to set timezone: " + timezone + ". System default will be used.");
         }
     }
 
-    public void open(String host, int port, String dbname, String user, String password) {
+    public void open(String host, int port, String dbname, String user, String password) throws Exception {
         if (this.conn != JNI_NULL_POINTER) {
             close();
             this.conn = JNI_NULL_POINTER;
@@ -48,25 +48,25 @@ public class JniConnection {
         this.conn = connectImp(host, port, dbname, user, password);
         if (this.conn == JNI_NULL_POINTER) {
             String errMsg = getErrMsgImp(0);
-            throw new RuntimeException(errMsg);
+            throw new Exception(errMsg);
         }
     }
 
-    public void insertOpentsdbJson(String json) {
+    public void insertOpentsdbJson(String json) throws Exception {
         if (this.conn == JNI_NULL_POINTER) {
-            throw new RuntimeException("JNI connection is NULL");
+            throw new Exception("JNI connection is NULL");
         }
         long code = insertOpentsdbJson(json, this.conn);
         if (code != JNI_SUCCESSFUL) {
             String errMsg = getErrMsgByCode(code);
-            throw new RuntimeException(errMsg);
+            throw new Exception(errMsg);
         }
     }
 
-    public void close() {
+    public void close() throws Exception {
         int code = this.closeConnectionImp(this.conn);
         if (code != 0) {
-            throw new RuntimeException("JNI closeConnection failed");
+            throw new Exception("JNI closeConnection failed");
         }
         this.conn = JNI_NULL_POINTER;
     }
