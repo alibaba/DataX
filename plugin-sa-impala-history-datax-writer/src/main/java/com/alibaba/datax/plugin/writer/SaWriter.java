@@ -327,7 +327,7 @@ public class SaWriter extends Writer {
                     continue;
                 }
                 dataConverters.forEach(con->{
-                    con.setConverter(ConverterFactory.converter(con.getType()));
+                    con.setConverter(ConverterFactory.converterPrototype(con.getType()));
                 });
             }
 

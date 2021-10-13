@@ -36,9 +36,6 @@ public class IfElseConverter implements Converter {
     @Override
     public Object transform(String targetColumnName, Object value, Map<String, Object> param, Map<String,Object> resolvedValues) {
         try {
-            if(NullUtil.isNullOrBlank(value)){
-                return null;
-            }
             if(Objects.isNull(resolvedValues)){
                 resolvedValues = new HashMap<>();
             }
