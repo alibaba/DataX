@@ -18,7 +18,7 @@
           "parameter": {
             "host": "192.168.56.105",
             "port": 6030,
-            "db": "test",
+            "dbname": "test",
             "user": "root",
             "password": "taosdata"
           }
