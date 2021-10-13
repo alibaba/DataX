@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.datax.plugin.converter.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class ConverterFactory {
 
@@ -35,5 +36,22 @@ public class ConverterFactory {
             return null;
         }
         return converterMap.get(type);
+    }
+
+    /**
+     * 获取多例的转换器
+     * @param type 转换器名称
+     * @return 转换器
+     */
+    public static Converter converterPrototype(String type){
+        if(StrUtil.isBlank(type) || Objects.isNull(converterMap.get(type))){
+            return null;
+        }
+        try {
+            return converterMap.get(type).getClass().newInstance();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
