@@ -1,0 +1,16 @@
+{
+  "name":"elasticsearchreader",
+  "parameter":{
+    "endpoint":"http://10.22.22.22:9200",
+    "index":"app_index_v1",
+    "type":"doc",
+    "shardNum":3,
+    "accessId":"1",
+    "accessKey":"1",
+    "pageSize":10,
+    "column":[
+      "sales",
+      "brandName"
+    ]
+  }
+}

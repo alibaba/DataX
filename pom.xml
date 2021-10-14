@@ -70,6 +70,8 @@
         <module>cassandrareader</module>
         <module>gdbreader</module>
         <module>oceanbasev10reader</module>
+        <module>elasticsearchreader</module>
+
 
         <!-- writer -->
         <module>mysqlwriter</module>

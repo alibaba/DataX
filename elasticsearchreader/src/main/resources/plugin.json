@@ -1,0 +1,6 @@
+{
+  "name": "elasticsearchreader",
+  "class": "com.alibaba.datax.plugin.reader.elasticsearchreader.ESReader",
+  "description": "read data from elasticsearch.",
+  "developer": "***"
+}
