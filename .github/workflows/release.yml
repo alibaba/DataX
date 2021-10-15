@@ -20,6 +20,7 @@ jobs:
           fetch-depth: 0
       - run: |
           git checkout main
+          rm -rf target
           mvn -U -pl starrockswriter -am clean package assembly:assembly -Dmaven.test.skip=true
           cd target/datax/datax/plugin/writer/
           tar -czvf starrockswriter.tar.gz starrockswriter
