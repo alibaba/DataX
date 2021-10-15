@@ -71,6 +71,8 @@
         <module>gdbreader</module>
         <module>oceanbasev10reader</module>
         <module>elasticsearchreader</module>
+        <module>kafkareader</module>
+
 
 
         <!-- writer -->
