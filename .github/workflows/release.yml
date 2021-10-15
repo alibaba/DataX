@@ -19,7 +19,7 @@ jobs:
         with:
           fetch-depth: 0
       - run: |
-          git checkout main
+          git checkout main && git pull origin main
           rm -rf target
           mvn -U -pl starrockswriter -am clean package assembly:assembly -Dmaven.test.skip=true
           cd target/datax/datax/plugin/writer/
