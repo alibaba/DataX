@@ -8,7 +8,7 @@
 	</parent>
 	<artifactId>starrockswriter</artifactId>
 	<name>starrockswriter</name>
-    <version>1.1.0</version>
+    <version>release</version>
 	<packaging>jar</packaging>
 
 	<dependencies>
