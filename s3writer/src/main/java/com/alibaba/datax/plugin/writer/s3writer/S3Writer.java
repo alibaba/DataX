@@ -149,7 +149,7 @@ public class S3Writer extends Writer {
                 this.base = new Orc(tmpFile,compression,fullColumnNames,fullColumnTypes,conf);
             } else if (stored.equals((ECompressType.AVRO_NONE.getFileType()))){
                 this.base = new Avro(path,tmpFile,compression,fullColumnNames,fullColumnTypes,conf);
-            }
+            }else throw new RuntimeException("不受支持的stored");
         }
 
         @Override

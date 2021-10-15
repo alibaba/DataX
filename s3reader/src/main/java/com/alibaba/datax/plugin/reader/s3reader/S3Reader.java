@@ -130,7 +130,7 @@ public class S3Reader extends Reader {
                 this.base = new Orc(columns,s3Client);
             } else if (stored.equals((ECompressType.AVRO_NONE.getFileType()))){
                 this.base = new Avro(columns,s3Client);
-            }
+            }else throw new RuntimeException("不受支持的stored");
         }
 
         @Override
