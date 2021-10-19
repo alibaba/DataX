@@ -10,19 +10,12 @@ import com.alibaba.datax.common.util.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.*;
 
 public class TDengineWriter extends Writer {
 
-    private static final String HOST = "host";
-    private static final String PORT = "port";
-    private static final String DBNAME = "dbname";
-    private static final String USER = "user";
-    private static final String PASSWORD = "password";
     private static final String PEER_PLUGIN_NAME = "peerPluginName";
+    private static final String DEFAULT_BATCH_SIZE = "1";
 
     public static class Job extends Writer.Job {
 
@@ -45,7 +38,6 @@ public class TDengineWriter extends Writer {
             for (int i = 0; i < mandatoryNumber; i++) {
                 writerSplitConfigs.add(this.originalConfig);
             }
-
             return writerSplitConfigs;
         }
     }
@@ -68,53 +60,66 @@ public class TDengineWriter extends Writer {
 
         @Override
         public void startWrite(RecordReceiver lineReceiver) {
-
-
-            String host = this.writerSliceConfig.getString(HOST);
-            int port = this.writerSliceConfig.getInt(PORT);
-            String dbname = this.writerSliceConfig.getString(DBNAME);
-            String user = this.writerSliceConfig.getString(USER);
-            String password = this.writerSliceConfig.getString(PASSWORD);
-
+            Set<String> keys = this.writerSliceConfig.getKeys();
             Properties properties = new Properties();
-            String cfgdir = this.writerSliceConfig.getString(JniConnection.PROPERTY_KEY_CONFIG_DIR);
-            if (cfgdir != null && !cfgdir.isEmpty()) {
-                properties.setProperty(JniConnection.PROPERTY_KEY_CONFIG_DIR, cfgdir);
-            }
-            String timezone = this.writerSliceConfig.getString(JniConnection.PROPERTY_KEY_TIME_ZONE);
-            if (timezone != null && !timezone.isEmpty()) {
-                properties.setProperty(JniConnection.PROPERTY_KEY_TIME_ZONE, timezone);
-            }
-            String locale = this.writerSliceConfig.getString(JniConnection.PROPERTY_KEY_LOCALE);
-            if (locale != null && !locale.isEmpty()) {
-                properties.setProperty(JniConnection.PROPERTY_KEY_LOCALE, locale);
-            }
-            String charset = this.writerSliceConfig.getString(JniConnection.PROPERTY_KEY_CHARSET);
-            if (charset != null && !charset.isEmpty()) {
-                properties.setProperty(JniConnection.PROPERTY_KEY_CHARSET, charset);
+            for (String key : keys) {
+                String value = this.writerSliceConfig.getString(key);
+                properties.setProperty(key, value);
             }
 
             String peerPluginName = this.writerSliceConfig.getString(PEER_PLUGIN_NAME);
             if (peerPluginName.equals("opentsdbreader")) {
+                // opentsdb json protocol use JNI and schemaless API to write
+
+                String host = properties.getProperty(Key.HOST);
+                int port = Integer.parseInt(properties.getProperty(Key.PORT));
+                String dbname = properties.getProperty(Key.DBNAME);
+                String user = properties.getProperty(Key.USER);
+                String password = properties.getProperty(Key.PASSWORD);
+
                 try {
                     JniConnection conn = new JniConnection(properties);
                     conn.open(host, port, dbname, user, password);
                     LOG.info("TDengine connection established, host: " + host + ", port: " + port + ", dbname: " + dbname + ", user: " + user);
-                    writeOpentsdb(lineReceiver, conn);
+
+                    int batchSize = Integer.parseInt(properties.getProperty(Key.BATCH_SIZE, DEFAULT_BATCH_SIZE));
+                    writeOpentsdb(lineReceiver, conn, batchSize);
                     conn.close();
                     LOG.info("TDengine connection closed");
                 } catch (Exception e) {
                     LOG.error(e.getMessage());
                     e.printStackTrace();
                 }
+            } else {
+                // other
             }
         }
 
-        private void writeOpentsdb(RecordReceiver lineReceiver, JniConnection conn) {
+        private void writeOpentsdb(RecordReceiver lineReceiver, JniConnection conn, int batchSize) {
             try {
                 Record record;
+                StringBuilder sb = new StringBuilder();
+                long recordIndex = 1;
                 while ((record = lineReceiver.getFromReader()) != null) {
-                    String jsonData = recordToString(record);
+                    if (batchSize == 1) {
+                        String jsonData = recordToString(record);
+                        LOG.debug(">>> " + jsonData);
+                        conn.insertOpentsdbJson(jsonData);
+                    } else if (recordIndex % batchSize == 1) {
+                        sb.append("[").append(recordToString(record)).append(",");
+                    } else if (recordIndex % batchSize == 0) {
+                        sb.append(recordToString(record)).append("]");
+                        String jsonData = sb.toString();
+                        LOG.debug(">>> " + jsonData);
+                        conn.insertOpentsdbJson(jsonData);
+                        sb.delete(0, sb.length());
+                    } else {
+                        sb.append(recordToString(record)).append(",");
+                    }
+                    recordIndex++;
+                }
+                if (sb.length() != 0 && sb.charAt(0) == '[') {
+                    String jsonData = sb.deleteCharAt(sb.length() - 1).append("]").toString();
                     LOG.debug(">>> " + jsonData);
                     conn.insertOpentsdbJson(jsonData);
                 }

@@ -18,11 +18,6 @@ public class JniConnection {
     }
 
     public JniConnection(Properties props) throws Exception {
-        if (this.conn != JNI_NULL_POINTER) {
-            close();
-            this.conn = JNI_NULL_POINTER;
-        }
-
         initImp(props.getProperty(PROPERTY_KEY_CONFIG_DIR, null));
 
         String locale = props.getProperty(PROPERTY_KEY_LOCALE);
