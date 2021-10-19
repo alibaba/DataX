@@ -46,5 +46,13 @@ public final class Key {
 
     public final static String DRYRUN = "dryRun";
 
+    public static String SPLIT_FACTOR = "splitFactor";
 
+    public final static String WEAK_READ = "weakRead";
+
+    public final static String SAVE_POINT = "savePoint";
+
+    public final static String REUSE_CONN = "reuseConn";
+
+    public final static String PARTITION_NAME = "partitionName";
 }

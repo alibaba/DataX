@@ -101,7 +101,7 @@ OracleReader插件实现了从Oracle读取数据。在底层实现上，OracleRe
                         "connection": [
                             {
                                 "querySql": [
-                                    "select db_id,on_line_flag from db_info where db_id < 10;"
+                                    "select db_id,on_line_flag from db_info where db_id < 10"
                                 ],
                                 "jdbcUrl": [
                                     "jdbc:oracle:thin:@[HOST_NAME]:PORT:[DATABASE_NAME]"

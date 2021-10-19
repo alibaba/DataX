@@ -22,7 +22,7 @@
         <commons-lang3-version>3.3.2</commons-lang3-version>
         <commons-configuration-version>1.10</commons-configuration-version>
         <commons-cli-version>1.2</commons-cli-version>
-        <fastjson-version>1.1.46.sec01</fastjson-version>
+        <fastjson-version>1.1.46.sec10</fastjson-version>
         <guava-version>16.0.1</guava-version>
         <diamond.version>3.7.2.1-SNAPSHOT</diamond.version>
 
@@ -30,7 +30,7 @@
         <slf4j-api-version>1.7.10</slf4j-api-version>
         <logback-classic-version>1.0.13</logback-classic-version>
         <commons-io-version>2.4</commons-io-version>
-        <junit-version>4.11</junit-version>
+        <junit-version>4.13.1</junit-version>
         <tddl.version>5.1.22-1</tddl.version>
         <swift-version>1.0.0</swift-version>
 
@@ -38,6 +38,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
+        <mysql.driver.version>5.1.47</mysql.driver.version>
     </properties>
 
     <modules>
@@ -50,6 +51,7 @@
         <module>drdsreader</module>
         <module>sqlserverreader</module>
         <module>postgresqlreader</module>
+        <module>kingbaseesreader</module>
         <module>oraclereader</module>
         <module>odpsreader</module>
         <module>otsreader</module>
@@ -66,6 +68,8 @@
         <module>tsdbreader</module>
         <module>opentsdbreader</module>
         <module>cassandrareader</module>
+        <module>gdbreader</module>
+        <module>oceanbasev10reader</module>
 
         <!-- writer -->
         <module>mysqlwriter</module>
@@ -79,6 +83,7 @@
         <module>oraclewriter</module>
         <module>sqlserverwriter</module>
         <module>postgresqlwriter</module>
+        <module>kingbaseeswriter</module>
         <module>osswriter</module>
         <module>mongodbwriter</module>
         <module>adswriter</module>
@@ -93,11 +98,15 @@
         <module>adbpgwriter</module>
         <module>gdbwriter</module>
         <module>cassandrawriter</module>
+        <module>clickhousewriter</module>
+        <module>oscarwriter</module>
+        <module>oceanbasev10writer</module>
         <!-- common support module -->
         <module>plugin-rdbms-util</module>
         <module>plugin-unstructured-storage-util</module>
         <module>hbase20xsqlreader</module>
         <module>hbase20xsqlwriter</module>
+        <module>kuduwriter</module>
     </modules>
 
     <dependencyManagement>

@@ -33,7 +33,7 @@
             <outputDirectory>datax</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>oceanbasereader/target/datax/</directory>
+            <directory>oceanbasev10reader/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
             </includes>
@@ -69,6 +69,13 @@
         </fileSet>
         <fileSet>
             <directory>postgresqlreader/target/datax/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>datax</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>kingbaseesreader/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
             </includes>
@@ -267,6 +274,13 @@
             <outputDirectory>datax</outputDirectory>
         </fileSet>
         <fileSet>
+            <directory>kingbaseeswriter/target/datax/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>datax</outputDirectory>
+        </fileSet>
+        <fileSet>
             <directory>rdbmswriter/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
@@ -352,6 +366,27 @@
         </fileSet>
         <fileSet>
             <directory>cassandrawriter/target/datax/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>datax</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>clickhousewriter/target/datax/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>datax</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>oscarwriter/target/datax/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>datax</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>oceanbasev10writer/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
             </includes>

@@ -41,6 +41,14 @@ GDBWriter通过DataX框架获取Reader生成的协议数据，使用`g.addV/E(GD
                             {
                                 "random": "60,64",
                                 "type": "string"
+                            },
+                            {
+                                "random": "100,1000",
+                                "type": "long"
+                            },
+                            {
+                                "random": "32,48",
+                                "type": "string"
                             }
                         ],
                         "sliceRecordCount": 1000
@@ -55,20 +63,32 @@ GDBWriter通过DataX框架获取Reader生成的协议数据，使用`g.addV/E(GD
                         "password": "***",
                         "writeMode": "INSERT",
                         "labelType": "VERTEX",
-                        "label": "${1}",
+                        "label": "#{1}",
                         "idTransRule": "none",
                         "session": true,
                         "maxRecordsInBatch": 64,
                         "column": [
                             {
                                 "name": "id",
-                                "value": "${0}",
+                                "value": "#{0}",
                                 "type": "string",
                                 "columnType": "primaryKey"
                             },
                             {
                                 "name": "vertex_propKey",
-                                "value": "${2}",
+                                "value": "#{2}",
+                                "type": "string",
+                                "columnType": "vertexSetProperty"
+                            },
+                            {
+                                "name": "vertex_propKey",
+                                "value": "#{3}",
+                                "type": "long",
+                                "columnType": "vertexSetProperty"
+                            },
+                            {
+                                "name": "vertex_propKey2",
+                                "value": "#{4}",
                                 "type": "string",
                                 "columnType": "vertexProperty"
                             }
@@ -134,7 +154,7 @@ GDBWriter通过DataX框架获取Reader生成的协议数据，使用`g.addV/E(GD
                         "password": "***",
                         "writeMode": "INSERT",
                         "labelType": "EDGE",
-                        "label": "${3}",
+                        "label": "#{3}",
                         "idTransRule": "none",
                         "srcIdTransRule": "labelPrefix",
                         "dstIdTransRule": "labelPrefix",
@@ -144,25 +164,25 @@ GDBWriter通过DataX框架获取Reader生成的协议数据，使用`g.addV/E(GD
                         "column": [
                             {
                                 "name": "id",
-                                "value": "${0}",
+                                "value": "#{0}",
                                 "type": "string",
                                 "columnType": "primaryKey"
                             },
                             {
                                 "name": "id",
-                                "value": "${1}",
+                                "value": "#{1}",
                                 "type": "string",
                                 "columnType": "srcPrimaryKey"
                             },
                             {
                                 "name": "id",
-                                "value": "${2}",
+                                "value": "#{2}",
                                 "type": "string",
                                 "columnType": "dstPrimaryKey"
                             },
                             {
                                 "name": "edge_propKey",
-                                "value": "${4}",
+                                "value": "#{4}",
                                 "type": "string",
                                 "columnType": "edgeProperty"
                             }
@@ -199,7 +219,7 @@ GDBWriter通过DataX框架获取Reader生成的协议数据，使用`g.addV/E(GD
   * 默认值：无
 
 * **label**
-  * 描述：类型名，即点/边名称； label支持从源列中读取，如${0}，表示取第一列字段作为label名。源列索引从0开始；
+  * 描述：类型名，即点/边名称； label支持从源列中读取，如#{0}，表示取第一列字段作为label名。源列索引从0开始；
   * 必选：是
   * 默认值：无
 
@@ -211,12 +231,12 @@ GDBWriter通过DataX框架获取Reader生成的协议数据，使用`g.addV/E(GD
   * 默认值：无
 
 * **srcLabel**
-  * 描述：当label为边时，表示起点的点名称；srcLabel支持从源列中读取，如${0}，表示取第一列字段作为label名。源列索引从0开始；
+  * 描述：当label为边时，表示起点的点名称；srcLabel支持从源列中读取，如#{0}，表示取第一列字段作为label名。源列索引从0开始；
   * 必选：labelType为边，srcIdTransRule为none时可不填写，否则必填；
   * 默认值：无
 
 * **dstLabel**
-  * 描述：当label为边时，表示终点的点名称；dstLabel支持从源列中读取，如${0}，表示取第一列字段作为label名。源列索引从0开始；
+  * 描述：当label为边时，表示终点的点名称；dstLabel支持从源列中读取，如#{0}，表示取第一列字段作为label名。源列索引从0开始；
   * 必选：labelType为边，dstIdTransRule为none时可不填写，否则必填；
   * 默认值：无
 
@@ -271,9 +291,9 @@ GDBWriter通过DataX框架获取Reader生成的协议数据，使用`g.addV/E(GD
 
 * **column -> value**
   * 描述：点/边映射关系的字段值；
-    * ${N}表示直接映射源端值，N为源端column索引，从0开始；${0}表示映射源端column第1个字段；
-    * test-${0} 表示源端值做拼接转换，${0}值前/后可添加固定字符串;
-    * ${0}-${1}表示做多字段拼接，也可在任意位置添加固定字符串，如test-${0}-test1-${1}-test2
+    * #{N}表示直接映射源端值，N为源端column索引，从0开始；#{0}表示映射源端column第1个字段；
+    * test-#{0} 表示源端值做拼接转换，#{0}值前/后可添加固定字符串;
+    * #{0}-#{1}表示做多字段拼接，也可在任意位置添加固定字符串，如test-#{0}-test1-#{1}-test2
   * 必选：是
   * 默认值：无
 
@@ -290,6 +310,7 @@ GDBWriter通过DataX框架获取Reader生成的协议数据，使用`g.addV/E(GD
       * primaryKey：表示该字段是主键id
     * 点枚举值：
       * vertexProperty：labelType为点时，表示该字段是点的普通属性
+      * vertexSetProperty：labelType为点时，表示该字段是点的SET属性，value是SET属性中的一个属性值
       * vertexJsonProperty：labelType为点时，表示是点json属性，value结构请见备注**json properties示例**，点配置最多只允许出现一个json属性；
     * 边枚举值：
       * srcPrimaryKey：labelType为边时，表示该字段是起点主键id
@@ -302,6 +323,14 @@ GDBWriter通过DataX框架获取Reader生成的协议数据，使用`g.addV/E(GD
   > ```json
   > {"properties":[
   >    {"k":"name","t":"string","v":"tom"},
+  >    {"k":"age","t":"int","v":"20"},
+  >    {"k":"sex","t":"string","v":"male"}
+  > ]}
+  >
+  > # json格式同样支持给点添加SET属性，格式如下
+  > {"properties":[
+  >    {"k":"name","t":"string","v":"tom","c":"set"},
+  >    {"k":"name","t":"string","v":"jack","c":"set"},
   >    {"k":"age","t":"int","v":"20"},
   >    {"k":"sex","t":"string","v":"male"}
   > ]}
@@ -367,4 +396,5 @@ DataX压测机器
 - GDBWriter插件与用户查询DSL使用相同的GDB实例端口，导入时可能会影响查询性能
 
 ## FAQ
-无
+1. 使用SET属性需要升级GDB实例到`1.0.20`版本及以上。
+2. 边只支持普通单值属性，不能给边写SET属性数据。

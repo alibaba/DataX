@@ -6,12 +6,12 @@ import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordReceiver;
 import com.alibaba.datax.common.plugin.TaskPluginCollector;
 import com.alibaba.datax.common.util.Configuration;
-import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -154,7 +154,7 @@ public class HBase20xSQLWriterTask {
      * 从接收器中获取每条记录，写入Phoenix
      */
     private void writeData(RecordReceiver lineReceiver) throws SQLException {
-        List<Record> buffer = Lists.newArrayListWithExpectedSize(batchSize);
+        List<Record> buffer = new ArrayList<Record>(batchSize);
         Record record = null;
         while ((record = lineReceiver.getFromReader()) != null) {
             // 校验列数量是否符合预期

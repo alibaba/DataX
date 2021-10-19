@@ -13,5 +13,5 @@ import com.alibaba.datax.plugin.writer.gdbwriter.model.GdbElement;
  *
  */
 public interface GdbMapper {
-	Function<Record, GdbElement> getMapper(MappingRule rule);
+    Function<Record, GdbElement> getMapper(MappingRule rule);
 }

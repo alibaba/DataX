@@ -8,7 +8,7 @@ MongoDBReader 插件利用 MongoDB 的java客户端MongoClient进行MongoDB的�
 MongoDBReader通过Datax框架从MongoDB并行的读取数据，通过主控的JOB程序按照指定的规则对MongoDB中的数据进行分片，并行读取，然后将MongoDB支持的类型通过逐一判断转换成Datax支持的类型。
 
 #### 3 功能说明
-* 该示例从ODPS读一份数据到MongoDB。
+* 该示例从MongoDB读一份数据到ODPS。
 
 	    {
 	    "job": {
@@ -132,6 +132,7 @@ MongoDBReader通过Datax框架从MongoDB并行的读取数据，通过主控的J
 * name：Column的名字。【必填】
 * type：Column的类型。【选填】
 * splitter：因为MongoDB支持数组类型，但是Datax框架本身不支持数组类型，所以mongoDB读出来的数组类型要通过这个分隔符合并成字符串。【选填】
+* query: MongoDB的额外查询条件。【选填】
 
 #### 5 类型转换
 

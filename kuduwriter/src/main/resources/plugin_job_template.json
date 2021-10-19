@@ -1,0 +1,59 @@
+{
+  "name": "kuduwriter",
+  "parameter": {
+    "kuduConfig": {
+      "kudu.master_addresses": "***",
+      "timeout": 60000,
+      "sessionTimeout": 60000
+
+    },
+    "table": "",
+    "replicaCount": 3,
+    "truncate": false,
+    "writeMode": "upsert",
+    "partition": {
+      "range": {
+        "column1": [
+          {
+            "lower": "2020-08-25",
+            "upper": "2020-08-26"
+          },
+          {
+            "lower": "2020-08-26",
+            "upper": "2020-08-27"
+          },
+          {
+            "lower": "2020-08-27",
+            "upper": "2020-08-28"
+          }
+        ]
+      },
+      "hash": {
+        "column": [
+          "column1"
+        ],
+        "number": 3
+      }
+    },
+    "column": [
+      {
+        "index": 0,
+        "name": "c1",
+        "type": "string",
+        "primaryKey": true
+      },
+      {
+        "index": 1,
+        "name": "c2",
+        "type": "string",
+        "compress": "DEFAULT_COMPRESSION",
+        "encoding": "AUTO_ENCODING",
+        "comment": "注解xxxx"
+      }
+    ],
+    "batchSize": 1024,
+    "bufferSize": 2048,
+    "skipFail": false,
+    "encoding": "UTF-8"
+  }
+}

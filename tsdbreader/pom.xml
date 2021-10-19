@@ -21,14 +21,14 @@
         <commons-lang3.version>3.3.2</commons-lang3.version>
 
         <!-- http -->
-        <httpclient.version>4.4</httpclient.version>
+        <httpclient.version>4.5</httpclient.version>
         <commons-io.version>2.4</commons-io.version>
 
         <!-- json -->
         <fastjson.version>1.2.28</fastjson.version>
 
         <!-- test -->
-        <junit4.version>4.12</junit4.version>
+        <junit4.version>4.13.1</junit4.version>
 
         <!-- time -->
         <joda-time.version>2.9.9</joda-time.version>

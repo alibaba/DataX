@@ -402,13 +402,20 @@ public class CommonRdbmsWriter {
                 throws SQLException {
             for (int i = 0; i < this.columnNumber; i++) {
                 int columnSqltype = this.resultSetMetaData.getMiddle().get(i);
-                preparedStatement = fillPreparedStatementColumnType(preparedStatement, i, columnSqltype, record.getColumn(i));
+                String typeName = this.resultSetMetaData.getRight().get(i);
+                preparedStatement = fillPreparedStatementColumnType(preparedStatement, i, columnSqltype, typeName, record.getColumn(i));
             }
 
             return preparedStatement;
         }
 
-        protected PreparedStatement fillPreparedStatementColumnType(PreparedStatement preparedStatement, int columnIndex, int columnSqltype, Column column) throws SQLException {
+        protected PreparedStatement fillPreparedStatementColumnType(PreparedStatement preparedStatement, int columnIndex,
+                                                                    int columnSqltype, Column column) throws SQLException {
+            return fillPreparedStatementColumnType(preparedStatement, columnIndex, columnSqltype, null, column);
+        }
+
+        protected PreparedStatement fillPreparedStatementColumnType(PreparedStatement preparedStatement, int columnIndex,
+                                                                    int columnSqltype, String typeName, Column column) throws SQLException {
             java.util.Date utilDate;
             switch (columnSqltype) {
                 case Types.CHAR:
@@ -451,8 +458,11 @@ public class CommonRdbmsWriter {
 
                 // for mysql bug, see http://bugs.mysql.com/bug.php?id=35115
                 case Types.DATE:
-                    if (this.resultSetMetaData.getRight().get(columnIndex)
-                            .equalsIgnoreCase("year")) {
+                    if (typeName == null) {
+                        typeName = this.resultSetMetaData.getRight().get(columnIndex);
+                    }
+
+                    if (typeName.equalsIgnoreCase("year")) {
                         if (column.asBigInteger() == null) {
                             preparedStatement.setString(columnIndex + 1, null);
                         } else {
