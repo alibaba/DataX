@@ -20,7 +20,8 @@
             "port": 6030,
             "dbname": "test",
             "user": "root",
-            "password": "taosdata"
+            "password": "taosdata",
+            "batchSize": 1000
           }
         }
       }
