@@ -1,0 +1,56 @@
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "name": "streamreader",
+          "parameter": {
+            "column": [
+              {
+                "random": "2021-01-01 00:00:00, 2021-01-01 23:59:59",
+                "type": "date"
+              },
+              {
+                "random": "0, 10000",
+                "type": "long"
+              },
+              {
+                "random": "0, 10",
+                "type": "string"
+              },
+              {
+                "random": "0, 5",
+                "type": "bool"
+              },
+              {
+                "random": "0, 10",
+                "type": "double"
+              },
+              {
+                "random": "0, 10",
+                "type": "bytes"
+              }
+            ],
+            "sliceRecordCount": 100
+          }
+        },
+        "writer": {
+          "name": "tdenginewriter",
+          "parameter": {
+            "host": "192.168.56.105",
+            "port": 6030,
+            "dbname": "test",
+            "user": "root",
+            "password": "taosdata",
+            "batchSize": 1000
+          }
+        }
+      }
+    ],
+    "setting": {
+      "speed": {
+        "channel": 1
+      }
+    }
+  }
+}
