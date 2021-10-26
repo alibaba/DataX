@@ -47,7 +47,7 @@
         <module>transformer</module>
 
         <!-- reader -->
-<!--        <module>mysqlreader</module>-->
+        <module>mysqlreader</module>
 <!--        <module>drdsreader</module>-->
 <!--        <module>sqlserverreader</module>-->
 <!--        <module>postgresqlreader</module>-->
@@ -109,6 +109,7 @@
 <!--        <module>hbase20xsqlwriter</module>-->
 <!--        <module>kuduwriter</module>-->
         <module>tdenginewriter</module>
+        <module>tdenginereader</module>
     </modules>
 
     <dependencyManagement>

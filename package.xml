@@ -103,13 +103,13 @@
             </includes>
             <outputDirectory>datax</outputDirectory>
         </fileSet>
-		<fileSet>
-             <directory>otsstreamreader/target/datax/</directory>
-             <includes>
-                 <include>**/*.*</include>
-             </includes>
-             <outputDirectory>datax</outputDirectory>
-         </fileSet>
+        <fileSet>
+            <directory>otsstreamreader/target/datax/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>datax</outputDirectory>
+        </fileSet>
         <fileSet>
             <directory>txtfilereader/target/datax/</directory>
             <includes>
@@ -138,7 +138,7 @@
             </includes>
             <outputDirectory>datax</outputDirectory>
         </fileSet>
-         <fileSet>
+        <fileSet>
             <directory>ftpreader/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
@@ -175,6 +175,13 @@
         </fileSet>
         <fileSet>
             <directory>cassandrareader/target/datax/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>datax</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>tdenginereader/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
             </includes>
@@ -239,13 +246,6 @@
             <outputDirectory>datax</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>tdenginewriter/target/datax/</directory>
-            <includes>
-                <include>**/*.*</include>
-            </includes>
-            <outputDirectory>datax</outputDirectory>
-        </fileSet>
-        <fileSet>
             <directory>otswriter/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
@@ -259,7 +259,7 @@
             </includes>
             <outputDirectory>datax</outputDirectory>
         </fileSet>
-		<fileSet>
+        <fileSet>
             <directory>oraclewriter/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
@@ -273,7 +273,7 @@
             </includes>
             <outputDirectory>datax</outputDirectory>
         </fileSet>
-		<fileSet>
+        <fileSet>
             <directory>postgresqlwriter/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
@@ -394,6 +394,13 @@
         </fileSet>
         <fileSet>
             <directory>oceanbasev10writer/target/datax/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>datax</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>tdenginewriter/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
             </includes>

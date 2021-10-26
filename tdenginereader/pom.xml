@@ -9,9 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.alibaba.datax.tdenginewriter</groupId>
-    <artifactId>tdenginewriter</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <artifactId>tdenginereader</artifactId>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>

@@ -51,11 +51,15 @@ public class JniConnection {
         if (this.conn == JNI_NULL_POINTER) {
             throw new Exception("JNI connection is NULL");
         }
-        long code = insertOpentsdbJson(json, this.conn);
-        if (code != JNI_SUCCESSFUL) {
-            String errMsg = getErrMsgByCode(code);
+
+        long result = insertOpentsdbJson(json, this.conn);
+        int errCode = getErrCodeImp(this.conn, result);
+        if (errCode != JNI_SUCCESSFUL) {
+            String errMsg = getErrMsgImp(result);
+            freeResultSetImp(this.conn, result);
             throw new Exception(errMsg);
         }
+        freeResultSetImp(this.conn, result);
     }
 
     public void close() throws Exception {
@@ -70,19 +74,13 @@ public class JniConnection {
 
     private static native int setOptions(int optionIndex, String optionValue);
 
-    private static native String getTsCharset();
-
     private native long connectImp(String host, int port, String dbName, String user, String password);
-
-    private native long executeQueryImp(byte[] sqlBytes, long connection);
 
     private native int getErrCodeImp(long connection, long pSql);
 
     private native String getErrMsgImp(long pSql);
 
-    private native String getErrMsgByCode(long code);
-
-    private native int getAffectedRowsImp(long connection, long pSql);
+    private native void freeResultSetImp(long connection, long pSql);
 
     private native int closeConnectionImp(long connection);
 
