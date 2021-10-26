@@ -1,0 +1,46 @@
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "name": "mysqlreader",
+          "parameter": {
+            "username": "root",
+            "password": "root",
+            "column": [
+              "id",
+              "name"
+            ],
+            "splitPk": "db_id",
+            "connection": [
+              {
+                "table": [
+                  "test"
+                ],
+                "jdbcUrl": [
+                  "jdbc:mysql://127.0.0.1:3306/database"
+                ]
+              }
+            ]
+          }
+        },
+        "writer": {
+          "name": "tdenginewriter",
+          "parameter": {
+            "host": "192.168.56.105",
+            "port": 6030,
+            "dbname": "test",
+            "user": "root",
+            "password": "taosdata",
+            "batchSize": 1000
+          }
+        }
+      }
+    ],
+    "setting": {
+      "speed": {
+        "channel": 1
+      }
+    }
+  }
+}
