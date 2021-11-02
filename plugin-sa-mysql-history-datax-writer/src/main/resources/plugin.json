@@ -1,0 +1,6 @@
+{
+    "name": "samysqlwriter",
+    "class": "com.alibaba.datax.plugin.writer.SaWriter",
+    "description": "sa mysql writer",
+    "developer": "cocowqw"
+}

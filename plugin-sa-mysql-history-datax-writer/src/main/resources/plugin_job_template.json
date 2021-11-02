@@ -1,0 +1,51 @@
+{
+    "name": "samysqlwriter",
+    "parameter": {
+        "url": "jdbc:mysql://10.120.17.177:3306/dimensions",
+        "table": "",
+        "model": "insert",
+        "batchSize": 100,
+        "column": [
+            {
+                "index":0,
+                "name": "",
+                "ifNullGiveUp": false,
+                "exclude": true,
+                "dataConverters":[
+                    {
+                        "type": "",
+                        "param": {
+                            "flag": true
+                        }
+                    },
+                    {
+                        "type": "",
+                        "param": {
+                            "format": ""
+                        }
+                    }
+                ]
+            },
+            {
+                "index":1,
+                "name": "",
+                "ifNullGiveUp": true,
+                "dataConverters":[
+                    {
+                        "type": ""
+                    }
+                ]
+            }
+        ],
+        "updateWhereColumn": [""],
+        "plugin": [
+            {
+                "name": "",
+                "className": "",
+                "param": {
+                    "ip":""
+                }
+            }
+        ]
+    }
+}
