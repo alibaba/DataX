@@ -20,6 +20,16 @@
         "where": "",
         "useRowNumber": false,
         "pageSize": 10000,
-        "timeFieldCount": true
+        "timeFieldCount": true,
+        "pluginColumn": [],
+        "plugin": [
+            {
+                "name": "",
+                "className": "",
+                "param": {
+                    "ip":""
+                }
+            }
+        ]
     }
 }

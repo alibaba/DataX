@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.handler.RsHandler;
 import cn.hutool.db.sql.SqlExecutor;
+import com.alibaba.datax.BasePlugin;
 import com.alibaba.datax.common.element.*;
 import com.alibaba.datax.common.exception.CommonErrorCode;
 import com.alibaba.datax.common.exception.DataXException;
@@ -13,10 +14,13 @@ import com.alibaba.datax.common.spi.Reader;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.plugin.KeyConstant;
 import com.alibaba.datax.plugin.ReaderErrorCode;
-import com.alibaba.datax.plugin.classloader.HiveDependencyClassLoader;
+import com.alibaba.datax.plugin.classloader.DependencyClassLoader;
+import com.alibaba.datax.plugin.domain.SaPlugin;
 import com.alibaba.datax.plugin.util.MysqlUtil;
+import com.alibaba.datax.plugin.util.NullUtil;
 import com.alibaba.datax.plugin.util.TypeUtil;
 import com.alibaba.druid.util.JdbcUtils;
+import com.alibaba.fastjson.JSONObject;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -132,7 +136,7 @@ public class SaMysqlReader extends Reader {
             this.mysqlUrl = originalConfig.getString(KeyConstant.SA.concat(KeyConstant.POINT).concat(KeyConstant.SA_MYSQL_URL));
             String mysqlVersion = originalConfig.getString(KeyConstant.MYSQL_VERSION,"");
 //            校验mysql版本
-            String curClassPath = HiveDependencyClassLoader.class.getResource("").getFile();
+            String curClassPath = DependencyClassLoader.class.getResource("").getFile();
             String rootPath = curClassPath.substring(curClassPath.lastIndexOf(":")+1, curClassPath.lastIndexOf("!"));
             String path = rootPath.substring(0, rootPath.lastIndexOf("/")).concat("/mysqllib/");
             File f = new File(path);
@@ -148,8 +152,8 @@ public class SaMysqlReader extends Reader {
             if(StrUtil.isBlank(mysqlVersion) || !optionalValueList.contains(mysqlVersion)){
                 throw new DataXException(CommonErrorCode.CONFIG_ERROR,"mysqlVersion不存在或为空,可选值："+optionalValueList);
             }
-            //动态加载hive相关依赖，解决hive版本兼容
-            HiveDependencyClassLoader.loadClassJar(mysqlVersion);
+            //动态加载hive相关依赖，解决mysql版本兼容
+            DependencyClassLoader.loadClassJar("/mysqllib/"+mysqlVersion);
             if(StrUtil.isBlank(this.tableName) || StrUtil.isBlank(this.mysqlUrl)){
                 throw new DataXException(CommonErrorCode.CONFIG_ERROR,"mysqlUrl和table不能为空");
             }
@@ -256,7 +260,6 @@ public class SaMysqlReader extends Reader {
          * @return
          */
         public static List<List<Long>> partition(long startNano, long endNano, Integer taskNum,Long stepSize) {
-
             List<List<Long>> list = new ArrayList<>();
 
             if(stepSize != null){
@@ -345,6 +348,8 @@ public class SaMysqlReader extends Reader {
 
         private boolean useRowNumber;
 
+        private List<BasePlugin.SAPlugin> basePluginList;
+
         @Override
         public void startRead(RecordSender recordSender) {
             long sum = 0;
@@ -385,8 +390,9 @@ public class SaMysqlReader extends Reader {
             }
 
             this.columnList = readerConfig.getList(KeyConstant.COLUMN, String.class);
-            columnIndexMap = new HashMap<>(this.columnList.size());
-            List<String>  columnNames = new ArrayList<>();
+            List<String> pluginColumnNames = readerConfig.getList(KeyConstant.PLUGIN_COLUMN, new ArrayList<>(),String.class);
+            columnIndexMap = new HashMap<>(this.columnList.size()+pluginColumnNames.size());
+            List<String>  columnNames = new ArrayList<>(this.columnList.size()+pluginColumnNames.size());
             for (int i = 0; i < this.columnList.size(); i++) {
                 String col = this.columnList.get(i);
                 col = col.contains(".")?col.substring(col.lastIndexOf(".")+1):col;
@@ -394,9 +400,13 @@ public class SaMysqlReader extends Reader {
                 columnIndexMap.put(col,i);
                 columnNames.add(col);
             }
-            columnIndexMap.forEach((k,v)->{
-                log.info("key:{},value:{}",k,v);
-            });
+
+            for (int i = 0; i < pluginColumnNames.size(); i++) {
+                String col = pluginColumnNames.get(i);
+                columnIndexMap.put(col,this.columnList.size()+i);
+                columnNames.add(col);
+            }
+
             this.columnNameList = columnNames;
 
             this.sql = readerConfig.getString(KeyConstant.SQL_TEMPLATE);
@@ -406,6 +416,22 @@ public class SaMysqlReader extends Reader {
             this.useRowNumber = readerConfig.getBool(KeyConstant.USE_ROW_NUMBER, true);
             this.sqlRowNum = readerConfig.getString(KeyConstant.SQL_ROW_NUM_TEMPLATE);
             this.pageSize = readerConfig.getLong(KeyConstant.PAGE_SIZE,200000);
+
+            String SaPluginStr = readerConfig.getString(KeyConstant.PLUGIN,"[]");
+            List<SaPlugin> SaPluginList = JSONObject.parseArray(SaPluginStr, SaPlugin.class);
+            this.basePluginList = new ArrayList<>();
+            SaPluginList.forEach(saPlugin -> {
+                String pluginName = saPlugin.getName();
+                String pluginClass = saPlugin.getClassName();
+                Map<String, Object> pluginParam = saPlugin.getParam();
+                if(!NullUtil.isNullOrBlank(pluginName) && !NullUtil.isNullOrBlank(pluginClass)){
+                    if(Objects.isNull(pluginParam)){
+                        pluginParam = new HashMap<>();
+                    }
+                    this.basePluginList.add(DependencyClassLoader.getBasePlugin(saPlugin.getName(), pluginClass, pluginParam));
+                }
+
+            });
         }
 
 
@@ -418,6 +444,15 @@ public class SaMysqlReader extends Reader {
         private Record buildRecord(RecordSender recordSender, Map<String, Object> item){
             if(Objects.isNull(item) || item.isEmpty()){
                 return null;
+            }
+            if(!Objects.isNull(this.basePluginList)){
+                for (int i = 0; i < this.basePluginList.size(); i++) {
+                    BasePlugin.SAPlugin saPlugin = this.basePluginList.get(i);
+                    boolean process = saPlugin.process(item);
+                    if(!process){
+                        return null;
+                    }
+                }
             }
             Record record = recordSender.createRecord();
             Map<String,String> keyMap = new HashMap<>();
@@ -502,7 +537,9 @@ public class SaMysqlReader extends Reader {
             }
             data.forEach(item->{
                 Record record = this.buildRecord(recordSender, item);
-                recordSender.sendToWriter(record);
+                if(!Objects.isNull(record)){
+                    recordSender.sendToWriter(record);
+                }
             });
             return data.size();
         }
@@ -585,7 +622,9 @@ public class SaMysqlReader extends Reader {
             log.info("startTime:{},endTime:{}，size:{}",startTime, endTime,data.size());
             data.forEach(item->{
                 Record record = this.buildRecord(recordSender, item);
-                recordSender.sendToWriter(record);
+                if(!Objects.isNull(record)){
+                    recordSender.sendToWriter(record);
+                }
             });
             return data.size();
         }
@@ -714,7 +753,9 @@ public class SaMysqlReader extends Reader {
                                     }
                                     data.forEach(item->{
                                         Record record = this.buildRecord(recordSender, item);
-                                        recordSender.sendToWriter(record);
+                                        if(!Objects.isNull(record)){
+                                            recordSender.sendToWriter(record);
+                                        }
                                     });
                                     finallyCount.addAndGet(data.size());
                                     data.clear();
@@ -750,7 +791,9 @@ public class SaMysqlReader extends Reader {
                             }
                             data.forEach(item->{
                                 Record record = this.buildRecord(recordSender, item);
-                                recordSender.sendToWriter(record);
+                                if(!Objects.isNull(record)){
+                                    recordSender.sendToWriter(record);
+                                }
                             });
                             finallyCount.addAndGet(data.size());
                             data.clear();
@@ -773,7 +816,9 @@ public class SaMysqlReader extends Reader {
                 }
                 data.forEach(item->{
                     Record record = this.buildRecord(recordSender, item);
-                    recordSender.sendToWriter(record);
+                    if(!Objects.isNull(record)){
+                        recordSender.sendToWriter(record);
+                    }
                 });
                 return data.size();
             }

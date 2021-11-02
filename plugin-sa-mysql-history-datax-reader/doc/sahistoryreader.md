@@ -33,7 +33,17 @@
                         },
                         "useRowNumber": true,
                         "username": "",
-                        "where": "age > 18"
+                        "where": "age > 18",
+                        "pluginColumn": [],
+                        "plugin": [
+                            {
+                                "name": "",
+                                "className": "",
+                                "param": {
+                                    "ip":""
+                                }
+                            }
+                        ]
                     }
                 },
                 "writer": {
@@ -82,7 +92,17 @@
                         "timeInterval": 1000,
                         “maxQueryNum”: 50000,
                         "useRowNumber": false,
-                        "username": ""
+                        "username": "",
+                        "pluginColumn": [],
+                        "plugin": [
+                            {
+                                "name": "",
+                                "className": "",
+                                "param": {
+                                    "ip":""
+                                }
+                            }
+                        ]
                     }
                 },
                 "writer": {
@@ -141,6 +161,42 @@
 ​		```maxQueryNum```：使用时间字段条件过滤方式时，当```timeInterval```时间段内超过该值时，将继续拆分直到拆分的时间段内的数量小于等于该值，时间段采用二分对半拆分，默认值为50000。
 
 ​		```timeFieldCount```：使用时间字段条件过滤方式时，是否先统计数量再查询，默认值true，表示优先使用先统计数量再拉取数据，当数据量大时可防止OOM,若为false,则直接拉取数据，不在进行统计，可能导致OOM。
+
+​		```plugin```：神策写插件的插件列表数组，开发规范见**神策写插件插件规范**。
+
+​		```plugin.name```：插件的名称。
+
+​		```plugin.className```：插件的全限定名。
+
+​		```plugin.param```：插件所需要的参数，具体参数根据插件不同而不同。
+
+​		```pluginColumn```：```plugin```中配置的插件如果加入了一些需要发送给下游写插件，则需要配置该参数列表。值为插件中导入Map中的key，注意key中不要带有```.```点号，实际的key将是点号后边的字符。
+
+## **神策写插件插件规范**
+
+​			引入插件机制目的：业务上的ETL清洗是多样的，在当前插件不支持转换时，可自定义插件进行转换。
+
+- ​	引入common依赖
+
+  ```xml
+  <dependency>
+      <groupId>com.alibaba</groupId>
+      <artifactId>plugin-sa-history-datax-writer-common-plugin</artifactId>
+      <version>1.0-SNAPSHOT</version>
+  </dependency>
+  ```
+
+- 编写代码
+
+  继承com.alibaba.BasePlugin类，重写instance方法（配置文件中plugin.param的配置项会被传递到该方法中），以及定义内部类继承com.alibaba.BasePlugin的内部类BasePlugin.SAPlugin，重写process方法，当前行的数据将以java.util.Map传递。
+
+- 部署插件
+
+  将插件连同依赖一起打包生成jar包，在datax的```saimpalawriter```插件下新建plugin文件夹，然后再新建一个放置该插件的文件夹，命名无要求，配置文件中```plugin.name```参数为该文件夹名，最后将生成的jar包放置到该文件夹下。
+
+  ***实现原理***
+
+  神策写插件会实例化该类，并调用instance方法获取到BasePlugin.SAPlugin插件实例，然后调用SAPlugin的process方法（经过转换器转换后的值会被传递到该方法中，空值将会被丢弃）。
 
 ## **类型转换**
 

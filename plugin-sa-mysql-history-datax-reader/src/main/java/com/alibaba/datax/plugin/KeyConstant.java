@@ -119,4 +119,6 @@ public class KeyConstant {
      * 兼容mysql版本
      */
     public static final String MYSQL_VERSION = "mysqlVersion";
+    public static final String PLUGIN = "plugin";
+    public static final String PLUGIN_COLUMN = "pluginColumn";
 }
