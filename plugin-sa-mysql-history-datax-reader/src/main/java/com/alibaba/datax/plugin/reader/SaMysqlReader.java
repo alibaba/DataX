@@ -152,7 +152,7 @@ public class SaMysqlReader extends Reader {
             if(StrUtil.isBlank(mysqlVersion) || !optionalValueList.contains(mysqlVersion)){
                 throw new DataXException(CommonErrorCode.CONFIG_ERROR,"mysqlVersion不存在或为空,可选值："+optionalValueList);
             }
-            //动态加载hive相关依赖，解决mysql版本兼容
+            //动态加载mysql相关依赖，解决mysql版本兼容
             DependencyClassLoader.loadClassJar("/mysqllib/"+mysqlVersion);
             if(StrUtil.isBlank(this.tableName) || StrUtil.isBlank(this.mysqlUrl)){
                 throw new DataXException(CommonErrorCode.CONFIG_ERROR,"mysqlUrl和table不能为空");

@@ -103,9 +103,6 @@ public class ColumnDataUtil {
     }
 
     private static String generateColumnValue(String columnName, TableColumnMetaData tableColumnMetaData, Object value) {
-        if(columnName.equals("aaaa") || columnName.equals("aa")){
-            return value +"";
-        }
         if(Objects.isNull(value) || Objects.isNull(tableColumnMetaData) || Objects.isNull(tableColumnMetaData.getType())
          || Objects.equals("",tableColumnMetaData.getType())){
             return "null";
