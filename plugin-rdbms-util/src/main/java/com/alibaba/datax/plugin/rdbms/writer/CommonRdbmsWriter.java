@@ -536,6 +536,9 @@ public class CommonRdbmsWriter {
                         preparedStatement.setString(columnIndex + 1, column.asString());
                     }
                     break;
+                case Types.ARRAY:
+                    preparedStatement.setArray(columnIndex + 1, column.asArray());
+                    break;
                 default:
                     throw DataXException
                             .asDataXException(

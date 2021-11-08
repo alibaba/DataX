@@ -1,12 +1,6 @@
 package com.alibaba.datax.plugin.rdbms.reader;
 
-import com.alibaba.datax.common.element.BoolColumn;
-import com.alibaba.datax.common.element.BytesColumn;
-import com.alibaba.datax.common.element.DateColumn;
-import com.alibaba.datax.common.element.DoubleColumn;
-import com.alibaba.datax.common.element.LongColumn;
-import com.alibaba.datax.common.element.Record;
-import com.alibaba.datax.common.element.StringColumn;
+import com.alibaba.datax.common.element.*;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordSender;
 import com.alibaba.datax.common.plugin.TaskPluginCollector;
@@ -27,10 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.Types;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -322,6 +313,13 @@ public class CommonRdbmsReader {
                             stringData = rs.getObject(i).toString();
                         }
                         record.addColumn(new StringColumn(stringData));
+                        break;
+                    case Types.ARRAY:
+                        Array data = null;
+                        if(rs.getArray(i) != null){
+                            data = rs.getArray(i);
+                        }
+                        record.addColumn(new ArrayColumn(data));
                         break;
 
                     default:

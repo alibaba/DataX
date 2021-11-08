@@ -1,9 +1,12 @@
 package com.alibaba.datax.common.element;
 
+import com.alibaba.datax.common.exception.CommonErrorCode;
+import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.fastjson.JSON;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.sql.Array;
 import java.util.Date;
 
 /**
@@ -12,64 +15,70 @@ import java.util.Date;
  */
 public abstract class Column {
 
-	private Type type;
+    private Type type;
 
-	private Object rawData;
+    private Object rawData;
 
-	private int byteSize;
+    private int byteSize;
 
-	public Column(final Object object, final Type type, int byteSize) {
-		this.rawData = object;
-		this.type = type;
-		this.byteSize = byteSize;
-	}
+    public Column(final Object object, final Type type, int byteSize) {
+        this.rawData = object;
+        this.type = type;
+        this.byteSize = byteSize;
+    }
 
-	public Object getRawData() {
-		return this.rawData;
-	}
+    public Object getRawData() {
+        return this.rawData;
+    }
 
-	public Type getType() {
-		return this.type;
-	}
+    public Type getType() {
+        return this.type;
+    }
 
-	public int getByteSize() {
-		return this.byteSize;
-	}
+    public int getByteSize() {
+        return this.byteSize;
+    }
 
-	protected void setType(Type type) {
-		this.type = type;
-	}
+    protected void setType(Type type) {
+        this.type = type;
+    }
 
-	protected void setRawData(Object rawData) {
-		this.rawData = rawData;
-	}
+    protected void setRawData(Object rawData) {
+        this.rawData = rawData;
+    }
 
-	protected void setByteSize(int byteSize) {
-		this.byteSize = byteSize;
-	}
+    protected void setByteSize(int byteSize) {
+        this.byteSize = byteSize;
+    }
 
-	public abstract Long asLong();
+    public abstract Long asLong();
 
-	public abstract Double asDouble();
+    public abstract Double asDouble();
 
-	public abstract String asString();
+    public abstract String asString();
 
-	public abstract Date asDate();
+    public abstract Date asDate();
 
-	public abstract byte[] asBytes();
+    public abstract byte[] asBytes();
 
-	public abstract Boolean asBoolean();
+    public abstract Boolean asBoolean();
 
-	public abstract BigDecimal asBigDecimal();
+    public abstract BigDecimal asBigDecimal();
 
-	public abstract BigInteger asBigInteger();
+    public abstract BigInteger asBigInteger();
 
-	@Override
-	public String toString() {
-		return JSON.toJSONString(this);
-	}
+    public Array asArray() {
+        throw DataXException.asDataXException(
+                CommonErrorCode.CONVERT_NOT_SUPPORT,
+                String.format("不支持转化为Array."));
+    }
 
-	public enum Type {
-		BAD, NULL, INT, LONG, DOUBLE, STRING, BOOL, DATE, BYTES
-	}
+    @Override
+    public String toString() {
+        return JSON.toJSONString(this);
+    }
+
+    public enum Type {
+        BAD, NULL, INT, LONG, DOUBLE, STRING, BOOL, DATE, BYTES, ARRAY
+    }
 }

@@ -286,12 +286,18 @@ public class ClickhouseWriter extends Writer {
 
 						case Types.ARRAY:
 							Connection conn = ps.getConnection();
-							List<Object> values = JSON.parseArray(column.asString(), Object.class);
-							for (int i = 0; i < values.size(); i++) {
-								values.set(i, this.toJavaArray(values.get(i)));
+							try {
+								Array array = column.asArray();
+//								Array array = conn.createArrayOf(values.toArray());
+								ps.setArray(columnIndex + 1, array);
+							} catch ( DataXException e){
+								List<Object> values = JSON.parseArray(column.asString(), Object.class);
+								for (int i = 0; i < values.size(); i++) {
+									values.set(i, this.toJavaArray(values.get(i)));
+								}
+								Array array = conn.createArrayOf("String", values.toArray());
+								ps.setArray(columnIndex + 1, array);
 							}
-							Array array = conn.createArrayOf("String", values.toArray());
-							ps.setArray(columnIndex + 1, array);
 							return true;
 
 						default:
