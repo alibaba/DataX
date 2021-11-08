@@ -65,6 +65,7 @@ public class InsertTask implements Runnable {
 		this.writeRecordSql = writeRecordSql;
 		this.isStop = false;
 		this.deleteMeta = deleteMeta;
+		connHolder.initConnection();
 	}
 	
 	void setWriterTask(ConcurrentTableWriterTask writerTask) {
@@ -151,7 +152,6 @@ public class InsertTask implements Runnable {
 
 	public void doMultiInsert(final List<Record> buffer, final boolean printCost, final long restrict) {
 		checkMemstore();
-		connHolder.initConnection();
 		Connection conn = connHolder.getConn();
 		boolean success = false;
 		long cost = 0;
@@ -165,7 +165,6 @@ public class InsertTask implements Runnable {
 					} catch (InterruptedException e) {
 						LOG.info("thread interrupted ..., ignore");
 					}
-					connHolder.initConnection();
 					conn = connHolder.getConn();
 					LOG.info("retry {}, start do batch insert, size={}", i, buffer.size());
 					checkMemstore();

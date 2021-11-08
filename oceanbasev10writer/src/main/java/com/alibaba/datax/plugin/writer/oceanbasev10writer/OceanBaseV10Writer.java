@@ -20,7 +20,6 @@ import com.alibaba.datax.plugin.rdbms.writer.Constant;
 import com.alibaba.datax.plugin.rdbms.writer.Key;
 import com.alibaba.datax.plugin.rdbms.writer.util.WriterUtil;
 import com.alibaba.datax.plugin.writer.oceanbasev10writer.task.ConcurrentTableWriterTask;
-import com.alibaba.datax.plugin.writer.oceanbasev10writer.task.SingleTableWriterTask;
 import com.alibaba.datax.plugin.writer.oceanbasev10writer.util.ObWriterUtils;
 
 /**
