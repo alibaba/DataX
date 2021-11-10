@@ -1,6 +1,6 @@
 ## 快速介绍
 
-```sacustomizereader```是用于自定义拉取数据的插件，无须关注DataX的处理逻辑，关注自身拉取数据的数据即可。
+```sacustomizereader```是用于自定义拉取数据的插件，无须关注DataX的处理逻辑，关注自身拉取数据的逻辑即可。
 
 ## **实现原理**
 
@@ -79,11 +79,11 @@
 
 - 部署插件
 
-  将插件连同依赖一起打包生成jar包，在datax的```sacustomizereader```插件下新建plugin文件夹，然后再新建一个放置该插件的文件夹，命名无要求，配置文件中```plugin.name```参数为该文件夹名，最后将生成的jar包放置到该文件夹下。
+  将插件连同依赖一起打包生成jar包，在``datax``的```sacustomizereader```插件下新建``plugin``文件夹，然后再新建一个放置该插件的文件夹，命名无要求，配置文件中```plugin.name```参数为该文件夹名，最后将生成的jar包放置到该文件夹下。
 
   ***实现原理***
 
-  神策写插件会实例化该类，并调用instance方法获取到``CommonReader.SAReaderPlugin``插件实例，经过生命周期函数后将调用``SAReaderPlugin``的```startReadTask```方法。
+  当前读插件会实例化该类，并调用instance方法获取到``CommonReader.SAReaderPlugin``插件实例，经过生命周期函数后将调用``SAReaderPlugin``的```startReadTask```方法。
 
   **默认的类型转换**
 
