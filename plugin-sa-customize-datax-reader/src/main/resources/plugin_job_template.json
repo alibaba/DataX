@@ -1,0 +1,13 @@
+{
+    "name": "sacustomizereader",
+    "parameter": {
+        "column": [""],
+        "plugin": {
+            "name": "",
+            "className": "",
+            "param": {
+                "ip":""
+            }
+        }
+    }
+}

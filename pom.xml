@@ -113,6 +113,8 @@
         <module>plugin-sa-mysql-history-datax-reader</module>
         <module>plugin-sa-impala-history-datax-writer</module>
         <module>plugin-sa-mysql-history-datax-writer</module>
+        <module>plugin-sa-history-datax-reader-common-plugin</module>
+        <module>plugin-sa-customize-datax-reader</module>
     </modules>
 
     <dependencyManagement>

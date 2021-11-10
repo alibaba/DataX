@@ -1,0 +1,6 @@
+{
+    "name": "sacustomizereader",
+    "class": "com.alibaba.datax.customize.datax.reader.CustomizeReader",
+    "description": "customize reader",
+    "developer": "cocowqw"
+}
