@@ -302,6 +302,7 @@ public class CommonRdbmsReader {
                         record.addColumn(new DateColumn(rs.getTimestamp(i)));
                         break;
 
+                    case Types.BIT:
                     case Types.BINARY:
                     case Types.VARBINARY:
                     case Types.BLOB:
@@ -309,10 +310,7 @@ public class CommonRdbmsReader {
                         record.addColumn(new BytesColumn(rs.getBytes(i)));
                         break;
 
-                    // warn: bit(1) -> Types.BIT 可使用BoolColumn
-                    // warn: bit(>1) -> Types.VARBINARY 可使用BytesColumn
                     case Types.BOOLEAN:
-                    case Types.BIT:
                         record.addColumn(new BoolColumn(rs.getBoolean(i)));
                         break;
 
