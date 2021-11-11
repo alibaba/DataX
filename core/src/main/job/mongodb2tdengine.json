@@ -1,0 +1,75 @@
+{
+    "job": {
+        "setting": {
+            "speed": {
+                "channel": 2
+            }
+        },
+        "content": [
+            {
+                "reader": {
+                    "name": "mongodbreader",
+                    "parameter": {
+                        "address": [
+                            "123.56.104.14:27017"
+                        ],
+                        "userName": "admin678",
+                        "mechanism": "SCRAM-SHA-1",
+                        "userPassword": "huwG86123",
+                        "authDb": "admin",
+                        "dbName": "test",
+                        "collectionName": "cu_market_data",
+                        "column": [
+                            {
+                                "name": "instrumentID",
+                                "type": "string"
+                            },
+                            {
+                                "name": "tradeTime",
+                                "type": "date"
+                            },
+                            {
+                                "name": "lastPrice",
+                                "type": "double"
+                            },
+                            {
+                                "name": "askPrice1",
+                                "type": "double"
+                            },
+                            {
+                                "name": "bidPrice1",
+                                "type": "double"
+                            },
+                            {
+                                "name": "volume",
+                                "type": "int"
+                            }
+                        ]
+                    }
+                },
+                "writer": {
+                    "name": "tdenginewriter",
+                    "parameter": {
+                        "host": "123.56.104.14",
+                        "port": 6030,
+                        "dbname": "test",
+                        "user": "root",
+                        "password": "taosdata",
+                        "measurement": "market_snapshot",
+                        "tag_set": {
+                            "product": "cu",
+                            "instrumentID": 0
+                        },
+                        "field_set": {
+                            "lastPrice": 2,
+                            "askPrice1": 3,
+                            "bidPrice1": 4,
+                            "volume": 5
+                        },
+                        "timestamp": 1
+                    }
+                }
+            }
+        ]
+    }
+}
