@@ -9,12 +9,18 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
-import java.util.Set;
 
 public class TDengineWriter extends Writer {
 
     private static final String PEER_PLUGIN_NAME = "peerPluginName";
+
+    static {
+        try {
+            Class.forName("com.taosdata.jdbc.TSDBDriver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
 
     public static class Job extends Writer.Job {
 
@@ -49,6 +55,7 @@ public class TDengineWriter extends Writer {
         @Override
         public void init() {
             this.writerSliceConfig = getPluginJobConf();
+
         }
 
         @Override
@@ -58,17 +65,10 @@ public class TDengineWriter extends Writer {
 
         @Override
         public void startWrite(RecordReceiver lineReceiver) {
-            Set<String> keys = this.writerSliceConfig.getKeys();
-            Properties properties = new Properties();
-            for (String key : keys) {
-                String value = this.writerSliceConfig.getString(key);
-                properties.setProperty(key, value);
-            }
-
             String peerPluginName = this.writerSliceConfig.getString(PEER_PLUGIN_NAME);
             LOG.debug("start to handle record from: " + peerPluginName);
             DataHandler handler = DataHandlerFactory.build(peerPluginName);
-            long records = handler.handle(lineReceiver, properties);
+            long records = handler.handle(lineReceiver, writerSliceConfig);
             LOG.debug("handle data finished, records: " + records);
         }
 

@@ -6,19 +6,18 @@
           "name": "mysqlreader",
           "parameter": {
             "username": "root",
-            "password": "root",
+            "password": "123456",
             "column": [
-              "id",
-              "name"
+              "*"
             ],
-            "splitPk": "db_id",
+            "splitPk": "f1",
             "connection": [
               {
                 "table": [
-                  "test"
+                  "weather"
                 ],
                 "jdbcUrl": [
-                  "jdbc:mysql://127.0.0.1:3306/database"
+                  "jdbc:mysql://192.168.56.105:3306/test?useSSL=false&useUnicode=true&characterEncoding=utf8"
                 ]
               }
             ]
@@ -32,6 +31,7 @@
             "dbname": "test",
             "user": "root",
             "password": "taosdata",
+            "table": "weather",
             "batchSize": 1000
           }
         }

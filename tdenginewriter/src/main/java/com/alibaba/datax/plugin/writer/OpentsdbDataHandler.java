@@ -4,6 +4,7 @@ import com.alibaba.datax.common.element.Column;
 import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordReceiver;
+import com.alibaba.datax.common.util.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,8 +15,9 @@ public class OpentsdbDataHandler implements DataHandler {
     private static final String DEFAULT_BATCH_SIZE = "1";
 
     @Override
-    public long handle(RecordReceiver lineReceiver, Properties properties) {
+    public long handle(RecordReceiver lineReceiver, Configuration configuration) {
         // opentsdb json protocol use JNI and schemaless API to write
+        Properties properties = CommonUtil.toProperties(configuration);
         String host = properties.getProperty(Key.HOST);
         int port = Integer.parseInt(properties.getProperty(Key.PORT));
         String dbname = properties.getProperty(Key.DBNAME);
