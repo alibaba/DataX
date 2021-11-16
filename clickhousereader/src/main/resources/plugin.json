@@ -1,0 +1,6 @@
+{
+  "name": "clickhousereader",
+  "class": "com.alibaba.datax.plugin.writer.clickhousereader.ClickhouseReader",
+  "description": "useScene: prod. mechanism: Jdbc connection using the database, execute insert sql.",
+  "developer": "yuanbingze"
+}

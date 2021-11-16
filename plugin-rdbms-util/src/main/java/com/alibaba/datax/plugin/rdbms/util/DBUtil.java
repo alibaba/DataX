@@ -13,6 +13,7 @@ import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.yandex.clickhouse.BalancedClickhouseDataSource;
 
 import java.io.File;
 import java.sql.*;
@@ -379,6 +380,8 @@ public final class DBUtil {
             //oracle.net.READ_TIMEOUT for jdbc versions < 10.1.0.5 oracle.jdbc.ReadTimeout for jdbc versions >=10.1.0.5
             // unit ms
             prop.put("oracle.jdbc.ReadTimeout", socketTimeout);
+        }else if(dataBaseType == DataBaseType.ClickHouse){
+            prop.put("socket_timeout", socketTimeout);
         }
 
         return connect(dataBaseType, url, prop);
@@ -387,9 +390,16 @@ public final class DBUtil {
     private static synchronized Connection connect(DataBaseType dataBaseType,
                                                    String url, Properties prop) {
         try {
-            Class.forName(dataBaseType.getDriverClassName());
-            DriverManager.setLoginTimeout(Constant.TIMEOUT_SECONDS);
-            return DriverManager.getConnection(url, prop);
+
+            if(DataBaseType.ClickHouse == dataBaseType){
+                BalancedClickhouseDataSource bcd = new BalancedClickhouseDataSource(url,prop);
+                bcd.actualize();
+                return bcd.getConnection();
+            }else{
+                Class.forName(dataBaseType.getDriverClassName());
+                DriverManager.setLoginTimeout(Constant.TIMEOUT_SECONDS);
+                return DriverManager.getConnection(url, prop);
+            }
         } catch (Exception e) {
             throw RdbmsException.asConnException(dataBaseType, e, prop.getProperty("user"), null);
         }
