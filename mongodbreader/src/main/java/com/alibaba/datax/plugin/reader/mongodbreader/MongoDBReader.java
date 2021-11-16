@@ -128,6 +128,8 @@ public class MongoDBReader extends Reader {
                 while (columnItera.hasNext()) {
                     JSONObject column = (JSONObject)columnItera.next();
                     Object tempCol = item.get(column.getString(KeyConstant.COLUMN_NAME));
+                    String columnName = column.getString(KeyConstant.COLUMN_NAME);
+                    String columnType = column.getString(KeyConstant.COLUMN_TYPE);
                     if (tempCol == null) {
                         if (KeyConstant.isDocumentType(column.getString(KeyConstant.COLUMN_TYPE))) {
                             String[] name = column.getString(KeyConstant.COLUMN_NAME).split("\\.");
@@ -151,7 +153,9 @@ public class MongoDBReader extends Reader {
                     if (tempCol == null) {
                         //continue; 这个不能直接continue会导致record到目的端错位
                         record.addColumn(new StringColumn(null));
-                    }else if (tempCol instanceof Double) {
+                    } else if (columnType.equalsIgnoreCase("json")) {
+                        record.addColumn(new StringColumn(JSON.toJSONString(tempCol)));
+                    } else if (tempCol instanceof Double) {
                         //TODO deal with Double.isNaN()
                         record.addColumn(new DoubleColumn((Double) tempCol));
                     } else if (tempCol instanceof Boolean) {
