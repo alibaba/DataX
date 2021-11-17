@@ -68,7 +68,8 @@ public class ClickhouseWriter extends Writer {
 
 			this.commonRdbmsWriterSlave = new CommonRdbmsWriter.Task(DATABASE_TYPE) {
 				@Override
-				protected PreparedStatement fillPreparedStatementColumnType(PreparedStatement preparedStatement, int columnIndex, int columnSqltype, Column column) throws SQLException {
+				protected PreparedStatement fillPreparedStatementColumnType(PreparedStatement preparedStatement, int columnIndex,
+																			int columnSqltype, String typeName, Column column) throws SQLException {
 					try {
 						if (column.getRawData() == null) {
 							preparedStatement.setNull(columnIndex + 1, columnSqltype);
@@ -219,7 +220,7 @@ public class ClickhouseWriter extends Writer {
 
 							default:
 								boolean isHandled = fillPreparedStatementColumnType4CustomType(preparedStatement,
-										columnIndex, columnSqltype, column);
+										columnIndex, columnSqltype,typeName, column);
 								if (isHandled) {
 									break;
 								}
@@ -273,10 +274,70 @@ public class ClickhouseWriter extends Writer {
 
 				boolean fillPreparedStatementColumnType4CustomType(PreparedStatement ps,
 				                                                   int columnIndex, int columnSqltype,
+				                                                   String typeName,
 				                                                   Column column) throws SQLException {
 					switch (columnSqltype) {
 						case Types.OTHER:
-							if (this.resultSetMetaData.getRight().get(columnIndex).startsWith("Tuple")) {
+							if (typeName != null && typeName.startsWith("SimpleAggregateFunction")) {
+								typeName= typeName.substring(typeName.indexOf(",") + 1, typeName.length() - 1).trim();
+								if (typeName.startsWith("Nullable")){
+									typeName = typeName.substring(typeName.indexOf("(")+1, typeName.length() - 1 ).trim();
+								}
+								switch (typeName){
+									case "Int32":
+									case "UInt32":
+									case "Int16":
+									case "UInt16":
+									case "UInt8":
+									case "Int8":
+										ps.setInt(columnIndex+1, column.asBigInteger().intValue());
+											break;
+									case "Int64":
+									case "UInt64":
+										ps.setLong(columnIndex+1, column.asLong());;
+										break;
+									case "Float32":
+										ps.setFloat(columnIndex +1, column.asDouble().floatValue());
+										break;
+									case "Float64":
+										ps.setDouble(columnIndex +1, column.asDouble());
+										break;
+									case "String":
+										ps.setString(columnIndex +1,column.asString());
+										break;
+									case "DateTime":
+										Timestamp sqlTimestamp = null;
+										if (column instanceof StringColumn && column.asString() != null) {
+											String timeStampStr = column.asString();
+											// JAVA TIMESTAMP 类型入参必须是 "2017-07-12 14:39:00.123566" 格式
+											String pattern = "^\\d+-\\d+-\\d+ \\d+:\\d+:\\d+.\\d+";
+											boolean isMatch = Pattern.matches(pattern, timeStampStr);
+											if (isMatch) {
+												sqlTimestamp = Timestamp.valueOf(timeStampStr);
+												ps.setTimestamp(columnIndex + 1, sqlTimestamp);
+												break;
+											}
+										}
+										java.util.Date utilDate;
+										try {
+											utilDate = column.asDate();
+										} catch (DataXException e) {
+											throw new SQLException(String.format(
+													"Date 类型转换错误：[%s]", column));
+										}
+
+										if (null != utilDate) {
+											sqlTimestamp = new Timestamp(
+													utilDate.getTime());
+										}
+										ps.setTimestamp(columnIndex + 1, sqlTimestamp);
+										break;
+									default:
+										return false;
+								}
+								return true;
+							}
+							else if (typeName !=null && typeName.startsWith("Tuple")) {
 								throw DataXException
 										.asDataXException(ClickhouseWriterErrorCode.TUPLE_NOT_SUPPORTED_ERROR, ClickhouseWriterErrorCode.TUPLE_NOT_SUPPORTED_ERROR.getDescription());
 							} else {
