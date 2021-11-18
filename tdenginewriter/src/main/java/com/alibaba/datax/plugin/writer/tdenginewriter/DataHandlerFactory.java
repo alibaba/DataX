@@ -1,4 +1,4 @@
-package com.alibaba.datax.plugin.writer;
+package com.alibaba.datax.plugin.writer.tdenginewriter;
 
 public class DataHandlerFactory {
 

@@ -1,0 +1,101 @@
+package com.alibaba.datax.plugin.writer.tdenginewriter;
+
+import com.alibaba.datax.common.element.Record;
+import com.alibaba.datax.common.plugin.RecordReceiver;
+import com.taosdata.jdbc.TSDBPreparedStatement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.Properties;
+
+/**
+ * 默认DataHandler
+ */
+public class DefaultDataHandler implements DataHandler {
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultDataHandler.class);
+
+    static {
+        try {
+            Class.forName("com.taosdata.jdbc.TSDBDriver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public long handle(RecordReceiver lineReceiver, Properties properties) {
+        SchemaManager schemaManager = new SchemaManager(properties);
+        if (!schemaManager.configValid()) {
+            return 0;
+        }
+
+        try {
+            Connection conn = getTaosConnection(properties);
+            if (conn == null) {
+                return 0;
+            }
+            if (schemaManager.shouldGuessSchema()) {
+                LOG.info("无法从配置文件获取表结构信息，尝试从数据库获取");
+                boolean success = schemaManager.getFromDB(conn);
+                if (!success) {
+                    return 0;
+                }
+            } else {
+
+            }
+            int batchSize = Integer.parseInt(properties.getProperty(Key.BATCH_SIZE, "1000"));
+            return write(lineReceiver, conn, batchSize, schemaManager);
+        } catch (Exception e) {
+            LOG.error("write failed " + e.getMessage());
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+
+    private Connection getTaosConnection(Properties properties) throws SQLException {
+        // 检查必要参数
+        String host = properties.getProperty(Key.HOST);
+        String port = properties.getProperty(Key.PORT);
+        String dbname = properties.getProperty(Key.DBNAME);
+        String user = properties.getProperty(Key.USER);
+        String password = properties.getProperty(Key.PASSWORD);
+        if (host == null || port == null || dbname == null || user == null || password == null) {
+            String keys = String.join(" ", Key.HOST, Key.PORT, Key.DBNAME, Key.USER, Key.PASSWORD);
+            LOG.error("Required options missing, please check: " + keys);
+            return null;
+        }
+        String jdbcUrl = String.format("jdbc:TAOS://%s:%s/%s?user=%s&password=%s", host, port, dbname, user, password);
+        LOG.info("TDengine connection established, host:{} port:{} dbname:{} user:{}", host, port, dbname, user);
+        return DriverManager.getConnection(jdbcUrl);
+    }
+
+    /**
+     * 使用SQL批量写入<br/>
+     *
+     * @return 成功写入记录数
+     * @throws SQLException
+     */
+    private long write(RecordReceiver lineReceiver, Connection conn, int batchSize, SchemaManager scm) throws SQLException {
+        Record record = lineReceiver.getFromReader();
+        if (record == null) {
+            return 0;
+        }
+        if (scm.shouldCreateTable()) {
+            scm.createSTable(conn, record);
+        }
+        String pq = String.format("INSERT INTO ? USING %s TAGS(%s) (%s) values (%s)", scm.getStable(), scm.getTagValuesPlaceHolder(), scm.getJoinedFieldNames(), scm.getFieldValuesPlaceHolder());
+        LOG.info("Prepared SQL: {}", pq);
+        try (TSDBPreparedStatement stmt = (TSDBPreparedStatement) conn.prepareStatement(pq)) {
+            JDBCBatchWriter batchWriter = new JDBCBatchWriter(stmt, scm, batchSize);
+            do {
+                batchWriter.append(record);
+            } while ((record = lineReceiver.getFromReader()) != null);
+            batchWriter.flush();
+            return batchWriter.getCount();
+        }
+    }
+}

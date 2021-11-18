@@ -55,18 +55,21 @@
                         "dbname": "test",
                         "user": "root",
                         "password": "taosdata",
-                        "measurement": "market_snapshot",
-                        "tag_set": {
+                        "stable": "market_snapshot",
+                        "batchSize": 35,
+                        "tagColumn": {
                             "product": "cu",
                             "instrumentID": 0
                         },
-                        "field_set": {
+                        "fieldColumn": {
                             "lastPrice": 2,
                             "askPrice1": 3,
                             "bidPrice1": 4,
                             "volume": 5
                         },
-                        "timestamp": 1
+                        "timestampColumn": {
+                            "tradeTime": 1
+                        }
                     }
                 }
             }
