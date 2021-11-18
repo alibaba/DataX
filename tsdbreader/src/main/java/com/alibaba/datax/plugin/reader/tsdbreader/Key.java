@@ -25,7 +25,7 @@ public class Key {
     static final String BEGIN_DATE_TIME = "beginDateTime";
     static final String END_DATE_TIME = "endDateTime";
 
-    static final Integer INTERVAL_DATE_TIME_DEFAULT_VALUE = 60;
+    static final Integer INTERVAL_DATE_TIME_DEFAULT_VALUE = 60000;
     static final String TYPE_DEFAULT_VALUE = "TSDB";
     static final Set<String> TYPE_SET = new HashSet<>();
 

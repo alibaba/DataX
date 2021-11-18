@@ -183,12 +183,12 @@ public class TSDBReader extends Reader {
             if (TimeUtils.isSecond(endTime)) {
                 endTime *= 1000;
             }
-            DateTime startDateTime = new DateTime(TimeUtils.getTimeInHour(startTime));
-            DateTime endDateTime = new DateTime(TimeUtils.getTimeInHour(endTime));
-
             if ("TSDB".equals(type)) {
                 // split by metric
                 for (String column : columns4TSDB) {
+                    DateTime startDateTime = new DateTime(TimeUtils.getTimeInHour(startTime));
+                    DateTime endDateTime = new DateTime(TimeUtils.getTimeInHour(endTime));
+
                     // split by time in hour
                     while (startDateTime.isBefore(endDateTime)) {
                         Configuration clone = this.originalConfig.clone();
@@ -206,6 +206,9 @@ public class TSDBReader extends Reader {
             } else {
                 // split by metric
                 for (String metric : metrics) {
+                    DateTime startDateTime = new DateTime(TimeUtils.getTimeInHour(startTime));
+                    DateTime endDateTime = new DateTime(TimeUtils.getTimeInHour(endTime));
+
                     // split by time in hour
                     while (startDateTime.isBefore(endDateTime)) {
                         Configuration clone = this.originalConfig.clone();

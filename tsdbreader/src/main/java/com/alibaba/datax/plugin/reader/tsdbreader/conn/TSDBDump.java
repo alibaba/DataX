@@ -131,6 +131,8 @@ final class TSDBDump {
             valueColumn = new LongColumn((Long) value);
         } else if (value instanceof String) {
             valueColumn = new StringColumn((String) value);
+        } else if (value instanceof Integer) {
+            valueColumn = new DoubleColumn((Integer) value);
         } else {
             throw new Exception(String.format("value 不支持类型: [%s]", value.getClass().getSimpleName()));
         }
