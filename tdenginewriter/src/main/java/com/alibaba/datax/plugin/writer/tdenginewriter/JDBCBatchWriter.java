@@ -41,7 +41,7 @@ public class JDBCBatchWriter {
     private long sucCount = 0;
     private final int tsColIndex;
     private List<String> fieldList;
-    // 每个record至少应该包含的列数，用于检测数据
+    // 每个record至少应该包含的列数，用于校验数据
     private int minColNum = 0;
     private Map<String, Integer> fieldIndexMap;
     private List<Column.Type> fieldTypes = null;
