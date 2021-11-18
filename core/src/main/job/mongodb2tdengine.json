@@ -11,7 +11,7 @@
                     "name": "mongodbreader",
                     "parameter": {
                         "address": [
-                            "123.56.104.14:27017"
+                            "127.0.0.1:27017"
                         ],
                         "userName": "admin678",
                         "mechanism": "SCRAM-SHA-1",
@@ -50,7 +50,7 @@
                 "writer": {
                     "name": "tdenginewriter",
                     "parameter": {
-                        "host": "123.56.104.14",
+                        "host": "127.0.0.1",
                         "port": 6030,
                         "dbname": "test",
                         "user": "root",

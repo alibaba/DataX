@@ -3,10 +3,13 @@ package com.alibaba.datax.plugin.writer.tdenginewriter;
 import com.alibaba.datax.common.element.Column;
 import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.exception.DataXException;
+import com.alibaba.datax.common.plugin.AbstractTaskPlugin;
+import com.alibaba.datax.common.plugin.TaskPluginCollector;
 import com.taosdata.jdbc.TSDBPreparedStatement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,10 +29,12 @@ import java.util.stream.Collectors;
  */
 public class JDBCBatchWriter {
     public static final Logger LOG = LoggerFactory.getLogger(JDBCBatchWriter.class);
-
     private TSDBPreparedStatement stmt;
     private SchemaManager scm;
+    private Connection conn;
     private int batchSize;
+    private TaskPluginCollector collector;
+
     // 缓存Record， key为tableName
     Map<String, List<Record>> buf = new HashMap<>();
     // 缓存表的标签值， key为tableName
@@ -37,25 +42,57 @@ public class JDBCBatchWriter {
     private long sucCount = 0;
     private final int tsColIndex;
     private List<String> fieldList;
+    // 每个record至少应该包含的列数，用于检测数据
+    private int minColNum = 0;
     private Map<String, Integer> fieldIndexMap;
+    private List<Column.Type> fieldTypes = null;
 
-    public JDBCBatchWriter(TSDBPreparedStatement stmt, SchemaManager scm, int batchSize) {
+    public JDBCBatchWriter(Connection conn, TSDBPreparedStatement stmt, SchemaManager scm, int batchSize, TaskPluginCollector collector) {
+        this.conn = conn;
         this.stmt = stmt;
         this.scm = scm;
         this.batchSize = batchSize;
+        this.collector = collector;
         this.tsColIndex = scm.getTsColIndex();
         this.fieldList = scm.getFieldList();
         this.fieldIndexMap = scm.getFieldIndexMap();
+        this.minColNum = 1 + fieldList.size() + scm.getDynamicTagCount();
+
     }
 
+    public void initFiledTypesAndTargetTable(List<Record> records) throws SQLException {
+        if (fieldTypes != null) {
+            return;
+        }
+        guessFieldTypes(records);
+        if (scm.shouldCreateTable()) {
+            scm.createSTable(conn, fieldTypes);
+        }
+    }
 
     public void append(Record record) throws SQLException {
+        int columnNum = record.getColumnNumber();
+        if (columnNum < minColNum) {
+            collector.collectDirtyRecord(record, "实际列数小于期望列数");
+            return;
+        }
         String[] tagValues = scm.getTagValuesFromRecord(record);
+        if (tagValues == null) {
+            collector.collectDirtyRecord(record, "标签列包含null");
+            return;
+        }
+        if (!scm.hasTimestamp(record)) {
+            collector.collectDirtyRecord(record, "时间戳列为null或类型错误");
+            return;
+        }
         String tableName = scm.computeTableName(tagValues);
         if (buf.containsKey(tableName)) {
             List<Record> lis = buf.get(tableName);
             lis.add(record);
             if (lis.size() == batchSize) {
+                if (fieldTypes == null) {
+                    initFiledTypesAndTargetTable(lis);
+                }
                 executeBatch(tableName);
                 lis.clear();
             }
@@ -65,6 +102,49 @@ public class JDBCBatchWriter {
             buf.put(tableName, lis);
             tableTagValues.put(tableName, tagValues);
         }
+    }
+
+    /**
+     * 只有String类型比较特别，测试发现值为null的列会转成String类型。所以Column的类型为String并不代表这一列的类型真的是String。
+     *
+     * @param records
+     */
+    private void guessFieldTypes(List<Record> records) {
+        fieldTypes = new ArrayList<>(fieldList.size());
+        for (int i = 0; i < fieldList.size(); ++i) {
+            int colIndex = fieldIndexMap.get(fieldList.get(i));
+            boolean ok = false;
+            for (int j = 0; j < records.size() && !ok; ++j) {
+                Column column = records.get(j).getColumn(colIndex);
+                Column.Type type = column.getType();
+                switch (type) {
+                    case LONG:
+                    case DOUBLE:
+                    case DATE:
+                    case BOOL:
+                    case BYTES:
+                        if (column.getRawData() != null) {
+                            fieldTypes.add(type);
+                            ok = true;
+                        }
+                        break;
+                    case STRING:
+                        // 只有非null且非空的String列，才会被真的当作String类型。
+                        String value = column.asString();
+                        if (value != null && !"".equals(value)) {
+                            fieldTypes.add(type);
+                            ok = true;
+                        }
+                        break;
+                    default:
+                        throw DataXException.asDataXException(TDengineWriterErrorCode.TYPE_ERROR, fieldTypes.get(i).toString());
+                }
+            }
+            if (!ok) {
+                throw DataXException.asDataXException(TDengineWriterErrorCode.TYPE_ERROR, String.format("根据采样的%d条数据，无法推断第%d列的数据类型", records.size(), i + 1));
+            }
+        }
+        LOG.info("Field Types: {}", fieldTypes);
     }
 
     /**
@@ -87,12 +167,10 @@ public class JDBCBatchWriter {
         ArrayList<Long> tsList = records.stream().map(r -> r.getColumn(tsColIndex).asDate().getTime()).collect(Collectors.toCollection(ArrayList::new));
         stmt.setTimestamp(0, tsList);
         // 字段
-        Record record = records.get(0);
         for (int i = 0; i < fieldList.size(); ) {
             String fieldName = fieldList.get(i);
             int index = fieldIndexMap.get(fieldName);
-            Column column = record.getColumn(index);
-            switch (column.getType()) {
+            switch (fieldTypes.get(i)) {
                 case LONG:
                     ArrayList<Long> lisLong = records.stream().map(r -> r.getColumn(index).asBigInteger().longValue()).collect(Collectors.toCollection(ArrayList::new));
                     stmt.setLong(++i, lisLong);
@@ -118,7 +196,7 @@ public class JDBCBatchWriter {
                     stmt.setString(++i, lisBytes, 64);
                     break;
                 default:
-                    throw DataXException.asDataXException(TDengineWriterErrorCode.TYPE_ERROR, column.getType().toString());
+                    throw DataXException.asDataXException(TDengineWriterErrorCode.TYPE_ERROR, fieldTypes.get(i).toString());
             }
         }
         // 执行
@@ -132,6 +210,16 @@ public class JDBCBatchWriter {
      * 把缓存的Record全部写入
      */
     public void flush() throws SQLException {
+        if (fieldTypes == null) {
+            List<Record> records = new ArrayList<>();
+            for (List<Record> lis : buf.values()) {
+                records.addAll(lis);
+                if (records.size() > 100) {
+                    break;
+                }
+            }
+            initFiledTypesAndTargetTable(records);
+        }
         for (String tabName : buf.keySet()) {
             if (buf.get(tabName).size() > 0) {
                 executeBatch(tabName);

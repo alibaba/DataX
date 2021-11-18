@@ -176,14 +176,15 @@ public class SchemaManager {
         return stables;
     }
 
-    public void createSTable(Connection conn, Record record) throws SQLException {
+    public void createSTable(Connection conn, List<Column.Type> fieldTypes) throws SQLException {
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE STABLE IF NOT EXISTS ").append(stable).append("(");
         sb.append(tsColName).append(" ").append("TIMESTAMP,");
-        for (String fieldName : fieldList) {
+        for (int i = 0; i < fieldList.size(); ++i) {
+            String fieldName = fieldList.get(i);
+            Column.Type dxType = fieldTypes.get(i);
             sb.append(fieldName).append(' ');
-            Column col = record.getColumn(fieldIndexMap.get(fieldName));
-            String tdType = mapDataxType(col.getType());
+            String tdType = mapDataxType(dxType);
             sb.append(tdType).append(',');
         }
         sb.deleteCharAt(sb.length() - 1);
@@ -209,8 +210,20 @@ public class SchemaManager {
                 int tagIndex = tagIndexMap.get(tagList.get(i));
                 tagValues[i] = record.getColumn(tagIndex).asString();
             }
+            if (tagValues[i] == null) {
+                return null;
+            }
         }
         return tagValues;
+    }
+
+    public boolean hasTimestamp(Record record) {
+        Column column = record.getColumn(tsColIndex);
+        if (column.getType() == Column.Type.DATE && column.asDate() != null) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public Map<String, Integer> getFieldIndexMap() {
@@ -251,5 +264,9 @@ public class SchemaManager {
     public String computeTableName(String[] tagValues) {
         String s = String.join("!", tagValues);
         return "t_" + DigestUtils.md5Hex(s);
+    }
+
+    public int getDynamicTagCount() {
+        return tagIndexMap.size();
     }
 }

@@ -74,7 +74,7 @@ public class TDengineWriter extends Writer {
             String peerPluginName = this.writerSliceConfig.getString(PEER_PLUGIN_NAME);
             LOG.debug("start to handle record from: " + peerPluginName);
             DataHandler handler = DataHandlerFactory.build(peerPluginName);
-            long records = handler.handle(lineReceiver, properties);
+            long records = handler.handle(lineReceiver, properties, getTaskPluginCollector());
             LOG.debug("handle data finished, records: " + records);
         }
 

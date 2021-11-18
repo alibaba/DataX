@@ -2,6 +2,7 @@ package com.alibaba.datax.plugin.writer.tdenginewriter;
 
 import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.plugin.RecordReceiver;
+import com.alibaba.datax.common.plugin.TaskPluginCollector;
 import com.taosdata.jdbc.TSDBPreparedStatement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +17,6 @@ import java.util.Properties;
  */
 public class DefaultDataHandler implements DataHandler {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultDataHandler.class);
-
     static {
         try {
             Class.forName("com.taosdata.jdbc.TSDBDriver");
@@ -26,7 +26,7 @@ public class DefaultDataHandler implements DataHandler {
     }
 
     @Override
-    public long handle(RecordReceiver lineReceiver, Properties properties) {
+    public long handle(RecordReceiver lineReceiver, Properties properties, TaskPluginCollector collector) {
         SchemaManager schemaManager = new SchemaManager(properties);
         if (!schemaManager.configValid()) {
             return 0;
@@ -47,7 +47,11 @@ public class DefaultDataHandler implements DataHandler {
 
             }
             int batchSize = Integer.parseInt(properties.getProperty(Key.BATCH_SIZE, "1000"));
-            return write(lineReceiver, conn, batchSize, schemaManager);
+            if (batchSize < 5) {
+                LOG.error("batchSize太小，会增加自动类型推断错误的概率，建议改大后重试");
+                return 0;
+            }
+            return write(lineReceiver, conn, batchSize, schemaManager, collector);
         } catch (Exception e) {
             LOG.error("write failed " + e.getMessage());
             e.printStackTrace();
@@ -79,18 +83,15 @@ public class DefaultDataHandler implements DataHandler {
      * @return 成功写入记录数
      * @throws SQLException
      */
-    private long write(RecordReceiver lineReceiver, Connection conn, int batchSize, SchemaManager scm) throws SQLException {
+    private long write(RecordReceiver lineReceiver, Connection conn, int batchSize, SchemaManager scm, TaskPluginCollector collector) throws SQLException {
         Record record = lineReceiver.getFromReader();
         if (record == null) {
             return 0;
         }
-        if (scm.shouldCreateTable()) {
-            scm.createSTable(conn, record);
-        }
         String pq = String.format("INSERT INTO ? USING %s TAGS(%s) (%s) values (%s)", scm.getStable(), scm.getTagValuesPlaceHolder(), scm.getJoinedFieldNames(), scm.getFieldValuesPlaceHolder());
         LOG.info("Prepared SQL: {}", pq);
         try (TSDBPreparedStatement stmt = (TSDBPreparedStatement) conn.prepareStatement(pq)) {
-            JDBCBatchWriter batchWriter = new JDBCBatchWriter(stmt, scm, batchSize);
+            JDBCBatchWriter batchWriter = new JDBCBatchWriter(conn, stmt, scm, batchSize, collector);
             do {
                 batchWriter.append(record);
             } while ((record = lineReceiver.getFromReader()) != null);
