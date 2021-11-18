@@ -218,7 +218,11 @@ public class JDBCBatchWriter {
                     break;
                 }
             }
-            initFiledTypesAndTargetTable(records);
+            if (records.size() > 0) {
+                initFiledTypesAndTargetTable(records);
+            } else {
+                return;
+            }
         }
         for (String tabName : buf.keySet()) {
             if (buf.get(tabName).size() > 0) {
