@@ -3,7 +3,6 @@ package com.alibaba.datax.plugin.writer.tdenginewriter;
 import com.alibaba.datax.common.element.Column;
 import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.exception.DataXException;
-import com.alibaba.datax.common.plugin.AbstractTaskPlugin;
 import com.alibaba.datax.common.plugin.TaskPluginCollector;
 import com.taosdata.jdbc.TSDBPreparedStatement;
 import org.slf4j.Logger;

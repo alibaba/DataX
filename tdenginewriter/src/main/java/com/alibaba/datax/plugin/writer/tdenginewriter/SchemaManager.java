@@ -48,7 +48,7 @@ public class SchemaManager {
             case BOOL:
                 return "BOOL";
             case BYTES:
-                return "BINARY";
+                return "BINARY(64)";
             default:
                 throw DataXException.asDataXException(TDengineWriterErrorCode.TYPE_ERROR, type.toString());
         }

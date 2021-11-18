@@ -197,7 +197,7 @@ CREATE STABLE IF NOT EXISTS market_snapshot (
 )
 TAGS(
   industry NCHAR(64),
-  stockID NCHAR(64
+  stockID NCHAR(64)
 );
 ```
 
