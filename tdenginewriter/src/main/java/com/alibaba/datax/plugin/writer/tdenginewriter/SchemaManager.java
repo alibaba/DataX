@@ -65,7 +65,7 @@ public class SchemaManager {
     private void getFromConfig(Properties properties) {
         stable = properties.getProperty(Key.STABLE);
         if (stable == null) {
-            LOG.error("配置错误: no stable");
+            LOG.error("Config error: no stable");
             return;
         }
         for (Object key : properties.keySet()) {
@@ -98,7 +98,7 @@ public class SchemaManager {
         List<String> sortedFieldName = fieldIndexMap.entrySet().stream().sorted((x, y) -> x.getValue().compareTo(y.getValue())).map(e -> e.getKey()).collect(Collectors.toList());
         fieldList.addAll(sortedFieldName); // 排序的目的是保证自动建表时列的顺序和输入数据的列的顺序保持一致
         canInferSchemaFromConfig = tsColIndex > -1 && !(fixedTagValue.isEmpty() && tagIndexMap.isEmpty()) && !fieldIndexMap.isEmpty();
-        LOG.info("配置文件解析结果：fixedTags=[{}] ,tags=[{}], fields=[{}], tsColName={}, tsIndex={}", String.join(",", fixedTagValue.keySet()), String.join(",", tagIndexMap.keySet()), String.join(",", fieldList), tsColName, tsColIndex);
+        LOG.info("Config file parsed result：fixedTags=[{}] ,tags=[{}], fields=[{}], tsColName={}, tsIndex={}", String.join(",", fixedTagValue.keySet()), String.join(",", tagIndexMap.keySet()), String.join(",", fieldList), tsColName, tsColIndex);
     }
 
     public boolean shouldGuessSchema() {
@@ -112,8 +112,7 @@ public class SchemaManager {
     public boolean configValid() {
         boolean valid = (tagList.size() > 0 && fieldList.size() > 0 && tsColIndex > -1) || (tagList.size() == 0 && fieldList.size() == 0 && tsColIndex == -1);
         if (!valid) {
-            LOG.error("配置错误. tag_columns，field_columns，timestamp_column必须同时存在或同时省略，当前解析结果: tag_columns: {}, field_columns:{}, timestamp_column:{} tsColIndex:{}",
-                    (fixedTagValue.size() + tagIndexMap.size()), fieldIndexMap.size(), tsColName, tsColIndex);
+            LOG.error("Config error: tagColumn, fieldColumn and timestampColumn must be present together or absent together.");
         }
         return valid;
     }
@@ -128,7 +127,7 @@ public class SchemaManager {
         try {
             List<String> stables = getSTables(conn);
             if (!stables.contains(stable)) {
-                LOG.error("超级表{}不存在，无法从数据库获取表结构信息.", stable);
+                LOG.error("super table {} not exist， fail to get schema from database.", stable);
                 return false;
             }
         } catch (SQLException e) {
@@ -155,7 +154,7 @@ public class SchemaManager {
                 }
                 colIndex++;
             }
-            LOG.info("从数据库获取的表结构概要：tags=[{}], fields=[{}], tsColName={}, tsIndex={}", String.join(",", tagIndexMap.keySet()), String.join(",", fieldList), tsColName, tsColIndex);
+            LOG.info("table info：tags=[{}], fields=[{}], tsColName={}, tsIndex={}", String.join(",", tagIndexMap.keySet()), String.join(",", fieldList), tsColName, tsColIndex);
             return true;
         } catch (SQLException e) {
             LOG.error(e.getMessage());
@@ -195,7 +194,7 @@ public class SchemaManager {
         sb.deleteCharAt(sb.length() - 1);
         sb.append(")");
         String q = sb.toString();
-        LOG.info("自动创建超级表：" + q);
+        LOG.info("run sql：" + q);
         try (Statement stmt = conn.createStatement()) {
             stmt.execute(q);
         }

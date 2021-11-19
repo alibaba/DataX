@@ -72,16 +72,19 @@ public class JDBCBatchWriter {
     public void append(Record record) throws SQLException {
         int columnNum = record.getColumnNumber();
         if (columnNum < minColNum) {
-            collector.collectDirtyRecord(record, "实际列数小于期望列数");
+            // 实际列数小于期望列数
+            collector.collectDirtyRecord(record, Msg.get("column_number_error"));
             return;
         }
         String[] tagValues = scm.getTagValuesFromRecord(record);
         if (tagValues == null) {
-            collector.collectDirtyRecord(record, "标签列包含null");
+            // 标签列包含null
+            collector.collectDirtyRecord(record, Msg.get("tag_value_error"));
             return;
         }
         if (!scm.hasTimestamp(record)) {
-            collector.collectDirtyRecord(record, "时间戳列为null或类型错误");
+            // 时间戳列为null或类型错误
+            collector.collectDirtyRecord(record, Msg.get("ts_value_error"));
             return;
         }
         String tableName = scm.computeTableName(tagValues);
@@ -140,7 +143,8 @@ public class JDBCBatchWriter {
                 }
             }
             if (!ok) {
-                throw DataXException.asDataXException(TDengineWriterErrorCode.TYPE_ERROR, String.format("根据采样的%d条数据，无法推断第%d列的数据类型", records.size(), i + 1));
+                // 根据采样的%d条数据，无法推断第%d列的数据类型
+                throw DataXException.asDataXException(TDengineWriterErrorCode.TYPE_ERROR, String.format(Msg.get("infer_column_type_error"), records.size(), i + 1));
             }
         }
         LOG.info("Field Types: {}", fieldTypes);

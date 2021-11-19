@@ -17,6 +17,7 @@ import java.util.Properties;
  */
 public class DefaultDataHandler implements DataHandler {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultDataHandler.class);
+
     static {
         try {
             Class.forName("com.taosdata.jdbc.TSDBDriver");
@@ -38,7 +39,8 @@ public class DefaultDataHandler implements DataHandler {
                 return 0;
             }
             if (schemaManager.shouldGuessSchema()) {
-                LOG.info("无法从配置文件获取表结构信息，尝试从数据库获取");
+                // 无法从配置文件获取表结构信息，尝试从数据库获取
+                LOG.info(Msg.get("try_get_schema_from_db"));
                 boolean success = schemaManager.getFromDB(conn);
                 if (!success) {
                     return 0;
@@ -48,7 +50,8 @@ public class DefaultDataHandler implements DataHandler {
             }
             int batchSize = Integer.parseInt(properties.getProperty(Key.BATCH_SIZE, "1000"));
             if (batchSize < 5) {
-                LOG.error("batchSize太小，会增加自动类型推断错误的概率，建议改大后重试");
+                // batchSize太小，会增加自动类型推断错误的概率，建议改大后重试
+                LOG.error(Msg.get("batch_size_too_small"));
                 return 0;
             }
             return write(lineReceiver, conn, batchSize, schemaManager, collector);
