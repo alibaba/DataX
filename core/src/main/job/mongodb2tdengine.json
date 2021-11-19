@@ -13,9 +13,9 @@
                         "address": [
                             "127.0.0.1:27017"
                         ],
-                        "userName": "admin678",
+                        "userName": "mongouser",
                         "mechanism": "SCRAM-SHA-1",
-                        "userPassword": "huwG86123",
+                        "userPassword": "mongopass",
                         "authDb": "admin",
                         "dbName": "test",
                         "collectionName": "cu_market_data",
