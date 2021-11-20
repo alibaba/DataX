@@ -1,9 +1,10 @@
-package com.alibaba.datax.plugin.writer;
+package com.alibaba.datax.plugin.writer.tdenginewriter;
 
 import com.alibaba.datax.common.spi.ErrorCode;
 
 public enum TDengineWriterErrorCode implements ErrorCode {
-    RUNTIME_EXCEPTION("TDengineWriter-00", "运行时异常");
+    RUNTIME_EXCEPTION("TDengineWriter-00", "运行时异常"),
+    TYPE_ERROR("TDengineWriter-00", "Datax类型无法正确映射到TDengine类型");
 
     private final String code;
     private final String description;

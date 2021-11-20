@@ -1,4 +1,4 @@
-package com.alibaba.datax.plugin.writer;
+package com.alibaba.datax.plugin.writer.tdenginewriter;
 
 
 import com.alibaba.datax.common.plugin.RecordReceiver;
@@ -64,11 +64,17 @@ public class TDengineWriter extends Writer {
                 String value = this.writerSliceConfig.getString(key);
                 properties.setProperty(key, value);
             }
-
+            if (!keys.contains(Key.USER)) {
+                properties.setProperty(Key.USER, "root");
+            }
+            if (!keys.contains(Key.PASSWORD)) {
+                properties.setProperty(Key.PASSWORD, "taosdata");
+            }
+            LOG.debug("========================properties==========================\n" + properties.toString());
             String peerPluginName = this.writerSliceConfig.getString(PEER_PLUGIN_NAME);
             LOG.debug("start to handle record from: " + peerPluginName);
             DataHandler handler = DataHandlerFactory.build(peerPluginName);
-            long records = handler.handle(lineReceiver, properties);
+            long records = handler.handle(lineReceiver, properties, getTaskPluginCollector());
             LOG.debug("handle data finished, records: " + records);
         }
 
