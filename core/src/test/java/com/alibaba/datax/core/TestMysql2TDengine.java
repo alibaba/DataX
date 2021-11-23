@@ -14,12 +14,9 @@ import java.util.Random;
 public class TestMysql2TDengine {
 
     @Test
-    public void genTestData() throws ClassNotFoundException, SQLException {
-        Class.forName("com.mysql.jdbc.Driver");
-
-        Connection conn = null;
+    public void genTestData() throws SQLException {
+        Connection conn;
         Statement stmt = null;
-        ResultSet rs = null;
         PreparedStatement pstmt = null;
 
         try {
@@ -33,15 +30,6 @@ public class TestMysql2TDengine {
             pstmt = conn.prepareStatement("insert into weather(station, latitude, longtitude, `date`, tmax, tmin) values (?, ?, ?, ?, ?, ?)");
             genRandomData(pstmt);
         } finally {
-            if (rs != null) {
-                try {
-                    rs.close();
-                } catch (SQLException sqlEx) {
-                } // ignore
-
-                rs = null;
-            }
-
             if (stmt != null) {
                 try {
                     stmt.close();
@@ -53,6 +41,7 @@ public class TestMysql2TDengine {
 
             if (pstmt != null) {
                 pstmt.close();
+                pstmt = null;
             }
         }
 
@@ -83,10 +72,8 @@ public class TestMysql2TDengine {
     }
 
     @Test
-    public void prepareTDengine() throws ClassNotFoundException, SQLException {
-        Class.forName("com.mysql.jdbc.Driver");
-
-        Connection conn = null;
+    public void prepareTDengine() throws SQLException {
+        Connection conn;
         Statement stmt = null;
 
         try {
@@ -113,7 +100,6 @@ public class TestMysql2TDengine {
             e.printStackTrace();
         }
     }
-
 
 
 }
