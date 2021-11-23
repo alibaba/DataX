@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * 测试从mysql到TD
+ * 测试从mysql到TDengine
  */
 public class TestMysql2TDengine {
 
