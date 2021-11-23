@@ -1,12 +1,12 @@
 package com.alibaba.datax.core;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.sql.*;
-import java.util.*;
-import java.util.Date;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Random;
 
 /**
  * 测试从mysql到TD
@@ -78,6 +78,7 @@ public class TestMysql2TDengine {
                 psmt.executeBatch();
             }
         }
+        // 有部分重复数据，不影响测试
         psmt.executeBatch();
     }
 
@@ -91,7 +92,8 @@ public class TestMysql2TDengine {
         try {
             conn = DriverManager.getConnection("jdbc:TAOS://127.0.0.1:6030/log?user=root&password=taosdata");
             stmt = conn.createStatement();
-            stmt.execute("create database if not exists test");
+            stmt.execute("drop database if exists test");
+            stmt.execute("create database if not exists test keep 36500");
             stmt.execute("drop stable if exists test.weather");
         } finally {
             if (stmt != null) {
