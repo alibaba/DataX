@@ -181,8 +181,8 @@ TDengineWriter 通过 DataX 框架获取 Reader生成的协议数据，根据rea
 | fieldColumn     | 字段列的列名和位置   | 否               | 无       |                    |
 | timestampColumn | 时间戳列的列名和位置 | 否               | 无       | 时间戳列只能有一个 |
 
-#### 3.3.3 自动建表规则
-##### 3.3.3.1 超级表创建规则
+#### 3.2.3 自动建表规则
+##### 3.2.3.1 超级表创建规则
 
 如果配置了tagColumn、 fieldColumn和timestampColumn将会在插入第一条数据前，自动创建超级表。<br>
 数据列的类型从第1条记录自动推断, 标签列默认类型为`NCHAR(64)`, 比如示例配置，可能生成以下建表语句：
@@ -201,14 +201,14 @@ TAGS(
 );
 ```
 
-##### 3.3.3.2 子表创建规则
+##### 3.2.3.2 子表创建规则
 
 子表结果与超表相同，子表表名生成规则：
 1. 将标签的value 组合成为如下的字符串: `tag_value1!tag_value2!tag_value3`。
 2. 计算该字符串的 MD5 散列值 "md5_val"。
 3. "t_md5val"作为子表名。其中的 "t" 是固定的前缀。
 
-#### 3.3.4 用户提前建表
+#### 3.2.4 用户提前建表
 
 如果你已经创建好目标超级表，那么tagColumn、 fieldColumn和timestampColumn三个字段均可省略, 插件将通过执行通过`describe stableName`获取表结构的信息。
 此时要求接收到的Record中Column的顺序和执行`describe stableName`返回的列顺序相同， 比如通过`describe stableName`返回以下内容：
@@ -221,13 +221,13 @@ TAGS(
 ```
 那么插件收到的数据第1列必须代表时间戳，第2列必须代表电流，第3列必须代表位置。
 
-#### 3.3.5 注意事项
+#### 3.2.5 注意事项
 
 1. tagColumn、 fieldColumn和timestampColumn三个字段用于描述目标表的结构信息，这三个配置字段必须同时存在或同时省略。
 2. 如果存在以上三个配置，且目标表也已经存在，则两者必须一致。**一致性**由用户自己保证，插件不做检查。不一致可能会导致插入失败或插入数据错乱。
 3. 插件优先使用配置文件中指定的表结构。
 
-#### 3.3.6 类型转换
+#### 3.2.6 类型转换
 
 | MongoDB 数据类型 | DataX 内部类型 | TDengine 数据类型 |
 | ---------------- | -------------- | ----------------- |
@@ -237,6 +237,84 @@ TAGS(
 | date             | Date           | TIMESTAMP         |
 | boolean          | Boolean        | BOOL              |
 | bytes            | Bytes          | BINARY            |
+
+### 3.3 从关系型数据库到TDengine
+writer部分的配置规则和上述MongoDB的示例是一样的，这里给出一个MySQL的示例。
+
+#### 3.3.1 MySQL中表结构
+```sql
+CREATE TABLE IF NOT EXISTS weather(
+    station varchar(100),
+    latitude DOUBLE,
+    longtitude DOUBLE,
+    `date` DATE,
+    TMAX int,
+    TMIN int
+)
+```
+
+#### 3.3.2 配置文件示例
+
+```json 
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "name": "mysqlreader",
+          "parameter": {
+            "username": "root",
+            "password": "passw0rd",
+            "column": [
+              "*"
+            ],
+            "splitPk": "station",
+            "connection": [
+              {
+                "table": [
+                  "weather"
+                ],
+                "jdbcUrl": [
+                  "jdbc:mysql://127.0.0.1:3306/test?useSSL=false&useUnicode=true&characterEncoding=utf8"
+                ]
+              }
+            ]
+          }
+        },
+        "writer": {
+          "name": "tdenginewriter",
+          "parameter": {
+            "host": "127.0.0.1",
+            "port": 6030,
+            "dbname": "test",
+            "user": "root",
+            "password": "taosdata",
+            "batchSize": 1000,
+            "stable": "weather",
+            "tagColumn": {
+              "station": 0
+            },
+            "fieldColumn": {
+              "latitude": 1,
+              "longtitude": 2,
+              "tmax": 4,
+              "tmin": 5
+            },
+            "timestampColumn":{
+              "date": 3
+            }
+          }
+        }
+      }
+    ],
+    "setting": {
+      "speed": {
+        "channel": 1
+      }
+    }
+  }
+}
+```
 
 
 ## 4 性能报告
@@ -314,3 +392,7 @@ TDengine要求每个表第一列是时间戳列，后边是普通字段，最后
 ### 插件如何确定各列的数据类型？
 
 根据收到的第一批数据自动推断各列的类型。
+
+### 为什么插入10年前的数据会抛异常`TDengine ERROR (2350): failed to execute batch bind` ?
+
+因为创建数据库的时候，默认保留10年的数据。可以手动指定要保留多长时间的数据，比如:`CREATE DATABASE power KEEP 36500;`。

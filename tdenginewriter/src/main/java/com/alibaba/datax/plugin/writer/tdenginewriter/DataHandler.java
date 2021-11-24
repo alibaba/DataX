@@ -1,6 +1,7 @@
 package com.alibaba.datax.plugin.writer.tdenginewriter;
 
 import com.alibaba.datax.common.plugin.RecordReceiver;
+
 import com.alibaba.datax.common.plugin.TaskPluginCollector;
 
 import java.util.Properties;

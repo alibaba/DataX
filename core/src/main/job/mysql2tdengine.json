@@ -6,19 +6,18 @@
           "name": "mysqlreader",
           "parameter": {
             "username": "root",
-            "password": "root",
+            "password": "passw0rd",
             "column": [
-              "id",
-              "name"
+              "*"
             ],
-            "splitPk": "db_id",
+            "splitPk": "station",
             "connection": [
               {
                 "table": [
-                  "test"
+                  "weather"
                 ],
                 "jdbcUrl": [
-                  "jdbc:mysql://127.0.0.1:3306/database"
+                  "jdbc:mysql://127.0.0.1:3306/test?useSSL=false&useUnicode=true&characterEncoding=utf8"
                 ]
               }
             ]
@@ -27,12 +26,25 @@
         "writer": {
           "name": "tdenginewriter",
           "parameter": {
-            "host": "192.168.56.105",
+            "host": "127.0.0.1",
             "port": 6030,
             "dbname": "test",
             "user": "root",
             "password": "taosdata",
-            "batchSize": 1000
+            "batchSize": 1000,
+            "stable": "weather",
+            "tagColumn": {
+              "station": 0
+            },
+            "fieldColumn": {
+              "latitude": 1,
+              "longtitude": 2,
+              "tmax": 4,
+              "tmin": 5
+            },
+            "timestampColumn":{
+              "date": 3
+            }
           }
         }
       }

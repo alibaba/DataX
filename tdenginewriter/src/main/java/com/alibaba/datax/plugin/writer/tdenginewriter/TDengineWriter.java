@@ -16,6 +16,14 @@ public class TDengineWriter extends Writer {
 
     private static final String PEER_PLUGIN_NAME = "peerPluginName";
 
+    static {
+        try {
+            Class.forName("com.taosdata.jdbc.TSDBDriver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static class Job extends Writer.Job {
 
         private Configuration originalConfig;
@@ -33,7 +41,7 @@ public class TDengineWriter extends Writer {
 
         @Override
         public List<Configuration> split(int mandatoryNumber) {
-            List<Configuration> writerSplitConfigs = new ArrayList<Configuration>();
+            List<Configuration> writerSplitConfigs = new ArrayList<>();
             for (int i = 0; i < mandatoryNumber; i++) {
                 writerSplitConfigs.add(this.originalConfig);
             }
@@ -49,6 +57,7 @@ public class TDengineWriter extends Writer {
         @Override
         public void init() {
             this.writerSliceConfig = getPluginJobConf();
+
         }
 
         @Override
@@ -70,7 +79,7 @@ public class TDengineWriter extends Writer {
             if (!keys.contains(Key.PASSWORD)) {
                 properties.setProperty(Key.PASSWORD, "taosdata");
             }
-            LOG.debug("========================properties==========================\n" + properties.toString());
+            LOG.debug("========================properties==========================\n" + properties);
             String peerPluginName = this.writerSliceConfig.getString(PEER_PLUGIN_NAME);
             LOG.debug("start to handle record from: " + peerPluginName);
             DataHandler handler = DataHandlerFactory.build(peerPluginName);

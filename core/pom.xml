@@ -97,6 +97,18 @@
             <artifactId>groovy-all</artifactId>
             <version>2.1.9</version>
         </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>${mysql.driver.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.taosdata.jdbc</groupId>
+            <artifactId>taos-jdbcdriver</artifactId>
+            <version>2.0.34</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
