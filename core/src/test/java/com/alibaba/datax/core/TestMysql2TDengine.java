@@ -67,7 +67,6 @@ public class TestMysql2TDengine {
                 psmt.executeBatch();
             }
         }
-        // 有部分重复数据，不影响测试
         psmt.executeBatch();
     }
 
