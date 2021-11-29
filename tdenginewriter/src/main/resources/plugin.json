@@ -1,0 +1,9 @@
+{
+    "name": "tdenginewriter",
+    "class": "com.alibaba.datax.plugin.writer.tdenginewriter.TDengineWriter",
+    "description": {
+        "useScene": "data migration to tdengine",
+        "mechanism": "use JNI or taos-jdbc to write data to tdengine."
+    },
+    "developer": "zyyang-taosdata"
+}
