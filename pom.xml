@@ -73,6 +73,7 @@
 
         <!-- writer -->
         <module>mysqlwriter</module>
+        <module>tdenginewriter</module>
         <module>drdswriter</module>
         <module>odpswriter</module>
         <module>txtfilewriter</module>
