@@ -1,24 +1,21 @@
 # DataX TDengineWriter
 
-简体中文| [English](./tdenginewriter-EN.md)
+[简体中文](./tdenginewriter-CN.md) | English
 
-## 1 快速介绍
+## 1 Quick Introduction
 
-TDengineWriter插件实现了写入数据到TDengine数据库功能。可用于离线同步其它数据库的数据到TDengine。
+TDengineWriter Plugin writes data to [TDengine](https://www.taosdata.com/en/). It can be used to offline synchronize data from other databases to TDengine.
 
-## 2 实现原理
+## 2 Implementation
 
-TDengineWriter 通过 DataX 框架获取 Reader生成的协议数据，根据reader的类型解析数据。目前有两种写入方式：
+TDengineWriter get records from DataX Framework that are generated from reader side. It has two whiting strategies:
 
-1. 对于OpenTSDBReader, TDengineWriter通过JNI方式调用TDengine客户端库文件（taos.lib或taos.dll）中的方法，使用[schemaless的方式](https://www.taosdata.com/cn/documentation/insert#schemaless)写入。
+1. For data from OpenTSDBReader which is in json format, to leverage the new feature of TDengine Server that support writing json data directly called [schemaless writing](https://www.taosdata.com/cn/documentation/insert#schemaless), we use JNI to call functions in `taos.lib` or `taos.dll`.(Since the feature was not included in taos-jdbcdrive until version 2.0.36).
+2. For other data sources, we use [taos-jdbcdriver](https://www.taosdata.com/cn/documentation/connector/java) to write data. If the target table is not exists beforehand, then it will be created automatically according to your configuration.
 
-2. 对于其它数据源,会根据配置生成SQL语句, 通过[taos-jdbcdriver](https://www.taosdata.com/cn/documentation/connector/java)批量写入。
-
-这样区分的原因是OpenTSDBReader将opentsdb的数据统一读取为json字符串，Writer端接收到的数据只有1列。而其它Reader插件一般会把数据放在不同列。
-
-## 3 功能说明
-### 3.1 从OpenTSDB到TDengine
-#### 3.1.1 配置样例
+## 3 Features Introduction
+### 3.1 From OpenTSDB to TDengine
+#### 3.1.1 Sample Setting
 
 ```json
 {
@@ -41,7 +38,7 @@ TDengineWriter 通过 DataX 框架获取 Reader生成的协议数据，根据rea
           "parameter": {
             "host": "192.168.1.180",
             "port": 6030,
-            "dbname": "test",
+            "dbName": "test",
             "user": "root",
             "password": "taosdata"
           }
@@ -57,35 +54,33 @@ TDengineWriter 通过 DataX 框架获取 Reader生成的协议数据，根据rea
 }
 ```
 
-#### 3.1.2 参数说明
+#### 3.1.2 Configuration
 
-| 参数      | 描述                 | 是否必选 | 默认值   |
-| --------- | -------------------- | -------- | -------- |
-| host      | TDengine实例的host   | 是       | 无       |
-| port      | TDengine实例的port   | 是       | 无       |
-| user      | TDengine实例的用户名 | 否       | root     |
-| password  | TDengine实例的密码   | 否       | taosdata |
-| dbname    | 目的数据库的名称     | 是       | 无       |
-| batchSize | 每次批量插入多少记录 | 否       | 1        |
+| Parameter | Description                    | Required | Default  |
+| --------- | ------------------------------ | -------- | -------- |
+| host      | host of TDengine               | Yes      |          |
+| port      | port of TDengine               | Yes      |          |
+| user      | use name of TDengine           | No       | root     |
+| password  | password of TDengine           | No       | taosdata |
+| dbName    | name of target database        | No       |          |
+| batchSize | batch size of insert operation | No       | 1        |
 
 
-#### 3.1.3 类型转换
+#### 3.1.3 Type Convert
 
-目前，由于OpenTSDBReader将opentsdb的数据统一读取为json字符串，TDengineWriter 在做Opentsdb到TDengine的迁移时，按照以下类型进行处理：
+| OpenTSDB Type    | DataX Type | TDengine Type |
+| ---------------- | ---------- | ------------- |
+| timestamp        | Date       | timestamp     |
+| Integer（value） | Double     | double        |
+| Float（value）   | Double     | double        |
+| String（value）  | String     | binary        |
+| Integer（tag）   | String     | binary        |
+| Float（tag）     | String     | binary        |
+| String（tag）    | String     | binary        |
 
-| OpenTSDB数据类型 | DataX 内部类型 | TDengine 数据类型 |
-| ---------------- | -------------- | ----------------- |
-| timestamp        | Date           | timestamp         |
-| Integer（value） | Double         | double            |
-| Float（value）   | Double         | double            |
-| String（value）  | String         | binary            |
-| Integer（tag）   | String         | binary            |
-| Float（tag）     | String         | binary            |
-| String（tag）    | String         | binary            |
+### 3.2 From MongoDB to TDengine
 
-### 3.2 从MongoDB到TDengine
-
-#### 3.2.1 配置样例
+#### 3.2.1 Sample Setting
 ```json
 {
     "job": {
@@ -141,7 +136,7 @@ TDengineWriter 通过 DataX 框架获取 Reader生成的协议数据，根据rea
                     "parameter": {
                         "host": "localhost",
                         "port": 6030,
-                        "dbname": "test",
+                        "dbName": "test",
                         "user": "root",
                         "password": "taosdata",
                         "stable": "stock",
@@ -166,28 +161,29 @@ TDengineWriter 通过 DataX 框架获取 Reader生成的协议数据，根据rea
 }
 ```
 
-**注：本配置的writer部分同样适用于关系型数据库**
+**Note：the writer part of this setting can also apply to other data source except for OpenTSDB **
 
 
-#### 3.2.2 参数说明
-| 参数            | 描述                 | 是否必选         | 默认值   | 备注               |
-| --------------- | -------------------- | ---------------- | -------- | ------------------ |
-| host            | TDengine实例的host   | 是               | 无       |
-| port            | TDengine实例的port   | 是               | 无       |
-| user            | TDengine实例的用户名 | 否               | root     |
-| password        | TDengine实例的密码   | 否               | taosdata |
-| dbname          | 目的数据库的名称     | 是               | 无       |
-| batchSize       | 每次批量插入多少记录 | 否               | 1000     |
-| stable          | 目标超级表的名称     | 是(OpenTSDB除外) | 无       |
-| tagColumn       | 标签列的列名和位置   | 否               | 无       | 位置索引均从0开始  |
-| fieldColumn     | 字段列的列名和位置   | 否               | 无       |                    |
-| timestampColumn | 时间戳列的列名和位置 | 否               | 无       | 时间戳列只能有一个 |
+#### 3.2.2 Configuration
 
-#### 3.2.3 自动建表规则
-##### 3.2.3.1 超级表创建规则
+| Parameter       | Description                                                     | Required                 | Default  | Remark              |
+| --------------- | --------------------------------------------------------------- | ------------------------ | -------- | ------------------- |
+| host            | host ofTDengine                                                 | Yes                      |          |
+| port            | port of TDengine                                                | Yes                      |          |
+| user            | user name of TDengine                                           | No                       | root     |
+| password        | password of TDengine                                            | No                       | taosdata |
+| dbName          | name of target database                                         | Yes                      |          |
+| batchSize       | batch size of insert operation                                  | No                       | 1000     |
+| stable          | name of target super table                                      | Yes(except for OpenTSDB) |          |
+| tagColumn       | name and position of tag columns in the record from reader      | No                       |          | index starts with 0 |
+| fieldColumn     | name and position of data columns in the record from reader     | No                       |          |                     |
+| timestampColumn | name and position of timestamp column in the record from reader | No                       |          |                     |
 
-如果配置了tagColumn、 fieldColumn和timestampColumn将会在插入第一条数据前，自动创建超级表。<br>
-数据列的类型从第1条记录自动推断, 标签列默认类型为`NCHAR(64)`, 比如示例配置，可能生成以下建表语句：
+#### 3.2.3 Auto table creating
+##### 3.2.3.1 Rules
+
+If all of `tagColumn`, `fieldColumn` and `timestampColumn` are offered in writer configuration, then target super table will be created automatically.
+The type of tag columns will always be `NCHAR(64)`. The sample setting above will produce following sql:
 
 ```sql
 CREATE STABLE IF NOT EXISTS market_snapshot (
@@ -203,21 +199,17 @@ TAGS(
 );
 ```
 
-##### 3.2.3.2 子表创建规则
+##### 3.2.3.2 Sub-table Creating Rules
 
-<<<<<<< HEAD
-子表结果与超表相同，子表表名生成规则：
-=======
-子表结构与超级表相同，子表表名生成规则：
->>>>>>> TD-11503/english-doc-for-writer
-1. 将标签的value 组合成为如下的字符串: `tag_value1!tag_value2!tag_value3`。
-2. 计算该字符串的 MD5 散列值 "md5_val"。
-3. "t_md5val"作为子表名。其中的 "t" 是固定的前缀。
+The structure of sub-tables are the same with structure of super table. The names of sub-tables are generated by rules below:
+1. combine value of tags like this:`tag_value1!tag_value2!tag_value3`.
+2. compute md5 hash hex of  above string, named `md5val`
+3. use "t_md5val" as sub-table name, in which "t" is fixed prefix.
 
-#### 3.2.4 用户提前建表
+#### 3.2.4 Use Pre-created Table
 
-如果你已经创建好目标超级表，那么tagColumn、 fieldColumn和timestampColumn三个字段均可省略, 插件将通过执行通过`describe stableName`获取表结构的信息。
-此时要求接收到的Record中Column的顺序和执行`describe stableName`返回的列顺序相同， 比如通过`describe stableName`返回以下内容：
+If you have created super table firstly, then all of tagColumn, fieldColumn and timestampColumn can be omitted. The writer plugin will get table schema by executing `describe stableName`.
+The order of columns of records received by this plugin must be the same as the order of columns returned by `describe stableName`. For example, if you have super table as below:
 ```
              Field              |         Type         |   Length    |   Note   |
 =================================================================================
@@ -225,32 +217,29 @@ TAGS(
  current                        | DOUBLE               |           8 |          |
  location                      | BINARY                |           10 | TAG      |
 ```
-那么插件收到的数据第1列必须代表时间戳，第2列必须代表电流，第3列必须代表位置。
+Then the first columns received by this writer plugin must represent timestamp, the second column must represent current with type double, the third column must represent location with internal type string.
 
-#### 3.2.5 注意事项
+#### 3.2.5 Remarks
 
-1. tagColumn、 fieldColumn和timestampColumn三个字段用于描述目标表的结构信息，这三个配置字段必须同时存在或同时省略。
-2. 如果存在以上三个配置，且目标表也已经存在，则两者必须一致。**一致性**由用户自己保证，插件不做检查。不一致可能会导致插入失败或插入数据错乱。
-<<<<<<< HEAD
-3. 插件优先使用配置文件中指定的表结构。
-=======
->>>>>>> TD-11503/english-doc-for-writer
+1. Config keys --tagColumn, fieldColumn and timestampColumn, must be presented or omitted at the same time.  
+2. If above three config keys exist and the target table also exists, then the order of columns defined by the config file and the existed table must be the same.
 
-#### 3.2.6 类型转换
+#### 3.2.6 Type Convert
 
-| MongoDB 数据类型 | DataX 内部类型 | TDengine 数据类型 |
+| MongoDB Type | DataX Type | TDengine Type |
 | ---------------- | -------------- | ----------------- |
 | int, Long        | Long           | BIGINT            |
 | double           | Double         | DOUBLE            |
 | string, array    | String         | NCHAR(64)         |
 | date             | Date           | TIMESTAMP         |
 | boolean          | Boolean        | BOOL              |
-| bytes            | Bytes          | BINARY            |
+| bytes            | Bytes          | BINARY(64)           |
 
-### 3.3 从关系型数据库到TDengine
-writer部分的配置规则和上述MongoDB的示例是一样的，这里给出一个MySQL的示例。
+### 3.3 From Relational Database to TDengine
 
-#### 3.3.1 MySQL中表结构
+Take MySQl as example.
+
+#### 3.3.1 Table Structure in MySQL
 ```sql
 CREATE TABLE IF NOT EXISTS weather(
     station varchar(100),
@@ -262,7 +251,7 @@ CREATE TABLE IF NOT EXISTS weather(
 )
 ```
 
-#### 3.3.2 配置文件示例
+#### 3.3.2 Sample Setting
 
 ```json 
 {
@@ -295,7 +284,7 @@ CREATE TABLE IF NOT EXISTS weather(
           "parameter": {
             "host": "127.0.0.1",
             "port": 6030,
-            "dbname": "test",
+            "dbName": "test",
             "user": "root",
             "password": "taosdata",
             "batchSize": 1000,
@@ -326,90 +315,35 @@ CREATE TABLE IF NOT EXISTS weather(
 ```
 
 
-## 4 性能报告
+## 4 Performance Test
 
-### 4.1 环境准备
+## 5 Restriction
 
-#### 4.1.1 数据特征
-
-建表语句：
-
-单行记录类似于：
-
-#### 4.1.2 机器参数
-
-* 执行DataX的机器参数为:
-    1. cpu:
-    2. mem:
-    3. net: 千兆双网卡
-    4. disc: DataX 数据不落磁盘，不统计此项
-
-* TDengine数据库机器参数为:
-    1. cpu:
-    2. mem:
-    3. net: 千兆双网卡
-    4. disc:
-
-#### 4.1.3 DataX jvm 参数
-
-	-Xms1024m -Xmx1024m -XX:+HeapDumpOnOutOfMemoryError
-
-### 4.2 测试报告
-
-#### 4.2.1 单表测试报告
-
-| 通道数 | DataX速度(Rec/s) | DataX流量(MB/s) | DataX机器网卡流出流量(MB/s) | DataX机器运行负载 | DB网卡进入流量(MB/s) | DB运行负载 | DB TPS |
-| ------ | ---------------- | --------------- | --------------------------- | ----------------- | -------------------- | ---------- | ------ |
-| 1      |                  |                 |                             |                   |                      |            |        |
-| 4      |                  |                 |                             |                   |                      |            |        |
-| 8      |                  |                 |                             |                   |                      |            |        |
-| 16     |                  |                 |                             |                   |                      |            |        |
-| 32     |                  |                 |                             |                   |                      |            |        |
-
-说明：
-
-1. 这里的单表，主键类型为 bigint(20),自增。
-2. batchSize 和 通道个数，对性能影响较大。
-3. 16通道，4096批量提交时，出现 full gc 2次。
-
-#### 4.2.4 性能测试小结
-
-
-## 5 约束限制
-
-1. 本插件自动创建超级表时NCHAR类型的长度固定为64，对于包含长度大于64的字符串的数据源，将不支持。
-2. 标签列不能包含null值，如果包含会被过滤掉。
+1. NCHAR type has fixed length 64 when auto creating stable.
+2. Rows have null tag values will be dropped.
 
 ## FAQ
 
-### 如何选取要同步的数据的范围？
+### How to filter on source table？
 
-数据范围的选取在Reader插件端配置，对于不同的Reader插件配置方法往往不同。比如对于mysqlreader， 可以用sql语句指定数据范围。对于opentsdbreader, 用beginDateTime和endDateTime两个配置项指定数据范围。
+It depends on reader plugin. For different reader plugins, the way may be different.
 
-### 如何一次导入多张源表？
+### How to import multiple source tables at once？
 
-如果Reader插件支持一次读多张表，Writer插件就能一次导入多张表。如果Reader不支持多多张表，可以建多个job，分别导入。Writer插件只负责写数据。
+It depends on reader plugin. If the reader plugin supports reading multiple tables at once, then there is no problem. 
 
-### 一张源表导入之后对应TDengine中多少张表？
+### How many sub-tables will be produced?
 
-<<<<<<< HEAD
-这是由tagColumn决定的，如果所有tag列的值都相同，那么目标表只有一个。源表有多少不同的tag组合，目标超表就有多少子表。
+The number of sub-tables is determined by tagColumns, equals to the number of different combinations of tag values. 
 
-### 源表和目标表的字段顺序一致吗？
+### Do columns in source table and columns in target table must be in the same order?
 
-TDengine要求每个表第一列是时间戳列，后边是普通字段，最后是标签列。如果源表不是这个顺序，插件在自动建表是自动调整。
-=======
-这是由tagColumn决定的，如果所有tag列的值都相同，那么目标表只有一个。源表有多少不同的tag组合，目标超级表就有多少子表。
+No. TDengine require the first column has timestamp type，which is followed by data columns, followed by tag columns. The writer plugin will create super table in this column order, regardless of origin column orders.
 
-### 源表和目标表的字段顺序一致吗？
+### How dose the plugin infer the data type of incoming data?
 
-TDengine要求每个表第一列是时间戳列，后边是普通字段，最后是标签列。如果源表不是这个顺序，插件在自动建表时会自动调整。
->>>>>>> TD-11503/english-doc-for-writer
+By the first batch of records it received.
 
-### 插件如何确定各列的数据类型？
+###  Why can't I insert data of 10 years ago? Do this will get error: `TDengine ERROR (2350): failed to execute batch bind`.
 
-根据收到的第一批数据自动推断各列的类型。
-
-### 为什么插入10年前的数据会抛异常`TDengine ERROR (2350): failed to execute batch bind` ?
-
-因为创建数据库的时候，默认保留10年的数据。可以手动指定要保留多长时间的数据，比如:`CREATE DATABASE power KEEP 36500;`。
+Because the database you created only keep 10 years data by default, you can create table like this: `CREATE DATABASE power KEEP 36500;`, in order to enlarge the time period to 100 years.
