@@ -175,9 +175,11 @@ TDengineWriter get records from DataX Framework that are generated from reader s
 | dbName          | name of target database                                         | Yes                      |          |
 | batchSize       | batch size of insert operation                                  | No                       | 1000     |
 | stable          | name of target super table                                      | Yes(except for OpenTSDB) |          |
-| tagColumn       | name and position of tag columns in the record from reader      | No                       |          | index starts with 0 |
-| fieldColumn     | name and position of data columns in the record from reader     | No                       |          |                     |
+| tagColumn       | name and position of tag columns in the record from reader, format:{tagName1: tagInd1, tagName2: tagInd2}      | No                       |          | index starts with 0 |
+| fieldColumn     | name and position of data columns in the record from reader, format: {fdName1: fdInd1, fdName2: fdInd2}     | No                       |          |                     |
 | timestampColumn | name and position of timestamp column in the record from reader | No                       |          |                     |
+
+**Note**: You see that the value of tagColumn "industry" is a fixed string, this ia a good feature of this plugin. Think about this scenario: you have many tables with the structure and one table corresponds to one device. You want to use the device number as a tag in the target super table, then this feature is designed for you.
 
 #### 3.2.3 Auto table creating
 ##### 3.2.3.1 Rules
@@ -347,3 +349,8 @@ By the first batch of records it received.
 ###  Why can't I insert data of 10 years ago? Do this will get error: `TDengine ERROR (2350): failed to execute batch bind`.
 
 Because the database you created only keep 10 years data by default, you can create table like this: `CREATE DATABASE power KEEP 36500;`, in order to enlarge the time period to 100 years.
+
+
+### What should I do if some dependencies of a plugin can't be found?
+
+I this plugin is not necessary for you, just remove it from pom.xml under project's root directory.
