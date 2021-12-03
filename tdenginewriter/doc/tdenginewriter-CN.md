@@ -41,7 +41,7 @@ TDengineWriter 通过 DataX 框架获取 Reader生成的协议数据，根据rea
           "parameter": {
             "host": "192.168.1.180",
             "port": 6030,
-            "dbname": "test",
+            "dbName": "test",
             "user": "root",
             "password": "taosdata"
           }
@@ -65,7 +65,7 @@ TDengineWriter 通过 DataX 框架获取 Reader生成的协议数据，根据rea
 | port      | TDengine实例的port   | 是       | 无       |
 | user      | TDengine实例的用户名 | 否       | root     |
 | password  | TDengine实例的密码   | 否       | taosdata |
-| dbname    | 目的数据库的名称     | 是       | 无       |
+| dbName    | 目的数据库的名称     | 是       | 无       |
 | batchSize | 每次批量插入多少记录 | 否       | 1        |
 
 
@@ -141,7 +141,7 @@ TDengineWriter 通过 DataX 框架获取 Reader生成的协议数据，根据rea
                     "parameter": {
                         "host": "localhost",
                         "port": 6030,
-                        "dbname": "test",
+                        "dbName": "test",
                         "user": "root",
                         "password": "taosdata",
                         "stable": "stock",
@@ -176,12 +176,14 @@ TDengineWriter 通过 DataX 框架获取 Reader生成的协议数据，根据rea
 | port            | TDengine实例的port   | 是               | 无       |
 | user            | TDengine实例的用户名 | 否               | root     |
 | password        | TDengine实例的密码   | 否               | taosdata |
-| dbname          | 目的数据库的名称     | 是               | 无       |
+| dbName          | 目的数据库的名称     | 是               | 无       |
 | batchSize       | 每次批量插入多少记录 | 否               | 1000     |
 | stable          | 目标超级表的名称     | 是(OpenTSDB除外) | 无       |
-| tagColumn       | 标签列的列名和位置   | 否               | 无       | 位置索引均从0开始  |
-| fieldColumn     | 字段列的列名和位置   | 否               | 无       |                    |
-| timestampColumn | 时间戳列的列名和位置 | 否               | 无       | 时间戳列只能有一个 |
+| tagColumn       | 格式:{tagName1: tagInd1, tagName2: tagInd2}, 标签列在写插件收到的Record中的位置和列名   | 否               | 无       | 位置索引均从0开始, tagInd如果为字符串, 表示固定标签值，不需要从源数据中获取  |
+| fieldColumn     | 格式:{fdName1: fdInd1, fdName2: fdInd2}, 字段列在写插件收到的Record中的位置和列名   | 否               | 无       |                    |
+| timestampColumn | 格式:{tsColName: tsColIndex}, 时间戳列在写插件收到的Record中的位置和列名 | 否               | 无       | 时间戳列只能有一个 |
+
+示例配置中tagColumn有一个industry，它的值是一个固定的字符串“energy”, 作用是给导入的所有数据加一个值为"energy"的固定标签industry。这个应用场景可以是：在源库中，有多个设备采集的数据分表存储，设备名就是表名，可以用这个机制把设备名称转化为标签。
 
 #### 3.2.3 自动建表规则
 ##### 3.2.3.1 超级表创建规则
@@ -237,7 +239,7 @@ TAGS(
 | string, array    | String         | NCHAR(64)         |
 | date             | Date           | TIMESTAMP         |
 | boolean          | Boolean        | BOOL              |
-| bytes            | Bytes          | BINARY            |
+| bytes            | Bytes          | BINARY(64)          |
 
 ### 3.3 从关系型数据库到TDengine
 writer部分的配置规则和上述MongoDB的示例是一样的，这里给出一个MySQL的示例。
@@ -287,7 +289,7 @@ CREATE TABLE IF NOT EXISTS weather(
           "parameter": {
             "host": "127.0.0.1",
             "port": 6030,
-            "dbname": "test",
+            "dbName": "test",
             "user": "root",
             "password": "taosdata",
             "batchSize": 1000,
@@ -397,3 +399,7 @@ TDengine要求每个表第一列是时间戳列，后边是普通字段，最后
 ### 为什么插入10年前的数据会抛异常`TDengine ERROR (2350): failed to execute batch bind` ?
 
 因为创建数据库的时候，默认保留10年的数据。可以手动指定要保留多长时间的数据，比如:`CREATE DATABASE power KEEP 36500;`。
+
+### 如果编译的时候某些插件的依赖找不到怎么办？
+
+如果这个插件不是必须的，可以注释掉根目录下的pom.xml中的对应插件。
