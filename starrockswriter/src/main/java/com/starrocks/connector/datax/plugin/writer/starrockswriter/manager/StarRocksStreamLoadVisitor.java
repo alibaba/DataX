@@ -137,7 +137,7 @@ public class StarRocksStreamLoadVisitor {
         try (CloseableHttpClient httpclient = httpClientBuilder.build()) {
             HttpPut httpPut = new HttpPut(loadUrl);
             List<String> cols = writerOptions.getColumns();
-            if (null != cols && !cols.isEmpty()) {
+            if (null != cols && !cols.isEmpty() && StarRocksWriterOptions.StreamLoadFormat.CSV.equals(writerOptions.getStreamLoadFormat())) {
                 httpPut.setHeader("columns", String.join(",", cols.stream().map(f -> String.format("`%s`", f)).collect(Collectors.toList())));
             }
             if (null != writerOptions.getLoadProps()) {
