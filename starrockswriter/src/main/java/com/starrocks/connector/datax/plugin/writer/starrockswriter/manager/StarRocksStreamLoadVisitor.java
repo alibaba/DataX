@@ -34,7 +34,7 @@ public class StarRocksStreamLoadVisitor {
     private static final Logger LOG = LoggerFactory.getLogger(StarRocksStreamLoadVisitor.class);
 
     private final StarRocksWriterOptions writerOptions;
-    private int pos;
+    private long pos;
 
     public StarRocksStreamLoadVisitor(StarRocksWriterOptions writerOptions) {
         this.writerOptions = writerOptions;
@@ -68,11 +68,9 @@ public class StarRocksStreamLoadVisitor {
 
     private String getAvailableHost() {
         List<String> hostList = writerOptions.getLoadUrlList();
-        if (pos >= hostList.size()) {
-            pos = 0;
-        }
-        for (; pos < hostList.size(); pos++) {
-            String host = new StringBuilder("http://").append(hostList.get(pos)).toString();
+        long tmp = pos + hostList.size();
+        for (; pos < tmp; pos++) {
+            String host = new StringBuilder("http://").append(hostList.get((int) (pos % hostList.size()))).toString();
             if (tryHttpConnection(host)) {
                 return host;
             }
