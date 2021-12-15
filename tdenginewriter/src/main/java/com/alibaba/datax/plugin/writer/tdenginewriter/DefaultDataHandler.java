@@ -3,6 +3,7 @@ package com.alibaba.datax.plugin.writer.tdenginewriter;
 import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.plugin.RecordReceiver;
 import com.alibaba.datax.common.plugin.TaskPluginCollector;
+import com.taosdata.jdbc.TSDBDriver;
 import com.taosdata.jdbc.TSDBPreparedStatement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,8 +77,10 @@ public class DefaultDataHandler implements DataHandler {
             return null;
         }
         String jdbcUrl = String.format("jdbc:TAOS://%s:%s/%s?user=%s&password=%s", host, port, dbname, user, password);
+        Properties connProps = new Properties();
+        connProps.setProperty(TSDBDriver.PROPERTY_KEY_CHARSET, "UTF-8");
         LOG.info("TDengine connection established, host:{} port:{} dbname:{} user:{}", host, port, dbname, user);
-        return DriverManager.getConnection(jdbcUrl);
+        return DriverManager.getConnection(jdbcUrl, connProps);
     }
 
     /**
