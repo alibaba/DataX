@@ -1,0 +1,14 @@
+{
+  "name": "tdenginereader",
+  "parameter": {
+    "host": "127.0.0.1",
+    "port": 6030,
+    "db": "test",
+    "user": "root",
+    "password": "taosdata",
+    "sql": "select * from weather",
+    "beginDateTime": "2021-01-01 00:00:00",
+    "endDateTime": "2021-01-02 00:00:00",
+    "splitInterval": "1h"
+  }
+}
