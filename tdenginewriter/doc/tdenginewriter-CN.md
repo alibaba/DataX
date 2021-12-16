@@ -42,7 +42,7 @@ TDengineWriter 通过 DataX 框架获取 Reader生成的协议数据，根据rea
             "host": "192.168.1.180",
             "port": 6030,
             "dbName": "test",
-            "user": "root",
+            "username": "root",
             "password": "taosdata"
           }
         }
@@ -63,7 +63,7 @@ TDengineWriter 通过 DataX 框架获取 Reader生成的协议数据，根据rea
 | --------- | -------------------- | -------- | -------- |
 | host      | TDengine实例的host   | 是       | 无       |
 | port      | TDengine实例的port   | 是       | 无       |
-| user      | TDengine实例的用户名 | 否       | root     |
+| username      | TDengine实例的用户名 | 否       | root     |
 | password  | TDengine实例的密码   | 否       | taosdata |
 | dbName    | 目的数据库的名称     | 是       | 无       |
 | batchSize | 每次批量插入多少记录 | 否       | 1        |
@@ -142,7 +142,7 @@ TDengineWriter 通过 DataX 框架获取 Reader生成的协议数据，根据rea
                         "host": "localhost",
                         "port": 6030,
                         "dbName": "test",
-                        "user": "root",
+                        "username": "root",
                         "password": "taosdata",
                         "stable": "stock",
                         "tagColumn": {
@@ -174,7 +174,7 @@ TDengineWriter 通过 DataX 框架获取 Reader生成的协议数据，根据rea
 | --------------- | -------------------- | ---------------- | -------- | ------------------ |
 | host            | TDengine实例的host   | 是               | 无       |
 | port            | TDengine实例的port   | 是               | 无       |
-| user            | TDengine实例的用户名 | 否               | root     |
+| username            | TDengine实例的用户名 | 否               | root     |
 | password        | TDengine实例的密码   | 否               | taosdata |
 | dbName          | 目的数据库的名称     | 是               | 无       |
 | batchSize       | 每次批量插入多少记录 | 否               | 1000     |
@@ -290,7 +290,7 @@ CREATE TABLE IF NOT EXISTS weather(
             "host": "127.0.0.1",
             "port": 6030,
             "dbName": "test",
-            "user": "root",
+            "username": "root",
             "password": "taosdata",
             "batchSize": 1000,
             "stable": "weather",

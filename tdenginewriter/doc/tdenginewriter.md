@@ -39,7 +39,7 @@ TDengineWriter get records from DataX Framework that are generated from reader s
             "host": "192.168.1.180",
             "port": 6030,
             "dbName": "test",
-            "user": "root",
+            "username": "root",
             "password": "taosdata"
           }
         }
@@ -60,7 +60,7 @@ TDengineWriter get records from DataX Framework that are generated from reader s
 | --------- | ------------------------------ | -------- | -------- |
 | host      | host of TDengine               | Yes      |          |
 | port      | port of TDengine               | Yes      |          |
-| user      | use name of TDengine           | No       | root     |
+| username      | use name of TDengine           | No       | root     |
 | password  | password of TDengine           | No       | taosdata |
 | dbName    | name of target database        | No       |          |
 | batchSize | batch size of insert operation | No       | 1        |
@@ -137,7 +137,7 @@ TDengineWriter get records from DataX Framework that are generated from reader s
                         "host": "localhost",
                         "port": 6030,
                         "dbName": "test",
-                        "user": "root",
+                        "username": "root",
                         "password": "taosdata",
                         "stable": "stock",
                         "tagColumn": {
@@ -170,7 +170,7 @@ TDengineWriter get records from DataX Framework that are generated from reader s
 | --------------- | --------------------------------------------------------------- | ------------------------ | -------- | ------------------- |
 | host            | host ofTDengine                                                 | Yes                      |          |
 | port            | port of TDengine                                                | Yes                      |          |
-| user            | user name of TDengine                                           | No                       | root     |
+| username            | username of TDengine                                           | No                       | root     |
 | password        | password of TDengine                                            | No                       | taosdata |
 | dbName          | name of target database                                         | Yes                      |          |
 | batchSize       | batch size of insert operation                                  | No                       | 1000     |
@@ -287,7 +287,7 @@ CREATE TABLE IF NOT EXISTS weather(
             "host": "127.0.0.1",
             "port": 6030,
             "dbName": "test",
-            "user": "root",
+            "username": "root",
             "password": "taosdata",
             "batchSize": 1000,
             "stable": "weather",
