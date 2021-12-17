@@ -179,9 +179,6 @@ public class HdfsWriter extends Writer {
                     LOG.error(String.format("冲突文件列表为: [%s]", StringUtils.join(allFiles, ",")));
                     throw DataXException.asDataXException(HdfsWriterErrorCode.ILLEGAL_VALUE,
                             String.format("由于您配置了writeMode nonConflict,但您配置的path: [%s] 目录不为空, 下面存在其他文件或文件夹.", path));
-                }else if ("truncate".equalsIgnoreCase(writeMode) && isExistFile) {
-                    LOG.info(String.format("由于您配置了writeMode truncate,  [%s] 下面的内容将被覆盖重写", path));
-                    hdfsHelper.deleteFiles(existFilePaths);
                 }
             }else{
                 throw DataXException.asDataXException(HdfsWriterErrorCode.ILLEGAL_VALUE,
@@ -191,6 +188,18 @@ public class HdfsWriter extends Writer {
 
         @Override
         public void post() {
+            //根据writeMode对目录下文件进行处理
+            Path[] existFilePaths = hdfsHelper.hdfsDirList(path,fileName);
+            boolean isExistFile = false;
+            if(existFilePaths.length > 0){
+                 isExistFile = true;
+            }
+            // 将 truncate 移动到 post 方法执行，避免导入时查询表数据时会出现空窗期，也避免后续导入失败时，源数据被提前删除了。
+            if ("truncate".equalsIgnoreCase(writeMode) && isExistFile) {
+                    LOG.info(String.format("由于您配置了writeMode truncate,  [%s] 下面的内容将被覆盖重写", path));
+                    hdfsHelper.deleteFiles(existFilePaths);
+             }
+            
             hdfsHelper.renameFile(tmpFiles, endFiles);
         }
 
