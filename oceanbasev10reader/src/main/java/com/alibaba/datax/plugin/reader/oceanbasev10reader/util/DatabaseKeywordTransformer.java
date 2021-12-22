@@ -27,7 +27,7 @@ public  class DatabaseKeywordTransformer {
         if(databaseType==DataBaseType.MySql){
             databaseKeywords=keywordsFromString2HashSet(DatabaseKeywords.MYSQL_KEYWORDS);
         }
-        else if(databaseType==DataBaseType.Oracle){
+        else if(databaseType==DataBaseType.Oracle || databaseType==DataBaseType.OceanBase){
             databaseKeywords=keywordsFromString2HashSet(DatabaseKeywords.ORACLE_KEYWORDS);
         }
         else if(databaseType==DataBaseType.SQLServer){
@@ -45,7 +45,7 @@ public  class DatabaseKeywordTransformer {
                 if(databaseType==DataBaseType.MySql){
                     keyword='`'+keyword+'`';
                 }
-                else if(databaseType==DataBaseType.Oracle){
+                else if(databaseType==DataBaseType.Oracle || databaseType==DataBaseType.OceanBase){
                     keyword='"'+keyword+'"';
                 }
                 else if(databaseType==DataBaseType.SQLServer){
