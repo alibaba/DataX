@@ -84,8 +84,11 @@ public class ObReaderUtils {
             return;
         }
         List<String> columns = context.getColumns();
+
         // 最后参与排序的索引列
+
         context.setPkColumns(pkColumns);
+
         int[] pkIndexs = new int[pkColumns.length];
         for (int i = 0, n = pkColumns.length; i < n; i++) {
             String pkc = pkColumns[i];
@@ -131,6 +134,13 @@ public class ObReaderUtils {
                     realIndex.add(columnName);
                 }
             }
+            //fix:将主键中的关键字转义
+            DatabaseKeywordTransformer.setDatabaseType(DataBaseType.MySql);
+            if(isOracleMode(context.getCompatibleMode())){
+                DatabaseKeywordTransformer.setDatabaseType(DataBaseType.Oracle);
+            }
+            DatabaseKeywordTransformer.transferDatabaseKeywords(realIndex);
+
             String[] pks = new String[realIndex.size()];
             realIndex.toArray(pks);
             return pks;

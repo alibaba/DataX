@@ -1,8 +1,12 @@
 package com.alibaba.datax.plugin.reader.oceanbasev10reader;
 
+import java.sql.Array;
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 
+import com.alibaba.datax.plugin.reader.oceanbasev10reader.util.DatabaseKeywordTransformer;
+import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +26,7 @@ public class OceanBaseReader extends Reader {
     public static class Job extends Reader.Job {
         private Configuration originalConfig = null;
         private ReaderJob readerJob;
+        private DataBaseType DATABASE_TYPE;
         private static final Logger LOG = LoggerFactory.getLogger(Task.class);
 
         @Override
@@ -37,10 +42,15 @@ public class OceanBaseReader extends Reader {
 
             setDatabaseType(originalConfig);
 
-            this.readerJob = new ReaderJob();
-            this.readerJob.init(this.originalConfig);
-        }
 
+
+            this.readerJob = new ReaderJob();
+            this.readerJob.init(this.originalConfig,DATABASE_TYPE);
+        }
+        @Override
+        public  void prepare(){
+            //ObReaderUtils.DATABASE_TYPE获取当前数据库的语法模式
+        }
         @Override
         public void preCheck() {
             init();
@@ -89,6 +99,9 @@ public class OceanBaseReader extends Reader {
                 }
             } catch (Exception e){
                 LOG.warn("error in get compatible mode, using mysql as default: " + e.getMessage());
+            }
+            finally {
+                DATABASE_TYPE=ObReaderUtils.DATABASE_TYPE;
             }
         }
     }
