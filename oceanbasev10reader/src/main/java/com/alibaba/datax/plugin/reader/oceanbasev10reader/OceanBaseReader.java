@@ -1,12 +1,8 @@
 package com.alibaba.datax.plugin.reader.oceanbasev10reader;
 
-import java.sql.Array;
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.List;
 
-import com.alibaba.datax.plugin.reader.oceanbasev10reader.util.DatabaseKeywordTransformer;
-import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +22,6 @@ public class OceanBaseReader extends Reader {
     public static class Job extends Reader.Job {
         private Configuration originalConfig = null;
         private ReaderJob readerJob;
-        private DataBaseType DATABASE_TYPE;
         private static final Logger LOG = LoggerFactory.getLogger(Task.class);
 
         @Override
@@ -40,7 +35,7 @@ public class OceanBaseReader extends Reader {
             this.originalConfig.set(Constant.FETCH_SIZE, Integer.MIN_VALUE);
             setDatabaseType(originalConfig);
             this.readerJob = new ReaderJob();
-            this.readerJob.init(this.originalConfig, DATABASE_TYPE);
+            this.readerJob.init(this.originalConfig);
         }
 
         @Override
@@ -51,7 +46,7 @@ public class OceanBaseReader extends Reader {
         @Override
         public void preCheck() {
             init();
-            this.readerJob.preCheck(this.originalConfig, ObReaderUtils.DATABASE_TYPE);
+            this.readerJob.preCheck(this.originalConfig, ObReaderUtils.compatibleMode);
 
         }
 
@@ -92,13 +87,12 @@ public class OceanBaseReader extends Reader {
                 Connection conn = DBUtil.getConnection(DataBaseType.OceanBase, obJdbcUrl, username, password);
                 String compatibleMode = ObReaderUtils.getCompatibleMode(conn);
                 if (ObReaderUtils.isOracleMode(compatibleMode)) {
-                    ObReaderUtils.DATABASE_TYPE = DataBaseType.OceanBase;
+                    ObReaderUtils.compatibleMode = DataBaseType.Oracle;
+                    ObReaderUtils.databaseType = DataBaseType.OceanBase;
                 }
 
             } catch (Exception e) {
                 LOG.warn("error in get compatible mode, using mysql as default: " + e.getMessage());
-            } finally {
-                DATABASE_TYPE = ObReaderUtils.DATABASE_TYPE;
             }
         }
     }
