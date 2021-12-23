@@ -17,14 +17,13 @@ import org.slf4j.LoggerFactory;
 
 
 public class ReaderJob extends CommonRdbmsReader.Job {
-
+    private Logger LOG=LoggerFactory.getLogger(OceanBaseReader.Task.class);
     public ReaderJob() {
         super(ObReaderUtils.DATABASE_TYPE);
 
     }
     public void init(Configuration originalConfig,DataBaseType databaseType){
         //将config中的column和table中的关键字进行转义
-        final Logger LOG = LoggerFactory.getLogger(OceanBaseReader.Task.class);
         try {
             DatabaseKeywordTransformer.setDatabaseType(databaseType);
         }catch (Exception e){
