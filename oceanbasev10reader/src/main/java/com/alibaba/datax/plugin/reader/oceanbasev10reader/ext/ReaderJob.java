@@ -26,8 +26,8 @@ public class ReaderJob extends CommonRdbmsReader.Job {
         //将config中的column和table中的关键字进行转义
         try {
             DatabaseKeywordTransformer.setDatabaseType(databaseType);
-        }catch (Exception e){
-            LOG.warn("database type is "+databaseType+e.getMessage());
+        } catch (Exception e) {
+            LOG.warn("database type is " + databaseType + e.getMessage());
         }
         List<String> columns=originalConfig.getList(Key.COLUMN,String.class);
         DatabaseKeywordTransformer.transferDatabaseKeywords(columns);
