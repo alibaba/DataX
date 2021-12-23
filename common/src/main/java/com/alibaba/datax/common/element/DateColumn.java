@@ -89,7 +89,6 @@ public class DateColumn extends Column {
 		}
 		java.sql.Timestamp myts = new java.sql.Timestamp((Long) this.getRawData());
 		myts.setNanos(this.getRawNano());
-		myts.setNanos(this.getRawNano());
 		return myts;
 		// return new Date((Long)this.getRawData());
 	}
