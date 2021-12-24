@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import com.alibaba.datax.plugin.writer.oceanbasev10writer.util.DbUtils;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +61,19 @@ public class OceanBaseV10Writer extends Writer {
 		public void init() {
 			this.originalConfig = super.getPluginJobConf();
 			checkCompatibleMode(originalConfig);
+			//将config中的column和table中的关键字进行转义
+			List<String> columns = originalConfig.getList(com.alibaba.datax.plugin.rdbms.reader.Key.COLUMN, String.class);
+			ObWriterUtils.transferDatabaseKeywords(columns);
+			originalConfig.set(com.alibaba.datax.plugin.rdbms.reader.Key.COLUMN, columns);
+
+			List<JSONObject> conns = originalConfig.getList(com.alibaba.datax.plugin.rdbms.reader.Constant.CONN_MARK, JSONObject.class);
+			for (int i = 0; i < conns.size(); i++) {
+				JSONObject conn = conns.get(i);
+				Configuration connConfig = Configuration.from(conn.toString());
+				List<String> tables = connConfig.getList(com.alibaba.datax.plugin.rdbms.reader.Key.TABLE, String.class);
+				ObWriterUtils.transferDatabaseKeywords(tables);
+				originalConfig.set(String.format("%s[%d].%s", com.alibaba.datax.plugin.rdbms.reader.Constant.CONN_MARK, i, com.alibaba.datax.plugin.rdbms.reader.Key.TABLE), tables);
+			}
 			this.commonJob = new CommonRdbmsWriter.Job(DATABASE_TYPE);
 			this.commonJob.init(this.originalConfig);
 		}

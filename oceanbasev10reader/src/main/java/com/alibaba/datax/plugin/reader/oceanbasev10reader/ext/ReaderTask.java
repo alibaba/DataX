@@ -41,7 +41,7 @@ public class ReaderTask extends CommonRdbmsReader.Task {
     private boolean reuseConn = false;
 
     public ReaderTask(int taskGroupId, int taskId) {
-        super(ObReaderUtils.compatibleMode, taskGroupId, taskId);
+        super(ObReaderUtils.databaseType, taskGroupId, taskId);
         this.taskGroupId = taskGroupId;
         this.taskId = taskId;
     }
@@ -184,7 +184,7 @@ public class ReaderTask extends CommonRdbmsReader.Task {
                 }
             } catch (Throwable e) {
                 if (retryLimit == ++retryCount) {
-                    throw RdbmsException.asQueryException(ObReaderUtils.compatibleMode, new Exception(e),
+                    throw RdbmsException.asQueryException(ObReaderUtils.databaseType, new Exception(e),
                             context.getQuerySql(), context.getTable(), username);
                 }
                 LOG.error("read fail, retry count " + retryCount + ", sleep 60 second, save point:" +
@@ -287,7 +287,7 @@ public class ReaderTask extends CommonRdbmsReader.Task {
             ObReaderUtils.close(null, null, context.getConn());
             context.setConn(null);
             LOG.error("reader data fail", e);
-            throw RdbmsException.asQueryException(ObReaderUtils.compatibleMode, e, context.getQuerySql(),
+            throw RdbmsException.asQueryException(ObReaderUtils.databaseType, e, context.getQuerySql(),
                     context.getTable(), username);
         } finally {
             perfRecord.end();

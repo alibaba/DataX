@@ -46,7 +46,7 @@ public class OceanBaseReader extends Reader {
         @Override
         public void preCheck() {
             init();
-            this.readerJob.preCheck(this.originalConfig, ObReaderUtils.compatibleMode);
+            this.readerJob.preCheck(this.originalConfig, ObReaderUtils.databaseType);
 
         }
 
@@ -87,8 +87,7 @@ public class OceanBaseReader extends Reader {
                 Connection conn = DBUtil.getConnection(DataBaseType.OceanBase, obJdbcUrl, username, password);
                 String compatibleMode = ObReaderUtils.getCompatibleMode(conn);
                 if (ObReaderUtils.isOracleMode(compatibleMode)) {
-                    ObReaderUtils.compatibleMode = DataBaseType.Oracle;
-                    ObReaderUtils.databaseType = DataBaseType.OceanBase;
+                    ObReaderUtils.compatibleMode = ObReaderUtils.OB_COMPATIBLE_MODE_ORACLE;
                 }
 
             } catch (Exception e) {

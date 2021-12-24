@@ -40,14 +40,14 @@ public class ObReaderUtils {
     private static final String ORACLE_KEYWORDS = "ACCESS,ADD,ALL,ALTER,AND,ANY,ARRAYLEN,AS,ASC,AUDIT,BETWEEN,BY,CHAR,CHECK,CLUSTER,COLUMN,COMMENT,COMPRESS,CONNECT,CREATE,CURRENT,DATE,DECIMAL,DEFAULT,DELETE,DESC,DISTINCT,DROP,ELSE,EXCLUSIVE,EXISTS,FILE,FLOAT,FOR,FROM,GRANT,GROUP,HAVING,IDENTIFIED,IMMEDIATE,IN,INCREMENT,INDEX,INITIAL,INSERT,INTEGER,INTERSECT,INTO,IS,LEVEL,LIKE,LOCK,LONG,MAXEXTENTS,MINUS,MODE,MODIFY,NOAUDIT,NOCOMPRESS,NOT,NOTFOUND,NOWAIT,NULL,NUMBER,OF,OFFLINE,ON,ONLINE,OPTION,OR,ORDER,PCTFREE,PRIOR,PRIVILEGES,PUBLIC,RAW,RENAME,RESOURCE,REVOKE,ROW,ROWID,ROWLABEL,ROWNUM,ROWS,SELECT,SESSION,SET,SHARE,SIZE,SMALLINT,SQLBUF,START,SUCCESSFUL,SYNONYM,TABLE,THEN,TO,TRIGGER,UID,UNION,UNIQUE,UPDATE,USER,VALIDATE,VALUES,VARCHAR,VARCHAR2,VIEW,WHENEVER,WHERE,WITH";
 
     private static Set<String> databaseKeywords;
-    private static DataBaseType currentKeywordsTpye;
+    private static String currentKeywordsTpye;
     final static public String OB_COMPATIBLE_MODE = "obCompatibilityMode";
     final static public String OB_COMPATIBLE_MODE_ORACLE = "ORACLE";
     final static public String OB_COMPATIBLE_MODE_MYSQL = "MYSQL";
 
-    public static DataBaseType compatibleMode = DataBaseType.MySql;
+    public static String compatibleMode = OB_COMPATIBLE_MODE_MYSQL;
 
-    public static DataBaseType databaseType = DataBaseType.MySql;
+    public static final DataBaseType databaseType = DataBaseType.OceanBase;
 
 
     private static Set<String> keywordsFromString2HashSet(final String keywords) {
