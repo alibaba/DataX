@@ -3,7 +3,6 @@ package com.alibaba.datax.plugin.writer.oceanbasev10writer;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import com.alibaba.datax.plugin.writer.oceanbasev10writer.util.DbUtils;
 import com.alibaba.fastjson.JSONObject;
@@ -62,17 +61,17 @@ public class OceanBaseV10Writer extends Writer {
 			this.originalConfig = super.getPluginJobConf();
 			checkCompatibleMode(originalConfig);
 			//将config中的column和table中的关键字进行转义
-			List<String> columns = originalConfig.getList(com.alibaba.datax.plugin.rdbms.reader.Key.COLUMN, String.class);
-			ObWriterUtils.transferDatabaseKeywords(columns);
-			originalConfig.set(com.alibaba.datax.plugin.rdbms.reader.Key.COLUMN, columns);
+			List<String> columns = originalConfig.getList(com.alibaba.datax.plugin.rdbms.writer.Key.COLUMN, String.class);
+			ObWriterUtils.escapeDatabaseKeywords(columns);
+			originalConfig.set(com.alibaba.datax.plugin.rdbms.writer.Key.COLUMN, columns);
 
-			List<JSONObject> conns = originalConfig.getList(com.alibaba.datax.plugin.rdbms.reader.Constant.CONN_MARK, JSONObject.class);
+			List<JSONObject> conns = originalConfig.getList(com.alibaba.datax.plugin.rdbms.writer.Constant.CONN_MARK, JSONObject.class);
 			for (int i = 0; i < conns.size(); i++) {
 				JSONObject conn = conns.get(i);
 				Configuration connConfig = Configuration.from(conn.toString());
-				List<String> tables = connConfig.getList(com.alibaba.datax.plugin.rdbms.reader.Key.TABLE, String.class);
-				ObWriterUtils.transferDatabaseKeywords(tables);
-				originalConfig.set(String.format("%s[%d].%s", com.alibaba.datax.plugin.rdbms.reader.Constant.CONN_MARK, i, com.alibaba.datax.plugin.rdbms.reader.Key.TABLE), tables);
+				List<String> tables = connConfig.getList(com.alibaba.datax.plugin.rdbms.writer.Key.TABLE, String.class);
+				ObWriterUtils.escapeDatabaseKeywords(tables);
+				originalConfig.set(String.format("%s[%d].%s", com.alibaba.datax.plugin.rdbms.writer.Constant.CONN_MARK, i, com.alibaba.datax.plugin.rdbms.writer.Key.TABLE), tables);
 			}
 			this.commonJob = new CommonRdbmsWriter.Job(DATABASE_TYPE);
 			this.commonJob.init(this.originalConfig);

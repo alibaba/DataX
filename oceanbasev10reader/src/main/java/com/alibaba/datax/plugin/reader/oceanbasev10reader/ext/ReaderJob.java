@@ -26,7 +26,7 @@ public class ReaderJob extends CommonRdbmsReader.Job {
     public void init(Configuration originalConfig) {
         //将config中的column和table中的关键字进行转义
         List<String> columns = originalConfig.getList(Key.COLUMN, String.class);
-        ObReaderUtils.transferDatabaseKeywords(columns);
+        ObReaderUtils.escapeDatabaseKeywords(columns);
         originalConfig.set(Key.COLUMN, columns);
 
         List<JSONObject> conns = originalConfig.getList(com.alibaba.datax.plugin.rdbms.reader.Constant.CONN_MARK, JSONObject.class);
@@ -34,7 +34,7 @@ public class ReaderJob extends CommonRdbmsReader.Job {
             JSONObject conn = conns.get(i);
             Configuration connConfig = Configuration.from(conn.toString());
             List<String> tables = connConfig.getList(Key.TABLE, String.class);
-            ObReaderUtils.transferDatabaseKeywords(tables);
+            ObReaderUtils.escapeDatabaseKeywords(tables);
             originalConfig.set(String.format("%s[%d].%s", com.alibaba.datax.plugin.rdbms.reader.Constant.CONN_MARK, i, Key.TABLE), tables);
         }
         super.init(originalConfig);

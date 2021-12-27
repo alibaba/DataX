@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Pattern;
 
 import com.alibaba.datax.common.element.Column;
 import com.alibaba.datax.plugin.writer.oceanbasev10writer.ext.ObClientConnHolder;
@@ -105,7 +106,11 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
         checkConnHolder.initConnection();
         if (isOracleCompatibleMode) {
            connectInfo.databaseName =  connectInfo.databaseName.toUpperCase();
-           table = table.toUpperCase();
+           //在转义的情况下不翻译
+           if(!Pattern.matches("\"\\w*\"",table)){
+			   table = table.toUpperCase();
+		   }
+
            LOG.info(String.format("this is oracle compatible mode, change database to %s, table to %s",
                    connectInfo.databaseName, table));
         }

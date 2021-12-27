@@ -21,26 +21,24 @@ public class ObWriterUtils {
 	private static String CHECK_MEMSTORE = "select 1 from %s.gv$memstore t where t.total>t.mem_limit * ?";
 	private static Set<String> databaseKeywords;
 	private static String compatibleMode = null;
-	private static String currentKeywordsTpye =null;
 	protected static final Logger LOG = LoggerFactory.getLogger(Task.class);
 	private static Set<String> keywordsFromString2HashSet(final String keywords) {
 		return new HashSet(Arrays.asList(keywords.split(",")));
 	}
 
-	public static void transferDatabaseKeywords(List<String> keywords) {
+	public static void escapeDatabaseKeywords(List<String> keywords) {
 		//判断是否需要更改关键字集合
-		if (databaseKeywords == null || currentKeywordsTpye != compatibleMode) {
+		if (databaseKeywords == null) {
 			if (isOracleMode()) {
 				databaseKeywords = keywordsFromString2HashSet(ORACLE_KEYWORDS);
 			} else {
 				databaseKeywords = keywordsFromString2HashSet(MYSQL_KEYWORDS);
 			}
-			currentKeywordsTpye = compatibleMode;
 		}
 		char escapeChar = isOracleMode() ? '"' : '`';
 		for (int i = 0; i < keywords.size(); i++) {
-			String keyword = keywords.get(i).toUpperCase();
-			if (databaseKeywords.contains(keyword)) {
+			String keyword = keywords.get(i);
+			if (databaseKeywords.contains(keyword.toUpperCase())) {
 				keyword = escapeChar + keyword + escapeChar;
 			}
 			keyword = keyword.toLowerCase();

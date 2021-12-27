@@ -66,9 +66,11 @@ public class ReaderTask extends CommonRdbmsReader.Task {
 
         if (ObReaderUtils.databaseType == DataBaseType.OceanBase) {
             jdbcUrl = jdbcUrl.replace("jdbc:mysql:", "jdbc:oceanbase:") + "&socketTimeout=1800000&connectTimeout=60000"; //socketTimeout 半个小时
-            compatibleMode = ObReaderUtils.OB_COMPATIBLE_MODE_ORACLE;
         } else {
             jdbcUrl = jdbcUrl + "&socketTimeout=1800000&connectTimeout=60000"; //socketTimeout 半个小时
+        }
+        if(ObReaderUtils.compatibleMode==ObReaderUtils.OB_COMPATIBLE_MODE_ORACLE){
+            compatibleMode=ObReaderUtils.OB_COMPATIBLE_MODE_ORACLE;
         }
         LOG.info("this is ob1_0 jdbc url. user=" + username + " :url=" + jdbcUrl);
         mandatoryEncoding = readerSliceConfig.getString(Key.MANDATORY_ENCODING, "");
