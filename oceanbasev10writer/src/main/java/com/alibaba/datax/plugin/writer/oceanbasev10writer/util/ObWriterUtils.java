@@ -41,7 +41,6 @@ public class ObWriterUtils {
 			if (databaseKeywords.contains(keyword.toUpperCase())) {
 				keyword = escapeChar + keyword + escapeChar;
 			}
-			keyword = keyword.toLowerCase();
 			keywords.set(i, keyword);
 		}
 	}

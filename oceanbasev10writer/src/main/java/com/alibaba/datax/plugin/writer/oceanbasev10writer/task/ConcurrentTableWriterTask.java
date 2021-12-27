@@ -1,7 +1,27 @@
 package com.alibaba.datax.plugin.writer.oceanbasev10writer.task;
 
+import com.alibaba.datax.common.element.Column;
+import com.alibaba.datax.common.element.Record;
+import com.alibaba.datax.common.exception.DataXException;
+import com.alibaba.datax.common.plugin.RecordReceiver;
+import com.alibaba.datax.common.plugin.TaskPluginCollector;
+import com.alibaba.datax.common.util.Configuration;
+import com.alibaba.datax.plugin.rdbms.util.DBUtil;
+import com.alibaba.datax.plugin.rdbms.util.DBUtilErrorCode;
+import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
+import com.alibaba.datax.plugin.rdbms.writer.CommonRdbmsWriter;
+import com.alibaba.datax.plugin.writer.oceanbasev10writer.Config;
+import com.alibaba.datax.plugin.writer.oceanbasev10writer.ext.ConnHolder;
+import com.alibaba.datax.plugin.writer.oceanbasev10writer.ext.ObClientConnHolder;
+import com.alibaba.datax.plugin.writer.oceanbasev10writer.ext.ServerConnectInfo;
+import com.alibaba.datax.plugin.writer.oceanbasev10writer.util.ObWriterUtils;
+import com.alipay.oceanbase.obproxy.data.TableEntryKey;
+import com.alipay.oceanbase.obproxy.util.ObPartitionIdCalculator;
+import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.Connection;
-//import java.sql.PreparedStatement;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -15,29 +35,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.regex.Pattern;
 
-import com.alibaba.datax.common.element.Column;
-import com.alibaba.datax.plugin.writer.oceanbasev10writer.ext.ObClientConnHolder;
-import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.alibaba.datax.common.element.Record;
-import com.alibaba.datax.common.exception.DataXException;
-import com.alibaba.datax.common.plugin.RecordReceiver;
-import com.alibaba.datax.common.plugin.TaskPluginCollector;
-import com.alibaba.datax.common.util.Configuration;
-import com.alibaba.datax.plugin.rdbms.util.DBUtil;
-import com.alibaba.datax.plugin.rdbms.util.DBUtilErrorCode;
-import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
-import com.alibaba.datax.plugin.rdbms.writer.CommonRdbmsWriter;
-import com.alibaba.datax.plugin.writer.oceanbasev10writer.Config;
-import com.alibaba.datax.plugin.writer.oceanbasev10writer.ext.ConnHolder;
-import com.alibaba.datax.plugin.writer.oceanbasev10writer.ext.ServerConnectInfo;
-import com.alibaba.datax.plugin.writer.oceanbasev10writer.util.ObWriterUtils;
-import com.alipay.oceanbase.obproxy.data.TableEntryKey;
-import com.alipay.oceanbase.obproxy.util.ObPartitionIdCalculator;
+//import java.sql.PreparedStatement;
 
 public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
     private static final Logger LOG = LoggerFactory.getLogger(ConcurrentTableWriterTask.class);
@@ -105,14 +104,14 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
 				connectInfo.getFullUserName(), connectInfo.password);
         checkConnHolder.initConnection();
         if (isOracleCompatibleMode) {
-           connectInfo.databaseName =  connectInfo.databaseName.toUpperCase();
-           //在转义的情况下不翻译
-           if(!Pattern.matches("\"\\w*\"",table)){
-			   table = table.toUpperCase();
-		   }
+			connectInfo.databaseName = connectInfo.databaseName.toUpperCase();
+			//在转义的情况下不翻译
+			if (table.startsWith("\"") && table.endsWith("\"")) {
+				table = table.toUpperCase();
+			}
 
-           LOG.info(String.format("this is oracle compatible mode, change database to %s, table to %s",
-                   connectInfo.databaseName, table));
+			LOG.info(String.format("this is oracle compatible mode, change database to %s, table to %s",
+					connectInfo.databaseName, table));
         }
 
         if (config.getBool(Config.USE_PART_CALCULATOR, Config.DEFAULT_USE_PART_CALCULATOR)) {

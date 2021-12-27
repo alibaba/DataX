@@ -1,13 +1,5 @@
 package com.alibaba.datax.plugin.reader.oceanbasev10reader.ext;
 
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alibaba.datax.common.element.Column;
 import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.plugin.RecordSender;
@@ -19,11 +11,17 @@ import com.alibaba.datax.plugin.rdbms.reader.CommonRdbmsReader;
 import com.alibaba.datax.plugin.rdbms.reader.Constant;
 import com.alibaba.datax.plugin.rdbms.reader.Key;
 import com.alibaba.datax.plugin.rdbms.util.DBUtil;
-import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
 import com.alibaba.datax.plugin.rdbms.util.RdbmsException;
 import com.alibaba.datax.plugin.reader.oceanbasev10reader.Config;
 import com.alibaba.datax.plugin.reader.oceanbasev10reader.util.ObReaderUtils;
 import com.alibaba.datax.plugin.reader.oceanbasev10reader.util.TaskContext;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ReaderTask extends CommonRdbmsReader.Task {
     private static final Logger LOG = LoggerFactory.getLogger(ReaderTask.class);
@@ -64,13 +62,9 @@ public class ReaderTask extends CommonRdbmsReader.Task {
             }
         }
 
-        if (ObReaderUtils.databaseType == DataBaseType.OceanBase) {
-            jdbcUrl = jdbcUrl.replace("jdbc:mysql:", "jdbc:oceanbase:") + "&socketTimeout=1800000&connectTimeout=60000"; //socketTimeout 半个小时
-        } else {
-            jdbcUrl = jdbcUrl + "&socketTimeout=1800000&connectTimeout=60000"; //socketTimeout 半个小时
-        }
-        if(ObReaderUtils.compatibleMode==ObReaderUtils.OB_COMPATIBLE_MODE_ORACLE){
-            compatibleMode=ObReaderUtils.OB_COMPATIBLE_MODE_ORACLE;
+        jdbcUrl = jdbcUrl.replace("jdbc:mysql:", "jdbc:oceanbase:") + "&socketTimeout=1800000&connectTimeout=60000"; //socketTimeout 半个小时
+        if (ObReaderUtils.compatibleMode == ObReaderUtils.OB_COMPATIBLE_MODE_ORACLE) {
+            compatibleMode = ObReaderUtils.OB_COMPATIBLE_MODE_ORACLE;
         }
         LOG.info("this is ob1_0 jdbc url. user=" + username + " :url=" + jdbcUrl);
         mandatoryEncoding = readerSliceConfig.getString(Key.MANDATORY_ENCODING, "");

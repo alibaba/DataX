@@ -717,6 +717,6 @@ public class ObReaderUtils {
     }
 
     public static boolean isOracleMode(String mode) {
-        return (mode != null && OB_COMPATIBLE_MODE_ORACLE.equals(mode.toString().toUpperCase()));
+        return (mode != null && OB_COMPATIBLE_MODE_ORACLE.equalsIgnoreCase(mode));
     }
 }
