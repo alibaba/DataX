@@ -106,7 +106,7 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
         if (isOracleCompatibleMode) {
 			connectInfo.databaseName = connectInfo.databaseName.toUpperCase();
 			//在转义的情况下不翻译
-			if (table.startsWith("\"") && table.endsWith("\"")) {
+			if (!(table.startsWith("\"") && table.endsWith("\""))) {
 				table = table.toUpperCase();
 			}
 
