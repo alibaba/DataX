@@ -308,7 +308,7 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
 				}
 			}
 		}
-		if(unknownPartRecords.size()>0){
+		if (unknownPartRecords.size() > 0) {
 			int retry = 0;
 			while (true) {
 				try {
@@ -364,7 +364,7 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
 
 			unknownPartRecords.add(record);
 			int i = 0;
-			if(unknownPartRecords.size()>batchSize){
+			if (unknownPartRecords.size() > batchSize) {
 				while (true) {
 					if (i > 0) {
 						LOG.info("retry add batch record the {} times", i);
