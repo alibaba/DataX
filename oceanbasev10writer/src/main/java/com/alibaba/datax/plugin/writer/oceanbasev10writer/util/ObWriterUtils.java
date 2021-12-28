@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class ObWriterUtils {
 
@@ -26,8 +25,8 @@ public class ObWriterUtils {
 		return new HashSet(Arrays.asList(keywords.split(",")));
 	}
 
-	public static void escapeDatabaseKeywords(List<String> keywords) {
-		//判断是否需要更改关键字集合
+	//java中的String的坑
+	public static String escapeDatabaseKeywords(String keyword) {
 		if (databaseKeywords == null) {
 			if (isOracleMode()) {
 				databaseKeywords = keywordsFromString2HashSet(ORACLE_KEYWORDS);
@@ -36,12 +35,22 @@ public class ObWriterUtils {
 			}
 		}
 		char escapeChar = isOracleMode() ? '"' : '`';
+		if (databaseKeywords.contains(keyword.toUpperCase())) {
+			keyword = escapeChar + keyword + escapeChar;
+		}
+		return keyword;
+	}
+
+	public static void escapeDatabaseKeywords(List<String> keywords) {
 		for (int i = 0; i < keywords.size(); i++) {
-			String keyword = keywords.get(i);
-			if (databaseKeywords.contains(keyword.toUpperCase())) {
-				keyword = escapeChar + keyword + escapeChar;
-			}
-			keywords.set(i, keyword);
+			keywords.set(i, escapeDatabaseKeywords(keywords.get(i)));
+		}
+	}
+	public static Boolean isEscapeMode(String keyword){
+		if(isOracleMode()){
+			return keyword.startsWith("\"") && keyword.endsWith("\"");
+		}else{
+			return keyword.startsWith("`") && keyword.endsWith("`");
 		}
 	}
 	public static boolean isMemstoreFull(Connection conn, double memstoreThreshold) {
@@ -94,7 +103,16 @@ public class ObWriterUtils {
 	}
 
 	private static int[] getColumnIndex(List<String> columnsInIndex, List<String> allColumns) {
-		allColumns = allColumns.stream().map(String::toUpperCase).collect(Collectors.toList());
+		/**
+		 * JDK8的stream模型：将一种数据结构转化成通用的数据模型，并可在该模型上进行操作
+		 * map:接受一个函数引用，用于操作元素
+		 * collect：接受一个Collectors方法，用于将中间数据模型转化成目标数据结构
+		 */
+		for (int i = 0; i < allColumns.size(); i++) {
+			if (!ObWriterUtils.isEscapeMode(allColumns.get(i))) {
+				allColumns.set(i, allColumns.get(i).toUpperCase());
+			}
+		}
 		int[] colIdx = new int[columnsInIndex.size()];
 		for (int i = 0; i < columnsInIndex.size(); i++) {
 			int index = allColumns.indexOf(columnsInIndex.get(i));
@@ -146,7 +164,11 @@ public class ObWriterUtils {
 			rs = stmt.executeQuery(sql);
 			while (rs.next()) {
 				String keyName = rs.getString("Key_name");
-				String columnName = StringUtils.upperCase(rs.getString("Column_name"));
+				String columnName = rs.getString("Column_name");
+				columnName=escapeDatabaseKeywords(columnName);
+				if(!ObWriterUtils.isEscapeMode(columnName)){
+					columnName=columnName.toUpperCase();
+				}
 				List<String> s = uniqueKeys.get(keyName);
 				if (s == null) {
 					s = new ArrayList();
@@ -159,6 +181,7 @@ public class ObWriterUtils {
 		} finally {
 			asyncClose(rs, stmt, null);
 		}
+		//ObWriterUtils.escapeDatabaseKeywords(uniqueKeys);
 		return uniqueKeys;
 	}
 
@@ -315,6 +338,7 @@ public class ObWriterUtils {
 	 * @param e
 	 * @return
 	 */
+
 	public static boolean isFatalError(SQLException e) {
 		String sqlState = e.getSQLState();
 		if (StringUtils.startsWith(sqlState, "08")) {

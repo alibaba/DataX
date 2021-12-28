@@ -62,6 +62,7 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
 	private ObPartitionIdCalculator partCalculator = null;
 
 	private HashMap<Long, List<Record>> groupInsertValues;
+	List<Record> unknownPartRecords = new ArrayList<Record>();
 //	private List<Record> unknownPartRecords;
 	private List<Integer> partitionKeyIndexes;
 	
@@ -307,6 +308,18 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
 				}
 			}
 		}
+		if(unknownPartRecords.size()>0){
+			int retry = 0;
+			while (true) {
+				try {
+					concurrentWriter.addBatchRecords(unknownPartRecords);
+					break;
+				} catch (InterruptedException e) {
+					retry++;
+					LOG.info("Concurrent table writer is interrupted, retry {}", retry);
+				}
+			}
+		}
 	}
 	
 	private void addRecordToCache(final Record record) {
@@ -347,21 +360,24 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
 				groupInsertValues.put(partId, groupValues);
 			}
 		} else {
-			LOG.warn("add unknown part record {}", record);
-			List<Record> unknownPartRecords = new ArrayList<Record>();
+			LOG.debug("add unknown part record {}", record);
+
 			unknownPartRecords.add(record);
 			int i = 0;
-			while (true) {
-				if (i > 0) {
-					LOG.info("retry add batch record the {} times", i);
-				}
-				try {
-					concurrentWriter.addBatchRecords(unknownPartRecords);
-					break;
-				} catch (InterruptedException e) {
-					LOG.info("Concurrent table writer is interrupted");
+			if(unknownPartRecords.size()>batchSize){
+				while (true) {
+					if (i > 0) {
+						LOG.info("retry add batch record the {} times", i);
+					}
+					try {
+						concurrentWriter.addBatchRecords(unknownPartRecords);
+						break;
+					} catch (InterruptedException e) {
+						LOG.info("Concurrent table writer is interrupted");
+					}
 				}
 			}
+
 		}
 	}
 

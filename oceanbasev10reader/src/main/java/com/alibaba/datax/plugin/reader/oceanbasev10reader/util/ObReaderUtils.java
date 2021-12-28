@@ -1,37 +1,22 @@
 package com.alibaba.datax.plugin.reader.oceanbasev10reader.util;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import com.alibaba.datax.common.element.*;
+import com.alibaba.datax.plugin.rdbms.util.DBUtil;
 import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
+import com.alibaba.druid.sql.SQLUtils;
+import com.alibaba.druid.sql.ast.SQLExpr;
+import com.alibaba.druid.sql.ast.expr.SQLBinaryOpExpr;
+import com.alibaba.druid.sql.ast.expr.SQLBinaryOperator;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alibaba.datax.common.element.BoolColumn;
-import com.alibaba.datax.common.element.BytesColumn;
-import com.alibaba.datax.common.element.Column;
-import com.alibaba.datax.common.element.DateColumn;
-import com.alibaba.datax.common.element.DoubleColumn;
-import com.alibaba.datax.common.element.LongColumn;
-import com.alibaba.datax.common.element.Record;
-import com.alibaba.datax.common.element.StringColumn;
-import com.alibaba.datax.plugin.rdbms.util.DBUtil;
-import com.alibaba.druid.sql.SQLUtils;
-import com.alibaba.druid.sql.ast.SQLExpr;
-import com.alibaba.druid.sql.ast.expr.SQLBinaryOpExpr;
-import com.alibaba.druid.sql.ast.expr.SQLBinaryOperator;
-
-import javax.xml.crypto.Data;
+import java.sql.*;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ObReaderUtils {
 
@@ -53,21 +38,32 @@ public class ObReaderUtils {
         return new HashSet(Arrays.asList(keywords.split(",")));
     }
 
-    public static void escapeDatabaseKeywords(List<String> keywords) {
+    public static String escapeDatabaseKeywords(String keyword) {
         if (databaseKeywords == null) {
-            if (isOracleMode(compatibleMode.toString())) {
+            if (isOracleMode(compatibleMode)) {
                 databaseKeywords = keywordsFromString2HashSet(ORACLE_KEYWORDS);
             } else {
                 databaseKeywords = keywordsFromString2HashSet(MYSQL_KEYWORDS);
             }
         }
-        char escapeChar = isOracleMode(compatibleMode.toString()) ? '"' : '`';
+        char escapeChar = isOracleMode(compatibleMode) ? '"' : '`';
+        if (databaseKeywords.contains(keyword.toUpperCase())) {
+            keyword = escapeChar + keyword + escapeChar;
+        }
+        return keyword;
+    }
+
+    public static void escapeDatabaseKeywords(List<String> keywords) {
         for (int i = 0; i < keywords.size(); i++) {
-            String keyword = keywords.get(i);
-            if (databaseKeywords.contains(keyword.toUpperCase())) {
-                keyword = escapeChar + keyword + escapeChar;
-            }
-            keywords.set(i, keyword);
+            keywords.set(i, escapeDatabaseKeywords(keywords.get(i)));
+        }
+    }
+
+    public static Boolean isEscapeMode(String keyword) {
+        if (isOracleMode(compatibleMode)) {
+            return keyword.startsWith("\"") && keyword.endsWith("\"");
+        } else {
+            return keyword.startsWith("`") && keyword.endsWith("`");
         }
     }
 
@@ -151,12 +147,15 @@ public class ObReaderUtils {
             ps = conn.createStatement();
             rs = ps.executeQuery(sql);
             while (rs.next()) {
-                String columnName = StringUtils.lowerCase(rs.getString("Column_name"));
+                String columnName = rs.getString("Column_name");
+                columnName = escapeDatabaseKeywords(columnName);
+                if (!isEscapeMode(columnName)) {
+                    columnName.toLowerCase();
+                }
                 if (!realIndex.contains(columnName)) {
                     realIndex.add(columnName);
                 }
             }
-            escapeDatabaseKeywords(realIndex);
 
             String[] pks = new String[realIndex.size()];
             realIndex.toArray(pks);
