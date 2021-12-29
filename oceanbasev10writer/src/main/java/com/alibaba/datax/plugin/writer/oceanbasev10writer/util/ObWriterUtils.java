@@ -25,7 +25,6 @@ public class ObWriterUtils {
 		return new HashSet(Arrays.asList(keywords.split(",")));
 	}
 
-	//java中的String的坑
 	public static String escapeDatabaseKeywords(String keyword) {
 		if (databaseKeywords == null) {
 			if (isOracleMode()) {
@@ -103,11 +102,6 @@ public class ObWriterUtils {
 	}
 
 	private static int[] getColumnIndex(List<String> columnsInIndex, List<String> allColumns) {
-		/**
-		 * JDK8的stream模型：将一种数据结构转化成通用的数据模型，并可在该模型上进行操作
-		 * map:接受一个函数引用，用于操作元素
-		 * collect：接受一个Collectors方法，用于将中间数据模型转化成目标数据结构
-		 */
 		for (int i = 0; i < allColumns.size(); i++) {
 			if (!ObWriterUtils.isEscapeMode(allColumns.get(i))) {
 				allColumns.set(i, allColumns.get(i).toUpperCase());
@@ -167,7 +161,7 @@ public class ObWriterUtils {
 				String columnName = rs.getString("Column_name");
 				columnName=escapeDatabaseKeywords(columnName);
 				if(!ObWriterUtils.isEscapeMode(columnName)){
-					columnName=columnName.toUpperCase();
+					columnName = columnName.toUpperCase();
 				}
 				List<String> s = uniqueKeys.get(keyName);
 				if (s == null) {

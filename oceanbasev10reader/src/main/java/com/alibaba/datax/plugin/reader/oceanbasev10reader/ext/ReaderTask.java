@@ -63,7 +63,7 @@ public class ReaderTask extends CommonRdbmsReader.Task {
         }
 
         jdbcUrl = jdbcUrl.replace("jdbc:mysql:", "jdbc:oceanbase:") + "&socketTimeout=1800000&connectTimeout=60000"; //socketTimeout 半个小时
-        if (ObReaderUtils.compatibleMode == ObReaderUtils.OB_COMPATIBLE_MODE_ORACLE) {
+        if (ObReaderUtils.compatibleMode.equals(ObReaderUtils.OB_COMPATIBLE_MODE_ORACLE)) {
             compatibleMode = ObReaderUtils.OB_COMPATIBLE_MODE_ORACLE;
         }
         LOG.info("this is ob1_0 jdbc url. user=" + username + " :url=" + jdbcUrl);
