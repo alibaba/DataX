@@ -326,15 +326,14 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
 			}
 			groupValues.add(record);
 			if (groupValues.size() >= batchSize) {
-				int i = 0;
-				groupValues =addRecordsToWriteQueue(groupValues);
+				groupValues = addRecordsToWriteQueue(groupValues);
 				groupInsertValues.put(partId, groupValues);
 			}
 		} else {
 			LOG.debug("add unknown part record {}", record);
 			unknownPartRecords.add(record);
-			if (unknownPartRecords.size() > batchSize) {
-				unknownPartRecords=addRecordsToWriteQueue(unknownPartRecords);
+			if (unknownPartRecords.size() >= batchSize) {
+				unknownPartRecords = addRecordsToWriteQueue(unknownPartRecords);
 			}
 
 		}
