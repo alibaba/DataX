@@ -1,0 +1,6 @@
+{
+  "name": "doriswriter",
+  "class": "com.alibaba.datax.plugin.writer.doriswriter.DorisWriter",
+  "description": "",
+  "developer": ""
+}
