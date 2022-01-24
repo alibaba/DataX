@@ -228,14 +228,14 @@ Then the first columns received by this writer plugin must represent timestamp, 
 
 #### 3.2.6 Type Convert
 
-| MongoDB Type | DataX Type | TDengine Type |
-| ---------------- | -------------- | ----------------- |
-| int, Long        | Long           | BIGINT            |
-| double           | Double         | DOUBLE            |
-| string, array    | String         | NCHAR(64)         |
-| date             | Date           | TIMESTAMP         |
-| boolean          | Boolean        | BOOL              |
-| bytes            | Bytes          | BINARY(64)           |
+|DataX Type | TDengine Type |
+|-------------- | ----------------- |
+|Long           | BIGINT            |
+|Double         | DOUBLE            |
+|String         | NCHAR(64)         |
+|Date           | TIMESTAMP         |
+|Boolean        | BOOL              |
+|Bytes          | BINARY(64)        |
 
 ### 3.3 From Relational Database to TDengine
 

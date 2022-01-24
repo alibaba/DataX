@@ -60,6 +60,15 @@ public class TSDBReader extends Reader {
                         "The parameter [" + Key.ENDPOINT + "] is not set.");
             }
 
+            String username = originalConfig.getString(Key.USERNAME, null);
+            if (StringUtils.isBlank(username)) {
+                LOG.warn("The parameter [" + Key.USERNAME + "] is blank.");
+            }
+            String password = originalConfig.getString(Key.PASSWORD, null);
+            if (StringUtils.isBlank(password)) {
+                LOG.warn("The parameter [" + Key.PASSWORD + "] is blank.");
+            }
+
             // tagK / field could be empty
             if ("TSDB".equals(type)) {
                 List<String> columns = originalConfig.getList(Key.COLUMN, String.class);
@@ -76,7 +85,14 @@ public class TSDBReader extends Reader {
                             "The parameter [" + Key.COLUMN + "] is not set.");
                 }
                 for (String specifyKey : Constant.MUST_CONTAINED_SPECIFY_KEYS) {
-                    if (!columns.contains(specifyKey)) {
+                    boolean containSpecifyKey = false;
+                    for (String column : columns) {
+                        if (column.startsWith(specifyKey)) {
+                            containSpecifyKey = true;
+                            break;
+                        }
+                    }
+                    if (!containSpecifyKey) {
                         throw DataXException.asDataXException(
                                 TSDBReaderErrorCode.ILLEGAL_VALUE,
                                 "The parameter [" + Key.COLUMN + "] should contain "
@@ -98,6 +114,8 @@ public class TSDBReader extends Reader {
                         TSDBReaderErrorCode.ILLEGAL_VALUE,
                         "The parameter [" + Key.INTERVAL_DATE_TIME + "] should be great than zero.");
             }
+
+            Boolean isCombine = originalConfig.getBool(Key.COMBINE, Key.COMBINE_DEFAULT_VALUE);
 
             SimpleDateFormat format = new SimpleDateFormat(Constant.DEFAULT_DATA_FORMAT);
             String startTime = originalConfig.getString(Key.BEGIN_DATE_TIME);
@@ -168,14 +186,14 @@ public class TSDBReader extends Reader {
                 startTime = format.parse(originalConfig.getString(Key.BEGIN_DATE_TIME)).getTime();
             } catch (ParseException e) {
                 throw DataXException.asDataXException(
-                        TSDBReaderErrorCode.ILLEGAL_VALUE, "解析[" + Key.BEGIN_DATE_TIME + "]失败.", e);
+                        TSDBReaderErrorCode.ILLEGAL_VALUE, "Analysis [" + Key.BEGIN_DATE_TIME + "] failed.", e);
             }
             long endTime;
             try {
                 endTime = format.parse(originalConfig.getString(Key.END_DATE_TIME)).getTime();
             } catch (ParseException e) {
                 throw DataXException.asDataXException(
-                        TSDBReaderErrorCode.ILLEGAL_VALUE, "解析[" + Key.END_DATE_TIME + "]失败.", e);
+                        TSDBReaderErrorCode.ILLEGAL_VALUE, "Analysis [" + Key.END_DATE_TIME + "] failed.", e);
             }
             if (TimeUtils.isSecond(startTime)) {
                 startTime *= 1000;
@@ -186,13 +204,14 @@ public class TSDBReader extends Reader {
             DateTime startDateTime = new DateTime(TimeUtils.getTimeInHour(startTime));
             DateTime endDateTime = new DateTime(TimeUtils.getTimeInHour(endTime));
 
+            final Boolean isCombine = originalConfig.getBool(Key.COMBINE, Key.COMBINE_DEFAULT_VALUE);
+
             if ("TSDB".equals(type)) {
-                // split by metric
-                for (String column : columns4TSDB) {
+                if (isCombine) {
                     // split by time in hour
                     while (startDateTime.isBefore(endDateTime)) {
                         Configuration clone = this.originalConfig.clone();
-                        clone.set(Key.COLUMN, Collections.singletonList(column));
+                        clone.set(Key.COLUMN, columns4TSDB);
 
                         clone.set(Key.BEGIN_DATE_TIME, startDateTime.getMillis());
                         startDateTime = startDateTime.plusMillis(splitIntervalMs);
@@ -202,15 +221,30 @@ public class TSDBReader extends Reader {
 
                         LOG.info("Configuration: {}", JSON.toJSONString(clone));
                     }
+                } else {
+                    // split by time in hour
+                    while (startDateTime.isBefore(endDateTime)) {
+                        // split by metric
+                        for (String column : columns4TSDB) {
+                            Configuration clone = this.originalConfig.clone();
+                            clone.set(Key.COLUMN, Collections.singletonList(column));
+
+                            clone.set(Key.BEGIN_DATE_TIME, startDateTime.getMillis());
+                            startDateTime = startDateTime.plusMillis(splitIntervalMs);
+                            // Make sure the time interval is [start, end).
+                            clone.set(Key.END_DATE_TIME, startDateTime.getMillis() - 1);
+                            configurations.add(clone);
+
+                            LOG.info("Configuration: {}", JSON.toJSONString(clone));
+                        }
+                    }
                 }
             } else {
-                // split by metric
-                for (String metric : metrics) {
-                    // split by time in hour
+                if (isCombine) {
                     while (startDateTime.isBefore(endDateTime)) {
                         Configuration clone = this.originalConfig.clone();
                         clone.set(Key.COLUMN, columns4RDB);
-                        clone.set(Key.METRIC, Collections.singletonList(metric));
+                        clone.set(Key.METRIC, metrics);
 
                         clone.set(Key.BEGIN_DATE_TIME, startDateTime.getMillis());
                         startDateTime = startDateTime.plusMillis(splitIntervalMs);
@@ -219,6 +253,24 @@ public class TSDBReader extends Reader {
                         configurations.add(clone);
 
                         LOG.info("Configuration: {}", JSON.toJSONString(clone));
+                    }
+                } else {
+                    // split by time in hour
+                    while (startDateTime.isBefore(endDateTime)) {
+                        // split by metric
+                        for (String metric : metrics) {
+                            Configuration clone = this.originalConfig.clone();
+                            clone.set(Key.COLUMN, columns4RDB);
+                            clone.set(Key.METRIC, Collections.singletonList(metric));
+
+                            clone.set(Key.BEGIN_DATE_TIME, startDateTime.getMillis());
+                            startDateTime = startDateTime.plusMillis(splitIntervalMs);
+                            // Make sure the time interval is [start, end).
+                            clone.set(Key.END_DATE_TIME, startDateTime.getMillis() - 1);
+                            configurations.add(clone);
+
+                            LOG.info("Configuration: {}", JSON.toJSONString(clone));
+                        }
                     }
                 }
             }
@@ -247,6 +299,8 @@ public class TSDBReader extends Reader {
         private TSDBConnection conn;
         private Long startTime;
         private Long endTime;
+        private Boolean isCombine;
+        private Map<String, Object> hint;
 
         @Override
         public void init() {
@@ -265,11 +319,16 @@ public class TSDBReader extends Reader {
             this.tags = readerSliceConfig.getMap(Key.TAG);
 
             String address = readerSliceConfig.getString(Key.ENDPOINT);
+            String username = readerSliceConfig.getString(Key.USERNAME);
+            String password = readerSliceConfig.getString(Key.PASSWORD);
 
-            conn = new TSDBConnection(address);
+            conn = new TSDBConnection(address, username, password);
 
             this.startTime = readerSliceConfig.getLong(Key.BEGIN_DATE_TIME);
             this.endTime = readerSliceConfig.getLong(Key.END_DATE_TIME);
+
+            this.isCombine = readerSliceConfig.getBool(Key.COMBINE, Key.COMBINE_DEFAULT_VALUE);
+            this.hint = readerSliceConfig.getMap(Key.HINT);
         }
 
         @Override
@@ -283,29 +342,35 @@ public class TSDBReader extends Reader {
                 if ("TSDB".equals(type)) {
                     for (String metric : columns4TSDB) {
                         final Map<String, String> tags = this.tags == null ?
-                                    null : (Map<String, String>) this.tags.get(metric);
+                                null : (Map<String, String>) this.tags.get(metric);
                         if (fields == null || !fields.containsKey(metric)) {
-                            conn.sendDPs(metric, tags, this.startTime, this.endTime, recordSender);
+                            conn.sendDPs(metric, tags, this.startTime, this.endTime, recordSender, hint);
                         } else {
                             conn.sendDPs(metric, (List<String>) fields.get(metric),
-                                    tags, this.startTime, this.endTime, recordSender);
+                                    tags, this.startTime, this.endTime, recordSender, hint);
                         }
                     }
                 } else {
-                    for (String metric : metrics) {
+                    if (isCombine) {
                         final Map<String, String> tags = this.tags == null ?
-                                null : (Map<String, String>) this.tags.get(metric);
-                        if (fields == null || !fields.containsKey(metric)) {
-                            conn.sendRecords(metric, tags, startTime, endTime, columns4RDB, recordSender);
-                        } else {
-                            conn.sendRecords(metric, (List<String>) fields.get(metric),
-                                    tags, startTime, endTime, columns4RDB, recordSender);
+                                null : (Map<String, String>) this.tags.get(metrics.get(0));
+                        conn.sendRecords(metrics, tags, startTime, endTime, columns4RDB, recordSender, hint);
+                    } else {
+                        for (String metric : metrics) {
+                            final Map<String, String> tags = this.tags == null ?
+                                    null : (Map<String, String>) this.tags.get(metric);
+                            if (fields == null || !fields.containsKey(metric)) {
+                                conn.sendRecords(metric, tags, startTime, endTime, columns4RDB, isCombine, recordSender, hint);
+                            } else {
+                                conn.sendRecords(metric, (List<String>) fields.get(metric),
+                                        tags, startTime, endTime, columns4RDB, recordSender, hint);
+                            }
                         }
                     }
                 }
             } catch (Exception e) {
                 throw DataXException.asDataXException(
-                        TSDBReaderErrorCode.ILLEGAL_VALUE, "获取或发送数据点的过程中出错！", e);
+                        TSDBReaderErrorCode.ILLEGAL_VALUE, "Error in getting or sending data point！", e);
             }
         }
 

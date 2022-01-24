@@ -232,14 +232,14 @@ TAGS(
 
 #### 3.2.6 类型转换
 
-| MongoDB 数据类型 | DataX 内部类型 | TDengine 数据类型 |
-| ---------------- | -------------- | ----------------- |
-| int, Long        | Long           | BIGINT            |
-| double           | Double         | DOUBLE            |
-| string, array    | String         | NCHAR(64)         |
-| date             | Date           | TIMESTAMP         |
-| boolean          | Boolean        | BOOL              |
-| bytes            | Bytes          | BINARY(64)          |
+| DataX 内部类型 | TDengine 数据类型 |
+|-------------- | ----------------- |
+|Long           | BIGINT            |
+|Double         | DOUBLE            |
+|String         | NCHAR(64)         |
+|Date           | TIMESTAMP         |
+|Boolean        | BOOL              |
+|Bytes          | BINARY(64)        |
 
 ### 3.3 从关系型数据库到TDengine
 writer部分的配置规则和上述MongoDB的示例是一样的，这里给出一个MySQL的示例。
