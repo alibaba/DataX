@@ -15,6 +15,7 @@ public class StarRocksFlushTuple {
     }
 
     public String getLabel() { return label; }
+    public void setLabel(String label) { this.label = label; }
     public Long getBytes() { return bytes; }
     public List<byte[]> getRows() { return rows; }
 }

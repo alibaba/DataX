@@ -134,7 +134,7 @@ public class StarRocksWriterManager {
                         flushException = e;
                     }
                 }
-            }   
+            }
         });
         flushThread.setDaemon(true);
         flushThread.start();
@@ -167,8 +167,13 @@ public class StarRocksWriterManager {
                 if (i >= writerOptions.getMaxRetries()) {
                     throw new IOException(e);
                 }
+                if (e instanceof StarRocksStreamLoadFailedException && ((StarRocksStreamLoadFailedException)e).needReCreateLabel()) {
+                    String newLabel = createBatchLabel();
+                    LOG.warn(String.format("Batch label changed from [%s] to [%s]", flushData.getLabel(), newLabel));
+                    flushData.setLabel(newLabel);
+                }
                 try {
-                    Thread.sleep(1000l * (i + 1));
+                    Thread.sleep(1000l * Math.min(i + 1, 10));
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
                     throw new IOException("Unable to flush, interrupted while doing another attempt", e);
