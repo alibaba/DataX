@@ -232,6 +232,8 @@ DorisWriter是借助于Apache Doris提供的Stream Load方式来实现数据导�
 
 下面是通过读取Mysql数据表的数据，插入到Doris进行的性能测试结果，仅供参考
 
+测试是单机测试，Mysql 8.0.26，Doris 0.15 （单机），mysql和Doris部署在同一台服务器上，服务器配置：4核 16 GiB
+
 ```
 2022-01-25 23:32:53.638 [job-0] INFO  JobContainer - PerfTrace not enable!
 2022-01-25 23:32:53.638 [job-0] INFO  StandAloneJobContainerCommunicator - Total 2000000 records, 80888896 bytes | Speed 3.86MB/s, 100000 records/s | Error 0 records, 0 bytes |  All Task WaitWriterTime 14.270s |  All Task WaitReaderTime 0.147s | Percentage 100.00%
