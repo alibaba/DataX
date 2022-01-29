@@ -552,7 +552,7 @@ public class CommonRdbmsWriter {
             return preparedStatement;
         }
 
-        private void calcWriteRecordSql() {
+        protected void calcWriteRecordSql() {
             if (!VALUE_HOLDER.equals(calcValueHolder(""))) {
                 List<String> valueHolders = new ArrayList<String>(columnNumber);
                 for (int i = 0; i < columns.size(); i++) {

@@ -1,17 +1,24 @@
 package com.alibaba.datax.plugin.writer.clickhousewriter;
 
 import com.alibaba.datax.common.element.Column;
+import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.element.StringColumn;
 import com.alibaba.datax.common.exception.CommonErrorCode;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordReceiver;
+import com.alibaba.datax.common.plugin.TaskPluginCollector;
 import com.alibaba.datax.common.spi.Writer;
 import com.alibaba.datax.common.util.Configuration;
+import com.alibaba.datax.plugin.rdbms.util.DBUtil;
 import com.alibaba.datax.plugin.rdbms.util.DBUtilErrorCode;
 import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
 import com.alibaba.datax.plugin.rdbms.writer.CommonRdbmsWriter;
+import com.alibaba.datax.plugin.rdbms.writer.Key;
+import com.alibaba.datax.plugin.rdbms.writer.util.OriginalConfPretreatmentUtil;
+import com.alibaba.datax.plugin.rdbms.writer.util.WriterUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import org.apache.commons.lang3.StringUtils;
 
 import java.sql.Array;
 import java.sql.Connection;
@@ -19,6 +26,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -67,6 +75,67 @@ public class ClickhouseWriter extends Writer {
 			this.writerSliceConfig = super.getPluginJobConf();
 
 			this.commonRdbmsWriterSlave = new CommonRdbmsWriter.Task(DATABASE_TYPE) {
+
+				@Override
+				public void startWriteWithConnection(RecordReceiver recordReceiver, TaskPluginCollector taskPluginCollector, Connection connection) {
+
+					this.taskPluginCollector = taskPluginCollector;
+
+					// 用于写入数据的时候的类型根据目的表字段类型转换
+					this.resultSetMetaData = DBUtil.getColumnMetaData(connection,
+							this.table, StringUtils.join(this.columns, ","));
+					// 写数据库的SQL语句
+					this.calcWriteRecordSql();
+
+					int writeSize = 0;
+					int bufferBytes = 0;
+					PreparedStatement preparedStatement = null;
+					try {
+						Record record;
+						connection.setAutoCommit(false);
+						preparedStatement = connection.prepareStatement(this.writeRecordSql);
+						while ((record = recordReceiver.getFromReader()) != null) {
+							if (record.getColumnNumber() != this.columnNumber) {
+								// 源头读取字段列数与目的表字段写入列数不相等，直接报错
+								throw DataXException
+										.asDataXException(
+												DBUtilErrorCode.CONF_ERROR,
+												String.format(
+														"列配置信息有错误. 因为您配置的任务中，源头读取字段数:%s 与 目的表要写入的字段数:%s 不相等. 请检查您的配置并作出修改.",
+														record.getColumnNumber(),
+														this.columnNumber));
+							}
+
+
+							bufferBytes += record.getMemorySize();
+							preparedStatement = fillPreparedStatement(preparedStatement, record);
+							preparedStatement.addBatch();
+							writeSize++;
+
+							if (writeSize >= this.batchSize || bufferBytes >= this.batchByteSize) {
+								preparedStatement.executeBatch();
+								connection.commit();
+								writeSize = 0;
+								bufferBytes = 0;
+							}
+						}
+						if (writeSize > 0) {
+							preparedStatement.executeBatch();
+							connection.commit();
+							writeSize = 0;
+							bufferBytes = 0;
+						}
+					} catch (Exception e) {
+						throw DataXException.asDataXException(
+								DBUtilErrorCode.WRITE_DATA_ERROR, e);
+					} finally {
+						writeSize = 0;
+						bufferBytes = 0;
+						DBUtil.closeDBResources(preparedStatement, null);
+						DBUtil.closeDBResources(null, null, connection);
+					}
+				}
+
 				@Override
 				protected PreparedStatement fillPreparedStatementColumnType(PreparedStatement preparedStatement, int columnIndex, int columnSqltype, Column column) throws SQLException {
 					try {
