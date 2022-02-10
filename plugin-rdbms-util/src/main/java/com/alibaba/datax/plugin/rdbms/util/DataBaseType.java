@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
  */
 public enum DataBaseType {
     MySql("mysql", "com.mysql.jdbc.Driver"),
+    MimerSQL("mimersql", "com.mimer.jdbc.Driver"),
     Tddl("mysql", "com.mysql.jdbc.Driver"),
     DRDS("drds", "com.mysql.jdbc.Driver"),
     Oracle("oracle", "oracle.jdbc.OracleDriver"),
@@ -55,6 +56,8 @@ public enum DataBaseType {
                 break;
             case SQLServer:
                 break;
+            case MimerSQL:
+                break;
             case DB2:
                 break;
             case PostgreSQL:
@@ -95,6 +98,8 @@ public enum DataBaseType {
                 }
                 break;
             case Oracle:
+                break;
+            case MimerSQL:
                 break;
             case SQLServer:
                 break;
@@ -142,6 +147,7 @@ public enum DataBaseType {
                 break;
             case DB2:
             case PostgreSQL:
+            case MimerSQL:
             case KingbaseES:
             case Oscar:
                 break;
@@ -167,6 +173,7 @@ public enum DataBaseType {
                 break;
             case DB2:
             case PostgreSQL:
+            case MimerSQL:
             case KingbaseES:
             case Oscar:
                 break;
@@ -191,6 +198,8 @@ public enum DataBaseType {
             case DB2:
                 break;
             case PostgreSQL:
+                break;
+            case MimerSQL:
                 break;
             case KingbaseES:
                 break;
