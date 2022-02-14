@@ -190,8 +190,9 @@ public class TDengineReader extends Reader {
         @Override
         public void startRead(RecordSender recordSender) {
             try (Statement stmt = conn.createStatement()) {
-                for (int i = 0; i < tables.size(); i++) {
-                    String sql = "select " + StringUtils.join(columns, ",") + " from " + tables.get(i) + " where _c0 >= " + startTime + " and _c0 < " + endTime;
+                for (String table : tables) {
+                    String sql = "select " + StringUtils.join(columns, ",") + " from " + table
+                            + " where _c0 >= " + startTime + " and _c0 < " + endTime;
                     ResultSet rs = stmt.executeQuery(sql);
                     ResultSetMetaData metaData = rs.getMetaData();
                     while (rs.next()) {
