@@ -24,6 +24,7 @@ public class StarRocksWriterManager {
 
     private final StarRocksStreamLoadVisitor starrocksStreamLoadVisitor;
     private final StarRocksWriterOptions writerOptions;
+    private static final String UNDERSCORE = "_";
 
     private final List<byte[]> buffer = new ArrayList<>();
     private int batchCount = 0;
@@ -120,7 +121,16 @@ public class StarRocksWriterManager {
     }
 
     public String createBatchLabel() {
-        return UUID.randomUUID().toString();
+        StringBuilder sb = new StringBuilder();
+        if (!Strings.isNullOrEmpty(writerOptions.getLabelPrefix())) {
+            sb.append(writerOptions.getLabelPrefix()).append(UNDERSCORE);
+        }
+        return sb.append(writerOptions.getDatabase())
+            .append(UNDERSCORE)
+            .append(writerOptions.getTable())
+            .append(UNDERSCORE)
+            .append(UUID.randomUUID().toString())
+            .toString();
     }
 
     private void startAsyncFlushing() {

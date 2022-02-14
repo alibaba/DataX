@@ -33,6 +33,7 @@ public class StarRocksWriterOptions implements Serializable {
     private static final String KEY_PRE_SQL = "preSql";
     private static final String KEY_POST_SQL = "postSql";
     private static final String KEY_JDBC_URL = "jdbcUrl";
+    private static final String KEY_LABEL_PREFIX = "labelPrefix";
     private static final String KEY_MAX_BATCH_ROWS = "maxBatchRows";
     private static final String KEY_MAX_BATCH_SIZE = "maxBatchSize";
     private static final String KEY_FLUSH_INTERVAL = "flushInterval";
@@ -76,6 +77,10 @@ public class StarRocksWriterOptions implements Serializable {
 
     public String getPassword() {
         return options.getString(KEY_PASSWORD);
+    }
+
+    public String getLabelPrefix() {
+        return options.getString(KEY_LABEL_PREFIX);
     }
 
     public List<String> getLoadUrlList() {
