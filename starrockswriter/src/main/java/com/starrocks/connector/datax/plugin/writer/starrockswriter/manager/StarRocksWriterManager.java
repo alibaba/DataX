@@ -24,7 +24,7 @@ public class StarRocksWriterManager {
 
     private final StarRocksStreamLoadVisitor starrocksStreamLoadVisitor;
     private final StarRocksWriterOptions writerOptions;
-    private static final String UNDERSCORE = "_";
+    private static final String DOT = ".";
 
     private final List<byte[]> buffer = new ArrayList<>();
     private int batchCount = 0;
@@ -123,12 +123,12 @@ public class StarRocksWriterManager {
     public String createBatchLabel() {
         StringBuilder sb = new StringBuilder();
         if (!Strings.isNullOrEmpty(writerOptions.getLabelPrefix())) {
-            sb.append(writerOptions.getLabelPrefix()).append(UNDERSCORE);
+            sb.append(writerOptions.getLabelPrefix()).append(DOT);
         }
         return sb.append(writerOptions.getDatabase())
-            .append(UNDERSCORE)
+            .append(DOT)
             .append(writerOptions.getTable())
-            .append(UNDERSCORE)
+            .append(DOT)
             .append(UUID.randomUUID().toString())
             .toString();
     }
