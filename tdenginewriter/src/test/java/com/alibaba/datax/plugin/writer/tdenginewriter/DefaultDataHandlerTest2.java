@@ -27,6 +27,8 @@ public class DefaultDataHandlerTest2 {
 
     @Test
     public void writeSupTableBySchemaless() throws SQLException {
+
+
         // given
         Configuration configuration = Configuration.from("{" +
                 "\"username\": \"root\"," +

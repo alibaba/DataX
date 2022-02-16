@@ -8,16 +8,25 @@
             "username": "root",
             "password": "123456",
             "column": [
-              "*"
+              "ts",
+              "dt",
+              "f1",
+              "f2",
+              "f3",
+              "f4",
+              "f5",
+              "f6",
+              "f7",
+              "f8"
             ],
             "splitPk": "id",
             "connection": [
               {
                 "table": [
-                  "t"
+                  "stb1"
                 ],
                 "jdbcUrl": [
-                  "jdbc:mysql://192.168.56.105:3306/test?useSSL=false&useUnicode=true&characterEncoding=utf8"
+                  "jdbc:mysql://192.168.56.105:3306/db1?useSSL=false&useUnicode=true&characterEncoding=utf8"
                 ]
               }
             ]
@@ -30,16 +39,22 @@
             "password": "taosdata",
             "column": [
               "ts",
+              "dt",
               "f1",
               "f2",
-              "t1"
+              "f3",
+              "f4",
+              "f5",
+              "f6",
+              "f7",
+              "f8"
             ],
             "connection": [
               {
                 "table": [
-                  "st"
+                  "stb2"
                 ],
-                "jdbcUrl": "jdbc:TAOS://192.168.56.105:6030/test?timestampFormat=TIMESTAMP"
+                "jdbcUrl": "jdbc:TAOS-RS://192.168.1.93:6041/db2"
               }
             ],
             "batchSize": 1000,

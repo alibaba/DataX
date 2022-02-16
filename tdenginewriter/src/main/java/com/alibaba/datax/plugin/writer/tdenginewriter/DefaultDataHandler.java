@@ -14,10 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.Date;
-import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class DefaultDataHandler implements DataHandler {
@@ -82,6 +80,11 @@ public class DefaultDataHandler implements DataHandler {
                     recordBatch.clear();
                 }
                 count++;
+            }
+
+            if (!recordBatch.isEmpty()) {
+                affectedRows = writeBatch(conn, recordBatch);
+                recordBatch.clear();
             }
         } catch (SQLException e) {
             throw DataXException.asDataXException(TDengineWriterErrorCode.RUNTIME_EXCEPTION, e.getMessage());
@@ -302,15 +305,6 @@ public class DefaultDataHandler implements DataHandler {
                 if (colMeta.type.equals("TIMESTAMP"))
                     return dateAsLong(column) + "i64";
                 return "L'" + column.asString() + "'";
-            case BYTES:
-            case STRING:
-                if (colMeta.type.equals("TIMESTAMP"))
-                    return column.asString() + "i64";
-                String value = column.asString();
-                if (colMeta.type.startsWith("BINARY"))
-                    return "'" + Utils.escapeSingleQuota(value) + "'";
-                if (colMeta.type.startsWith("NCHAR"))
-                    return "L'" + Utils.escapeSingleQuota(value) + "'";
             case NULL:
             case BAD:
                 return "NULL";
@@ -331,6 +325,16 @@ public class DefaultDataHandler implements DataHandler {
                 if (colMeta.type.equals("BIGINT"))
                     return column.asString() + "i64";
             }
+            case BYTES:
+            case STRING:
+                if (colMeta.type.equals("TIMESTAMP"))
+                    return column.asString() + "i64";
+                String value = column.asString();
+                value = value.replace("\"", "\\\"");
+                if (colMeta.type.startsWith("BINARY"))
+                    return "\"" + value + "\"";
+                if (colMeta.type.startsWith("NCHAR"))
+                    return "L\"" + value + "\"";
             case BOOL:
             default:
                 return column.asString();
@@ -363,7 +367,9 @@ public class DefaultDataHandler implements DataHandler {
             boolean tagsAllMatch = columnMetas.stream().filter(colMeta -> columns.contains(colMeta.field)).filter(colMeta -> {
                 return colMeta.isTag;
             }).allMatch(colMeta -> {
-                return record.getColumn(indexOf(colMeta.field)).asString().equals(colMeta.value.toString());
+                Column column = record.getColumn(indexOf(colMeta.field));
+                boolean equals = equals(column, colMeta);
+                return equals;
             });
 
             if (ignoreTagsUnmatched && !tagsAllMatch)
@@ -384,6 +390,28 @@ public class DefaultDataHandler implements DataHandler {
 
         String sql = sb.toString();
         return executeUpdate(conn, sql);
+    }
+
+    private boolean equals(Column column, ColumnMeta colMeta) {
+        switch (column.getType()) {
+            case BOOL:
+                return column.asBoolean().equals(Boolean.valueOf(colMeta.value.toString()));
+            case INT:
+            case LONG:
+                return column.asLong().equals(Long.valueOf(colMeta.value.toString()));
+            case DOUBLE:
+                return column.asDouble().equals(Double.valueOf(colMeta.value.toString()));
+            case NULL:
+                return colMeta.value == null;
+            case DATE:
+                return column.asDate().getTime() == ((Timestamp) colMeta.value).getTime();
+            case BAD:
+            case BYTES:
+                return Arrays.equals(column.asBytes(), (byte[]) colMeta.value);
+            case STRING:
+            default:
+                return column.asString().equals(colMeta.value.toString());
+        }
     }
 
     /**
