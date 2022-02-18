@@ -80,7 +80,7 @@
             <artifactId>dm-jdbc</artifactId>
             <version>1.8</version>
             <scope>system</scope>
-            <systemPath>/Users/yangzy/IdeaProjects/DataX/tdenginewriter/src/test/resources/DmJdbcDriver18.jar
+            <systemPath>${project.basedir}/src/test/resources/DmJdbcDriver18.jar
             </systemPath>
         </dependency>
 
