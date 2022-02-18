@@ -22,12 +22,13 @@ import java.util.stream.IntStream;
 
 public class DefaultDataHandlerTest {
 
-    private static final String host = "192.168.56.105";
+    private static final String host = "192.168.1.93";
     private static Connection conn;
 
     @Test
-    public void writeSupTableBySQL() {
+    public void writeSupTableBySQL() throws SQLException {
         // given
+        createSupAndSubTable();
         Configuration configuration = Configuration.from("{" +
                 "\"username\": \"root\"," +
                 "\"password\": \"taosdata\"," +
@@ -55,6 +56,7 @@ public class DefaultDataHandlerTest {
         Map<String, List<ColumnMeta>> columnMetas = schemaManager.loadColumnMetas(tables);
         handler.setTableMetas(tableMetas);
         handler.setColumnMetas(columnMetas);
+        handler.setSchemaManager(schemaManager);
 
         int count = handler.writeBatch(conn, recordList);
 
@@ -63,8 +65,9 @@ public class DefaultDataHandlerTest {
     }
 
     @Test
-    public void writeSupTableBySQL_2() {
+    public void writeSupTableBySQL_2() throws SQLException {
         // given
+        createSupAndSubTable();
         Configuration configuration = Configuration.from("{" +
                 "\"username\": \"root\"," +
                 "\"password\": \"taosdata\"," +
@@ -91,6 +94,7 @@ public class DefaultDataHandlerTest {
         Map<String, List<ColumnMeta>> columnMetas = schemaManager.loadColumnMetas(tables);
         handler.setTableMetas(tableMetas);
         handler.setColumnMetas(columnMetas);
+        handler.setSchemaManager(schemaManager);
 
         int count = handler.writeBatch(conn, recordList);
 
@@ -99,8 +103,49 @@ public class DefaultDataHandlerTest {
     }
 
     @Test
-    public void writeSubTableWithTableName() {
+    public void writeSupTableBySchemaless() throws SQLException {
         // given
+        createSupTable();
+        Configuration configuration = Configuration.from("{" +
+                "\"username\": \"root\"," +
+                "\"password\": \"taosdata\"," +
+                "\"column\": [\"ts\", \"f1\", \"f2\", \"t1\"]," +
+                "\"table\":[\"stb1\"]," +
+                "\"jdbcUrl\":\"jdbc:TAOS://" + host + ":6030/scm_test\"," +
+                "\"batchSize\": \"1000\"" +
+                "}");
+        String jdbcUrl = configuration.getString("jdbcUrl");
+        Connection connection = DriverManager.getConnection(jdbcUrl, "root", "taosdata");
+        long current = System.currentTimeMillis();
+        List<Record> recordList = IntStream.range(1, 11).mapToObj(i -> {
+            Record record = new DefaultRecord();
+            record.addColumn(new DateColumn(current + 1000 * i));
+            record.addColumn(new LongColumn(1));
+            record.addColumn(new LongColumn(2));
+            record.addColumn(new StringColumn("t" + i + " 22"));
+            return record;
+        }).collect(Collectors.toList());
+
+        // when
+        DefaultDataHandler handler = new DefaultDataHandler(configuration);
+        List<String> tables = configuration.getList("table", String.class);
+        SchemaManager schemaManager = new SchemaManager(connection);
+        Map<String, TableMeta> tableMetas = schemaManager.loadTableMeta(tables);
+        Map<String, List<ColumnMeta>> columnMetas = schemaManager.loadColumnMetas(tables);
+        handler.setTableMetas(tableMetas);
+        handler.setColumnMetas(columnMetas);
+        handler.setSchemaManager(schemaManager);
+
+        int count = handler.writeBatch(connection, recordList);
+
+        // then
+        Assert.assertEquals(10, count);
+    }
+
+    @Test
+    public void writeSubTableWithTableName() throws SQLException {
+        // given
+        createSupAndSubTable();
         Configuration configuration = Configuration.from("{" +
                 "\"username\": \"root\"," +
                 "\"password\": \"taosdata\"," +
@@ -128,6 +173,7 @@ public class DefaultDataHandlerTest {
         Map<String, List<ColumnMeta>> columnMetas = schemaManager.loadColumnMetas(tables);
         handler.setTableMetas(tableMetas);
         handler.setColumnMetas(columnMetas);
+        handler.setSchemaManager(schemaManager);
 
         int count = handler.writeBatch(conn, recordList);
 
@@ -136,8 +182,9 @@ public class DefaultDataHandlerTest {
     }
 
     @Test
-    public void writeSubTableWithoutTableName() {
+    public void writeSubTableWithoutTableName() throws SQLException {
         // given
+        createSupAndSubTable();
         Configuration configuration = Configuration.from("{" +
                 "\"username\": \"root\"," +
                 "\"password\": \"taosdata\"," +
@@ -165,6 +212,7 @@ public class DefaultDataHandlerTest {
         Map<String, List<ColumnMeta>> columnMetas = schemaManager.loadColumnMetas(tables);
         handler.setTableMetas(tableMetas);
         handler.setColumnMetas(columnMetas);
+        handler.setSchemaManager(schemaManager);
 
         int count = handler.writeBatch(conn, recordList);
 
@@ -173,8 +221,9 @@ public class DefaultDataHandlerTest {
     }
 
     @Test
-    public void writeNormalTable() {
+    public void writeNormalTable() throws SQLException {
         // given
+        createSupAndSubTable();
         Configuration configuration = Configuration.from("{" +
                 "\"username\": \"root\"," +
                 "\"password\": \"taosdata\"," +
@@ -202,6 +251,7 @@ public class DefaultDataHandlerTest {
         Map<String, List<ColumnMeta>> columnMetas = schemaManager.loadColumnMetas(tables);
         handler.setTableMetas(tableMetas);
         handler.setColumnMetas(columnMetas);
+        handler.setSchemaManager(schemaManager);
 
         int count = handler.writeBatch(conn, recordList);
 
@@ -209,10 +259,8 @@ public class DefaultDataHandlerTest {
         Assert.assertEquals(10, count);
     }
 
-    @BeforeClass
-    public static void beforeClass() throws SQLException {
-        conn = DriverManager.getConnection("jdbc:TAOS-RS://" + host + ":6041", "root", "taosdata");
-        try (Statement stmt = conn.createStatement()) {
+    private void createSupAndSubTable() throws SQLException {
+        try(Statement stmt = conn.createStatement()){
             stmt.execute("drop database if exists scm_test");
             stmt.execute("create database if not exists scm_test");
             stmt.execute("use scm_test");
@@ -224,6 +272,20 @@ public class DefaultDataHandlerTest {
             stmt.execute("create table tb4 using stb2 tags(2,2)");
             stmt.execute("create table weather(ts timestamp, f1 int, f2 int, f3 int, t1 int, t2 int)");
         }
+    }
+
+    private void createSupTable() throws SQLException {
+        try (Statement stmt = conn.createStatement()){
+            stmt.execute("drop database if exists scm_test");
+            stmt.execute("create database if not exists scm_test");
+            stmt.execute("use scm_test");
+            stmt.execute("create table stb1(ts timestamp, f1 int, f2 int) tags(t1 nchar(32))");
+        }
+    }
+
+    @BeforeClass
+    public static void beforeClass() throws SQLException {
+        conn = DriverManager.getConnection("jdbc:TAOS-RS://" + host + ":6041", "root", "taosdata");
     }
 
     @AfterClass

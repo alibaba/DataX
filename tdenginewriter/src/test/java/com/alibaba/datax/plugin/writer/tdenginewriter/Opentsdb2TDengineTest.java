@@ -11,7 +11,7 @@ public class Opentsdb2TDengineTest {
     @Test
     public void opentsdb2tdengine() throws SQLException {
         // when
-        String[] params = {"-mode", "standalone", "-jobid", "-1", "-job", "src/test/resources/opentsdb2tdengine.json"};
+        String[] params = {"-mode", "standalone", "-jobid", "-1", "-job", "src/test/resources/o2t-1.json"};
         System.setProperty("datax.home", "../target/datax/datax");
         try {
             Engine.entry(params);

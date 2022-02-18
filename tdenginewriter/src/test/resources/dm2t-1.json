@@ -3,33 +3,21 @@
     "content": [
       {
         "reader": {
-          "name": "tdenginereader",
+          "name": "rdbmsreader",
           "parameter": {
-            "username": "root",
-            "password": "taosdata",
+            "username": "TESTUSER",
+            "password": "test123456",
             "connection": [
               {
-                "table": [
-                  "stb1"
+                "querySql": [
+                  "select concat(concat(concat('t', f1), '_'),f3) as tbname,* from stb1;"
                 ],
-                "jdbcUrl": "jdbc:TAOS-RS://192.168.56.105:6041/db1?timestampFormat=TIMESTAMP"
+                "jdbcUrl": [
+                  "jdbc:dm://192.168.0.72:5236"
+                ]
               }
             ],
-            "column": [
-              "ts",
-              "f1",
-              "f2",
-              "f3",
-              "f4",
-              "f5",
-              "f6",
-              "f7",
-              "f8",
-              "f9"
-            ],
-            "beginDateTime": "2022-02-15 00:00:00",
-            "endDateTime": "2022-02-16 00:00:00",
-            "splitInterval": "1d"
+            "fetchSize": 1024
           }
         },
         "writer": {
@@ -38,6 +26,7 @@
             "username": "root",
             "password": "taosdata",
             "column": [
+              "tbname",
               "ts",
               "f1",
               "f2",
@@ -47,12 +36,13 @@
               "f6",
               "f7",
               "f8",
-              "f9"
+              "f9",
+              "f10"
             ],
             "connection": [
               {
                 "table": [
-                  "weather"
+                  "stb2"
                 ],
                 "jdbcUrl": "jdbc:TAOS-RS://192.168.1.93:6041/db2"
               }

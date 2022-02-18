@@ -180,9 +180,21 @@ public class DefaultDataHandler implements DataHandler {
 
     private String buildColumnValue(ColumnMeta colMeta, Record record) {
         Column column = record.getColumn(indexOf(colMeta.field));
+        TimestampPrecision timestampPrecision = schemaManager.loadDatabasePrecision();
         switch (column.getType()) {
-            case DATE:
-                return "'" + column.asString() + "'";
+            case DATE: {
+                Date value = column.asDate();
+                switch (timestampPrecision) {
+                    case MILLISEC:
+                        return "" + (value.getTime());
+                    case MICROSEC:
+                        return "" + (value.getTime() * 1000);
+                    case NANOSEC:
+                        return "" + (value.getTime() * 1000_000);
+                    default:
+                        return "'" + column.asString() + "'";
+                }
+            }
             case BYTES:
             case STRING:
                 if (colMeta.type.equals("TIMESTAMP"))
