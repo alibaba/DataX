@@ -140,7 +140,7 @@ create table test.weather (ts timestamp, temperature int, humidity double) tags(
   * 必选：是
   * 默认值：无
 * batchSize
-  * 描述：
+  * 描述：每batchSize条record为一个batch进行写入
   * 必选：否
   * 默认值：1
 * ignoreTagsUnmatched
@@ -241,14 +241,6 @@ datax中的数据类型，可以映射到TDengine的数据类型
 
 ## FAQ
 
-### 一张源表导入之后对应TDengine中多少张表？
-
-这是由tagColumn决定的，如果所有tag列的值都相同，那么目标表只有一个。源表有多少不同的tag组合，目标超级表就有多少子表。
-
 ### 源表和目标表的字段顺序一致吗？
 
 是的，TDengineWriter按照column中字段的顺序解析来自datax的数据。
-
-### 插件如何确定各列的数据类型？
-
-根据收到的第一批数据自动推断各列的类型。
