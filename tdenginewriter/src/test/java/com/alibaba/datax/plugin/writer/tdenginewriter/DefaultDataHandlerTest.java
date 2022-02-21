@@ -6,10 +6,7 @@ import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.element.StringColumn;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.core.transport.record.DefaultRecord;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -20,6 +17,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+@Ignore
 public class DefaultDataHandlerTest {
 
     private static final String host = "192.168.1.93";
