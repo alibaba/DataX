@@ -1,108 +1,463 @@
 package com.alibaba.datax.plugin.writer.tdenginewriter;
 
+import com.alibaba.datax.common.element.Column;
 import com.alibaba.datax.common.element.Record;
+import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordReceiver;
 import com.alibaba.datax.common.plugin.TaskPluginCollector;
-import com.taosdata.jdbc.TSDBDriver;
-import com.taosdata.jdbc.TSDBPreparedStatement;
+import com.alibaba.datax.common.util.Configuration;
+import com.taosdata.jdbc.SchemalessWriter;
+import com.taosdata.jdbc.enums.SchemalessProtocolType;
+import com.taosdata.jdbc.enums.SchemalessTimestampType;
+import com.taosdata.jdbc.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.Properties;
+import java.sql.*;
+import java.util.*;
+import java.util.Date;
+import java.util.stream.Collectors;
 
-/**
- * 默认DataHandler
- */
 public class DefaultDataHandler implements DataHandler {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultDataHandler.class);
 
-    static {
-        try {
-            Class.forName("com.taosdata.jdbc.TSDBDriver");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
+    private String username;
+    private String password;
+    private String jdbcUrl;
+    private int batchSize;
+    private boolean ignoreTagsUnmatched;
+
+    private List<String> tables;
+    private List<String> columns;
+
+    private Map<String, TableMeta> tableMetas;
+    private SchemaManager schemaManager;
+
+    public void setTableMetas(Map<String, TableMeta> tableMetas) {
+        this.tableMetas = tableMetas;
+    }
+
+    public void setColumnMetas(Map<String, List<ColumnMeta>> columnMetas) {
+        this.columnMetas = columnMetas;
+    }
+
+    public void setSchemaManager(SchemaManager schemaManager) {
+        this.schemaManager = schemaManager;
+    }
+
+    private Map<String, List<ColumnMeta>> columnMetas;
+
+    public DefaultDataHandler(Configuration configuration) {
+        this.username = configuration.getString(Key.USERNAME, Constants.DEFAULT_USERNAME);
+        this.password = configuration.getString(Key.PASSWORD, Constants.DEFAULT_PASSWORD);
+        this.jdbcUrl = configuration.getString(Key.JDBC_URL);
+        this.batchSize = configuration.getInt(Key.BATCH_SIZE, Constants.DEFAULT_BATCH_SIZE);
+        this.tables = configuration.getList(Key.TABLE, String.class);
+        this.columns = configuration.getList(Key.COLUMN, String.class);
+        this.ignoreTagsUnmatched = configuration.getBool(Key.IGNORE_TAGS_UNMATCHED, Constants.DEFAULT_IGNORE_TAGS_UNMATCHED);
     }
 
     @Override
-    public long handle(RecordReceiver lineReceiver, Properties properties, TaskPluginCollector collector) {
-        SchemaManager schemaManager = new SchemaManager(properties);
-        if (!schemaManager.configValid()) {
-            return 0;
-        }
+    public int handle(RecordReceiver lineReceiver, TaskPluginCollector collector) {
+        int count = 0;
+        int affectedRows = 0;
 
-        try {
-            Connection conn = getTaosConnection(properties);
-            if (conn == null) {
-                return 0;
-            }
-            if (schemaManager.shouldGuessSchema()) {
-                // 无法从配置文件获取表结构信息，尝试从数据库获取
-                LOG.info(Msg.get("try_get_schema_from_db"));
-                boolean success = schemaManager.getFromDB(conn);
-                if (!success) {
-                    return 0;
+        try (Connection conn = DriverManager.getConnection(jdbcUrl, username, password)) {
+            LOG.info("connection[ jdbcUrl: " + jdbcUrl + ", username: " + username + "] established.");
+            // prepare table_name -> table_meta
+            this.schemaManager = new SchemaManager(conn);
+            this.tableMetas = schemaManager.loadTableMeta(tables);
+            // prepare table_name -> column_meta
+            this.columnMetas = schemaManager.loadColumnMetas(tables);
+
+            List<Record> recordBatch = new ArrayList<>();
+            Record record;
+            for (int i = 1; (record = lineReceiver.getFromReader()) != null; i++) {
+                if (i % batchSize != 0) {
+                    recordBatch.add(record);
+                } else {
+                    affectedRows = writeBatch(conn, recordBatch);
+                    recordBatch.clear();
                 }
-            } else {
-
+                count++;
             }
-            int batchSize = Integer.parseInt(properties.getProperty(Key.BATCH_SIZE, "1000"));
-            if (batchSize < 5) {
-                // batchSize太小，会增加自动类型推断错误的概率，建议改大后重试
-                LOG.error(Msg.get("batch_size_too_small"));
-                return 0;
+
+            if (!recordBatch.isEmpty()) {
+                affectedRows = writeBatch(conn, recordBatch);
+                recordBatch.clear();
             }
-            return write(lineReceiver, conn, batchSize, schemaManager, collector);
-        } catch (Exception e) {
-            LOG.error("write failed " + e.getMessage());
-            e.printStackTrace();
+        } catch (SQLException e) {
+            throw DataXException.asDataXException(TDengineWriterErrorCode.RUNTIME_EXCEPTION, e.getMessage());
         }
-        return 0;
-    }
 
-
-    private Connection getTaosConnection(Properties properties) throws SQLException {
-        // 检查必要参数
-        String host = properties.getProperty(Key.HOST);
-        String port = properties.getProperty(Key.PORT);
-        String dbname = properties.getProperty(Key.DBNAME);
-        String user = properties.getProperty(Key.USER);
-        String password = properties.getProperty(Key.PASSWORD);
-        if (host == null || port == null || dbname == null || user == null || password == null) {
-            String keys = String.join(" ", Key.HOST, Key.PORT, Key.DBNAME, Key.USER, Key.PASSWORD);
-            LOG.error("Required options missing, please check: " + keys);
-            return null;
+        if (affectedRows != count) {
+            LOG.error("write record missing or incorrect happened, affectedRows: " + affectedRows + ", total: " + count);
         }
-        String jdbcUrl = String.format("jdbc:TAOS://%s:%s/%s?user=%s&password=%s", host, port, dbname, user, password);
-        Properties connProps = new Properties();
-        connProps.setProperty(TSDBDriver.PROPERTY_KEY_CHARSET, "UTF-8");
-        LOG.info("TDengine connection established, host:{} port:{} dbname:{} user:{}", host, port, dbname, user);
-        return DriverManager.getConnection(jdbcUrl, connProps);
+
+        return affectedRows;
     }
 
     /**
-     * 使用SQL批量写入<br/>
-     *
-     * @return 成功写入记录数
-     * @throws SQLException
+     * table: [ "stb1", "stb2", "tb1", "tb2", "t1" ]
+     * stb1[ts,f1,f2] tags:[t1]
+     * stb2[ts,f1,f2,f3] tags:[t1,t2]
+     * 1. tables 表的的类型分成：stb(super table)/tb(sub table)/t(original table)
+     * 2. 对于stb，自动建表/schemaless
+     * 2.1: data中有tbname字段, 例如：data: [ts, f1, f2, f3, t1, t2, tbname] tbColumn: [ts, f1, f2, t1] => insert into tbname using stb1 tags(t1) values(ts, f1, f2)
+     * 2.2: data中没有tbname字段，例如：data: [ts, f1, f2, f3, t1, t2] tbColumn: [ts, f1, f2, t1] => schemaless: stb1,t1=t1 f1=f1,f2=f2 ts, 没有批量写
+     * 3. 对于tb，拼sql，例如：data: [ts, f1, f2, f3, t1, t2] tbColumn: [ts, f1, f2, t1] => insert into tb(ts, f1, f2) values(ts, f1, f2)
+     * 4. 对于t，拼sql，例如：data: [ts, f1, f2, f3, t1, t2] tbColumn: [ts, f1, f2, f3, t1, t2] insert into t(ts, f1, f2, f3, t1, t2) values(ts, f1, f2, f3, t1, t2)
      */
-    private long write(RecordReceiver lineReceiver, Connection conn, int batchSize, SchemaManager scm, TaskPluginCollector collector) throws SQLException {
-        Record record = lineReceiver.getFromReader();
-        if (record == null) {
-            return 0;
+    public int writeBatch(Connection conn, List<Record> recordBatch) {
+        int affectedRows = 0;
+        for (String table : tables) {
+            TableMeta tableMeta = tableMetas.get(table);
+            switch (tableMeta.tableType) {
+                case SUP_TABLE: {
+                    if (columns.contains("tbname"))
+                        affectedRows += writeBatchToSupTableBySQL(conn, table, recordBatch);
+                    else
+                        affectedRows += writeBatchToSupTableBySchemaless(conn, table, recordBatch);
+                }
+                break;
+                case SUB_TABLE:
+                    affectedRows += writeBatchToSubTable(conn, table, recordBatch);
+                    break;
+                case NML_TABLE:
+                default:
+                    affectedRows += writeBatchToNormalTable(conn, table, recordBatch);
+            }
         }
-        String pq = String.format("INSERT INTO ? USING %s TAGS(%s) (%s) values (%s)", scm.getStable(), scm.getTagValuesPlaceHolder(), scm.getJoinedFieldNames(), scm.getFieldValuesPlaceHolder());
-        LOG.info("Prepared SQL: {}", pq);
-        try (TSDBPreparedStatement stmt = (TSDBPreparedStatement) conn.prepareStatement(pq)) {
-            JDBCBatchWriter batchWriter = new JDBCBatchWriter(conn, stmt, scm, batchSize, collector);
-            do {
-                batchWriter.append(record);
-            } while ((record = lineReceiver.getFromReader()) != null);
-            batchWriter.flush();
-            return batchWriter.getCount();
+        return affectedRows;
+    }
+
+    /**
+     * insert into record[idx(tbname)] using table tags(record[idx(t1)]) (ts, f1, f2, f3) values(record[idx(ts)], record[idx(f1)], )
+     * record[idx(tbname)] using table tags(record[idx(t1)]) (ts, f1, f2, f3) values(record[idx(ts)], record[idx(f1)], )
+     * record[idx(tbname)] using table tags(record[idx(t1)]) (ts, f1, f2, f3) values(record[idx(ts)], record[idx(f1)], )
+     */
+    private int writeBatchToSupTableBySQL(Connection conn, String table, List<Record> recordBatch) {
+        List<ColumnMeta> columnMetas = this.columnMetas.get(table);
+
+        StringBuilder sb = new StringBuilder("insert into");
+        for (Record record : recordBatch) {
+            sb.append(" ").append(record.getColumn(indexOf("tbname")).asString())
+                    .append(" using ").append(table)
+                    .append(" tags")
+                    .append(columnMetas.stream().filter(colMeta -> columns.contains(colMeta.field)).filter(colMeta -> {
+                        return colMeta.isTag;
+                    }).map(colMeta -> {
+                        return buildColumnValue(colMeta, record);
+                    }).collect(Collectors.joining(",", "(", ")")))
+                    .append(" ")
+                    .append(columnMetas.stream().filter(colMeta -> columns.contains(colMeta.field)).filter(colMeta -> {
+                        return !colMeta.isTag;
+                    }).map(colMeta -> {
+                        return colMeta.field;
+                    }).collect(Collectors.joining(",", "(", ")")))
+                    .append(" values")
+                    .append(columnMetas.stream().filter(colMeta -> columns.contains(colMeta.field)).filter(colMeta -> {
+                        return !colMeta.isTag;
+                    }).map(colMeta -> {
+                        return buildColumnValue(colMeta, record);
+                    }).collect(Collectors.joining(",", "(", ")")));
+        }
+        String sql = sb.toString();
+
+        return executeUpdate(conn, sql);
+    }
+
+    private int executeUpdate(Connection conn, String sql) throws DataXException {
+        int count;
+        try (Statement stmt = conn.createStatement()) {
+            LOG.debug(">>> " + sql);
+            count = stmt.executeUpdate(sql);
+        } catch (SQLException e) {
+            throw DataXException.asDataXException(TDengineWriterErrorCode.RUNTIME_EXCEPTION, e.getMessage());
+        }
+        return count;
+    }
+
+    private String buildColumnValue(ColumnMeta colMeta, Record record) {
+        Column column = record.getColumn(indexOf(colMeta.field));
+        TimestampPrecision timestampPrecision = schemaManager.loadDatabasePrecision();
+        switch (column.getType()) {
+            case DATE: {
+                Date value = column.asDate();
+                switch (timestampPrecision) {
+                    case MILLISEC:
+                        return "" + (value.getTime());
+                    case MICROSEC:
+                        return "" + (value.getTime() * 1000);
+                    case NANOSEC:
+                        return "" + (value.getTime() * 1000_000);
+                    default:
+                        return "'" + column.asString() + "'";
+                }
+            }
+            case BYTES:
+            case STRING:
+                if (colMeta.type.equals("TIMESTAMP"))
+                    return "\"" + column.asString() + "\"";
+                String value = column.asString();
+                return "\'" + Utils.escapeSingleQuota(value) + "\'";
+            case NULL:
+            case BAD:
+                return "NULL";
+            case BOOL:
+            case DOUBLE:
+            case INT:
+            case LONG:
+            default:
+                return column.asString();
         }
     }
+
+    /**
+     * table: ["stb1"], column: ["ts", "f1", "f2", "t1"]
+     * data: [ts, f1, f2, f3, t1, t2] tbColumn: [ts, f1, f2, t1] => schemaless: stb1,t1=t1 f1=f1,f2=f2 ts
+     */
+    private int writeBatchToSupTableBySchemaless(Connection conn, String table, List<Record> recordBatch) {
+        int count = 0;
+        TimestampPrecision timestampPrecision = schemaManager.loadDatabasePrecision();
+
+        List<ColumnMeta> columnMetaList = this.columnMetas.get(table);
+        ColumnMeta ts = columnMetaList.stream().filter(colMeta -> colMeta.isPrimaryKey).findFirst().get();
+
+        List<String> lines = new ArrayList<>();
+        for (Record record : recordBatch) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(table).append(",")
+                    .append(columnMetaList.stream().filter(colMeta -> columns.contains(colMeta.field)).filter(colMeta -> {
+                        return colMeta.isTag;
+                    }).map(colMeta -> {
+                        String value = record.getColumn(indexOf(colMeta.field)).asString();
+                        if (value.contains(" "))
+                            value = value.replace(" ", "\\ ");
+                        return colMeta.field + "=" + value;
+                    }).collect(Collectors.joining(",")))
+                    .append(" ")
+                    .append(columnMetaList.stream().filter(colMeta -> columns.contains(colMeta.field)).filter(colMeta -> {
+                        return !colMeta.isTag && !colMeta.isPrimaryKey;
+                    }).map(colMeta -> {
+                        return colMeta.field + "=" + buildSchemalessColumnValue(colMeta, record);
+//                        return colMeta.field + "=" + record.getColumn(indexOf(colMeta.field)).asString();
+                    }).collect(Collectors.joining(",")))
+                    .append(" ");
+            // timestamp
+            Column column = record.getColumn(indexOf(ts.field));
+            Object tsValue = column.getRawData();
+            if (column.getType() == Column.Type.DATE && tsValue instanceof Date) {
+                long time = column.asDate().getTime();
+                switch (timestampPrecision) {
+                    case NANOSEC:
+                        sb.append(time * 1000000);
+                        break;
+                    case MICROSEC:
+                        sb.append(time * 1000);
+                        break;
+                    case MILLISEC:
+                    default:
+                        sb.append(time);
+                }
+            } else if (column.getType() == Column.Type.STRING) {
+                sb.append(Utils.parseTimestamp(column.asString()));
+            } else {
+                sb.append(column.asLong());
+            }
+            String line = sb.toString();
+            LOG.debug(">>> " + line);
+            lines.add(line);
+            count++;
+        }
+
+        SchemalessWriter writer = new SchemalessWriter(conn);
+        SchemalessTimestampType timestampType;
+        switch (timestampPrecision) {
+            case NANOSEC:
+                timestampType = SchemalessTimestampType.NANO_SECONDS;
+                break;
+            case MICROSEC:
+                timestampType = SchemalessTimestampType.MICRO_SECONDS;
+                break;
+            case MILLISEC:
+                timestampType = SchemalessTimestampType.MILLI_SECONDS;
+                break;
+            default:
+                timestampType = SchemalessTimestampType.NOT_CONFIGURED;
+        }
+        try {
+            writer.write(lines, SchemalessProtocolType.LINE, timestampType);
+        } catch (SQLException e) {
+            throw DataXException.asDataXException(TDengineWriterErrorCode.RUNTIME_EXCEPTION, e.getMessage());
+        }
+
+        LOG.warn("schemalessWriter does not return affected rows!");
+        return count;
+    }
+
+    private long dateAsLong(Column column) {
+        TimestampPrecision timestampPrecision = schemaManager.loadDatabasePrecision();
+        long time = column.asDate().getTime();
+        switch (timestampPrecision) {
+            case NANOSEC:
+                return time * 1000000;
+            case MICROSEC:
+                return time * 1000;
+            case MILLISEC:
+            default:
+                return time;
+        }
+    }
+
+    private String buildSchemalessColumnValue(ColumnMeta colMeta, Record record) {
+        Column column = record.getColumn(indexOf(colMeta.field));
+        switch (column.getType()) {
+            case DATE:
+                if (colMeta.type.equals("TIMESTAMP"))
+                    return dateAsLong(column) + "i64";
+                return "L'" + column.asString() + "'";
+            case NULL:
+            case BAD:
+                return "NULL";
+            case DOUBLE: {
+                if (colMeta.type.equals("FLOAT"))
+                    return column.asString() + "f32";
+                if (colMeta.type.equals("DOUBLE"))
+                    return column.asString() + "f64";
+            }
+            case INT:
+            case LONG: {
+                if (colMeta.type.equals("TINYINT"))
+                    return column.asString() + "i8";
+                if (colMeta.type.equals("SMALLINT"))
+                    return column.asString() + "i16";
+                if (colMeta.type.equals("INT"))
+                    return column.asString() + "i32";
+                if (colMeta.type.equals("BIGINT"))
+                    return column.asString() + "i64";
+            }
+            case BYTES:
+            case STRING:
+                if (colMeta.type.equals("TIMESTAMP"))
+                    return column.asString() + "i64";
+                String value = column.asString();
+                value = value.replace("\"", "\\\"");
+                if (colMeta.type.startsWith("BINARY"))
+                    return "\"" + value + "\"";
+                if (colMeta.type.startsWith("NCHAR"))
+                    return "L\"" + value + "\"";
+            case BOOL:
+            default:
+                return column.asString();
+        }
+    }
+
+    /**
+     * table: ["tb1"], column: [tbname, ts, f1, f2, t1]
+     * if contains("tbname") and tbname != tb1 continue;
+     * else if t1 != record[idx(t1)] or t2 != record[idx(t2)]... continue;
+     * else
+     * insert into tb1 (ts, f1, f2) values( record[idx(ts)], record[idx(f1)], record[idx(f2)])
+     */
+    private int writeBatchToSubTable(Connection conn, String table, List<Record> recordBatch) {
+        List<ColumnMeta> columnMetas = this.columnMetas.get(table);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("insert into ").append(table).append(" ")
+                .append(columnMetas.stream().filter(colMeta -> columns.contains(colMeta.field)).filter(colMeta -> {
+                    return !colMeta.isTag;
+                }).map(colMeta -> {
+                    return colMeta.field;
+                }).collect(Collectors.joining(",", "(", ")")))
+                .append(" values");
+        int validRecords = 0;
+        for (Record record : recordBatch) {
+            if (columns.contains("tbname") && !table.equals(record.getColumn(indexOf("tbname")).asString()))
+                continue;
+
+            boolean tagsAllMatch = columnMetas.stream().filter(colMeta -> columns.contains(colMeta.field)).filter(colMeta -> {
+                return colMeta.isTag;
+            }).allMatch(colMeta -> {
+                Column column = record.getColumn(indexOf(colMeta.field));
+                boolean equals = equals(column, colMeta);
+                return equals;
+            });
+
+            if (ignoreTagsUnmatched && !tagsAllMatch)
+                continue;
+
+            sb.append(columnMetas.stream().filter(colMeta -> columns.contains(colMeta.field)).filter(colMeta -> {
+                return !colMeta.isTag;
+            }).map(colMeta -> {
+                return buildColumnValue(colMeta, record);
+            }).collect(Collectors.joining(", ", "(", ") ")));
+            validRecords++;
+        }
+
+        if (validRecords == 0) {
+            LOG.warn("no valid records in this batch");
+            return 0;
+        }
+
+        String sql = sb.toString();
+        return executeUpdate(conn, sql);
+    }
+
+    private boolean equals(Column column, ColumnMeta colMeta) {
+        switch (column.getType()) {
+            case BOOL:
+                return column.asBoolean().equals(Boolean.valueOf(colMeta.value.toString()));
+            case INT:
+            case LONG:
+                return column.asLong().equals(Long.valueOf(colMeta.value.toString()));
+            case DOUBLE:
+                return column.asDouble().equals(Double.valueOf(colMeta.value.toString()));
+            case NULL:
+                return colMeta.value == null;
+            case DATE:
+                return column.asDate().getTime() == ((Timestamp) colMeta.value).getTime();
+            case BAD:
+            case BYTES:
+                return Arrays.equals(column.asBytes(), (byte[]) colMeta.value);
+            case STRING:
+            default:
+                return column.asString().equals(colMeta.value.toString());
+        }
+    }
+
+    /**
+     * table: ["weather"], column: ["ts, f1, f2, f3, t1, t2"]
+     * sql: insert into weather (ts, f1, f2, f3, t1, t2) values( record[idx(ts), record[idx(f1)], ...)
+     */
+    private int writeBatchToNormalTable(Connection conn, String table, List<Record> recordBatch) {
+        List<ColumnMeta> columnMetas = this.columnMetas.get(table);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("insert into ").append(table)
+                .append(" ")
+                .append(columnMetas.stream().filter(colMeta -> columns.contains(colMeta.field)).map(colMeta -> {
+                    return colMeta.field;
+                }).collect(Collectors.joining(",", "(", ")")))
+                .append(" values ");
+
+        for (Record record : recordBatch) {
+            sb.append(columnMetas.stream().filter(colMeta -> columns.contains(colMeta.field)).map(colMeta -> {
+                return buildColumnValue(colMeta, record);
+            }).collect(Collectors.joining(",", "(", ")")));
+        }
+
+        String sql = sb.toString();
+        return executeUpdate(conn, sql);
+    }
+
+    private int indexOf(String colName) throws DataXException {
+        for (int i = 0; i < columns.size(); i++) {
+            if (columns.get(i).equals(colName))
+                return i;
+        }
+        throw DataXException.asDataXException(TDengineWriterErrorCode.RUNTIME_EXCEPTION,
+                "cannot find col: " + colName + " in columns: " + columns);
+    }
+
 }

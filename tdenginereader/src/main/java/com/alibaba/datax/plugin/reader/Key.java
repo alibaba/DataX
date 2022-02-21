@@ -7,7 +7,7 @@ public class Key {
 //    public static final String PORT = "port";
 //    public static final String DB = "db";
     public static final String TABLE = "table";
-    public static final String USER = "user";
+    public static final String USER = "username";
     public static final String PASSWORD = "password";
     public static final String CONNECTION = "connection";
 //    public static final String SQL = "sql";
