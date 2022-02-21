@@ -73,6 +73,7 @@
 
         <!-- writer -->
         <module>mysqlwriter</module>
+        <module>tdenginewriter</module>
         <module>drdswriter</module>
         <module>odpswriter</module>
         <module>txtfilewriter</module>
@@ -181,6 +182,17 @@
                 <artifactId>mockito-all</artifactId>
                 <version>1.9.5</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-api</artifactId>
+                <version>2.17.1</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-core</artifactId>
+                <version>2.17.1</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

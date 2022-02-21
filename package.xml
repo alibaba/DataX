@@ -190,6 +190,13 @@
             <outputDirectory>datax</outputDirectory>
         </fileSet>
         <fileSet>
+            <directory>tdenginewriter/target/datax/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>datax</outputDirectory>
+        </fileSet>
+        <fileSet>
             <directory>drdswriter/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
@@ -352,6 +359,13 @@
         </fileSet>
         <fileSet>
             <directory>tsdbwriter/target/datax/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>datax</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>tsdbreader/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
             </includes>
