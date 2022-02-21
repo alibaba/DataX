@@ -27,7 +27,6 @@ The TDengineWriter can write data to super tables, sub-tables, and ordinary tabl
 4. Table is a common table: use insert statement to write data.
 
 
-
 ## 3 Features Introduction
 ### 3.1 Sample
 Configure a job to write to TDengine

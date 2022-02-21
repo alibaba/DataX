@@ -24,7 +24,7 @@ public class HttpUtilsTest {
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("foo", "bar");
 
-        String rsp = HttpUtils.post(url, params);
+        String rsp = HttpUtils.post(url, null,null,params);
         System.out.println(rsp);
         Assert.assertNotNull(rsp);
     }
@@ -32,7 +32,7 @@ public class HttpUtilsTest {
     @Test
     public void testGet() throws Exception {
         String url = String.format("%s/api/version", Const.OPENTSDB_ADDRESS);
-        String rsp = HttpUtils.get(url);
+        String rsp = HttpUtils.get(url,null,null);
         System.out.println(rsp);
         Assert.assertNotNull(rsp);
     }

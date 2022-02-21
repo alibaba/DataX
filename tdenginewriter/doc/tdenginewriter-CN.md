@@ -29,7 +29,6 @@ TDengineWriter支持向超级表、子表、普通表中写入数据，按照tab
 ### 3.1 配置样例
 
 配置一个写入TDengine的作业
-
 先在TDengine上创建超级表：
 
 ```sql
