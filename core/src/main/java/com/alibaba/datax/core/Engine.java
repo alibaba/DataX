@@ -73,7 +73,7 @@ public class Engine {
         boolean traceEnable = allConf.getBool(CoreConstant.DATAX_CORE_CONTAINER_TRACE_ENABLE, true);
         boolean perfReportEnable = allConf.getBool(CoreConstant.DATAX_CORE_REPORT_DATAX_PERFLOG, true);
 
-        //standlone模式的datax shell任务不进行汇报
+        //standalone模式的 datax shell任务不进行汇报
         if(instanceId == -1){
             perfReportEnable = false;
         }
