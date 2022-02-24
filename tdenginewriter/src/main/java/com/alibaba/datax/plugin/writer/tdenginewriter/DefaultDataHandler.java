@@ -47,6 +47,16 @@ public class DefaultDataHandler implements DataHandler {
 
     private Map<String, List<ColumnMeta>> columnMetas;
 
+    
+    static {
+        try {
+            Class.forName("com.taosdata.jdbc.TSDBDriver");
+            Class.forName("com.taosdata.jdbc.rs.RestfulDriver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+    
     public DefaultDataHandler(Configuration configuration) {
         this.username = configuration.getString(Key.USERNAME, Constants.DEFAULT_USERNAME);
         this.password = configuration.getString(Key.PASSWORD, Constants.DEFAULT_PASSWORD);
