@@ -25,7 +25,7 @@ public class TDengineWriter extends Writer {
             this.originalConfig = super.getPluginJobConf();
             this.originalConfig.set(PEER_PLUGIN_NAME, getPeerPluginName());
 
-            // check user
+            // check username
             String user = this.originalConfig.getString(Key.USERNAME);
             if (StringUtils.isBlank(user))
                 throw DataXException.asDataXException(TDengineWriterErrorCode.REQUIRED_VALUE, "The parameter ["

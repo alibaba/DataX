@@ -37,8 +37,7 @@ TDengineReader 通过TDengine的JDBC driver查询获取数据。
               "phase"
             ],
             "beginDateTime": "2017-07-14 10:40:00",
-            "endDateTime": "2017-08-14 10:40:00",
-            "splitInterval": "1d"
+            "endDateTime": "2017-08-14 10:40:00"
           }
         },
         "writer": {
@@ -79,17 +78,12 @@ TDengineReader 通过TDengine的JDBC driver查询获取数据。
     * 必选：是 <br />
     * 默认值：无<br />
 * **beginDateTime**
-    * 描述：数据的开始时间，Job迁移从begineDateTime到endDateTime的数据，格式为yyyy-MM-dd HH:mm:ss <br />
-    * 必选：是 <br />
+    * 描述：数据的开始时间，Job迁移从begineDateTime到endDateTime的数据，格式为yyyy-MM-dd HH:mm:ss，如果不填为全量同步 <br />
+    * 必选：否 <br />
     * 默认值：无 <br />
 * **endDateTime**
-    * 描述：数据的结束时间，Job迁移从begineDateTime到endDateTime的数据，格式为yyyy-MM-dd HH:mm:ss <br />
-    * 必选：是 <br />
-    * 默认值：无 <br />
-* **splitInterval**
-    * 描述：按照splitInterval来划分task, 每splitInterval创建一个task。例如，20d代表按照每20天的数据划分为1个task。
-      可以配置的时间单位为：d（天）, h（小时）, m（分钟）, s（秒） <br />
-    * 必选：是 <br />
+    * 描述：数据的结束时间，Job迁移从begineDateTime到endDateTime的数据，格式为yyyy-MM-dd HH:mm:ss，如果不填为全量同步 <br />
+    * 必选：否 <br />
     * 默认值：无 <br />
 
 ### 3.3 类型转换
@@ -105,7 +99,6 @@ TDengineReader 通过TDengine的JDBC driver查询获取数据。
 | TIMESTAMP       | Date          |
 | BINARY          | Bytes         |
 | NCHAR           | String        |
-
 
 ## 4 性能报告
 

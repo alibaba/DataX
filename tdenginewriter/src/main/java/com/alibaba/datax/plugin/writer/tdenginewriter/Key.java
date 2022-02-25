@@ -9,4 +9,7 @@ public class Key {
     public static final String JDBC_URL = "jdbcUrl";
     public static final String COLUMN = "column";
     public static final String IGNORE_TAGS_UNMATCHED = "ignoreTagsUnmatched";
+
+    public static final String BEGIN_DATETIME = "beginDateTime";
+    public static final String END_DATETIME = "endDateTime";
 }
