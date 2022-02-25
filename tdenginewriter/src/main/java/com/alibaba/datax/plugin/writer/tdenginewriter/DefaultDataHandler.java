@@ -19,6 +19,15 @@ import java.util.Date;
 import java.util.stream.Collectors;
 
 public class DefaultDataHandler implements DataHandler {
+    static {
+        try {
+            Class.forName("com.taosdata.jdbc.TSDBDriver");
+            Class.forName("com.taosdata.jdbc.rs.RestfulDriver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
     private static final Logger LOG = LoggerFactory.getLogger(DefaultDataHandler.class);
 
     private String username;
@@ -61,6 +70,7 @@ public class DefaultDataHandler implements DataHandler {
     public int handle(RecordReceiver lineReceiver, TaskPluginCollector collector) {
         int count = 0;
         int affectedRows = 0;
+
 
         try (Connection conn = DriverManager.getConnection(jdbcUrl, username, password)) {
             LOG.info("connection[ jdbcUrl: " + jdbcUrl + ", username: " + username + "] established.");

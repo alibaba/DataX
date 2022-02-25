@@ -75,14 +75,14 @@
             <scope>test</scope>
         </dependency>
         <!-- 添加 dm8 jdbc jar 包依赖-->
-        <dependency>
-            <groupId>com.dameng</groupId>
-            <artifactId>dm-jdbc</artifactId>
-            <version>1.8</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/src/test/resources/DmJdbcDriver18.jar
-            </systemPath>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.dameng</groupId>-->
+<!--            <artifactId>dm-jdbc</artifactId>-->
+<!--            <version>1.8</version>-->
+<!--            <scope>system</scope>-->
+<!--            <systemPath>${project.basedir}/src/test/resources/DmJdbcDriver18.jar-->
+<!--            </systemPath>-->
+<!--        </dependency>-->
 
     </dependencies>
 
