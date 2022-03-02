@@ -16,8 +16,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class TDengineReader extends Reader {
 
@@ -129,6 +127,15 @@ public class TDengineReader extends Reader {
         private String startTime;
         private String endTime;
 
+        static {
+            try {
+                Class.forName("com.taosdata.jdbc.TSDBDriver");
+                Class.forName("com.taosdata.jdbc.rs.RestfulDriver");
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+
         @Override
         public void init() {
             this.readerSliceConfig = super.getPluginJobConf();
@@ -239,32 +246,6 @@ public class TDengineReader extends Reader {
         }
     }
 
-    private static Long parseSplitInterval(String splitInterval) throws Exception {
-        final long second = 1000;
-        final long minute = 60 * second;
-        final long hour = 60 * minute;
-        final long day = 24 * hour;
 
-        Pattern compile = Pattern.compile("^(\\d+)([dhms])$");
-        Matcher matcher = compile.matcher(splitInterval);
-        while (matcher.find()) {
-            long value = Long.parseLong(matcher.group(1));
-            if (value == 0)
-                throw new Exception("invalid splitInterval: 0");
-            char unit = matcher.group(2).charAt(0);
-            switch (unit) {
-                case 'd':
-                    return value * day;
-                default:
-                case 'h':
-                    return value * hour;
-                case 'm':
-                    return value * minute;
-                case 's':
-                    return value * second;
-            }
-        }
-        throw new Exception("invalid splitInterval: " + splitInterval);
-    }
 
 }
