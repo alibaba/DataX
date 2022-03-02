@@ -127,6 +127,15 @@ public class TDengineReader extends Reader {
         private String startTime;
         private String endTime;
 
+        static {
+            try {
+                Class.forName("com.taosdata.jdbc.TSDBDriver");
+                Class.forName("com.taosdata.jdbc.rs.RestfulDriver");
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+
         @Override
         public void init() {
             this.readerSliceConfig = super.getPluginJobConf();
@@ -237,13 +246,6 @@ public class TDengineReader extends Reader {
         }
     }
 
-    static {
-        try {
-            Class.forName("com.taosdata.jdbc.TSDBDriver");
-            Class.forName("com.taosdata.jdbc.rs.RestfulDriver");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
+
 
 }
