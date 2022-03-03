@@ -3,6 +3,7 @@ package com.alibaba.datax.plugin.reader.oceanbasev10reader;
 import java.sql.Connection;
 import java.util.List;
 
+import com.alibaba.datax.plugin.reader.oceanbasev10reader.ext.ObReaderKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,6 +87,7 @@ public class OceanBaseReader extends Reader {
                 String obJdbcUrl = jdbcUrl.replace("jdbc:mysql:", "jdbc:oceanbase:");
                 Connection conn = DBUtil.getConnection(DataBaseType.OceanBase, obJdbcUrl, username, password);
                 String compatibleMode = ObReaderUtils.getCompatibleMode(conn);
+                config.set(ObReaderKey.OB_COMPATIBILITY_MODE, compatibleMode);
                 if (ObReaderUtils.isOracleMode(compatibleMode)) {
                     ObReaderUtils.compatibleMode = ObReaderUtils.OB_COMPATIBLE_MODE_ORACLE;
                 }
