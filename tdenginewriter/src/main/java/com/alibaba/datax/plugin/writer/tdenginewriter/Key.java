@@ -12,4 +12,7 @@ public class Key {
 
     public static final String BEGIN_DATETIME = "beginDateTime";
     public static final String END_DATETIME = "endDateTime";
+    public static final String WHERE = "where";
+    public static final String QUERY_SQL = "querySql";
+    public static final String MANDATORY_ENCODING = "mandatoryEncoding";
 }

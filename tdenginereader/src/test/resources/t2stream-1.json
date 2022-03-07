@@ -8,7 +8,11 @@
             "username": "root",
             "password": "taosdata",
             "column": [
-              "*"
+              "ts",
+              "f1",
+              "f2",
+              "t1",
+              "t2"
             ],
             "connection": [
               {
@@ -19,26 +23,17 @@
                   "jdbc:TAOS-RS://192.168.56.105:6041/db1"
                 ]
               }
-            ]
+            ],
+            "where": "t10 = '北京朝阳望京'",
+            "beginDateTime": "2022-03-07 12:00:00",
+            "endDateTime": "2022-03-07 19:00:00"
           }
         },
         "writer": {
-          "name": "rdbmswriter",
+          "name": "streamwriter",
           "parameter": {
-            "connection": [
-              {
-                "table": [
-                  "stb2"
-                ],
-                "jdbcUrl": "jdbc:dm://192.168.0.72:5236"
-              }
-            ],
-            "username": "TESTUSER",
-            "password": "test123456",
-            "table": "stb2",
-            "column": [
-              "*"
-            ]
+            "encoding": "UTF-8",
+            "print": true
           }
         }
       }

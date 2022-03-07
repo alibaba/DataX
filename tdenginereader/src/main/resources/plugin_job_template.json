@@ -8,7 +8,9 @@
         "table": [
           ""
         ],
-        "jdbcUrl": ""
+        "jdbcUrl": [
+          ""
+        ]
       }
     ],
     "column": [
@@ -16,6 +18,6 @@
     ],
     "beginDateTime": "",
     "endDateTime": "",
-    "splitInterval": ""
+    "where": ""
   }
 }
