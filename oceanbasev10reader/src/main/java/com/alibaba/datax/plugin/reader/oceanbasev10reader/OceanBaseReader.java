@@ -53,6 +53,21 @@ public class OceanBaseReader extends Reader {
 
         @Override
         public List<Configuration> split(int adviceNumber) {
+            String splitPk = originalConfig.getString(Key.SPLIT_PK);
+            List<String> quotedColumns = originalConfig.getList(Key.COLUMN_LIST, String.class);
+            if (splitPk != null && splitPk.length() > 0 && quotedColumns != null) {
+                String escapeChar = ObReaderUtils.isOracleMode(originalConfig.getString(ObReaderKey.OB_COMPATIBILITY_MODE))
+                    ? "\"" : "`";
+                if (!splitPk.startsWith(escapeChar) && !splitPk.endsWith(escapeChar)) {
+                    splitPk = escapeChar + splitPk + escapeChar;
+                }
+                for (String column : quotedColumns) {
+                    if (column.equals(splitPk)) {
+                        LOG.info("splitPk is an ob reserved keyword, set to {}", splitPk);
+                        originalConfig.set(Key.SPLIT_PK, splitPk);
+                    }
+                }
+            }
             return this.readerJob.split(this.originalConfig, adviceNumber);
         }
 
