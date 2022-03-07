@@ -257,6 +257,7 @@ public class SingleTableSplitUtil {
 
         switch (SingleTableSplitUtil.DATABASE_TYPE) {
             case Oracle:
+            case OceanBase:
                 isValidLongType |= type == Types.NUMERIC;
                 break;
             default:
