@@ -193,6 +193,7 @@ public class TDengineReader extends Reader {
                         sb.append(" and _c0 < '").append(endTime).append("'");
                     }
                     String sql = sb.toString().trim();
+                    sqlList.add(sql);
                 }
             } else {
                 sqlList.addAll(querySql);
