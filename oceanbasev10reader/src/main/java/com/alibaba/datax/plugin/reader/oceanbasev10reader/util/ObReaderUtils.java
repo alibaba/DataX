@@ -171,9 +171,6 @@ public class ObReaderUtils {
                 hasPk = true;
                 String columnName = rs.getString("Column_name");
                 columnName = escapeDatabaseKeywords(columnName);
-                if (!isEscapeMode(columnName)) {
-                    columnName = columnName.toLowerCase();
-                }
                 if (!realIndex.contains(columnName)) {
                     realIndex.add(columnName);
                 }
