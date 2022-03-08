@@ -2,6 +2,7 @@ package com.alibaba.datax.plugin.writer.tdenginewriter;
 
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordReceiver;
+import com.alibaba.datax.common.plugin.TaskPluginCollector;
 import com.alibaba.datax.common.spi.Writer;
 import com.alibaba.datax.common.util.Configuration;
 import org.apache.commons.lang3.StringUtils;
@@ -81,10 +82,12 @@ public class TDengineWriter extends Writer {
         private static final Logger LOG = LoggerFactory.getLogger(Task.class);
 
         private Configuration writerSliceConfig;
+        private TaskPluginCollector taskPluginCollector;
 
         @Override
         public void init() {
             this.writerSliceConfig = getPluginJobConf();
+            this.taskPluginCollector = super.getTaskPluginCollector();
         }
 
         @Override
@@ -101,7 +104,7 @@ public class TDengineWriter extends Writer {
             if (peerPluginName.equals("opentsdbreader"))
                 handler = new OpentsdbDataHandler(this.writerSliceConfig);
             else
-                handler = new DefaultDataHandler(this.writerSliceConfig);
+                handler = new DefaultDataHandler(this.writerSliceConfig, this.taskPluginCollector);
 
             long records = handler.handle(lineReceiver, getTaskPluginCollector());
             LOG.debug("handle data finished, records: " + records);
