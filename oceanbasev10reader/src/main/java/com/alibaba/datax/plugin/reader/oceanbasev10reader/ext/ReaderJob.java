@@ -1,5 +1,6 @@
 package com.alibaba.datax.plugin.reader.oceanbasev10reader.ext;
 
+import java.util.Arrays;
 import java.util.List;
 
 import com.alibaba.datax.common.constant.CommonConstant;
@@ -48,8 +49,11 @@ public class ReaderJob extends CommonRdbmsReader.Job {
     @Override
     public List<Configuration> split(Configuration originalConfig, int adviceNumber) {
         List<Configuration> list;
-        // readByPartition is lower priority than splitPk
-        if (!isSplitPkValid(originalConfig) && originalConfig.getBool(ObReaderKey.READ_BY_PARTITION, false)) {
+        // readByPartition is lower priority than splitPk.
+        // and readByPartition only works in table mode.
+        if (!isSplitPkValid(originalConfig) &&
+                originalConfig.getBool(Constant.IS_TABLE_MODE) &&
+                originalConfig.getBool(ObReaderKey.READ_BY_PARTITION, false)) {
             LOG.info("try to split reader job by partition.");
             list = PartitionSplitUtil.splitByPartition(originalConfig);
         } else {
