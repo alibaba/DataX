@@ -1,15 +1,5 @@
 package com.alibaba.datax.plugin.writer.oceanbasev10writer;
 
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import com.alibaba.datax.plugin.writer.oceanbasev10writer.util.DbUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alibaba.datax.common.plugin.RecordReceiver;
 import com.alibaba.datax.common.spi.Writer;
 import com.alibaba.datax.common.util.Configuration;
@@ -20,8 +10,16 @@ import com.alibaba.datax.plugin.rdbms.writer.Constant;
 import com.alibaba.datax.plugin.rdbms.writer.Key;
 import com.alibaba.datax.plugin.rdbms.writer.util.WriterUtil;
 import com.alibaba.datax.plugin.writer.oceanbasev10writer.task.ConcurrentTableWriterTask;
-import com.alibaba.datax.plugin.writer.oceanbasev10writer.task.SingleTableWriterTask;
+import com.alibaba.datax.plugin.writer.oceanbasev10writer.util.DbUtils;
 import com.alibaba.datax.plugin.writer.oceanbasev10writer.util.ObWriterUtils;
+import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 2016-04-07
@@ -61,6 +59,19 @@ public class OceanBaseV10Writer extends Writer {
 		public void init() {
 			this.originalConfig = super.getPluginJobConf();
 			checkCompatibleMode(originalConfig);
+			//将config中的column和table中的关键字进行转义
+			List<String> columns = originalConfig.getList(Key.COLUMN, String.class);
+			ObWriterUtils.escapeDatabaseKeywords(columns);
+			originalConfig.set(Key.COLUMN, columns);
+
+			List<JSONObject> conns = originalConfig.getList(Constant.CONN_MARK, JSONObject.class);
+			for (int i = 0; i < conns.size(); i++) {
+				JSONObject conn = conns.get(i);
+				Configuration connConfig = Configuration.from(conn.toString());
+				List<String> tables = connConfig.getList(Key.TABLE, String.class);
+				ObWriterUtils.escapeDatabaseKeywords(tables);
+				originalConfig.set(String.format("%s[%d].%s", Constant.CONN_MARK, i, Key.TABLE), tables);
+			}
 			this.commonJob = new CommonRdbmsWriter.Job(DATABASE_TYPE);
 			this.commonJob.init(this.originalConfig);
 		}
@@ -223,6 +234,7 @@ public class OceanBaseV10Writer extends Writer {
 		/**
 		 * 注意：此方法每个 Task 都会执行一次。 最佳实践：此处适当封装确保简洁清晰完成数据写入工作。
 		 */
+		@Override
 		public void startWrite(RecordReceiver recordReceiver) {
 			this.writerTask.startWrite(recordReceiver, this.writerSliceConfig, super.getTaskPluginCollector());
 		}

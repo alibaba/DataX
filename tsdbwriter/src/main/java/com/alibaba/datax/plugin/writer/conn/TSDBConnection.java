@@ -18,12 +18,18 @@ import java.util.List;
 public class TSDBConnection implements Connection4TSDB {
 
     private String address;
+    private String username;
+    private String password;
+    private String database;
 
-    public TSDBConnection(String address) {
+    public TSDBConnection(String address, String database, String username, String password) {
         if (StringUtils.isBlank(address)) {
             throw new RuntimeException("TSDBConnection init failed because address is blank!");
         }
         this.address = address;
+        this.database = database;
+        this.username = username;
+        this.password = password;
     }
 
     @Override
@@ -32,13 +38,28 @@ public class TSDBConnection implements Connection4TSDB {
     }
 
     @Override
+    public String username() {
+        return username;
+    }
+
+    @Override
+    public String database() {
+        return database;
+    }
+
+    @Override
+    public String password() {
+        return password;
+    }
+
+    @Override
     public String version() {
-        return TSDBUtils.version(address);
+        return TSDBUtils.version(address, username, password);
     }
 
     @Override
     public String config() {
-        return TSDBUtils.config(address);
+        return TSDBUtils.config(address, username, password);
     }
 
     @Override
@@ -53,17 +74,22 @@ public class TSDBConnection implements Connection4TSDB {
 
     @Override
     public boolean put(DataPoint4TSDB dp) {
-        return TSDBUtils.put(address, dp);
+        return TSDBUtils.put(address, database, username, password, dp);
     }
 
     @Override
     public boolean put(List<DataPoint4TSDB> dps) {
-        return TSDBUtils.put(address, dps);
+        return TSDBUtils.put(address, database, username, password, dps);
     }
 
     @Override
     public boolean put(String dps) {
-        return TSDBUtils.put(address, dps);
+        return TSDBUtils.put(address, database, username, password, dps);
+    }
+
+    @Override
+    public boolean mput(String dps) {
+        return TSDBUtils.mput(address, database, username, password, dps);
     }
 
     @Override

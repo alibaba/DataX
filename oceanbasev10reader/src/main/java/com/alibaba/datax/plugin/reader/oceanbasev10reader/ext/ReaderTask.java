@@ -1,13 +1,5 @@
 package com.alibaba.datax.plugin.reader.oceanbasev10reader.ext;
 
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alibaba.datax.common.element.Column;
 import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.plugin.RecordSender;
@@ -19,11 +11,17 @@ import com.alibaba.datax.plugin.rdbms.reader.CommonRdbmsReader;
 import com.alibaba.datax.plugin.rdbms.reader.Constant;
 import com.alibaba.datax.plugin.rdbms.reader.Key;
 import com.alibaba.datax.plugin.rdbms.util.DBUtil;
-import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
 import com.alibaba.datax.plugin.rdbms.util.RdbmsException;
 import com.alibaba.datax.plugin.reader.oceanbasev10reader.Config;
 import com.alibaba.datax.plugin.reader.oceanbasev10reader.util.ObReaderUtils;
 import com.alibaba.datax.plugin.reader.oceanbasev10reader.util.TaskContext;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ReaderTask extends CommonRdbmsReader.Task {
     private static final Logger LOG = LoggerFactory.getLogger(ReaderTask.class);
@@ -41,11 +39,12 @@ public class ReaderTask extends CommonRdbmsReader.Task {
     private boolean reuseConn = false;
 
     public ReaderTask(int taskGroupId, int taskId) {
-        super(ObReaderUtils.DATABASE_TYPE, taskGroupId, taskId);
+        super(ObReaderUtils.databaseType, taskGroupId, taskId);
         this.taskGroupId = taskGroupId;
         this.taskId = taskId;
     }
 
+    @Override
     public void init(Configuration readerSliceConfig) {
         /* for database connection */
         username = readerSliceConfig.getString(Key.USERNAME);
@@ -54,7 +53,7 @@ public class ReaderTask extends CommonRdbmsReader.Task {
         queryTimeoutSeconds = readerSliceConfig.getInt(Config.QUERY_TIMEOUT_SECOND,
                 Config.DEFAULT_QUERY_TIMEOUT_SECOND);
         // ob10的处理
-        if(jdbcUrl.startsWith(com.alibaba.datax.plugin.rdbms.writer.Constant.OB10_SPLIT_STRING)) {
+        if (jdbcUrl.startsWith(com.alibaba.datax.plugin.rdbms.writer.Constant.OB10_SPLIT_STRING)) {
             String[] ss = jdbcUrl.split(com.alibaba.datax.plugin.rdbms.writer.Constant.OB10_SPLIT_STRING_PATTERN);
             if (ss.length == 3) {
                 LOG.info("this is ob1_0 jdbc url.");
@@ -63,16 +62,14 @@ public class ReaderTask extends CommonRdbmsReader.Task {
             }
         }
 
-        if (ObReaderUtils.DATABASE_TYPE == DataBaseType.OceanBase) {
-            jdbcUrl = jdbcUrl.replace("jdbc:mysql:", "jdbc:oceanbase:") + "&socketTimeout=1800000&connectTimeout=60000"; //socketTimeout 半个小时
+        jdbcUrl = jdbcUrl.replace("jdbc:mysql:", "jdbc:oceanbase:") + "&socketTimeout=1800000&connectTimeout=60000"; //socketTimeout 半个小时
+        if (ObReaderUtils.compatibleMode.equals(ObReaderUtils.OB_COMPATIBLE_MODE_ORACLE)) {
             compatibleMode = ObReaderUtils.OB_COMPATIBLE_MODE_ORACLE;
-        } else {
-            jdbcUrl = jdbcUrl + "&socketTimeout=1800000&connectTimeout=60000"; //socketTimeout 半个小时
         }
         LOG.info("this is ob1_0 jdbc url. user=" + username + " :url=" + jdbcUrl);
         mandatoryEncoding = readerSliceConfig.getString(Key.MANDATORY_ENCODING, "");
         retryLimit = readerSliceConfig.getInt(Config.RETRY_LIMIT, Config.DEFAULT_RETRY_LIMIT);
-        LOG.info("retryLimit: "+ retryLimit);
+        LOG.info("retryLimit: " + retryLimit);
     }
 
     private void buildSavePoint(TaskContext context) {
@@ -83,7 +80,6 @@ public class ReaderTask extends CommonRdbmsReader.Task {
     }
 
     /**
-     *
      * 如果isTableMode && table有PK
      * <p>
      * 则支持断点续读 (若pk不在原始的columns中,则追加到尾部,但不传给下游)
@@ -92,7 +88,7 @@ public class ReaderTask extends CommonRdbmsReader.Task {
      */
     @Override
     public void startRead(Configuration readerSliceConfig, RecordSender recordSender,
-            TaskPluginCollector taskPluginCollector, int fetchSize) {
+                          TaskPluginCollector taskPluginCollector, int fetchSize) {
         String querySql = readerSliceConfig.getString(Key.QUERY_SQL);
         String table = readerSliceConfig.getString(Key.TABLE);
         PerfTrace.getInstance().addTaskDetails(taskId, table + "," + jdbcUrl);
@@ -131,14 +127,14 @@ public class ReaderTask extends CommonRdbmsReader.Task {
     }
 
     private void startRead0(boolean isTableMode, TaskContext context, RecordSender recordSender,
-            TaskPluginCollector taskPluginCollector) {
+                            TaskPluginCollector taskPluginCollector) {
         // 不是table模式 直接使用原来的做法
         if (!isTableMode) {
             doRead(recordSender, taskPluginCollector, context);
             return;
         }
         // check primary key index
-        Connection conn = DBUtil.getConnection(ObReaderUtils.DATABASE_TYPE, jdbcUrl, username, password);
+        Connection conn = DBUtil.getConnection(ObReaderUtils.databaseType, jdbcUrl, username, password);
         ObReaderUtils.initConn4Reader(conn, queryTimeoutSeconds);
         context.setConn(conn);
         try {
@@ -184,11 +180,11 @@ public class ReaderTask extends CommonRdbmsReader.Task {
                 }
             } catch (Throwable e) {
                 if (retryLimit == ++retryCount) {
-                    throw RdbmsException.asQueryException(ObReaderUtils.DATABASE_TYPE, new Exception(e),
+                    throw RdbmsException.asQueryException(ObReaderUtils.databaseType, new Exception(e),
                             context.getQuerySql(), context.getTable(), username);
                 }
                 LOG.error("read fail, retry count " + retryCount + ", sleep 60 second, save point:" +
-                        context.getSavePoint() + ", error: "+ e.getMessage());
+                        context.getSavePoint() + ", error: " + e.getMessage());
                 ObReaderUtils.sleep(60000); // sleep 10s
             }
             // 假如原来的查询有查出数据,则改成增量查询
@@ -227,7 +223,7 @@ public class ReaderTask extends CommonRdbmsReader.Task {
             LOG.info("connection is alive, will reuse this connection.");
         } else {
             LOG.info("Create new connection for reader.");
-            conn = DBUtil.getConnection(ObReaderUtils.DATABASE_TYPE, jdbcUrl, username, password);
+            conn = DBUtil.getConnection(ObReaderUtils.databaseType, jdbcUrl, username, password);
             ObReaderUtils.initConn4Reader(conn, queryTimeoutSeconds);
             context.setConn(conn);
         }
@@ -287,7 +283,7 @@ public class ReaderTask extends CommonRdbmsReader.Task {
             ObReaderUtils.close(null, null, context.getConn());
             context.setConn(null);
             LOG.error("reader data fail", e);
-            throw RdbmsException.asQueryException(ObReaderUtils.DATABASE_TYPE, e, context.getQuerySql(),
+            throw RdbmsException.asQueryException(ObReaderUtils.databaseType, e, context.getQuerySql(),
                     context.getTable(), username);
         } finally {
             perfRecord.end();

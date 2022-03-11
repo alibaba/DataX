@@ -34,6 +34,16 @@
             <groupId>com.aliyun.openservices</groupId>
             <artifactId>ots-public</artifactId>
             <version>2.2.4</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>log4j-api</artifactId>
+                    <groupId>org.apache.logging.log4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>log4j-core</artifactId>
+                    <groupId>org.apache.logging.log4j</groupId>
+                </exclusion>
+            </exclusions>
         </dependency> 
         <dependency>
             <groupId>com.google.code.gson</groupId>

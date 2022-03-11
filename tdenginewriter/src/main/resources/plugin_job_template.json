@@ -1,0 +1,24 @@
+{
+    "name": "tdenginewriter",
+    "parameter": {
+        "host": "127.0.0.1",
+        "port": 6030,
+        "dbname": "test",
+        "user": "root",
+        "password": "taosdata",
+        "batchSize": 1000,
+        "stable": "weather",
+        "tagColumn": {
+            "station": 0
+        },
+        "fieldColumn": {
+            "latitude": 1,
+            "longtitude": 2,
+            "tmax": 4,
+            "tmin": 5
+        },
+        "timestampColumn":{
+            "date": 3
+        }
+    }
+}
