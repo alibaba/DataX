@@ -101,7 +101,7 @@ public class DM2TDengineTest {
     }
 
     @Before
-    public void before() throws SQLException, ClassNotFoundException {
+    public void before() throws SQLException {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         long ts = System.currentTimeMillis();
 

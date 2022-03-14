@@ -17,7 +17,7 @@ public class SchemaManager {
     private final Connection conn;
     private TimestampPrecision precision;
 
-    SchemaManager(Connection conn) {
+    public SchemaManager(Connection conn) {
         this.conn = conn;
     }
 

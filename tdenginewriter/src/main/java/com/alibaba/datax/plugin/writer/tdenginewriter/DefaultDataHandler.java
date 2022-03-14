@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 public class DefaultDataHandler implements DataHandler {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultDataHandler.class);
 
+    private final TaskPluginCollector taskPluginCollector;
     private String username;
     private String password;
     private String jdbcUrl;
@@ -47,7 +48,6 @@ public class DefaultDataHandler implements DataHandler {
 
     private Map<String, List<ColumnMeta>> columnMetas;
 
-    
     static {
         try {
             Class.forName("com.taosdata.jdbc.TSDBDriver");
@@ -56,8 +56,8 @@ public class DefaultDataHandler implements DataHandler {
             e.printStackTrace();
         }
     }
-    
-    public DefaultDataHandler(Configuration configuration) {
+
+    public DefaultDataHandler(Configuration configuration, TaskPluginCollector taskPluginCollector) {
         this.username = configuration.getString(Key.USERNAME, Constants.DEFAULT_USERNAME);
         this.password = configuration.getString(Key.PASSWORD, Constants.DEFAULT_PASSWORD);
         this.jdbcUrl = configuration.getString(Key.JDBC_URL);
@@ -65,12 +65,14 @@ public class DefaultDataHandler implements DataHandler {
         this.tables = configuration.getList(Key.TABLE, String.class);
         this.columns = configuration.getList(Key.COLUMN, String.class);
         this.ignoreTagsUnmatched = configuration.getBool(Key.IGNORE_TAGS_UNMATCHED, Constants.DEFAULT_IGNORE_TAGS_UNMATCHED);
+        this.taskPluginCollector = taskPluginCollector;
     }
 
     @Override
     public int handle(RecordReceiver lineReceiver, TaskPluginCollector collector) {
         int count = 0;
         int affectedRows = 0;
+
 
         try (Connection conn = DriverManager.getConnection(jdbcUrl, username, password)) {
             LOG.info("connection[ jdbcUrl: " + jdbcUrl + ", username: " + username + "] established.");
@@ -86,14 +88,24 @@ public class DefaultDataHandler implements DataHandler {
                 if (i % batchSize != 0) {
                     recordBatch.add(record);
                 } else {
-                    affectedRows = writeBatch(conn, recordBatch);
+                    try {
+                        affectedRows = writeBatch(conn, recordBatch);
+                    } catch (SQLException e) {
+                        LOG.warn("use one row insert. because:" + e.getMessage());
+                        affectedRows = writeEachRow(conn, recordBatch);
+                    }
                     recordBatch.clear();
                 }
                 count++;
             }
 
             if (!recordBatch.isEmpty()) {
-                affectedRows = writeBatch(conn, recordBatch);
+                try {
+                    affectedRows = writeBatch(conn, recordBatch);
+                } catch (SQLException e) {
+                    LOG.warn("use one row insert. because:" + e.getMessage());
+                    affectedRows = writeEachRow(conn, recordBatch);
+                }
                 recordBatch.clear();
             }
         } catch (SQLException e) {
@@ -104,6 +116,21 @@ public class DefaultDataHandler implements DataHandler {
             LOG.error("write record missing or incorrect happened, affectedRows: " + affectedRows + ", total: " + count);
         }
 
+        return affectedRows;
+    }
+
+    private int writeEachRow(Connection conn, List<Record> recordBatch) {
+        int affectedRows = 0;
+        for (Record record : recordBatch) {
+            List<Record> recordList = new ArrayList<>();
+            recordList.add(record);
+            try {
+                affectedRows += writeBatch(conn, recordList);
+            } catch (SQLException e) {
+                LOG.error(e.getMessage());
+                this.taskPluginCollector.collectDirtyRecord(record, e);
+            }
+        }
         return affectedRows;
     }
 
@@ -118,7 +145,7 @@ public class DefaultDataHandler implements DataHandler {
      * 3. 对于tb，拼sql，例如：data: [ts, f1, f2, f3, t1, t2] tbColumn: [ts, f1, f2, t1] => insert into tb(ts, f1, f2) values(ts, f1, f2)
      * 4. 对于t，拼sql，例如：data: [ts, f1, f2, f3, t1, t2] tbColumn: [ts, f1, f2, f3, t1, t2] insert into t(ts, f1, f2, f3, t1, t2) values(ts, f1, f2, f3, t1, t2)
      */
-    public int writeBatch(Connection conn, List<Record> recordBatch) {
+    public int writeBatch(Connection conn, List<Record> recordBatch) throws SQLException {
         int affectedRows = 0;
         for (String table : tables) {
             TableMeta tableMeta = tableMetas.get(table);
@@ -146,7 +173,7 @@ public class DefaultDataHandler implements DataHandler {
      * record[idx(tbname)] using table tags(record[idx(t1)]) (ts, f1, f2, f3) values(record[idx(ts)], record[idx(f1)], )
      * record[idx(tbname)] using table tags(record[idx(t1)]) (ts, f1, f2, f3) values(record[idx(ts)], record[idx(f1)], )
      */
-    private int writeBatchToSupTableBySQL(Connection conn, String table, List<Record> recordBatch) {
+    private int writeBatchToSupTableBySQL(Connection conn, String table, List<Record> recordBatch) throws SQLException {
         List<ColumnMeta> columnMetas = this.columnMetas.get(table);
 
         StringBuilder sb = new StringBuilder("insert into");
@@ -177,13 +204,11 @@ public class DefaultDataHandler implements DataHandler {
         return executeUpdate(conn, sql);
     }
 
-    private int executeUpdate(Connection conn, String sql) throws DataXException {
+    private int executeUpdate(Connection conn, String sql) throws SQLException {
         int count;
         try (Statement stmt = conn.createStatement()) {
             LOG.debug(">>> " + sql);
             count = stmt.executeUpdate(sql);
-        } catch (SQLException e) {
-            throw DataXException.asDataXException(TDengineWriterErrorCode.RUNTIME_EXCEPTION, e.getMessage());
         }
         return count;
     }
@@ -227,7 +252,7 @@ public class DefaultDataHandler implements DataHandler {
      * table: ["stb1"], column: ["ts", "f1", "f2", "t1"]
      * data: [ts, f1, f2, f3, t1, t2] tbColumn: [ts, f1, f2, t1] => schemaless: stb1,t1=t1 f1=f1,f2=f2 ts
      */
-    private int writeBatchToSupTableBySchemaless(Connection conn, String table, List<Record> recordBatch) {
+    private int writeBatchToSupTableBySchemaless(Connection conn, String table, List<Record> recordBatch) throws SQLException {
         int count = 0;
         TimestampPrecision timestampPrecision = schemaManager.loadDatabasePrecision();
 
@@ -296,11 +321,8 @@ public class DefaultDataHandler implements DataHandler {
             default:
                 timestampType = SchemalessTimestampType.NOT_CONFIGURED;
         }
-        try {
-            writer.write(lines, SchemalessProtocolType.LINE, timestampType);
-        } catch (SQLException e) {
-            throw DataXException.asDataXException(TDengineWriterErrorCode.RUNTIME_EXCEPTION, e.getMessage());
-        }
+
+        writer.write(lines, SchemalessProtocolType.LINE, timestampType);
 
         LOG.warn("schemalessWriter does not return affected rows!");
         return count;
@@ -370,7 +392,7 @@ public class DefaultDataHandler implements DataHandler {
      * else
      * insert into tb1 (ts, f1, f2) values( record[idx(ts)], record[idx(f1)], record[idx(f2)])
      */
-    private int writeBatchToSubTable(Connection conn, String table, List<Record> recordBatch) {
+    private int writeBatchToSubTable(Connection conn, String table, List<Record> recordBatch) throws SQLException {
         List<ColumnMeta> columnMetas = this.columnMetas.get(table);
 
         StringBuilder sb = new StringBuilder();
@@ -440,7 +462,7 @@ public class DefaultDataHandler implements DataHandler {
      * table: ["weather"], column: ["ts, f1, f2, f3, t1, t2"]
      * sql: insert into weather (ts, f1, f2, f3, t1, t2) values( record[idx(ts), record[idx(f1)], ...)
      */
-    private int writeBatchToNormalTable(Connection conn, String table, List<Record> recordBatch) {
+    private int writeBatchToNormalTable(Connection conn, String table, List<Record> recordBatch) throws SQLException {
         List<ColumnMeta> columnMetas = this.columnMetas.get(table);
 
         StringBuilder sb = new StringBuilder();

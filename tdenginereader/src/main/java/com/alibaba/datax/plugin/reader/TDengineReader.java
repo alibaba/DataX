@@ -1,13 +1,11 @@
 package com.alibaba.datax.plugin.reader;
 
-import com.alibaba.datax.common.constant.CommonConstant;
 import com.alibaba.datax.common.element.*;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordSender;
 import com.alibaba.datax.common.spi.Reader;
 import com.alibaba.datax.common.util.Configuration;
-import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
-import com.alibaba.fastjson.JSON;
+import com.alibaba.datax.plugin.writer.tdenginewriter.Key;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,89 +15,86 @@ import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class TDengineReader extends Reader {
+
     private static final String DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     public static class Job extends Reader.Job {
-
         private static final Logger LOG = LoggerFactory.getLogger(Job.class);
         private Configuration originalConfig;
 
         @Override
         public void init() {
             this.originalConfig = super.getPluginJobConf();
-            // check user
-            String user = this.originalConfig.getString(Key.USER);
-            if (StringUtils.isBlank(user))
-                throw DataXException.asDataXException(TDengineReaderErrorCode.REQUIRED_VALUE, "The parameter [" + Key.USER + "] is not set.");
+            // check username
+            String username = this.originalConfig.getString(Key.USERNAME);
+            if (StringUtils.isBlank(username))
+                throw DataXException.asDataXException(TDengineReaderErrorCode.REQUIRED_VALUE,
+                        "The parameter [" + Key.USERNAME + "] is not set.");
 
             // check password
             String password = this.originalConfig.getString(Key.PASSWORD);
             if (StringUtils.isBlank(password))
-                throw DataXException.asDataXException(TDengineReaderErrorCode.REQUIRED_VALUE, "The parameter [" + Key.PASSWORD + "] is not set.");
+                throw DataXException.asDataXException(TDengineReaderErrorCode.REQUIRED_VALUE,
+                        "The parameter [" + Key.PASSWORD + "] is not set.");
+
+            // check connection
+            List<Configuration> connectionList = this.originalConfig.getListConfiguration(Key.CONNECTION);
+            if (connectionList == null || connectionList.isEmpty())
+                throw DataXException.asDataXException(TDengineReaderErrorCode.REQUIRED_VALUE,
+                        "The parameter [" + Key.CONNECTION + "] is not set.");
+            for (int i = 0; i < connectionList.size(); i++) {
+                Configuration conn = connectionList.get(i);
+                // check jdbcUrl
+                List<Object> jdbcUrlList = conn.getList(Key.JDBC_URL);
+                if (jdbcUrlList == null || jdbcUrlList.isEmpty()) {
+                    throw DataXException.asDataXException(TDengineReaderErrorCode.REQUIRED_VALUE,
+                            "The parameter [" + Key.JDBC_URL + "] of connection[" + (i + 1) + "] is not set.");
+                }
+                // check table/querySql
+                List<Object> querySqlList = conn.getList(Key.QUERY_SQL);
+                if (querySqlList == null || querySqlList.isEmpty()) {
+                    String querySql = conn.getString(Key.QUERY_SQL);
+                    if (StringUtils.isBlank(querySql)) {
+                        List<Object> table = conn.getList(Key.TABLE);
+                        if (table == null || table.isEmpty())
+                            throw DataXException.asDataXException(TDengineReaderErrorCode.REQUIRED_VALUE,
+                                    "The parameter [" + Key.TABLE + "] of connection[" + (i + 1) + "] is not set.");
+                    }
+                }
+            }
 
             SimpleDateFormat format = new SimpleDateFormat(DATETIME_FORMAT);
             // check beginDateTime
             String beginDatetime = this.originalConfig.getString(Key.BEGIN_DATETIME);
-            if (StringUtils.isBlank(beginDatetime))
-                throw DataXException.asDataXException(TDengineReaderErrorCode.REQUIRED_VALUE, "The parameter [" + Key.BEGIN_DATETIME + "] is not set.");
-            Long start;
-            try {
-                start = format.parse(beginDatetime).getTime();
-            } catch (ParseException e) {
-                throw DataXException.asDataXException(TDengineReaderErrorCode.ILLEGAL_VALUE, "The parameter [" + Key.BEGIN_DATETIME + "] needs to conform to the [" + DATETIME_FORMAT + "] format.");
+            long start = Long.MIN_VALUE;
+            if (!StringUtils.isBlank(beginDatetime)) {
+                try {
+                    start = format.parse(beginDatetime).getTime();
+                } catch (ParseException e) {
+                    throw DataXException.asDataXException(TDengineReaderErrorCode.ILLEGAL_VALUE,
+                            "The parameter [" + Key.BEGIN_DATETIME + "] needs to conform to the [" + DATETIME_FORMAT + "] format.");
+                }
             }
-
             // check endDateTime
             String endDatetime = this.originalConfig.getString(Key.END_DATETIME);
-            if (StringUtils.isBlank(endDatetime))
-                throw DataXException.asDataXException(TDengineReaderErrorCode.REQUIRED_VALUE, "The parameter [" + Key.END_DATETIME + "] is not set.");
-            Long end;
-            try {
-                end = format.parse(endDatetime).getTime();
-            } catch (ParseException e) {
-                throw DataXException.asDataXException(TDengineReaderErrorCode.ILLEGAL_VALUE, "The parameter [" + Key.END_DATETIME + "] needs to conform to the [" + DATETIME_FORMAT + "] format.");
+            long end = Long.MAX_VALUE;
+            if (!StringUtils.isBlank(endDatetime)) {
+                try {
+                    end = format.parse(endDatetime).getTime();
+                } catch (ParseException e) {
+                    throw DataXException.asDataXException(TDengineReaderErrorCode.ILLEGAL_VALUE,
+                            "The parameter [" + Key.END_DATETIME + "] needs to conform to the [" + DATETIME_FORMAT + "] format.");
+                }
             }
             if (start >= end)
-                throw DataXException.asDataXException(TDengineReaderErrorCode.ILLEGAL_VALUE, "The parameter [" + Key.BEGIN_DATETIME + "] should be less than the parameter [" + Key.END_DATETIME + "].");
+                throw DataXException.asDataXException(TDengineReaderErrorCode.ILLEGAL_VALUE,
+                        "The parameter [" + Key.BEGIN_DATETIME + "] should be less than the parameter [" + Key.END_DATETIME + "].");
 
-            // check splitInterval
-            String splitInterval = this.originalConfig.getString(Key.SPLIT_INTERVAL);
-            Long split;
-            if (StringUtils.isBlank(splitInterval))
-                throw DataXException.asDataXException(TDengineReaderErrorCode.REQUIRED_VALUE, "The parameter [" + Key.SPLIT_INTERVAL + "] is not set.");
-            try {
-                split = parseSplitInterval(splitInterval);
-            } catch (Exception e) {
-                throw DataXException.asDataXException(TDengineReaderErrorCode.ILLEGAL_VALUE, "The parameter [" + Key.SPLIT_INTERVAL + "] should be like: \"123d|h|m|s\", error: " + e.getMessage());
-            }
-
-            this.originalConfig.set(Key.BEGIN_DATETIME, start);
-            this.originalConfig.set(Key.END_DATETIME, end);
-            this.originalConfig.set(Key.SPLIT_INTERVAL, split);
-
-            // check connection
-            List<Object> connection = this.originalConfig.getList(Key.CONNECTION);
-            if (connection == null || connection.isEmpty())
-                throw DataXException.asDataXException(TDengineReaderErrorCode.REQUIRED_VALUE, "The parameter [" + Key.CONNECTION + "] is not set.");
-            for (int i = 0; i < connection.size(); i++) {
-                Configuration conn = Configuration.from(connection.get(i).toString());
-                List<Object> table = conn.getList(Key.TABLE);
-                if (table == null || table.isEmpty())
-                    throw DataXException.asDataXException(TDengineReaderErrorCode.REQUIRED_VALUE, "The parameter [" + Key.TABLE + "] of connection[" + (i + 1) + "] is not set.");
-                String jdbcUrl = conn.getString(Key.JDBC_URL);
-                if (StringUtils.isBlank(jdbcUrl))
-                    throw DataXException.asDataXException(TDengineReaderErrorCode.REQUIRED_VALUE, "The parameter [" + Key.JDBC_URL + "] of connection[" + (i + 1) + "] is not set.");
-            }
-
-            // check column
-            List<Object> column = this.originalConfig.getList(Key.COLUMN);
-            if (column == null || column.isEmpty())
-                throw DataXException.asDataXException(TDengineReaderErrorCode.REQUIRED_VALUE, "The parameter [" + Key.CONNECTION + "] is not set or is empty.");
         }
 
         @Override
@@ -110,77 +105,72 @@ public class TDengineReader extends Reader {
         @Override
         public List<Configuration> split(int adviceNumber) {
             List<Configuration> configurations = new ArrayList<>();
-            // do split
-            Long start = this.originalConfig.getLong(Key.BEGIN_DATETIME);
-            Long end = this.originalConfig.getLong(Key.END_DATETIME);
-            Long split = this.originalConfig.getLong(Key.SPLIT_INTERVAL);
 
-            List<Object> conns = this.originalConfig.getList(Key.CONNECTION);
-
-            for (Long ts = start; ts < end; ts += split) {
-                for (int i = 0; i < conns.size(); i++) {
+            List<Configuration> connectionList = this.originalConfig.getListConfiguration(Key.CONNECTION);
+            for (Configuration conn : connectionList) {
+                List<String> jdbcUrlList = conn.getList(Key.JDBC_URL, String.class);
+                for (String jdbcUrl : jdbcUrlList) {
                     Configuration clone = this.originalConfig.clone();
-                    clone.remove(Key.SPLIT_INTERVAL);
-
-                    clone.set(Key.BEGIN_DATETIME, ts);
-                    clone.set(Key.END_DATETIME, Math.min(ts + split, end));
-
-                    Configuration conf = Configuration.from(conns.get(i).toString());
-                    String jdbcUrl = conf.getString(Key.JDBC_URL);
                     clone.set(Key.JDBC_URL, jdbcUrl);
-                    clone.set(Key.TABLE, conf.getList(Key.TABLE));
-
-                    // 抽取 jdbcUrl 中的 ip/port 进行资源使用的打标，以提供给 core 做有意义的 shuffle 操作
-                    clone.set(CommonConstant.LOAD_BALANCE_RESOURCE_MARK, DataBaseType.parseIpFromJdbcUrl(jdbcUrl));
+                    clone.set(Key.TABLE, conn.getList(Key.TABLE));
+                    clone.set(Key.QUERY_SQL, conn.getList(Key.QUERY_SQL));
                     clone.remove(Key.CONNECTION);
-
                     configurations.add(clone);
-                    LOG.info("Configuration: {}", JSON.toJSONString(clone));
                 }
             }
+
+            LOG.info("Configuration: {}", configurations);
             return configurations;
         }
     }
 
     public static class Task extends Reader.Task {
         private static final Logger LOG = LoggerFactory.getLogger(Task.class);
+
+        private Configuration readerSliceConfig;
+        private String mandatoryEncoding;
         private Connection conn;
 
-        private Long startTime;
-        private Long endTime;
         private List<String> tables;
         private List<String> columns;
-        private String mandatoryEncoding;
+        private String startTime;
+        private String endTime;
+        private String where;
+        private List<String> querySql;
+
+        static {
+            try {
+                Class.forName("com.taosdata.jdbc.TSDBDriver");
+                Class.forName("com.taosdata.jdbc.rs.RestfulDriver");
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
 
         @Override
         public void init() {
-            Configuration readerSliceConfig = super.getPluginJobConf();
-            LOG.info("getPluginJobConf: {}", JSON.toJSONString(readerSliceConfig));
+            this.readerSliceConfig = super.getPluginJobConf();
+            LOG.info("getPluginJobConf: {}", readerSliceConfig);
 
-            String url = readerSliceConfig.getString(Key.JDBC_URL);
-            if (StringUtils.isBlank(url))
-                throw DataXException.asDataXException(TDengineReaderErrorCode.REQUIRED_VALUE,
-                        "The parameter [" + Key.JDBC_URL + "] is not set.");
-
-            tables = readerSliceConfig.getList(Key.TABLE, String.class);
-            columns = readerSliceConfig.getList(Key.COLUMN, String.class);
-
-            String user = readerSliceConfig.getString(Key.USER);
+            String user = readerSliceConfig.getString(Key.USERNAME);
             String password = readerSliceConfig.getString(Key.PASSWORD);
 
+            String url = readerSliceConfig.getString(Key.JDBC_URL);
             try {
-                conn = DriverManager.getConnection(url, user, password);
+                this.conn = DriverManager.getConnection(url, user, password);
             } catch (SQLException e) {
                 throw DataXException.asDataXException(TDengineReaderErrorCode.CONNECTION_FAILED,
-                        "The parameter [" + Key.JDBC_URL + "] : " + url + " failed to connect since: " + e.getMessage());
+                        "The parameter [" + Key.JDBC_URL + "] : " + url + " failed to connect since: " + e.getMessage(), e);
             }
 
-            this.mandatoryEncoding = readerSliceConfig.getString(Key.MANDATORY_ENCODING, "");
-
-            startTime = readerSliceConfig.getLong(Key.BEGIN_DATETIME);
-            endTime = readerSliceConfig.getLong(Key.END_DATETIME);
+            this.tables = readerSliceConfig.getList(Key.TABLE, String.class);
+            this.columns = readerSliceConfig.getList(Key.COLUMN, String.class);
+            this.startTime = readerSliceConfig.getString(Key.BEGIN_DATETIME);
+            this.endTime = readerSliceConfig.getString(Key.END_DATETIME);
+            this.where = readerSliceConfig.getString(Key.WHERE, "_c0 > " + Long.MIN_VALUE);
+            this.querySql = readerSliceConfig.getList(Key.QUERY_SQL, String.class);
+            this.mandatoryEncoding = readerSliceConfig.getString(Key.MANDATORY_ENCODING, "UTF-8");
         }
-
 
         @Override
         public void destroy() {
@@ -189,18 +179,36 @@ public class TDengineReader extends Reader {
 
         @Override
         public void startRead(RecordSender recordSender) {
-            try (Statement stmt = conn.createStatement()) {
+            List<String> sqlList = new ArrayList<>();
+
+            if (querySql == null || querySql.isEmpty()) {
                 for (String table : tables) {
-                    String sql = "select " + StringUtils.join(columns, ",") + " from " + table
-                            + " where _c0 >= " + startTime + " and _c0 < " + endTime;
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("select ").append(StringUtils.join(columns, ",")).append(" from ").append(table).append(" ");
+                    sb.append("where ").append(where);
+                    if (!StringUtils.isBlank(startTime)) {
+                        sb.append(" and _c0 >= '").append(startTime).append("'");
+                    }
+                    if (!StringUtils.isBlank(endTime)) {
+                        sb.append(" and _c0 < '").append(endTime).append("'");
+                    }
+                    String sql = sb.toString().trim();
+                    sqlList.add(sql);
+                }
+            } else {
+                sqlList.addAll(querySql);
+            }
+
+            try (Statement stmt = conn.createStatement()) {
+                for (String sql : sqlList) {
                     ResultSet rs = stmt.executeQuery(sql);
-                    ResultSetMetaData metaData = rs.getMetaData();
                     while (rs.next()) {
-                        transportOneRecord(recordSender, rs, metaData, metaData.getColumnCount(), this.mandatoryEncoding);
+                        Record record = buildRecord(recordSender, rs, mandatoryEncoding);
+                        recordSender.sendToWriter(record);
                     }
                 }
             } catch (SQLException e) {
-                throw DataXException.asDataXException(TDengineReaderErrorCode.ILLEGAL_VALUE, "获取或发送数据点的过程中出错！", e);
+                throw DataXException.asDataXException(TDengineReaderErrorCode.RUNTIME_EXCEPTION, e.getMessage(), e);
             } finally {
                 try {
                     if (conn != null)
@@ -211,17 +219,11 @@ public class TDengineReader extends Reader {
             }
         }
 
-        private Record transportOneRecord(RecordSender recordSender, ResultSet rs, ResultSetMetaData metaData, int columnCount, String mandatoryEncoding) {
-            Record record = buildRecord(recordSender, rs, metaData, columnCount, mandatoryEncoding);
-            recordSender.sendToWriter(record);
-            return record;
-        }
-
-        private Record buildRecord(RecordSender recordSender, ResultSet rs, ResultSetMetaData metaData, int columnCount, String mandatoryEncoding) {
+        private Record buildRecord(RecordSender recordSender, ResultSet rs, String mandatoryEncoding) {
             Record record = recordSender.createRecord();
-
             try {
-                for (int i = 1; i <= columnCount; i++) {
+                ResultSetMetaData metaData = rs.getMetaData();
+                for (int i = 1; i <= metaData.getColumnCount(); i++) {
                     int columnType = metaData.getColumnType(i);
                     switch (columnType) {
                         case Types.SMALLINT:
@@ -254,39 +256,14 @@ public class TDengineReader extends Reader {
                             break;
                     }
                 }
-            } catch (SQLException | UnsupportedEncodingException e) {
-                throw DataXException.asDataXException(TDengineReaderErrorCode.ILLEGAL_VALUE, "获取或发送数据点的过程中出错！", e);
+            } catch (SQLException e) {
+                throw DataXException.asDataXException(TDengineReaderErrorCode.ILLEGAL_VALUE, "database query error！", e);
+            } catch (UnsupportedEncodingException e) {
+                throw DataXException.asDataXException(TDengineReaderErrorCode.ILLEGAL_VALUE, "illegal mandatoryEncoding", e);
             }
             return record;
         }
     }
 
-    private static final long second = 1000;
-    private static final long minute = 60 * second;
-    private static final long hour = 60 * minute;
-    private static final long day = 24 * hour;
-
-    private static Long parseSplitInterval(String splitInterval) throws Exception {
-        Pattern compile = Pattern.compile("^(\\d+)([dhms])$");
-        Matcher matcher = compile.matcher(splitInterval);
-        while (matcher.find()) {
-            Long value = Long.valueOf(matcher.group(1));
-            if (value == 0)
-                throw new Exception("invalid splitInterval: 0");
-            char unit = matcher.group(2).charAt(0);
-            switch (unit) {
-                case 'd':
-                    return value * day;
-                default:
-                case 'h':
-                    return value * hour;
-                case 'm':
-                    return value * minute;
-                case 's':
-                    return value * second;
-            }
-        }
-        throw new Exception("invalid splitInterval: " + splitInterval);
-    }
 
 }

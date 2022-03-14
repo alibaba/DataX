@@ -4,6 +4,8 @@ import com.alibaba.datax.common.element.DateColumn;
 import com.alibaba.datax.common.element.LongColumn;
 import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.element.StringColumn;
+import com.alibaba.datax.common.plugin.TaskPluginCollector;
+import com.alibaba.datax.common.spi.Writer;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.core.transport.record.DefaultRecord;
 import org.junit.*;
@@ -22,6 +24,8 @@ public class DefaultDataHandlerTest {
 
     private static final String host = "192.168.1.93";
     private static Connection conn;
+
+    private final TaskPluginCollector taskPluginCollector = new TDengineWriter.Task().getTaskPluginCollector();
 
     @Test
     public void writeSupTableBySQL() throws SQLException {
@@ -46,8 +50,9 @@ public class DefaultDataHandlerTest {
             return record;
         }).collect(Collectors.toList());
 
+
         // when
-        DefaultDataHandler handler = new DefaultDataHandler(configuration);
+        DefaultDataHandler handler = new DefaultDataHandler(configuration, taskPluginCollector);
         List<String> tables = configuration.getList("table", String.class);
         SchemaManager schemaManager = new SchemaManager(conn);
         Map<String, TableMeta> tableMetas = schemaManager.loadTableMeta(tables);
@@ -85,7 +90,7 @@ public class DefaultDataHandlerTest {
         }).collect(Collectors.toList());
 
         // when
-        DefaultDataHandler handler = new DefaultDataHandler(configuration);
+        DefaultDataHandler handler = new DefaultDataHandler(configuration, taskPluginCollector);
         List<String> tables = configuration.getList("table", String.class);
         SchemaManager schemaManager = new SchemaManager(conn);
         Map<String, TableMeta> tableMetas = schemaManager.loadTableMeta(tables);
@@ -125,7 +130,7 @@ public class DefaultDataHandlerTest {
         }).collect(Collectors.toList());
 
         // when
-        DefaultDataHandler handler = new DefaultDataHandler(configuration);
+        DefaultDataHandler handler = new DefaultDataHandler(configuration, taskPluginCollector);
         List<String> tables = configuration.getList("table", String.class);
         SchemaManager schemaManager = new SchemaManager(connection);
         Map<String, TableMeta> tableMetas = schemaManager.loadTableMeta(tables);
@@ -164,7 +169,7 @@ public class DefaultDataHandlerTest {
         }).collect(Collectors.toList());
 
         // when
-        DefaultDataHandler handler = new DefaultDataHandler(configuration);
+        DefaultDataHandler handler = new DefaultDataHandler(configuration, taskPluginCollector);
         List<String> tables = configuration.getList("table", String.class);
         SchemaManager schemaManager = new SchemaManager(conn);
         Map<String, TableMeta> tableMetas = schemaManager.loadTableMeta(tables);
@@ -203,7 +208,7 @@ public class DefaultDataHandlerTest {
         }).collect(Collectors.toList());
 
         // when
-        DefaultDataHandler handler = new DefaultDataHandler(configuration);
+        DefaultDataHandler handler = new DefaultDataHandler(configuration, taskPluginCollector);
         List<String> tables = configuration.getList("table", String.class);
         SchemaManager schemaManager = new SchemaManager(conn);
         Map<String, TableMeta> tableMetas = schemaManager.loadTableMeta(tables);
@@ -242,7 +247,7 @@ public class DefaultDataHandlerTest {
         }).collect(Collectors.toList());
 
         // when
-        DefaultDataHandler handler = new DefaultDataHandler(configuration);
+        DefaultDataHandler handler = new DefaultDataHandler(configuration, taskPluginCollector);
         List<String> tables = configuration.getList("table", String.class);
         SchemaManager schemaManager = new SchemaManager(conn);
         Map<String, TableMeta> tableMetas = schemaManager.loadTableMeta(tables);
@@ -258,7 +263,7 @@ public class DefaultDataHandlerTest {
     }
 
     private void createSupAndSubTable() throws SQLException {
-        try(Statement stmt = conn.createStatement()){
+        try (Statement stmt = conn.createStatement()) {
             stmt.execute("drop database if exists scm_test");
             stmt.execute("create database if not exists scm_test");
             stmt.execute("use scm_test");
@@ -273,7 +278,7 @@ public class DefaultDataHandlerTest {
     }
 
     private void createSupTable() throws SQLException {
-        try (Statement stmt = conn.createStatement()){
+        try (Statement stmt = conn.createStatement()) {
             stmt.execute("drop database if exists scm_test");
             stmt.execute("create database if not exists scm_test");
             stmt.execute("use scm_test");

@@ -4,9 +4,10 @@ import com.alibaba.datax.common.spi.ErrorCode;
 
 public enum TDengineReaderErrorCode implements ErrorCode {
 
-    REQUIRED_VALUE("TDengineReader-00", "缺失必要的值"),
-    ILLEGAL_VALUE("TDengineReader-01", "值非法"),
-    CONNECTION_FAILED("TDengineReader-02", "连接错误");
+    REQUIRED_VALUE("TDengineReader-00", "parameter value is missing"),
+    ILLEGAL_VALUE("TDengineReader-01", "invalid parameter value"),
+    CONNECTION_FAILED("TDengineReader-02", "connection error"),
+    RUNTIME_EXCEPTION("TDengineWriter-03", "runtime exception");
 
     private final String code;
     private final String description;
