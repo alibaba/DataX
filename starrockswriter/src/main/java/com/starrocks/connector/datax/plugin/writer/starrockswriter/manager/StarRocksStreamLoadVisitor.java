@@ -25,6 +25,7 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -107,7 +108,7 @@ public class StarRocksStreamLoadVisitor {
 
     private byte[] joinRows(List<byte[]> rows, int totalBytes) {
         if (StarRocksWriterOptions.StreamLoadFormat.CSV.equals(writerOptions.getStreamLoadFormat())) {
-            Map<String, Object> props = writerOptions.getLoadProps();
+            Map<String, Object> props = (writerOptions.getLoadProps() == null ? new HashMap<>() : writerOptions.getLoadProps());
             byte[] lineDelimiter = StarRocksDelimiterParser.parse((String)props.get("row_delimiter"), "\n").getBytes(StandardCharsets.UTF_8);
             ByteBuffer bos = ByteBuffer.allocate(totalBytes + rows.size() * lineDelimiter.length);
             for (byte[] row : rows) {
@@ -216,7 +217,7 @@ public class StarRocksStreamLoadVisitor {
             }
         }
     }
-    
+
     private String getBasicAuthHeader(String username, String password) {
         String auth = username + ":" + password;
         byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(StandardCharsets.UTF_8));
