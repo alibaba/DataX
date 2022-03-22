@@ -89,6 +89,7 @@ public class DefaultDataHandler implements DataHandler {
                     recordBatch.add(record);
                 } else {
                     try {
+                        recordBatch.add(record);
                         affectedRows = writeBatch(conn, recordBatch);
                     } catch (SQLException e) {
                         LOG.warn("use one row insert. because:" + e.getMessage());
