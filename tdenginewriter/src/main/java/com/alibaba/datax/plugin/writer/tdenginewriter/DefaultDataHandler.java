@@ -90,10 +90,10 @@ public class DefaultDataHandler implements DataHandler {
                 } else {
                     try {
                         recordBatch.add(record);
-                        affectedRows = writeBatch(conn, recordBatch);
+                        affectedRows += writeBatch(conn, recordBatch);
                     } catch (SQLException e) {
                         LOG.warn("use one row insert. because:" + e.getMessage());
-                        affectedRows = writeEachRow(conn, recordBatch);
+                        affectedRows += writeEachRow(conn, recordBatch);
                     }
                     recordBatch.clear();
                 }
@@ -102,10 +102,10 @@ public class DefaultDataHandler implements DataHandler {
 
             if (!recordBatch.isEmpty()) {
                 try {
-                    affectedRows = writeBatch(conn, recordBatch);
+                    affectedRows += writeBatch(conn, recordBatch);
                 } catch (SQLException e) {
                     LOG.warn("use one row insert. because:" + e.getMessage());
-                    affectedRows = writeEachRow(conn, recordBatch);
+                    affectedRows += writeEachRow(conn, recordBatch);
                 }
                 recordBatch.clear();
             }
