@@ -26,6 +26,10 @@ public class KeyConstant {
      */
     public static final String MONGO_DB_NAME = "dbName";
     /**
+     * mongodb 验证数据库
+     */
+    public static final String MONGO_AUTHDB = "authDb";
+    /**
      * mongodb 集合名
      */
     public static final String MONGO_COLLECTION_NAME = "collectionName";
