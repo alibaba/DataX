@@ -66,7 +66,7 @@ DataX本身作为数据同步框架，将不同数据源的同步抽象为从源
   
   * 第一步、创建作业的配置文件（json格式）
     
-    可以通过命令查看配置模板： python datax.py -r {YOUR_READER} -w {YOUR_WRITER}
+    可以通过命令生成配置模板： python datax.py -r {YOUR_READER} -w {YOUR_WRITER}
     
     ``` shell
     $ cd  {YOUR_DATAX_HOME}/bin
