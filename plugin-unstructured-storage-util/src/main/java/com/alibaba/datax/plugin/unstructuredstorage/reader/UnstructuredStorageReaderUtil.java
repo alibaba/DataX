@@ -268,7 +268,6 @@ public class UnstructuredStorageReaderUtil {
 		// .getListConfiguration(Key.COLUMN);
 		List<ColumnEntry> column = UnstructuredStorageReaderUtil
 				.getListColumnEntry(readerSliceConfig, Key.COLUMN);
-		CsvReader csvReader  = null;
 
 		// every line logic
 		try {
@@ -278,17 +277,15 @@ public class UnstructuredStorageReaderUtil {
 				LOG.info(String.format("Header line %s has been skiped.",
 						fetchLine));
 			}
-			csvReader = new CsvReader(reader);
-			csvReader.setDelimiter(fieldDelimiter);
 
-			setCsvReaderConfig(csvReader);
-
-			String[] parseRows;
-			while ((parseRows = UnstructuredStorageReaderUtil
-					.splitBufferedReader(csvReader)) != null) {
+			// write by wangzhuoqun
+			String line;
+			while ((line = reader.readLine()) != null){
+				String[] parseRows = line.split(delimiterInStr);
 				UnstructuredStorageReaderUtil.transportOneRecord(recordSender,
 						column, parseRows, nullFormat, taskPluginCollector);
 			}
+
 		} catch (UnsupportedEncodingException uee) {
 			throw DataXException
 					.asDataXException(
@@ -307,7 +304,6 @@ public class UnstructuredStorageReaderUtil {
 					UnstructuredStorageReaderErrorCode.RUNTIME_EXCEPTION,
 					String.format("运行时异常 : %s", e.getMessage()), e);
 		} finally {
-			csvReader.close();
 			IOUtils.closeQuietly(reader);
 		}
 	}
