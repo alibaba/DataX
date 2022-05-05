@@ -28,7 +28,7 @@ public class DefaultDataHandlerTest {
     private final TaskPluginCollector taskPluginCollector = new TDengineWriter.Task().getTaskPluginCollector();
 
     @Test
-    public void writeSupTableBySQL() throws SQLException {
+    public void writeSupTableBySQL() throws Exception {
         // given
         createSupAndSubTable();
         Configuration configuration = Configuration.from("{" +
@@ -68,7 +68,7 @@ public class DefaultDataHandlerTest {
     }
 
     @Test
-    public void writeSupTableBySQL_2() throws SQLException {
+    public void writeSupTableBySQL_2() throws Exception {
         // given
         createSupAndSubTable();
         Configuration configuration = Configuration.from("{" +
@@ -106,7 +106,7 @@ public class DefaultDataHandlerTest {
     }
 
     @Test
-    public void writeSupTableBySchemaless() throws SQLException {
+    public void writeSupTableBySchemaless() throws Exception {
         // given
         createSupTable();
         Configuration configuration = Configuration.from("{" +
@@ -146,7 +146,7 @@ public class DefaultDataHandlerTest {
     }
 
     @Test
-    public void writeSubTableWithTableName() throws SQLException {
+    public void writeSubTableWithTableName() throws Exception {
         // given
         createSupAndSubTable();
         Configuration configuration = Configuration.from("{" +
@@ -185,7 +185,7 @@ public class DefaultDataHandlerTest {
     }
 
     @Test
-    public void writeSubTableWithoutTableName() throws SQLException {
+    public void writeSubTableWithoutTableName() throws Exception {
         // given
         createSupAndSubTable();
         Configuration configuration = Configuration.from("{" +
@@ -224,7 +224,7 @@ public class DefaultDataHandlerTest {
     }
 
     @Test
-    public void writeNormalTable() throws SQLException {
+    public void writeNormalTable() throws Exception {
         // given
         createSupAndSubTable();
         Configuration configuration = Configuration.from("{" +

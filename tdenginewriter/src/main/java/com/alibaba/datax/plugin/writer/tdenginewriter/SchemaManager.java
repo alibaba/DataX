@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class SchemaManager {
     private static final Logger LOG = LoggerFactory.getLogger(SchemaManager.class);
@@ -123,12 +124,14 @@ public class SchemaManager {
                         }
                     }
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    LOG.error(e.getMessage(), e);
                 }
                 colMeta.value = value;
             });
 
-            LOG.debug("load column metadata of " + table + ": " + Arrays.toString(columnMetaList.toArray()));
+            LOG.debug("load column metadata of " + table + ": " +
+                    columnMetaList.stream().map(ColumnMeta::toString).collect(Collectors.joining(",", "[", "]"))
+            );
             ret.put(table, columnMetaList);
         }
         return ret;
@@ -142,7 +145,9 @@ public class SchemaManager {
         tableMeta.tags = rs.getInt("tags");
         tableMeta.tables = rs.getInt("tables");
 
-        LOG.debug("load table metadata of " + tableMeta.tbname + ": " + tableMeta);
+        if (LOG.isDebugEnabled()){
+            LOG.debug("load table metadata of " + tableMeta.tbname + ": " + tableMeta);
+        }
         return tableMeta;
     }
 
