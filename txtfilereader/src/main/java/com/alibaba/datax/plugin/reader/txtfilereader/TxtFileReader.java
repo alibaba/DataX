@@ -225,7 +225,7 @@ public class TxtFileReader extends Reader {
             }
 
 			List<List<String>> splitedSourceFiles = this.splitSourceFiles(
-					this.sourceFiles, splitNumber);
+					this.sourceFiles, adviceNumber);
 			for (List<String> files : splitedSourceFiles) {
 				Configuration splitedConfig = this.originConfig.clone();
 				splitedConfig.set(Constant.SOURCE_FILES, files);
