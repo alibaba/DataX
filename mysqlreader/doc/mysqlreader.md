@@ -165,7 +165,7 @@ MysqlReader插件实现了从Mysql读取数据。在底层实现上，MysqlReade
 
 	  支持常量配置，用户需要按照Mysql SQL语法格式:
 	  ["id", "\`table\`", "1", "'bazhen.csy'", "null", "to_char(a + 1)", "2.3" , "true"]
-	  id为普通列名，\`table\`为包含保留在的列名，1为整形数字常量，'bazhen.csy'为字符串常量，null为空指针，to_char(a + 1)为表达式，2.3为浮点数，true为布尔值。
+	  id为普通列名，\`table\`为包含保留字的列名，1为整形数字常量，'bazhen.csy'为字符串常量，null为空指针，to_char(a + 1)为表达式，2.3为浮点数，true为布尔值。
 
 	* 必选：是 <br />
 

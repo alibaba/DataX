@@ -203,19 +203,20 @@ HbaseWriter 插件实现了从向Hbase中写取数据。在底层实现上，Hba
 	* 描述：要写入的hbase字段。index：指定该列对应reader端column的索引，从0开始；name：指定hbase表中的列，必须为 列族:列名 的格式；type：指定写入数据类型，用于转换HBase byte[]。配置格式如下：
 	
 	```
-"column": [
-              {
-                "index":1,
-                "name": "cf1:q1",
-                "type": "string"
-              },
-              {
-                "index":2,
-                "name": "cf1:q2",
-                "type": "string"
-              }
-           ］ 	
-		            
+
+	"column": [
+		      {
+			"index":1,
+			"name": "cf1:q1",
+			"type": "string"
+		      },
+		      {
+			"index":2,
+			"name": "cf1:q2",
+			"type": "string"
+		      }
+		   ］ 	
+
 	```
 
 	* 必选：是<br />
@@ -227,17 +228,17 @@ HbaseWriter 插件实现了从向Hbase中写取数据。在底层实现上，Hba
 	* 描述：要写入的hbase的rowkey列。index：指定该列对应reader端column的索引，从0开始，若为常量index为－1；type：指定写入数据类型，用于转换HBase byte[]；value：配置常量，常作为多个字段的拼接符。hbasewriter会将rowkeyColumn中所有列按照配置顺序进行拼接作为写入hbase的rowkey，不能全为常量。配置格式如下：
 	
 	```
-"rowkeyColumn": [
-                {
-                  "index":0,
-                  "type":"string"
-                },
-                {
-                  "index":-1,
-                  "type":"string",
-                  "value":"_"
-                }
-            ] 	
+	"rowkeyColumn": [
+			{
+			  "index":0,
+			  "type":"string"
+			},
+			{
+			  "index":-1,
+			  "type":"string",
+			  "value":"_"
+			}
+		    ] 	
 		            
 	```
 
@@ -250,19 +251,19 @@ HbaseWriter 插件实现了从向Hbase中写取数据。在底层实现上，Hba
 	* 描述：指定写入hbase的时间戳。支持：当前时间、指定时间列，指定时间，三者选一。若不配置表示用当前时间。index：指定对应reader端column的索引，从0开始，需保证能转换为long,若是Date类型，会尝试用yyyy-MM-dd HH:mm:ss和yyyy-MM-dd HH:mm:ss SSS去解析；若为指定时间index为－1；value：指定时间的值,long值。配置格式如下：
 	
 	```
-"versionColumn":{
-	"index":1
-}
+	"versionColumn":{
+		"index":1
+	}
 		            
 	```
 	
 	或者
 	
 	```
-"versionColumn":{
-	"index":－1,
-	"value":123456789
-}
+	"versionColumn":{
+		"index":－1,
+		"value":123456789
+	}
 		            
 	```
 

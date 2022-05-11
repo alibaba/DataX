@@ -24,14 +24,32 @@ public class ServerConnectInfo {
 			this.tenantName  = ss[1].trim().split(":")[1];
 			this.jdbcUrl = ss[2].replace("jdbc:mysql:", "jdbc:oceanbase:");
 		} else {
-			throw new RuntimeException ("jdbc url format is not correct: " + jdbcUrl);
+			this.jdbcUrl = jdbcUrl.replace("jdbc:mysql:", "jdbc:oceanbase:");
+			if (username.contains("@") && username.contains("#")) {
+				this.userName = username.substring(0, username.indexOf("@"));
+				this.tenantName = username.substring(username.indexOf("@") + 1, username.indexOf("#"));
+				this.clusterName = username.substring(username.indexOf("#") + 1);
+			} else if (username.contains(":")) {
+				String[] config = username.split(":");
+				if (config.length != 3) {
+					throw new RuntimeException ("username format is not correct: " + username);
+				}
+				this.clusterName = config[0];
+				this.tenantName = config[1];
+				this.userName = config[2];
+			} else {
+				this.clusterName = null;
+				this.tenantName = null;
+				this.userName = username;
+			}
 		}
+
 		this.password = password;
 		parseJdbcUrl(jdbcUrl);
 	}
 
 	private void parseJdbcUrl(final String jdbcUrl) {
-		Pattern pattern = Pattern.compile("//([\\w\\.\\-]+:\\d+)/([\\w]+)\\?");
+		Pattern pattern = Pattern.compile("//([\\w\\.\\-]+:\\d+)/([\\w-]+)\\?");
 		Matcher matcher = pattern.matcher(jdbcUrl);
 		if (matcher.find()) {
 			String ipPort = matcher.group(1);
@@ -51,8 +69,11 @@ public class ServerConnectInfo {
 	}
 
 	public String getFullUserName() {
-		StringBuilder builder = new StringBuilder();
-		builder.append(userName).append("@").append(tenantName).append("#").append(clusterName);
+		StringBuilder builder = new StringBuilder(userName);
+		if (tenantName != null && clusterName != null) {
+			builder.append("@").append(tenantName).append("#").append(clusterName);
+		}
+
 		return builder.toString();
 	}
 }

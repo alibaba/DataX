@@ -1,7 +1,27 @@
 package com.alibaba.datax.plugin.writer.oceanbasev10writer.task;
 
+import com.alibaba.datax.common.element.Column;
+import com.alibaba.datax.common.element.Record;
+import com.alibaba.datax.common.exception.DataXException;
+import com.alibaba.datax.common.plugin.RecordReceiver;
+import com.alibaba.datax.common.plugin.TaskPluginCollector;
+import com.alibaba.datax.common.util.Configuration;
+import com.alibaba.datax.plugin.rdbms.util.DBUtil;
+import com.alibaba.datax.plugin.rdbms.util.DBUtilErrorCode;
+import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
+import com.alibaba.datax.plugin.rdbms.writer.CommonRdbmsWriter;
+import com.alibaba.datax.plugin.writer.oceanbasev10writer.Config;
+import com.alibaba.datax.plugin.writer.oceanbasev10writer.ext.ConnHolder;
+import com.alibaba.datax.plugin.writer.oceanbasev10writer.ext.ObClientConnHolder;
+import com.alibaba.datax.plugin.writer.oceanbasev10writer.ext.ServerConnectInfo;
+import com.alibaba.datax.plugin.writer.oceanbasev10writer.util.ObWriterUtils;
+import com.alipay.oceanbase.obproxy.data.TableEntryKey;
+import com.alipay.oceanbase.obproxy.util.ObPartitionIdCalculator;
+import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.Connection;
-//import java.sql.PreparedStatement;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -16,27 +36,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.alibaba.datax.common.element.Column;
-import com.alibaba.datax.plugin.writer.oceanbasev10writer.ext.ObClientConnHolder;
-import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.alibaba.datax.common.element.Record;
-import com.alibaba.datax.common.exception.DataXException;
-import com.alibaba.datax.common.plugin.RecordReceiver;
-import com.alibaba.datax.common.plugin.TaskPluginCollector;
-import com.alibaba.datax.common.util.Configuration;
-import com.alibaba.datax.plugin.rdbms.util.DBUtil;
-import com.alibaba.datax.plugin.rdbms.util.DBUtilErrorCode;
-import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
-import com.alibaba.datax.plugin.rdbms.writer.CommonRdbmsWriter;
-import com.alibaba.datax.plugin.writer.oceanbasev10writer.Config;
-import com.alibaba.datax.plugin.writer.oceanbasev10writer.ext.ConnHolder;
-import com.alibaba.datax.plugin.writer.oceanbasev10writer.ext.ServerConnectInfo;
-import com.alibaba.datax.plugin.writer.oceanbasev10writer.util.ObWriterUtils;
-import com.alipay.oceanbase.obproxy.data.TableEntryKey;
-import com.alipay.oceanbase.obproxy.util.ObPartitionIdCalculator;
+//import java.sql.PreparedStatement;
 
 public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
     private static final Logger LOG = LoggerFactory.getLogger(ConcurrentTableWriterTask.class);
@@ -62,6 +62,7 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
 	private ObPartitionIdCalculator partCalculator = null;
 
 	private HashMap<Long, List<Record>> groupInsertValues;
+	List<Record> unknownPartRecords = new ArrayList<Record>();
 //	private List<Record> unknownPartRecords;
 	private List<Integer> partitionKeyIndexes;
 	
@@ -104,10 +105,14 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
 				connectInfo.getFullUserName(), connectInfo.password);
         checkConnHolder.initConnection();
         if (isOracleCompatibleMode) {
-           connectInfo.databaseName =  connectInfo.databaseName.toUpperCase();
-           table = table.toUpperCase();
-           LOG.info(String.format("this is oracle compatible mode, change database to %s, table to %s",
-                   connectInfo.databaseName, table));
+			connectInfo.databaseName = connectInfo.databaseName.toUpperCase();
+			//在转义的情况下不翻译
+			if (!(table.startsWith("\"") && table.endsWith("\""))) {
+				table = table.toUpperCase();
+			}
+
+			LOG.info(String.format("this is oracle compatible mode, change database to %s, table to %s",
+					connectInfo.databaseName, table));
         }
 
         if (config.getBool(Config.USE_PART_CALCULATOR, Config.DEFAULT_USE_PART_CALCULATOR)) {
@@ -150,7 +155,7 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
 				partCalculator = new ObPartitionIdCalculator(connectInfo.ipPort, tableEntryKey);
 			} catch (Exception ex) {
 				++retry;
-				LOG.warn("create new part calculator failed, retry ... {}", retry, ex);
+				LOG.warn("create new part calculator failed, retry {}: {}", retry, ex.getMessage());
 			}
 		} while (partCalculator == null && retry < 3); // try 3 times
 	}
@@ -289,19 +294,14 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
 	}
 
 	private void addLeftRecords() {
+		//不需要刷新Cache，已经是最后一批数据了
 		for (List<Record> groupValues : groupInsertValues.values()) {
 			if (groupValues.size() > 0 ) {
-				int retry = 0;
-				while (true) {
-					try {
-						concurrentWriter.addBatchRecords(groupValues);
-						break;
-					} catch (InterruptedException e) {
-						retry++;
-						LOG.info("Concurrent table writer is interrupted, retry {}", retry);
-					}
-				}
+				addRecordsToWriteQueue(groupValues);
 			}
+		}
+		if (unknownPartRecords.size() > 0) {
+			addRecordsToWriteQueue(unknownPartRecords);
 		}
 	}
 	
@@ -326,41 +326,40 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
 			}
 			groupValues.add(record);
 			if (groupValues.size() >= batchSize) {
-				int i = 0;
-				while (true) {
-					if (i > 0) {
-						LOG.info("retry add batch record the {} times", i);
-					}
-					try {
-						concurrentWriter.addBatchRecords(groupValues);
-						printEveryTime();
-						break;
-					} catch (InterruptedException e) {
-						LOG.info("Concurrent table writer is interrupted");
-					}
-				}
-				groupValues = new ArrayList<Record>(batchSize);
+				groupValues = addRecordsToWriteQueue(groupValues);
 				groupInsertValues.put(partId, groupValues);
 			}
 		} else {
-			LOG.warn("add unknown part record {}", record);
-			List<Record> unknownPartRecords = new ArrayList<Record>();
+			LOG.debug("add unknown part record {}", record);
 			unknownPartRecords.add(record);
-			int i = 0;
-			while (true) {
-				if (i > 0) {
-					LOG.info("retry add batch record the {} times", i);
-				}
-				try {
-					concurrentWriter.addBatchRecords(unknownPartRecords);
-					break;
-				} catch (InterruptedException e) {
-					LOG.info("Concurrent table writer is interrupted");
-				}
+			if (unknownPartRecords.size() >= batchSize) {
+				unknownPartRecords = addRecordsToWriteQueue(unknownPartRecords);
 			}
+
 		}
 	}
 
+	/**
+	 *
+	 * @param records
+	 * @return 返回一个新的Cache用于存储接下来的数据
+	 */
+	private List<Record> addRecordsToWriteQueue(List<Record> records) {
+		int i = 0;
+		while (true) {
+			if (i > 0) {
+				LOG.info("retry add batch record the {} times", i);
+			}
+			try {
+				concurrentWriter.addBatchRecords(records);
+				break;
+			} catch (InterruptedException e) {
+				i++;
+				LOG.info("Concurrent table writer is interrupted");
+			}
+		}
+		return new ArrayList<Record>(batchSize);
+	}
 	private void checkMemStore() {
 		Connection checkConn = checkConnHolder.reconnect();
 		long now = System.currentTimeMillis();
