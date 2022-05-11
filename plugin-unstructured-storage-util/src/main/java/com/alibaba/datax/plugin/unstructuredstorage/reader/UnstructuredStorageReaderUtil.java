@@ -5,6 +5,7 @@ import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordSender;
 import com.alibaba.datax.common.plugin.TaskPluginCollector;
 import com.alibaba.datax.common.util.Configuration;
+import com.alibaba.datax.common.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
@@ -397,7 +398,7 @@ public class UnstructuredStorageReaderUtil {
 					}
 					Type type = Type.valueOf(columnType.toUpperCase());
 					// it's all ok if nullFormat is null
-					if (columnValue.equals(nullFormat)) {
+					if (columnValue.equals(nullFormat) || StringUtils.isBlank(columnValue)) {
 						columnValue = null;
 					}
 					switch (type) {
