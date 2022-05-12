@@ -36,7 +36,7 @@ TSDBWriter 插件实现了将数据点写入到阿里巴巴云原生多模数据
       "field_string",
       "field_double",
       "timestamp",
-      "field_boolean"
+      "field_bool"
     ],
     "column": [
       "tag1",
@@ -121,6 +121,7 @@ TSDBWriter 插件实现了将数据点写入到阿里巴巴云原生多模数据
   }
 }
 ```
+转换到的TSDB 表名（metric）由column中field对应的列名决定：对于上诉配置一行关系型数据将会写入三个metric（field_metric_1，field_metric_2，field_metric_3）
 
 ### 3.2 参数说明
 
