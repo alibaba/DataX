@@ -12,6 +12,12 @@ import java.util.Date;
  */
 public abstract class Column {
 
+    /**
+     * name
+     * column name can be used to decoupled fields are strictly ordered
+     */
+    private String name;
+
 	private Type type;
 
 	private Object rawData;
@@ -24,7 +30,22 @@ public abstract class Column {
 		this.byteSize = byteSize;
 	}
 
-	public Object getRawData() {
+    public Column(String name, Type type, Object rawData, int byteSize) {
+        this.name = name;
+        this.type = type;
+        this.rawData = rawData;
+        this.byteSize = byteSize;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Object getRawData() {
 		return this.rawData;
 	}
 
