@@ -48,7 +48,7 @@ public class ReaderProxy {
         this.isCompress = isCompress;
     }
 
-    // warn: odps 分区列和正常列不能重名, 所有列都不不区分大小写
+    // warn: odps 分区列和正常列不能重名, 所有列都不区分大小写
     public void doRead() {
         try {
             LOG.info("start={}, count={}",start, count);

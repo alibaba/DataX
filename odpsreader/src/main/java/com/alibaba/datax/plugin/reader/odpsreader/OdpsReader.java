@@ -165,7 +165,7 @@ public class OdpsReader extends Reader {
             /**
              *  对配置的分区级数(深度)进行检查
              *  (1)先检查用户配置的分区级数,自身级数是否相等
-             *  (2)检查用户配置的分区级数是否与源头表的的分区级数一样
+             *  (2)检查用户配置的分区级数是否与源头表的分区级数一样
              */
             String firstPartition = allStandardUserConfiguredPartitions.get(0);
             int firstPartitionDepth = firstPartition.split(",").length;

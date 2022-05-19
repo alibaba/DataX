@@ -518,7 +518,7 @@ public class ObReaderUtils {
             if (allIndex.get(keyName).size() < colNamesInCondition.size()) {
                 indexNotMatch = true;
             } else {
-                // the the first number columns of this index
+                // the first number columns of this index
                 int num = colNamesInCondition.size();
                 for (String colName : allIndex.get(keyName)) {
                     if (!colNamesInCondition.contains(colName)) {

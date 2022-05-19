@@ -257,14 +257,14 @@ GDBWriter通过DataX框架获取Reader生成的协议数据，使用`g.addV/E(GD
 
 * **srcIdTransRule**
   * 描述：当label为边时，表示起点的主键id转换规则；
-    * 枚举值"labelPrefix"表示映射的值转换为为{label名}{源字段}
+    * 枚举值"labelPrefix"表示映射的值转换为{label名}{源字段}
     * 枚举值"none"表示映射的值不做转换，此时srcLabel 可不填写
   * 必选：label为边时必选
   * 默认值："none"
 
 * **dstIdTransRule**
   * 描述：当label为边时，表示终点的主键id转换规则；
-    * 枚举值"labelPrefix"表示映射的值转换为为{label名}{源字段}
+    * 枚举值"labelPrefix"表示映射的值转换为{label名}{源字段}
     * 枚举值"none"表示映射的值不做转换，此时dstLabel 可不填写
   * 必选：label为边时必选
   * 默认值："none"
