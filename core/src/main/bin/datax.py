@@ -26,9 +26,9 @@ DATAX_HOME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATAX_VERSION = 'DATAX-OPENSOURCE-3.0'
 if isWindows():
     codecs.register(lambda name: name == 'cp65001' and codecs.lookup('utf-8') or None)
-    CLASS_PATH = ("%s/lib/*") % (DATAX_HOME)
+    CLASS_PATH = ("%s/lib/*:%s/plugin/reader/hdfsreader/libs/*:%s/plugin/writer/hdfswriter/libs/*:.") % (DATAX_HOME, DATAX_HOME, DATAX_HOME)
 else:
-    CLASS_PATH = ("%s/lib/*:.") % (DATAX_HOME)
+    CLASS_PATH = ("%s/lib/*:%s/plugin/reader/hdfsreader/libs/*:%s/plugin/writer/hdfswriter/libs/*:.") % (DATAX_HOME, DATAX_HOME, DATAX_HOME)
 LOGBACK_FILE = ("%s/conf/logback.xml") % (DATAX_HOME)
 DEFAULT_JVM = "-Xms1g -Xmx1g -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=%s/log" % (DATAX_HOME)
 DEFAULT_PROPERTY_CONF = "-Dfile.encoding=UTF-8 -Dlogback.statusListenerClass=ch.qos.logback.core.status.NopStatusListener -Djava.security.egd=file:///dev/urandom -Ddatax.home=%s -Dlogback.configurationFile=%s" % (
