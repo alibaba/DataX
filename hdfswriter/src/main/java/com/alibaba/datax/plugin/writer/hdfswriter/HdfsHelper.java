@@ -14,10 +14,13 @@ import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.hadoop.fs.*;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
+import org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat;
+import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
 import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.compress.CompressionCodec;
@@ -414,7 +417,8 @@ public  class HdfsHelper {
     public List<ObjectInspector>  getColumnTypeInspectors(List<Configuration> columns){
         List<ObjectInspector>  columnTypeInspectors = Lists.newArrayList();
         for (Configuration eachColumnConf : columns) {
-            SupportHiveDataType columnType = SupportHiveDataType.valueOf(eachColumnConf.getString(Key.TYPE).toUpperCase());
+//            SupportHiveDataType columnType = SupportHiveDataType.valueOf(eachColumnConf.getString(Key.TYPE).toUpperCase());
+            SupportHiveDataType columnType = SupportHiveDataType.valueOf(eachColumnConf.getString(Key.TYPE).contains("decimal")?"DECIMAL":eachColumnConf.getString(Key.TYPE).toUpperCase());
             ObjectInspector objectInspector = null;
             switch (columnType) {
                 case TINYINT:
@@ -434,6 +438,9 @@ public  class HdfsHelper {
                     break;
                 case DOUBLE:
                     objectInspector = ObjectInspectorFactory.getReflectionObjectInspector(Double.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+                    break;
+                case DECIMAL:
+                    objectInspector = ObjectInspectorFactory.getReflectionObjectInspector(HiveDecimal.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
                     break;
                 case TIMESTAMP:
                     objectInspector = ObjectInspectorFactory.getReflectionObjectInspector(java.sql.Timestamp.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
@@ -494,8 +501,10 @@ public  class HdfsHelper {
                 //todo as method
                 if (null != column.getRawData()) {
                     String rowData = column.getRawData().toString();
-                    SupportHiveDataType columnType = SupportHiveDataType.valueOf(
-                            columnsConfiguration.get(i).getString(Key.TYPE).toUpperCase());
+//                    SupportHiveDataType columnType = SupportHiveDataType.valueOf(
+//                            columnsConfiguration.get(i).getString(Key.TYPE).toUpperCase());
+                    SupportHiveDataType columnType = SupportHiveDataType.valueOf(columnsConfiguration.get(i).getString(Key.TYPE).contains("decimal")?
+                            "DECIMAL":columnsConfiguration.get(i).getString(Key.TYPE).toUpperCase());
                     //根据writer端类型配置做类型转换
                     try {
                         switch (columnType) {
@@ -560,5 +569,54 @@ public  class HdfsHelper {
         }
         transportResult.setLeft(recordList);
         return transportResult;
+    }
+
+    /**
+     * Parquet fileType Write
+     * @param lineReceiver
+     * @param config
+     * @param fileName
+     * @param taskPluginCollector
+     */
+    public void parFileStartWrite(RecordReceiver lineReceiver, Configuration config, String fileName,
+                                  TaskPluginCollector taskPluginCollector) {
+        List<Configuration> columns = config.getListConfiguration(Key.COLUMN);
+        String compress = config.getString(Key.COMPRESS, null);
+        List<String> columnNames = getColumnNames(columns);
+        List<ObjectInspector> columnTypeInspectors = getColumnTypeInspectors(columns);
+        StructObjectInspector inspector = (StructObjectInspector) ObjectInspectorFactory
+                .getStandardStructObjectInspector(columnNames, columnTypeInspectors);
+
+        ParquetHiveSerDe parquetHiveSerDe = new ParquetHiveSerDe();
+
+        MapredParquetOutputFormat outFormat = new MapredParquetOutputFormat();
+        if (!"NONE".equalsIgnoreCase(compress) && null != compress) {
+            Class<? extends CompressionCodec> codecClass = getCompressCodec(compress);
+            if (null != codecClass) {
+                outFormat.setOutputCompressorClass(conf, codecClass);
+            }
+        }
+        try {
+            Properties colProperties = new Properties();
+            colProperties.setProperty("columns", String.join(",", columnNames));
+            List<String> colType = Lists.newArrayList();
+            columns.forEach(c -> colType.add(c.getString(Key.TYPE)));
+            colProperties.setProperty("columns.types", String.join(",", colType));
+            RecordWriter writer = (RecordWriter) outFormat.getHiveRecordWriter(conf, new Path(fileName), ObjectWritable.class, true, colProperties, Reporter.NULL);
+            Record record = null;
+            while ((record = lineReceiver.getFromReader()) != null) {
+                MutablePair<List<Object>, Boolean> transportResult = transportOneRecord(record, columns, taskPluginCollector);
+                if (!transportResult.getRight()) {
+                    writer.write(null, parquetHiveSerDe.serialize(transportResult.getLeft(), inspector));
+                }
+            }
+            writer.close(Reporter.NULL);
+        } catch (Exception e) {
+            String message = String.format("写文件文件[%s]时发生IO异常,请检查您的网络是否正常！", fileName);
+            LOG.error(message);
+            Path path = new Path(fileName);
+            deleteDir(path.getParent());
+            throw DataXException.asDataXException(HdfsWriterErrorCode.Write_FILE_IO_ERROR, e);
+        }
     }
 }
