@@ -13,11 +13,11 @@ HdfsWriter提供向HDFS文件系统指定路径中写入TEXTFile文件和ORCFile
 * (1)、目前HdfsWriter仅支持textfile和orcfile两种格式的文件，且文件内容存放的必须是一张逻辑意义上的二维表;
 * (2)、由于HDFS是文件系统，不存在schema的概念，因此不支持对部分列写入;
 * (3)、目前仅支持与以下Hive数据类型：
-数值型：TINYINT,SMALLINT,INT,BIGINT,FLOAT,DOUBLE
+数值型：TINYINT,SMALLINT,INT,BIGINT,FLOAT,DOUBLE,DECIMAL
 字符串类型：STRING,VARCHAR,CHAR
 布尔类型：BOOLEAN
 时间类型：DATE,TIMESTAMP
-**目前不支持：decimal、binary、arrays、maps、structs、union类型**;
+**目前不支持：binary、arrays、maps、structs、union类型**;
 * (4)、对于Hive分区表目前仅支持一次写入单个分区;
 * (5)、对于textfile需用户保证写入hdfs文件的分隔符**与在Hive上创建表时的分隔符一致**,从而实现写入hdfs数据与Hive表字段关联;
 * (6)、HdfsWriter实现过程是：首先根据用户指定的path，创建一个hdfs文件系统上不存在的临时目录，创建规则：path_随机；然后将读取的文件写入这个临时目录；全部写入后再将这个临时目录下的文件移动到用户指定目录（在创建文件时保证文件名不重复）; 最后删除临时目录。如果在中间过程发生网络中断等情况造成无法与hdfs建立连接，需要用户手动删除已经写入的文件和临时目录。
@@ -178,18 +178,20 @@ HdfsWriter提供向HDFS文件系统指定路径中写入TEXTFile文件和ORCFile
 
 * **fileType**
 
-	* 描述：文件的类型，目前只支持用户配置为"text"或"orc"。 <br />
+	* 描述：文件的类型，目前只支持用户配置为"text"或"orc"或"parquet"。 <br />
 
-		text表示textfile文件格式
+	  text表示textfile文件格式
 
-		orc表示orcfile文件格式
+	  orc表示orcfile文件格式
+
+	  parquet表示parquet文件格式
 
 	* 必选：是 <br />
-
+	
 	* 默认值：无 <br />
 * **path**
 
-	* 描述：存储到Hadoop hdfs文件系统的路径信息，HdfsWriter会根据并发配置在Path目录下写入多个文件。为与hive表关联，请填写hive表在hdfs上的存储路径。例：Hive上设置的数据仓库的存储路径为：/user/hive/warehouse/ ，已建立数据库：test，表：hello；则对应的存储路径为：/user/hive/warehouse/test.db/hello  <br />
+	* 描述：存储到Hadoop hdfs文件系统的路径信息，HdfsWriter会根据并发配置在Path目录下写入多个文件，已支持腾讯云存储对象COS，为与hive表关联，请填写hive表在hdfs上的存储路径。例：Hive上设置的数据仓库的存储路径为：/user/hive/warehouse/ ，已建立数据库：test，表：hello；则对应的存储路径为：/user/hive/warehouse/test.db/hello  <br />
 
 	* 必选：是 <br />
 
@@ -206,10 +208,12 @@ HdfsWriter提供向HDFS文件系统指定路径中写入TEXTFile文件和ORCFile
 
 	* 描述：写入数据的字段，不支持对部分列写入。为与hive中表关联，需要指定表中所有字段名和字段类型，其中：name指定字段名，type指定字段类型。 <br />
 
-		用户可以指定Column字段信息，配置如下：
+	* **PS**:当写入fileTyope为parquet文件时，type必需使用小写，且decimal类型必须为decimal(36,20),否则会导致类型不匹配。
 
-		```json
-		"column":
+		用户可以指定Column字段信息，配置如下：
+	
+  	```json
+  	"column":
                  [
                             {
                                 "name": "userName",
@@ -218,12 +222,12 @@ HdfsWriter提供向HDFS文件系统指定路径中写入TEXTFile文件和ORCFile
                             {
                                 "name": "age",
                                 "type": "long"
-                            }
-                 ]
+	                          }
+	               ]
 		```
 
 	* 必选：是 <br />
-
+	
 	* 默认值：无 <br />
 * **writeMode**
 
@@ -281,11 +285,11 @@ HdfsWriter提供向HDFS文件系统指定路径中写入TEXTFile文件和ORCFile
 * **haveKerberos**
 
 	* 描述：是否有Kerberos认证，默认false<br />
- 
+
 		 例如如果用户配置true，则配置项kerberosKeytabFilePath，kerberosPrincipal为必填。
 
  	* 必选：haveKerberos 为true必选 <br />
- 
+
  	* 默认值：false <br />
 
 * **kerberosKeytabFilePath**
@@ -293,7 +297,7 @@ HdfsWriter提供向HDFS文件系统指定路径中写入TEXTFile文件和ORCFile
 	* 描述：Kerberos认证 keytab文件路径，绝对路径<br />
 
  	* 必选：否 <br />
- 
+
  	* 默认值：无 <br />
 
 * **kerberosPrincipal**
@@ -301,7 +305,7 @@ HdfsWriter提供向HDFS文件系统指定路径中写入TEXTFile文件和ORCFile
 	* 描述：Kerberos认证Principal名，如xxxx/hadoopclient@xxx.xxx <br />
 
  	* 必选：haveKerberos 为true必选 <br />
- 
+
  	* 默认值：无 <br />
 
 
