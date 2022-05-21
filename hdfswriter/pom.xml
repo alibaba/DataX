@@ -14,9 +14,11 @@
     <description>HdfsWriter提供了写入HDFS功能。</description>
     <packaging>jar</packaging>
     <properties>
-        <hive.version>1.1.1</hive.version>
+<!--        已验证hive 3.1.1版本读取orc文件decimal类型时会出现类型转化问题,3版本以下无此问题。-->
+        <hive.version>3.1.1</hive.version>
         <hadoop.version>2.7.1</hadoop.version>
     </properties>
+
 
     <dependencies>
         <dependency>
@@ -96,6 +98,18 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.qcloud.cos</groupId>
+            <artifactId>hadoop-cos</artifactId>
+            <version>3.3.0-8.1.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.qcloud</groupId>
+            <artifactId>cos_api-bundle</artifactId>
+            <version>5.6.69</version>
         </dependency>
 
     </dependencies>
