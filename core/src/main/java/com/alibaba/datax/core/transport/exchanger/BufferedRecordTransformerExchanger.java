@@ -124,6 +124,11 @@ public class BufferedRecordTransformerExchanger extends TransformerExchanger imp
     }
 
     @Override
+    public void flush(long waitTime) {
+
+    }
+
+    @Override
     public void terminate() {
         if (shutdown) {
             throw DataXException.asDataXException(CommonErrorCode.SHUT_DOWN_TASK, "");

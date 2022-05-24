@@ -112,6 +112,16 @@ public class BufferedRecordExchanger implements RecordSender, RecordReceiver {
 	}
 
 	@Override
+	public void flush(long waitTime) {
+
+	}
+
+	public boolean ifChannelEmpty() {
+		return this.channel.isEmpty();
+	}
+
+
+	@Override
 	public void terminate() {
 		if(shutdown){
 			throw DataXException.asDataXException(CommonErrorCode.SHUT_DOWN_TASK, "");

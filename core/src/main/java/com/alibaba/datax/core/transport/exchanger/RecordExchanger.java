@@ -97,6 +97,11 @@ public class RecordExchanger extends TransformerExchanger implements RecordSende
 	}
 
 	@Override
+	public void flush(long waitTime) {
+
+	}
+
+	@Override
 	public void terminate() {
 		if(shutdown){
 			throw DataXException.asDataXException(CommonErrorCode.SHUT_DOWN_TASK, "");

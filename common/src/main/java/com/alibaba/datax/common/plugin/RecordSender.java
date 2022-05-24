@@ -26,6 +26,8 @@ public interface RecordSender {
 
 	public void flush();
 
+	public void flush(long waitTime);
+
 	public void terminate();
 
 	public void shutdown();

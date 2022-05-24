@@ -20,6 +20,7 @@ import com.alibaba.datax.core.taskgroup.runner.WriterRunner;
 import com.alibaba.datax.core.transport.channel.Channel;
 import com.alibaba.datax.core.transport.exchanger.BufferedRecordExchanger;
 import com.alibaba.datax.core.transport.exchanger.BufferedRecordTransformerExchanger;
+import com.alibaba.datax.core.transport.exchanger.WaitedBufferedRecordExchanger;
 import com.alibaba.datax.core.transport.transformer.TransformerExecution;
 import com.alibaba.datax.core.util.ClassUtil;
 import com.alibaba.datax.core.util.FrameworkErrorCode;
@@ -478,10 +479,15 @@ public class TaskGroupContainer extends AbstractContainer {
                             PluginType.READER);
 
                     RecordSender recordSender;
-                    if (transformerInfoExecs != null && transformerInfoExecs.size() > 0) {
-                        recordSender = new BufferedRecordTransformerExchanger(taskGroupId, this.taskId, this.channel,this.taskCommunication ,pluginCollector, transformerInfoExecs);
+                    if (this.taskConfig.getString(CoreConstant.JOB_READER_NAME).equals("kafkareader")) {
+                        recordSender = new WaitedBufferedRecordExchanger(this.channel, pluginCollector);
                     } else {
-                        recordSender = new BufferedRecordExchanger(this.channel, pluginCollector);
+                        if (transformerInfoExecs != null && transformerInfoExecs.size() > 0) {
+                            recordSender = new BufferedRecordTransformerExchanger(taskGroupId, this.taskId, this.channel, this.taskCommunication, pluginCollector, transformerInfoExecs);
+                        } else {
+                            recordSender = new BufferedRecordExchanger(this.channel, pluginCollector);
+                        }
+
                     }
 
                     ((ReaderRunner) newRunner).setRecordSender(recordSender);
