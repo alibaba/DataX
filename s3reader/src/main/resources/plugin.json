@@ -1,0 +1,6 @@
+{
+    "name": "s3reader",
+    "class": "com.alibaba.datax.plugin.reader.s3reader.S3Reader",
+    "description": "",
+    "developer": "du"
+}
