@@ -1,0 +1,12 @@
+{
+    "name": "kudureader",
+    "parameter": {
+        "masterAddresses": "127.0.0.1:7051",
+        "tableName": "test",
+        "splitKey": "",
+        "lowerBound": "min",
+        "upperBound": "max",
+        "socketReadTimeoutMs": 30000,
+        "scanRequestTimeout": 30000
+    }
+}
