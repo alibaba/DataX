@@ -9,9 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.alibaba.datax.tdenginewriter</groupId>
-    <artifactId>tdenginewriter</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <artifactId>tdenginereader</artifactId>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -19,11 +17,29 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.alibaba.datax</groupId>
+            <artifactId>datax-common</artifactId>
+            <version>${datax-project-version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>slf4j-log4j12</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
             <version>1.2.78</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.alibaba.datax.tdenginewriter</groupId>
+            <artifactId>tdenginewriter</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
@@ -39,24 +55,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>${commons-lang3-version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.alibaba.datax</groupId>
-            <artifactId>datax-common</artifactId>
-            <version>${datax-project-version}</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>slf4j-log4j12</artifactId>
-                    <groupId>org.slf4j</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit-version}</version>
@@ -64,26 +62,25 @@
         </dependency>
         <dependency>
             <groupId>com.alibaba.datax</groupId>
+            <artifactId>plugin-rdbms-util</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.alibaba.datax</groupId>
             <artifactId>datax-core</artifactId>
             <version>0.0.1-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.49</version>
-            <scope>test</scope>
-        </dependency>
         <!-- 添加 dm8 jdbc jar 包依赖-->
-        <!--        <dependency>-->
-        <!--            <groupId>com.dameng</groupId>-->
-        <!--            <artifactId>dm-jdbc</artifactId>-->
-        <!--            <version>1.8</version>-->
-        <!--            <scope>system</scope>-->
-        <!--            <systemPath>${project.basedir}/src/test/resources/DmJdbcDriver18.jar-->
-        <!--            </systemPath>-->
-        <!--        </dependency>-->
-
+<!--        <dependency>-->
+<!--            <groupId>com.dameng</groupId>-->
+<!--            <artifactId>dm-jdbc</artifactId>-->
+<!--            <version>1.8</version>-->
+<!--            <scope>system</scope>-->
+<!--            <systemPath>${project.basedir}/src/test/resources/DmJdbcDriver18.jar</systemPath>-->
+<!--        </dependency>-->
     </dependencies>
 
     <build>

@@ -1,0 +1,9 @@
+{
+  "name": "tdenginereader",
+  "class": "com.alibaba.datax.plugin.reader.TDengineReader",
+  "description": {
+    "useScene": "data migration from tdengine",
+    "mechanism": "use JDBC to read data from tdengine."
+  },
+  "developer": "zyyang-taosdata"
+}

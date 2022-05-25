@@ -1,18 +1,18 @@
-package com.alibaba.datax.plugin.writer.tdenginewriter;
+package com.alibaba.datax.plugin.reader;
 
 import com.alibaba.datax.common.spi.ErrorCode;
 
-public enum TDengineWriterErrorCode implements ErrorCode {
+public enum TDengineReaderErrorCode implements ErrorCode {
 
-    REQUIRED_VALUE("TDengineWriter-00", "parameter value is missing"),
-    ILLEGAL_VALUE("TDengineWriter-01", "invalid parameter value"),
-    RUNTIME_EXCEPTION("TDengineWriter-02", "runtime exception"),
-    TYPE_ERROR("TDengineWriter-03", "data type mapping error");
+    REQUIRED_VALUE("TDengineReader-00", "parameter value is missing"),
+    ILLEGAL_VALUE("TDengineReader-01", "invalid parameter value"),
+    CONNECTION_FAILED("TDengineReader-02", "connection error"),
+    RUNTIME_EXCEPTION("TDengineWriter-03", "runtime exception");
 
     private final String code;
     private final String description;
 
-    TDengineWriterErrorCode(String code, String description) {
+    TDengineReaderErrorCode(String code, String description) {
         this.code = code;
         this.description = description;
     }

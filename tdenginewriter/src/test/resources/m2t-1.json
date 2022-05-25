@@ -1,0 +1,72 @@
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "name": "mysqlreader",
+          "parameter": {
+            "username": "root",
+            "password": "123456",
+            "column": [
+              "ts",
+              "dt",
+              "f1",
+              "f2",
+              "f3",
+              "f4",
+              "f5",
+              "f6",
+              "f7",
+              "f8"
+            ],
+            "splitPk": "id",
+            "connection": [
+              {
+                "table": [
+                  "stb1"
+                ],
+                "jdbcUrl": [
+                  "jdbc:mysql://192.168.56.105:3306/db1?useSSL=false&useUnicode=true&characterEncoding=utf8"
+                ]
+              }
+            ]
+          }
+        },
+        "writer": {
+          "name": "tdenginewriter",
+          "parameter": {
+            "username": "root",
+            "password": "taosdata",
+            "column": [
+              "ts",
+              "dt",
+              "f1",
+              "f2",
+              "f3",
+              "f4",
+              "f5",
+              "f6",
+              "f7",
+              "f8"
+            ],
+            "connection": [
+              {
+                "table": [
+                  "stb2"
+                ],
+                "jdbcUrl": "jdbc:TAOS-RS://192.168.1.93:6041/db2"
+              }
+            ],
+            "batchSize": 1000,
+            "ignoreTagsUnmatched": true
+          }
+        }
+      }
+    ],
+    "setting": {
+      "speed": {
+        "channel": 1
+      }
+    }
+  }
+}
