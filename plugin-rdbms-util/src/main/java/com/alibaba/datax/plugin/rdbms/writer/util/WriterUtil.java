@@ -111,11 +111,12 @@ public final class WriterUtil {
     public static String getWriteTemplate(List<String> columnHolders, List<String> valueHolders, String writeMode, DataBaseType dataBaseType, boolean forceUseUpdate) {
         boolean isWriteModeLegal = writeMode.trim().toLowerCase().startsWith("insert")
                 || writeMode.trim().toLowerCase().startsWith("replace")
-                || writeMode.trim().toLowerCase().startsWith("update");
+                || writeMode.trim().toLowerCase().startsWith("update")
+                || writeMode.trim().toLowerCase().startsWith("ignore");
 
         if (!isWriteModeLegal) {
             throw DataXException.asDataXException(DBUtilErrorCode.ILLEGAL_VALUE,
-                    String.format("您所配置的 writeMode:%s 错误. 因为DataX 目前仅支持replace,update 或 insert 方式. 请检查您的配置并作出修改.", writeMode));
+                    String.format("您所配置的 writeMode:%s 错误. 因为DataX 目前仅支持replace,update, ignore 或 insert 方式. 请检查您的配置并作出修改.", writeMode));
         }
         // && writeMode.trim().toLowerCase().startsWith("replace")
         String writeDataSqlTemplate;
@@ -129,6 +130,22 @@ public final class WriterUtil {
                     .append(") VALUES(").append(StringUtils.join(valueHolders, ","))
                     .append(")")
                     .append(onDuplicateKeyUpdateString(columnHolders))
+                    .toString();
+        } else if (dataBaseType == DataBaseType.MimerSQL && writeMode.trim().toLowerCase().startsWith("replace")) {
+
+            //MimerSQL使用insert {replace} into ... 实现当出现主键冲突时更新现有的行
+            writeDataSqlTemplate = new StringBuilder()
+                    .append("INSERT {REPLACE} INTO %s (").append(StringUtils.join(columnHolders, ","))
+                    .append(") VALUES(").append(StringUtils.join(valueHolders, ","))
+                    .append(")")
+                    .toString();
+        } else if (dataBaseType == DataBaseType.MimerSQL && writeMode.trim().toLowerCase().startsWith("ignore")) {
+
+            //MimerSQL使用insert {ingore} into ... 实现当出现主键冲突时跳过该插入
+            writeDataSqlTemplate = new StringBuilder()
+                    .append("INSERT {IGNORE} INTO %s (").append(StringUtils.join(columnHolders, ","))
+                    .append(") VALUES(").append(StringUtils.join(valueHolders, ","))
+                    .append(")")
                     .toString();
         } else {
 
