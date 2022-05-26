@@ -13,11 +13,11 @@ HdfsWriter提供向HDFS文件系统指定路径中写入TEXTFile文件和ORCFile
 * (1)、目前HdfsWriter仅支持textfile和orcfile两种格式的文件，且文件内容存放的必须是一张逻辑意义上的二维表;
 * (2)、由于HDFS是文件系统，不存在schema的概念，因此不支持对部分列写入;
 * (3)、目前仅支持与以下Hive数据类型：
-数值型：TINYINT,SMALLINT,INT,BIGINT,FLOAT,DOUBLE
+数值型：TINYINT,SMALLINT,INT,INTEGER,BIGINT,FLOAT,DOUBLE,DECIMAL
 字符串类型：STRING,VARCHAR,CHAR
 布尔类型：BOOLEAN
 时间类型：DATE,TIMESTAMP
-**目前不支持：decimal、binary、arrays、maps、structs、union类型**;
+**目前不支持：binary、arrays、maps、structs、union类型**;
 * (4)、对于Hive分区表目前仅支持一次写入单个分区;
 * (5)、对于textfile需用户保证写入hdfs文件的分隔符**与在Hive上创建表时的分隔符一致**,从而实现写入hdfs数据与Hive表字段关联;
 * (6)、HdfsWriter实现过程是：首先根据用户指定的path，创建一个hdfs文件系统上不存在的临时目录，创建规则：path_随机；然后将读取的文件写入这个临时目录；全部写入后再将这个临时目录下的文件移动到用户指定目录（在创建文件时保证文件名不重复）; 最后删除临时目录。如果在中间过程发生网络中断等情况造成无法与hdfs建立连接，需要用户手动删除已经写入的文件和临时目录。
@@ -260,7 +260,7 @@ HdfsWriter提供向HDFS文件系统指定路径中写入TEXTFile文件和ORCFile
 		"hadoopConfig":{
 		        "dfs.nameservices": "testDfs",
 		        "dfs.ha.namenodes.testDfs": "namenode1,namenode2",
-		        "dfs.namenode.rpc-address.aliDfs.namenode1": "",
+		        "dfs.namenode.rpc-address.aliDfs.namenode1": "",
 		        "dfs.namenode.rpc-address.aliDfs.namenode2": "",
 		        "dfs.client.failover.proxy.provider.testDfs": "org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider"
 		}
@@ -313,8 +313,8 @@ HdfsWriter提供向HDFS文件系统指定路径中写入TEXTFile文件和ORCFile
 
 | DataX 内部类型| HIVE 数据类型    |
 | -------- | -----  |
-| Long     |TINYINT,SMALLINT,INT,BIGINT |
-| Double   |FLOAT,DOUBLE |
+| Long     |TINYINT,SMALLINT,INT,INTEGER,BIGINT |
+| Double   |FLOAT,DOUBLE,DECIMAL |
 | String   |STRING,VARCHAR,CHAR |
 | Boolean  |BOOLEAN |
 | Date     |DATE,TIMESTAMP |
