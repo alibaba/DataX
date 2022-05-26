@@ -9,6 +9,8 @@ import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
+import org.apache.avro.Schema;
+import org.apache.avro.generic.GenericData;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.hadoop.fs.*;
@@ -22,6 +24,9 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.mapred.*;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.parquet.avro.AvroParquetWriter;
+import org.apache.parquet.hadoop.ParquetWriter;
+import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
@@ -555,5 +560,133 @@ public  class HdfsHelper {
         }
         transportResult.setLeft(recordList);
         return transportResult;
+    }
+    /**
+     * 写parquet文件
+     * @param lineReceiver
+     * @param config
+     * @param fileName
+     * @param taskPluginCollector
+     */
+    public void parquetFileStartWrite(RecordReceiver lineReceiver, Configuration config, String fileName, TaskPluginCollector taskPluginCollector) {
+        String strSchema = getSchemaStr(config);
+        Schema schema = parseSchema(strSchema);
+        Path path = new Path(fileName);
+        ParquetWriter<GenericData.Record> writer = null;
+        List<Configuration> columns = config.getListConfiguration(Key.COLUMN);
+        String compress = config.getString(Key.COMPRESS,null);
+        List<String> columnNames = getColumnNames(columns);
+        Record record ;
+        try {
+            writer = AvroParquetWriter.<GenericData.Record>builder(path)
+                    .withRowGroupSize(ParquetWriter.DEFAULT_BLOCK_SIZE)
+                    .withPageSize(ParquetWriter.DEFAULT_PAGE_SIZE)
+                    .withSchema(schema)
+                    .withConf(hadoopConf)
+                    .withCompressionCodec(getParquetCompress(compress))
+                    .withValidation(false)
+                    .withDictionaryEncoding(false)
+                    .build();
+            while ( (record = lineReceiver.getFromReader()) != null) {
+                GenericData.Record gr = new GenericData.Record(schema);
+
+                for (int i = 0; i < columnNames.size(); i++) {
+                    gr.put(columnNames.get(i),record.getColumn(i).getRawData());
+                }
+                writer.write(gr);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally {
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    /**
+     * 获取parquet压缩格式
+     * @param compress
+     * @return
+     */
+    private CompressionCodecName getParquetCompress(String compress) {
+        if (compress == null) {
+            return CompressionCodecName.UNCOMPRESSED;
+        }
+
+        if("UNCOMPRESSED".equalsIgnoreCase(compress)){
+            return CompressionCodecName.UNCOMPRESSED;
+        }else if ("SNAPPY".equalsIgnoreCase(compress)){
+            return CompressionCodecName.SNAPPY;
+        }else if("GZIP".equalsIgnoreCase(compress)){
+            return CompressionCodecName.GZIP;
+        }else if("LZO".equalsIgnoreCase(compress)){
+            return CompressionCodecName.LZO;
+        }else if ("BROTLI".equalsIgnoreCase(compress)){
+            return CompressionCodecName.BROTLI;
+        }else if ("LZ4".equalsIgnoreCase(compress)){
+            return CompressionCodecName.LZ4;
+        }else if ("ZSTD".equalsIgnoreCase(compress)){
+            return CompressionCodecName.ZSTD;
+        }else {
+            throw DataXException.asDataXException(HdfsWriterErrorCode.ILLEGAL_VALUE
+                    ,String.format("目前不支持您配置的 compress 模式 : [%s]", compress));
+        }
+    }
+
+    /**
+     * 拼接用于实例化schema的字符串
+     * @param config
+     * @return
+     */
+    private String getSchemaStr(Configuration config) {
+//        拼接字符串样例
+//        String str1 = "{" +
+//                " \"type\": \"record\"," +
+//                " \"name\": \"empRecords\"," +
+//                " \"doc\": \"Employee Records\"," +
+//                " \"fields\": " +
+//                "  [{" +
+//                "   \"name\": \"id\", " +
+//                "   \"type\": \"int\"" +
+//                "   " +
+//                "  }, " +
+//                "  {" +
+//                "   \"name\": \"name\"," +
+//                "   \"type\": \"string\"" +
+//                "  }]" +
+//                "}";
+        String str =  "{" +
+                " \"type\": \"record\"," +
+                " \"name\": \"parquetFile\"," +
+                " \"doc\": \"parquet Records\"," +
+                " \"fields\": [";
+        List<Configuration> columns = config.getListConfiguration(Key.COLUMN);
+        for (int i = 0; i < columns.size(); i++) {
+            if (i < columns.size()-1) {
+                // 只要不是最后一个都要拼接一个逗号
+                str = str + columns.get(i) + ",";
+            }else {
+                str = str + columns.get(i);
+            }
+        }
+        str = str + "]" + "}";
+        return str;
+    }
+
+    /**
+     * 获取schema
+     * @param str
+     * @return
+     */
+    private Schema parseSchema(String str) {
+        Schema.Parser parser = new Schema.Parser();
+        Schema parse = parser.parse(str);
+        return parse;
     }
 }
