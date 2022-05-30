@@ -95,6 +95,13 @@
             <version>${datax-project-version}</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/com.twitter/parquet-tools -->
+        <dependency>
+            <groupId>org.apache.parquet</groupId>
+            <artifactId>parquet-tools</artifactId>
+            <version>1.8.1</version>
+        </dependency>
+
         <dependency>
             <groupId>com.qcloud.cos</groupId>
             <artifactId>hadoop-cos</artifactId>
