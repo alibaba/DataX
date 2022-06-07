@@ -15,7 +15,7 @@
     <packaging>jar</packaging>
     <properties>
 <!--        已验证hive 3.1.1版本读取orc文件decimal类型时会出现类型转化问题,3版本以下无此问题。-->
-        <hive.version>3.1.1</hive.version>
+        <hive.version>2.1.1</hive.version>
         <hadoop.version>2.7.1</hadoop.version>
     </properties>
 
