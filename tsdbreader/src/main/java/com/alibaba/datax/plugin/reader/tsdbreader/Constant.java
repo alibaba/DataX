@@ -16,6 +16,8 @@ public final class Constant {
     static final String DEFAULT_DATA_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     public static final String METRIC_SPECIFY_KEY = "__metric__";
+    public static final String METRIC_SPECIFY_KEY_PREFIX = METRIC_SPECIFY_KEY + ".";
+    public static final int METRIC_SPECIFY_KEY_PREFIX_LENGTH = METRIC_SPECIFY_KEY_PREFIX.length();
     public static final String TS_SPECIFY_KEY = "__ts__";
     public static final String VALUE_SPECIFY_KEY = "__value__";
 

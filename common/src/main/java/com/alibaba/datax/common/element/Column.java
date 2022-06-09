@@ -55,6 +55,8 @@ public abstract class Column {
 	public abstract String asString();
 
 	public abstract Date asDate();
+	
+	public abstract Date asDate(String dateFormat);
 
 	public abstract byte[] asBytes();
 

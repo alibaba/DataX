@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -135,5 +136,26 @@ public final class ListUtil {
         }
 
         return result;
+    }
+    
+    public static Boolean checkIfHasSameValue(List<String> listA, List<String> listB) {
+        if (null == listA || listA.isEmpty() || null == listB || listB.isEmpty()) {
+            return false;
+        }
+
+        for (String oneValue : listA) {
+            if (listB.contains(oneValue)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    
+    public static boolean checkIfAllSameValue(List<String> listA, List<String> listB) {
+        if (null == listA || listA.isEmpty() || null == listB || listB.isEmpty() || listA.size() != listB.size()) {
+            return false;
+        }
+        return new HashSet<>(listA).containsAll(new HashSet<>(listB));
     }
 }
