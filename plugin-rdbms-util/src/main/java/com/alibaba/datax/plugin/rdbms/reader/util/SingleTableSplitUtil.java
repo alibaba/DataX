@@ -53,6 +53,9 @@ public class SingleTableSplitUtil {
                 throw DataXException.asDataXException(DBUtilErrorCode.ILLEGAL_SPLIT_PK,
                         "根据切分主键切分表失败. DataX 仅支持切分主键为一个,并且类型为整数或者字符串类型. 请尝试使用其他的切分主键或者联系 DBA 进行处理.");
             }
+            // 返回当前查询的最小和最大分片值，如：用于外部进行增量同步的查询条件信息
+            configuration.set(Constant.PK_TYPE_MIN_PK, minMaxPK.getLeft());
+            configuration.set(Constant.PK_TYPE_MAX_PK, minMaxPK.getRight());
 
             configuration.set(Key.QUERY_SQL, buildQuerySql(column, table, where));
             if (null == minMaxPK.getLeft() || null == minMaxPK.getRight()) {

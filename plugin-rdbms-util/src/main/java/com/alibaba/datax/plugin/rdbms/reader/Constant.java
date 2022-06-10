@@ -7,11 +7,16 @@ public final class Constant {
 
     public static final Object PK_TYPE_STRING = "pkTypeString";
 
+    // custom
     public static final Object PK_TYPE_UUID_STRING = "pkTypeUUIDString";
 
     public static final Object PK_TYPE_BIG_INTEGER_STRING = "pkTypeBigIntegerString";
 
     public static final Object PK_TYPE_DECIMAL_ZERO_SCALE = "pkTypeDecimalZeroScale";
+
+    public static final String PK_TYPE_MAX_PK = "maxPK";
+
+    public static final String PK_TYPE_MIN_PK = "minPK";
 
     public static final Object PK_TYPE_LONG = "pkTypeLong";
     
