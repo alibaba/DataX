@@ -3,6 +3,8 @@ package com.alibaba.datax.core.transport.record;
 import com.alibaba.datax.common.element.Column;
 import com.alibaba.datax.common.element.Record;
 
+import java.util.Map;
+
 /**
  * 作为标示 生产者已经完成生产的标志
  * 
@@ -39,6 +41,16 @@ public class TerminateRecord implements Record {
 	@Override
 	public int getMemorySize() {
 		return 0;
+	}
+
+	@Override
+	public void setMeta(Map<String, String> meta) {
+
+	}
+
+	@Override
+	public Map<String, String> getMeta() {
+		return null;
 	}
 
 	@Override

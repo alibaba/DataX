@@ -1,0 +1,39 @@
+========================================================
+DataX 是阿里云 DataWorks数据集成 的开源版本，在阿里巴巴集团内被广泛使用的离线数据同步工具/平台。DataX 实现了包括 MySQL、Oracle、OceanBase、SqlServer、Postgre、HDFS、Hive、ADS、HBase、TableStore(OTS)、MaxCompute(ODPS)、Hologres、DRDS 等各种异构数据源之间高效的数据同步功能。
+
+DataX is an open source offline data synchronization tool / platform widely used in Alibaba group and other companies. DataX implements efficient data synchronization between heterogeneous data sources including mysql, Oracle, oceanbase, sqlserver, postgre, HDFS, hive, ads, HBase, tablestore (OTS), maxcompute (ODPs), hologres, DRDS, etc.
+
+Copyright 1999-2022 Alibaba Group Holding Ltd.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+===================================================================
+文级别引用，按许可证
+This product contains various third-party components under other open source licenses.
+This section summarizes those components and their licenses. 
+GNU Lesser General Public License
+--------------------------------------
+opentsdbreader/src/main/java/com/alibaba/datax/plugin/reader/conn/CliQuery.java
+opentsdbreader/src/main/java/com/alibaba/datax/plugin/reader/conn/Connection4TSDB.java
+opentsdbreader/src/main/java/com/alibaba/datax/plugin/reader/conn/DataPoint4TSDB.java
+opentsdbreader/src/main/java/com/alibaba/datax/plugin/reader/conn/DumpSeries.java
+opentsdbreader/src/main/java/com/alibaba/datax/plugin/reader/conn/OpenTSDBConnection.java
+opentsdbreader/src/main/java/com/alibaba/datax/plugin/reader/conn/OpenTSDBDump.java
+opentsdbreader/src/main/java/com/alibaba/datax/plugin/reader/opentsdbreader/Constant.java
+opentsdbreader/src/main/java/com/alibaba/datax/plugin/reader/opentsdbreader/Key.java
+opentsdbreader/src/main/java/com/alibaba/datax/plugin/reader/opentsdbreader/OpenTSDBReader.java
+opentsdbreader/src/main/java/com/alibaba/datax/plugin/reader/opentsdbreader/OpenTSDBReaderErrorCode.java
+opentsdbreader/src/main/java/com/alibaba/datax/plugin/reader/util/HttpUtils.java
+opentsdbreader/src/main/java/com/alibaba/datax/plugin/reader/util/TSDBUtils.java
+opentsdbreader/src/main/java/com/alibaba/datax/plugin/reader/util/TimeUtils.java
+===================================================================

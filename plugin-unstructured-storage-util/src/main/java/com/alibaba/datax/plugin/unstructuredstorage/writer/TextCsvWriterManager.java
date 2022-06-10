@@ -2,8 +2,13 @@ package com.alibaba.datax.plugin.unstructuredstorage.writer;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.HashMap;
 import java.util.List;
 
+import com.alibaba.datax.common.util.Configuration;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -11,15 +16,15 @@ import org.slf4j.LoggerFactory;
 
 import com.csvreader.CsvWriter;
 
+
 public class TextCsvWriterManager {
-    public static UnstructuredWriter produceUnstructuredWriter(
-            String fileFormat, char fieldDelimiter, Writer writer) {
-        // warn: false means plain text(old way), true means strict csv format
-        if (Constant.FILE_FORMAT_TEXT.equals(fileFormat)) {
-            return new TextWriterImpl(writer, fieldDelimiter);
-        } else {
-            return new CsvWriterImpl(writer, fieldDelimiter);
-        }
+
+    public static UnstructuredWriter produceTextWriter( Writer writer, String fieldDelimiter, Configuration config) {
+        return new TextWriterImpl(writer, fieldDelimiter, config);
+    }
+
+    public static UnstructuredWriter produceCsvWriter( Writer writer, char fieldDelimiter, Configuration config) {
+        return new CsvWriterImpl(writer, fieldDelimiter, config);
     }
 }
 
@@ -28,15 +33,40 @@ class CsvWriterImpl implements UnstructuredWriter {
             .getLogger(CsvWriterImpl.class);
     // csv 严格符合csv语法, 有标准的转义等处理
     private char fieldDelimiter;
-    private CsvWriter csvWriter;
+    private String lineDelimiter;
+    private DataXCsvWriter csvWriter;
 
-    public CsvWriterImpl(Writer writer, char fieldDelimiter) {
+    public CsvWriterImpl(Writer writer, char fieldDelimiter, Configuration config) {
         this.fieldDelimiter = fieldDelimiter;
-        this.csvWriter = new CsvWriter(writer, this.fieldDelimiter);
+        this.lineDelimiter = config.getString(Key.LINE_DELIMITER, IOUtils.LINE_SEPARATOR);
+        this.csvWriter = new DataXCsvWriter(writer, this.fieldDelimiter);
         this.csvWriter.setTextQualifier('"');
         this.csvWriter.setUseTextQualifier(true);
         // warn: in linux is \n , in windows is \r\n
-        this.csvWriter.setRecordDelimiter(IOUtils.LINE_SEPARATOR.charAt(0));
+        this.csvWriter.setRecordDelimiter(this.lineDelimiter.charAt(0));
+
+        String csvWriterConfig = config.getString(Key.CSV_WRITER_CONFIG);
+        if (StringUtils.isNotBlank(csvWriterConfig)) {
+            try {
+                HashMap<String, Object> csvWriterConfigMap = JSON.parseObject(csvWriterConfig,
+                        new TypeReference<HashMap<String, Object>>() {
+                        });
+                if (!csvWriterConfigMap.isEmpty()) {
+                    // this.csvWriter.setComment(var1);
+                    // this.csvWriter.setDelimiter(var1);
+                    // this.csvWriter.setEscapeMode(var1);
+                    // this.csvWriter.setForceQualifier(var1);
+                    // this.csvWriter.setRecordDelimiter(var1);
+                    // this.csvWriter.setTextQualifier(var1);
+                    // this.csvWriter.setUseTextQualifier(var1);
+                    BeanUtils.populate(this.csvWriter, csvWriterConfigMap);
+                    LOG.info(String.format("csvwriterConfig is set successfully. After setting, csvwriter:%s", JSON.toJSONString(this.csvWriter)));
+                }
+            } catch (Exception e) {
+                LOG.warn(String.format("invalid csvWriterConfig config: %s, DataX will ignore it.", csvWriterConfig),
+                        e);
+            }
+        }
     }
 
     @Override
@@ -44,8 +74,7 @@ class CsvWriterImpl implements UnstructuredWriter {
         if (splitedRows.isEmpty()) {
             LOG.info("Found one record line which is empty.");
         }
-        this.csvWriter.writeRecord((String[]) splitedRows
-                .toArray(new String[0]));
+        this.csvWriter.writeRecord(splitedRows.toArray(new String[0]));
     }
 
     @Override
@@ -64,12 +93,14 @@ class TextWriterImpl implements UnstructuredWriter {
     private static final Logger LOG = LoggerFactory
             .getLogger(TextWriterImpl.class);
     // text StringUtils的join方式, 简单的字符串拼接
-    private char fieldDelimiter;
+    private String fieldDelimiter;
     private Writer textWriter;
+    private String lineDelimiter;
 
-    public TextWriterImpl(Writer writer, char fieldDelimiter) {
+    public TextWriterImpl(Writer writer, String fieldDelimiter, Configuration config) {
         this.fieldDelimiter = fieldDelimiter;
         this.textWriter = writer;
+        this.lineDelimiter = config.getString(Key.LINE_DELIMITER, IOUtils.LINE_SEPARATOR);
     }
 
     @Override
@@ -79,7 +110,7 @@ class TextWriterImpl implements UnstructuredWriter {
         }
         this.textWriter.write(String.format("%s%s",
                 StringUtils.join(splitedRows, this.fieldDelimiter),
-                IOUtils.LINE_SEPARATOR));
+                this.lineDelimiter));
     }
 
     @Override

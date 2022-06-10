@@ -31,17 +31,10 @@
             <artifactId>logback-classic</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.52</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/src/main/libs/bcprov-jdk15on-1.52.jar</systemPath>
+            <groupId>com.aliyun.odps</groupId>
+            <artifactId>odps-sdk-core</artifactId>
+            <version>0.38.4-public</version>
         </dependency>
-        <dependency>
-			<groupId>com.aliyun.odps</groupId>
-			<artifactId>odps-sdk-core</artifactId>
-			<version>0.20.7-public</version>
-		</dependency>
 
         <!-- httpclient begin -->
         <dependency>
@@ -50,6 +43,14 @@
             <version>3.1</version>
         </dependency>
         <!-- httpclient end -->
+
+        <!-- json begin -->
+        <!-- <dependency>
+            <groupId>net.sf.json-lib</groupId>
+            <artifactId>json-lib</artifactId>
+            <version>2.2.3</version>
+        </dependency> -->
+        <!-- json end -->
 
         <dependency>
             <groupId>org.mockito</groupId>
@@ -70,9 +71,30 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.aspectj/aspectjweaver -->
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+            <version>1.8.10</version>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.8</version>
+        </dependency>
+
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                </includes>
+            </resource>
+        </resources>
         <plugins>
             <!-- compiler plugin -->
             <plugin>
