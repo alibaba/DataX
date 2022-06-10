@@ -8,6 +8,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class RdbmsRangeSplitWrap {
+    public static void main(String[] args) {
+        BigInteger left =  new BigInteger("100000000000000000000");
+        BigInteger right = new BigInteger("300000000000000000000");
+        System.out.println((splitAndWrap(left, right, 500,
+                "id")));
+        System.out.println((splitAndWrapBigIntegerString(left, right, 500,
+                "id", "'", DataBaseType.MySql)));
+        System.out.println(splitAndWrap(0, 1000000, 10, "id"));
+        System.out.println(splitAndWrapUUIDStr("0122ed89-adb0-4599-84b7-89cfeb544637","d65e165d-d69a-47da-b41e-4549401b0ab0", 5, "id",
+                "", DataBaseType.MySql));
+    }
+
+    public static List<String> splitAndWrapUUIDStr(String left, String right, int expectSliceNumber,
+                                            String columnName, String quote, DataBaseType dataBaseType) {
+        String[] tempResult = RangeSplitUtil.doUUIDStringSplit(left, right, expectSliceNumber);
+        return RdbmsRangeSplitWrap.wrapRange(tempResult, columnName, quote, dataBaseType);
+    }
 
     public static List<String> splitAndWrap(String left, String right, int expectSliceNumber,
                                             String columnName, String quote, DataBaseType dataBaseType) {
@@ -19,6 +36,14 @@ public final class RdbmsRangeSplitWrap {
     public static List<String> splitAndWrap(long left, long right, int expectSliceNumber, String columnName) {
         long[] tempResult = RangeSplitUtil.doLongSplit(left, right, expectSliceNumber);
         return RdbmsRangeSplitWrap.wrapRange(tempResult, columnName);
+    }
+
+    /**
+     * bigint字符串类型，包装加上quote(')，避免由于数据库的隐式转换导致索引失效）
+     */
+    public static List<String> splitAndWrapBigIntegerString(BigInteger left, BigInteger right, int expectSliceNumber, String columnName, String quote, DataBaseType dataBaseType) {
+        BigInteger[] tempResult = RangeSplitUtil.doBigIntegerSplit(left, right, expectSliceNumber);
+        return wrapRange(tempResult, columnName, quote, dataBaseType);
     }
 
     public static List<String> splitAndWrap(BigInteger left, BigInteger right, int expectSliceNumber, String columnName) {
@@ -33,13 +58,20 @@ public final class RdbmsRangeSplitWrap {
         }
         return wrapRange(rangeStr, columnName, "", null);
     }
-
     public static List<String> wrapRange(BigInteger[] rangeResult, String columnName) {
         String[] rangeStr = new String[rangeResult.length];
         for (int i = 0, len = rangeResult.length; i < len; i++) {
             rangeStr[i] = rangeResult[i].toString();
         }
         return wrapRange(rangeStr, columnName, "", null);
+    }
+
+    public static List<String> wrapRange(BigInteger[] rangeResult, String columnName, String quote, DataBaseType dataBaseType) {
+        String[] rangeStr = new String[rangeResult.length];
+        for (int i = 0, len = rangeResult.length; i < len; i++) {
+            rangeStr[i] = rangeResult[i].toString();
+        }
+        return wrapRange(rangeStr, columnName, quote, dataBaseType);
     }
 
     public static List<String> wrapRange(String[] rangeResult, String columnName,

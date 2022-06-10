@@ -5,11 +5,72 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.math.BigInteger;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 提供通用的根据数字范围、字符串范围等进行切分的通用功能.
  */
 public final class RangeSplitUtil {
+    /**
+     * 雪花算法或者更大的整型字符串分片字段
+     */
+    public static final Pattern BIG_INTEGER_STRING_PATTERN = Pattern.compile("([0-9]{19,30})");
+
+    public static final Pattern UUID_STRING_PATTERN = Pattern.compile("([a-z0-9]{8})-([a-z0-9]{4})-([a-z0-9]{4})-([a-z0-9]{4})-([a-z0-9]{12})");
+    /**
+     * UUID字符串分片字段
+     */
+    public static final Pattern UUID_PATTERN = Pattern.compile("([a-z0-9]{8})([a-z0-9]{4})([a-z0-9]{4})([a-z0-9]{4})([a-z0-9]{12})");
+
+    public static void main(String[] args) {
+        System.out.println(Arrays.toString(doUUIDStringSplit("0122ed89-adb0-4599-84b7-89cfeb544637","d65e165d-d69a-47da-b41e-4549401b0ab0", 5)));
+        System.out.println(isBigIntegerStringGuess("1366627117573419010"));
+        System.out.println(isBigIntegerStringGuess("1021190030000000000000000"));
+        System.out.println(isUUIDStringGuess("0122ed89-adb0-4599-84b7-89cfeb544637"));
+    }
+
+    public static boolean isBigIntegerStringGuess(String text){
+        if (text == null) {
+            return false;
+        }
+        return BIG_INTEGER_STRING_PATTERN.matcher(text).matches();
+    }
+
+    public static boolean isUUIDStringGuess(String text){
+        if (text == null) {
+            return false;
+        }
+        return UUID_STRING_PATTERN.matcher(text).matches();
+    }
+
+    public static String[] doUUIDStringSplit(String left, String right, int expectSliceNumber) {
+        BigInteger leftInteger = new BigInteger(left.replace("-", ""), 16);
+        BigInteger rightInteger = new BigInteger(right.replace("-", ""), 16);
+        BigInteger[] tempResult = doBigIntegerSplit(leftInteger, rightInteger, expectSliceNumber);
+        String[] result = new String[tempResult.length];
+
+        result[0] = left;
+        result[tempResult.length - 1] = right;
+
+        for (int i = 1, len = tempResult.length - 1; i < len; i++) {
+            result[i] = bigIntegerToString(tempResult[i]);
+        }
+
+        return result;
+    }
+
+    private static String bigIntegerToString(BigInteger bigInteger) {
+        String hex = bigInteger.toString(16);
+        Matcher matcher = UUID_PATTERN.matcher(hex);
+        List<String> list = new ArrayList<>();
+        if (matcher.matches()){
+            for (int i = 1; i <=matcher.groupCount(); i++){
+                list.add(matcher.group(i));
+            }
+        }
+        return String.join("-", list);
+    }
 
     public static String[] doAsciiStringSplit(String left, String right, int expectSliceNumber) {
         int radix = 128;

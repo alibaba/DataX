@@ -2,11 +2,11 @@ package com.alibaba.datax.plugin.rdbms.reader.util;
 
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.util.Configuration;
+import com.alibaba.datax.common.util.RangeSplitUtil;
 import com.alibaba.datax.plugin.rdbms.reader.Constant;
 import com.alibaba.datax.plugin.rdbms.reader.Key;
 import com.alibaba.datax.plugin.rdbms.util.*;
 import com.alibaba.fastjson.JSON;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -20,6 +20,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class SingleTableSplitUtil {
     private static final Logger LOG = LoggerFactory
@@ -62,6 +63,12 @@ public class SingleTableSplitUtil {
 
             boolean isStringType = Constant.PK_TYPE_STRING.equals(configuration
                     .getString(Constant.PK_TYPE));
+            boolean isBigIntegerStringType = Constant.PK_TYPE_BIG_INTEGER_STRING.equals(configuration
+                    .getString(Constant.PK_TYPE));
+            boolean isDecimalZeroScaleType = Constant.PK_TYPE_DECIMAL_ZERO_SCALE.equals(configuration
+                    .getString(Constant.PK_TYPE));
+            boolean isUUIDStringType = Constant.PK_TYPE_UUID_STRING.equals(configuration
+                    .getString(Constant.PK_TYPE));
             boolean isLongType = Constant.PK_TYPE_LONG.equals(configuration
                     .getString(Constant.PK_TYPE));
 
@@ -71,11 +78,21 @@ public class SingleTableSplitUtil {
                         String.valueOf(minMaxPK.getLeft()),
                         String.valueOf(minMaxPK.getRight()), adviceNum,
                         splitPkName, "'", DATABASE_TYPE);
-            } else if (isLongType) {
+            } else if (isBigIntegerStringType) {
+                rangeList = RdbmsRangeSplitWrap.splitAndWrapBigIntegerString(
+                        new BigInteger(minMaxPK.getLeft().toString()),
+                        new BigInteger(minMaxPK.getRight().toString()),
+                        adviceNum, splitPkName, "'", DATABASE_TYPE);
+            } else if (isLongType || isDecimalZeroScaleType) {
                 rangeList = RdbmsRangeSplitWrap.splitAndWrap(
                         new BigInteger(minMaxPK.getLeft().toString()),
                         new BigInteger(minMaxPK.getRight().toString()),
                         adviceNum, splitPkName);
+            } else if (isUUIDStringType) {
+                rangeList = RdbmsRangeSplitWrap.splitAndWrapUUIDStr(
+                        String.valueOf(minMaxPK.getLeft()),
+                        String.valueOf(minMaxPK.getRight()), adviceNum,
+                        splitPkName, "'", DATABASE_TYPE);
             } else {
                 throw DataXException.asDataXException(DBUtilErrorCode.ILLEGAL_SPLIT_PK,
                         "您配置的切分主键(splitPk) 类型 DataX 不支持. DataX 仅支持切分主键为一个,并且类型为整数或者字符串类型. 请尝试使用其他的切分主键或者联系 DBA 进行处理.");
@@ -190,9 +207,26 @@ public class SingleTableSplitUtil {
                         minMaxPK = new ImmutablePair<Object, Object>(
                                 rs.getString(1), rs.getString(2));
                     }
-                } else if (isLongType(rsMetaData.getColumnType(1))) {
+                    if (configuration != null && minMaxPK != null) {
+                        if (configuration.getBool(Constant.PK_TYPE_GUESS, false)){
+                            if (RangeSplitUtil.isBigIntegerStringGuess(Objects.toString(minMaxPK.getLeft(), null))
+                                    && RangeSplitUtil.isBigIntegerStringGuess(Objects.toString(minMaxPK.getRight(), null))){
+                                configuration
+                                        .set(Constant.PK_TYPE, Constant.PK_TYPE_BIG_INTEGER_STRING);
+                            }else  if (RangeSplitUtil.isUUIDStringGuess(Objects.toString(minMaxPK.getLeft(), null))
+                                    && RangeSplitUtil.isUUIDStringGuess(Objects.toString(minMaxPK.getRight(), null))){
+                                configuration
+                                        .set(Constant.PK_TYPE, Constant.PK_TYPE_UUID_STRING);
+                            }
+                        }
+                    }
+
+                } else if (isLongType(rsMetaData.getColumnType(1)) ||
+                        isDecimalZeroScaleType(rsMetaData.getColumnType(1), rsMetaData.getScale(1))) {
                     if(configuration != null) {
-                        configuration.set(Constant.PK_TYPE, Constant.PK_TYPE_LONG);
+                        if (isLongType(rsMetaData.getColumnType(1)))
+                            configuration.set(Constant.PK_TYPE, Constant.PK_TYPE_LONG);
+                        else configuration.set(Constant.PK_TYPE, Constant.PK_TYPE_DECIMAL_ZERO_SCALE);
                     }
 
                     while (DBUtil.asyncResultSetNext(rs)) {
@@ -231,11 +265,14 @@ public class SingleTableSplitUtil {
             int minType = rsMetaData.getColumnType(1);
             int maxType = rsMetaData.getColumnType(2);
 
+            int minColScale = rsMetaData.getScale(1);
+            boolean isDecimalZeroScaleNumberType = isDecimalZeroScaleType(minType, minColScale);
+
             boolean isNumberType = isLongType(minType);
 
             boolean isStringType = isStringType(minType);
 
-            if (minType == maxType && (isNumberType || isStringType)) {
+            if (minType == maxType && (isNumberType || isStringType || isDecimalZeroScaleNumberType)) {
                 ret = true;
             }
         } catch (Exception e) {
@@ -243,6 +280,11 @@ public class SingleTableSplitUtil {
                     "DataX获取切分主键(splitPk)字段类型失败. 该错误通常是系统底层异常导致. 请联系旺旺:askdatax或者DBA处理.");
         }
         return ret;
+    }
+
+    // WARN: add mysql Types.DECIMAL
+    private static boolean isDecimalZeroScaleType(int type, int scala) {
+        return type == Types.DECIMAL && scala == 0;
     }
 
     // warn: Types.NUMERIC is used for oracle! because oracle use NUMBER to

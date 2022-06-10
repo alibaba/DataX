@@ -10,6 +10,13 @@
 	<name>plugin-rdbms-util</name>
 	<packaging>jar</packaging>
 
+	<distributionManagement>
+		<repository>
+			<id>rdc-releases</id>
+			<url>https://repo.rdc.aliyun.com/repository/23480-release-Cm4wtg/</url>
+		</repository>
+	</distributionManagement>
+
 	<dependencies>
 		<dependency>
 			<groupId>com.alibaba.datax</groupId>

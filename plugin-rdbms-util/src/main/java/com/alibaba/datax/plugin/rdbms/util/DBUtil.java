@@ -370,10 +370,14 @@ public final class DBUtil {
             url = ss[2].replace("jdbc:mysql:", "jdbc:oceanbase:");
             LOG.info("this is ob1_0 jdbc url. user="+user+" :url="+url);
         }
-
+        // 考虑url上直接附带用户和密码
         Properties prop = new Properties();
-        prop.put("user", user);
-        prop.put("password", pass);
+        if (StringUtils.isNotBlank(user)) {
+            prop.put("user", user);
+        }
+        if (StringUtils.isNotBlank(pass)) {
+            prop.put("password", pass);
+        }
 
         if (dataBaseType == DataBaseType.Oracle) {
             //oracle.net.READ_TIMEOUT for jdbc versions < 10.1.0.5 oracle.jdbc.ReadTimeout for jdbc versions >=10.1.0.5

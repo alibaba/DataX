@@ -124,9 +124,8 @@ public class MongoDBReader extends Reader {
             while (dbCursor.hasNext()) {
                 Document item = dbCursor.next();
                 Record record = recordSender.createRecord();
-                Iterator columnItera = mongodbColumnMeta.iterator();
-                while (columnItera.hasNext()) {
-                    JSONObject column = (JSONObject)columnItera.next();
+                for (Object o : mongodbColumnMeta) {
+                    JSONObject column = (JSONObject) o;
                     Object tempCol = item.get(column.getString(KeyConstant.COLUMN_NAME));
                     if (tempCol == null) {
                         if (KeyConstant.isDocumentType(column.getString(KeyConstant.COLUMN_TYPE))) {
@@ -141,17 +140,15 @@ public class MongoDBReader extends Reader {
                                     }
                                 }
 
-                                if (null != nestedDocument) {
-                                    Document doc = nestedDocument;
-                                    tempCol = doc.get(name[name.length - 1]);
-                                }
+                                Document doc = nestedDocument;
+                                tempCol = doc.get(name[name.length - 1]);
                             }
                         }
                     }
                     if (tempCol == null) {
                         //continue; 这个不能直接continue会导致record到目的端错位
                         record.addColumn(new StringColumn(null));
-                    }else if (tempCol instanceof Double) {
+                    } else if (tempCol instanceof Double) {
                         //TODO deal with Double.isNaN()
                         record.addColumn(new DoubleColumn((Double) tempCol));
                     } else if (tempCol instanceof Boolean) {
@@ -160,16 +157,16 @@ public class MongoDBReader extends Reader {
                         record.addColumn(new DateColumn((Date) tempCol));
                     } else if (tempCol instanceof Integer) {
                         record.addColumn(new LongColumn((Integer) tempCol));
-                    }else if (tempCol instanceof Long) {
+                    } else if (tempCol instanceof Long) {
                         record.addColumn(new LongColumn((Long) tempCol));
                     } else {
-                        if(KeyConstant.isArrayType(column.getString(KeyConstant.COLUMN_TYPE))) {
+                        if (KeyConstant.isArrayType(column.getString(KeyConstant.COLUMN_TYPE))) {
                             String splitter = column.getString(KeyConstant.COLUMN_SPLITTER);
-                            if(Strings.isNullOrEmpty(splitter)) {
+                            if (Strings.isNullOrEmpty(splitter)) {
                                 throw DataXException.asDataXException(MongoDBReaderErrorCode.ILLEGAL_VALUE,
-                                    MongoDBReaderErrorCode.ILLEGAL_VALUE.getDescription());
+                                        MongoDBReaderErrorCode.ILLEGAL_VALUE.getDescription());
                             } else {
-                                ArrayList array = (ArrayList)tempCol;
+                                ArrayList array = (ArrayList) tempCol;
                                 String tempArrayStr = Joiner.on(splitter).join(array);
                                 record.addColumn(new StringColumn(tempArrayStr));
                             }

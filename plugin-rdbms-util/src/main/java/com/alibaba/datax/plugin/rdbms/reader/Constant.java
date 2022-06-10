@@ -3,7 +3,15 @@ package com.alibaba.datax.plugin.rdbms.reader;
 public final class Constant {
     public static final String PK_TYPE = "pkType";
 
+    public static final String PK_TYPE_GUESS = "pkTypeGuess";
+
     public static final Object PK_TYPE_STRING = "pkTypeString";
+
+    public static final Object PK_TYPE_UUID_STRING = "pkTypeUUIDString";
+
+    public static final Object PK_TYPE_BIG_INTEGER_STRING = "pkTypeBigIntegerString";
+
+    public static final Object PK_TYPE_DECIMAL_ZERO_SCALE = "pkTypeDecimalZeroScale";
 
     public static final Object PK_TYPE_LONG = "pkTypeLong";
     

@@ -460,8 +460,7 @@ public class JobContainer extends AbstractContainer {
         }
 
         // 取较小值
-        this.needChannelNumber = needChannelNumberByByte < needChannelNumberByRecord ?
-                needChannelNumberByByte : needChannelNumberByRecord;
+        this.needChannelNumber = Math.min(needChannelNumberByByte, needChannelNumberByRecord);
 
         // 如果从byte或record上设置了needChannelNumber则退出
         if (this.needChannelNumber < Integer.MAX_VALUE) {
