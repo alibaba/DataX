@@ -90,6 +90,13 @@ DataX目前已经有了比较全面的插件体系，主流的RDBMS数据库、N
 
 请点击：[DataX插件开发宝典](https://github.com/alibaba/DataX/blob/master/dataxPluginDev.md)
 
+# 重要版本更新说明
+
+DataX 后续计划月度迭代更新，也欢迎感兴趣的同学提交 Pull requests，月度更新内容会介绍介绍如下。
+
+- [datax_v202205]（https://github.com/alibaba/DataX/releases/tag/datax_v202205)
+    - 涉及通道能力更新（MaxCompute、Hologres、OSS、Tdengine等）、安全漏洞更新、通用打包更新等
+
 
 # 项目成员
 
@@ -137,7 +144,10 @@ This software is free to use under the Apache License [Apache license](https://g
     8. 对高并发、高稳定可用性、高性能、大数据处理有过实际项目及产品经验者优先考虑；
     9. 有大数据产品、云产品、中间件技术解决方案者优先考虑。
 ````
+
 钉钉用户群：
+
+钉钉群目前暂时受到了一些管控策略影响，建议大家有问题优先在这里提交问题 Issue，DataX研发和社区会定期回答Issue中的问题，知识库丰富后也能帮助到后来的使用者。
 
 - DataX开源用户交流群
     - <img src="https://github.com/alibaba/DataX/blob/master/images/DataX%E5%BC%80%E6%BA%90%E7%94%A8%E6%88%B7%E4%BA%A4%E6%B5%81%E7%BE%A4.jpg" width="20%" height="20%">
