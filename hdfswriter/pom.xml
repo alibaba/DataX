@@ -127,6 +127,11 @@
             <artifactId>cos_api-bundle</artifactId>
             <version>5.6.69</version>
         </dependency>
+        <dependency>
+            <groupId>com.twitter</groupId>
+            <artifactId>parquet-hadoop-bundle</artifactId>
+            <version>1.6.0</version>
+        </dependency>
 
     </dependencies>
 
