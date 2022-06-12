@@ -9,9 +9,11 @@ import com.google.common.collect.Sets;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.apache.hadoop.fs.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import parquet.schema.MessageTypeParser;
 
 import java.util.*;
 
@@ -324,7 +326,54 @@ public class HdfsWriter extends Writer {
             }
             return tmpFilePath;
         }
+        public void unitizeParquetConfig(Configuration writerSliceConfig) {
+            String parquetSchema = writerSliceConfig.getString(Key.PARQUET_SCHEMA);
+            if (StringUtils.isNotBlank(parquetSchema)) {
+                LOG.info("parquetSchema has config. use parquetSchema:\n{}", parquetSchema);
+                return;
+            }
+
+            List<Configuration> columns = writerSliceConfig.getListConfiguration(Key.COLUMN);
+            if (columns == null || columns.isEmpty()) {
+                throw DataXException.asDataXException("parquetSchema or column can't be blank!");
+            }
+
+            parquetSchema = generateParquetSchemaFromColumn(columns);
+            // 为了兼容历史逻辑,对之前的逻辑做保留，但是如果配置的时候报错，则走新逻辑
+            try {
+                MessageTypeParser.parseMessageType(parquetSchema);
+            } catch (Throwable e) {
+                LOG.warn("The generated parquetSchema {} is illegal, try to generate parquetSchema in another way", parquetSchema);
+                parquetSchema = HdfsHelper.generateParquetSchemaFromColumnAndType(columns);
+                LOG.info("The last generated parquet schema is {}", parquetSchema);
+            }
+            writerSliceConfig.set(Key.PARQUET_SCHEMA, parquetSchema);
+            LOG.info("dataxParquetMode use default fields.");
+            writerSliceConfig.set(Key.DATAX_PARQUET_MODE, "fields");
+        }
+
+        private String generateParquetSchemaFromColumn(List<Configuration> columns) {
+            StringBuffer parquetSchemaStringBuffer = new StringBuffer();
+            parquetSchemaStringBuffer.append("message m {");
+            for (Configuration column: columns) {
+                String name = column.getString("name");
+                Validate.notNull(name, "column.name can't be null");
+
+                String type = column.getString("type");
+                Validate.notNull(type, "column.type can't be null");
+
+                String parquetColumn = String.format("optional %s %s;", type, name);
+                parquetSchemaStringBuffer.append(parquetColumn);
+            }
+            parquetSchemaStringBuffer.append("}");
+            String parquetSchema = parquetSchemaStringBuffer.toString();
+            LOG.info("generate parquetSchema:\n{}", parquetSchema);
+            return parquetSchema;
+        }
+
     }
+
+
 
     public static class Task extends Writer.Task {
         private static final Logger LOG = LoggerFactory.getLogger(Task.class);

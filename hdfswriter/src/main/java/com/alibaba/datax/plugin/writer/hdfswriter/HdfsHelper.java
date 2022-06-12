@@ -6,10 +6,13 @@ import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordReceiver;
 import com.alibaba.datax.common.plugin.TaskPluginCollector;
 import com.alibaba.datax.common.util.Configuration;
+import com.alibaba.datax.plugin.unstructuredstorage.util.ColumnTypeUtil;
+import com.alibaba.datax.plugin.unstructuredstorage.util.HdfsUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.hadoop.fs.*;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -28,6 +31,10 @@ import org.apache.hadoop.mapred.*;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import parquet.schema.OriginalType;
+import parquet.schema.PrimitiveType;
+import parquet.schema.Types;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -618,5 +625,68 @@ public  class HdfsHelper {
             deleteDir(path.getParent());
             throw DataXException.asDataXException(HdfsWriterErrorCode.Write_FILE_IO_ERROR, e);
         }
+    }
+
+
+    public static String generateParquetSchemaFromColumnAndType(List<Configuration> columns) {
+        Map<String, ColumnTypeUtil.DecimalInfo> decimalColInfo = new HashMap<>(16);
+        ColumnTypeUtil.DecimalInfo PARQUET_DEFAULT_DECIMAL_INFO = new ColumnTypeUtil.DecimalInfo(10, 2);
+        Types.MessageTypeBuilder typeBuilder = Types.buildMessage();
+        for (Configuration column : columns) {
+            String name = column.getString("name");
+            String colType = column.getString("type");
+            Validate.notNull(name, "column.name can't be null");
+            Validate.notNull(colType, "column.type can't be null");
+            switch (colType.toLowerCase()) {
+                case "tinyint":
+                case "smallint":
+                case "int":
+                    typeBuilder.optional(PrimitiveType.PrimitiveTypeName.INT32).named(name);
+                    break;
+                case "bigint":
+                case "long":
+                    typeBuilder.optional(PrimitiveType.PrimitiveTypeName.INT64).named(name);
+                    break;
+                case "float":
+                    typeBuilder.optional(PrimitiveType.PrimitiveTypeName.FLOAT).named(name);
+                    break;
+                case "double":
+                    typeBuilder.optional(PrimitiveType.PrimitiveTypeName.DOUBLE).named(name);
+                    break;
+                case "binary":
+                    typeBuilder.optional(PrimitiveType.PrimitiveTypeName.BINARY).named(name);
+                    break;
+                case "char":
+                case "varchar":
+                case "string":
+                    typeBuilder.optional(PrimitiveType.PrimitiveTypeName.BINARY).as(OriginalType.UTF8).named(name);
+                    break;
+                case "boolean":
+                    typeBuilder.optional(PrimitiveType.PrimitiveTypeName.BOOLEAN).named(name);
+                    break;
+                case "timestamp":
+                    typeBuilder.optional(PrimitiveType.PrimitiveTypeName.INT96).named(name);
+                    break;
+                case "date":
+                    typeBuilder.optional(PrimitiveType.PrimitiveTypeName.INT32).as(OriginalType.DATE).named(name);
+                    break;
+                default:
+                    if (ColumnTypeUtil.isDecimalType(colType)) {
+                        ColumnTypeUtil.DecimalInfo decimalInfo = ColumnTypeUtil.getDecimalInfo(colType, PARQUET_DEFAULT_DECIMAL_INFO);
+                        typeBuilder.optional(PrimitiveType.PrimitiveTypeName.FIXED_LEN_BYTE_ARRAY)
+                                .as(OriginalType.DECIMAL)
+                                .precision(decimalInfo.getPrecision())
+                                .scale(decimalInfo.getScale())
+                                .length(HdfsUtil.computeMinBytesForPrecision(decimalInfo.getPrecision()))
+                                .named(name);
+
+                        decimalColInfo.put(name, decimalInfo);
+                    } else {
+                        typeBuilder.optional(PrimitiveType.PrimitiveTypeName.BINARY).named(name);
+                    }
+                    break;
+            }
+        }
+        return typeBuilder.named("m").toString();
     }
 }
