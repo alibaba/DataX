@@ -31,5 +31,7 @@ public class Constant {
     public static final String PARTITION_COLUMNS = "partitionColumns";
     
     public static final String PARSED_COLUMNS = "parsedColumns";
-    
+
+    public static final String PARTITION_FILTER_HINT =  "/*query*/";
+
 }

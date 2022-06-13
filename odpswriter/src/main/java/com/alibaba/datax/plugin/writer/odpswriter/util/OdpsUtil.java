@@ -1,29 +1,35 @@
 package com.alibaba.datax.plugin.writer.odpswriter.util;
 
+import com.alibaba.datax.common.element.*;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.util.Configuration;
+import com.alibaba.datax.common.util.MessageSource;
 import com.alibaba.datax.common.util.RetryUtil;
-import com.alibaba.datax.plugin.writer.odpswriter.Constant;
-import com.alibaba.datax.plugin.writer.odpswriter.Key;
-
-import com.alibaba.datax.plugin.writer.odpswriter.OdpsWriterErrorCode;
+import com.alibaba.datax.plugin.writer.odpswriter.*;
 import com.aliyun.odps.*;
+import com.aliyun.odps.Column;
 import com.aliyun.odps.account.Account;
 import com.aliyun.odps.account.AliyunAccount;
+import com.aliyun.odps.data.ResultSet;
+import com.aliyun.odps.data.Binary;
 import com.aliyun.odps.task.SQLTask;
 import com.aliyun.odps.tunnel.TableTunnel;
-
 import com.aliyun.odps.tunnel.io.ProtobufRecordPack;
 import com.aliyun.odps.tunnel.io.TunnelRecordWriter;
+import com.aliyun.odps.type.TypeInfo;
+
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.Callable;
 
 public class OdpsUtil {
     private static final Logger LOG = LoggerFactory.getLogger(OdpsUtil.class);
+    private static final MessageSource MESSAGE_SOURCE = MessageSource.loadResourceBundle(OdpsUtil.class);
 
     public static int MAX_RETRY_TIME = 10;
 
@@ -38,15 +44,14 @@ public class OdpsUtil {
 
         if (null == originalConfig.getList(Key.COLUMN) ||
                 originalConfig.getList(Key.COLUMN, String.class).isEmpty()) {
-            throw DataXException.asDataXException(OdpsWriterErrorCode.REQUIRED_VALUE, "您未配置写入 ODPS 目的表的列信息. " +
-                    "正确的配置方式是给datax的 column 项配置上您需要读取的列名称,用英文逗号分隔 例如:  \"column\": [\"id\",\"name\"].");
+            throw DataXException.asDataXException(OdpsWriterErrorCode.REQUIRED_VALUE, MESSAGE_SOURCE.message("odpsutil.1"));
         }
 
         // getBool 内部要求，值只能为 true,false 的字符串（大小写不敏感），其他一律报错，不再有默认配置
+        // 如果是动态分区写入，不进行truncate
         Boolean truncate = originalConfig.getBool(Key.TRUNCATE);
         if (null == truncate) {
-            throw DataXException.asDataXException(OdpsWriterErrorCode.REQUIRED_VALUE, "[truncate]是必填配置项, 意思是写入 ODPS 目的表前是否清空表/分区. " +
-                    "请您增加 truncate 的配置，根据业务需要选择上true 或者 false.");
+            throw DataXException.asDataXException(OdpsWriterErrorCode.REQUIRED_VALUE, MESSAGE_SOURCE.message("odpsutil.2"));
         }
     }
 
@@ -54,19 +59,22 @@ public class OdpsUtil {
         int maxRetryTime = originalConfig.getInt(Key.MAX_RETRY_TIME,
                 OdpsUtil.MAX_RETRY_TIME);
         if (maxRetryTime < 1 || maxRetryTime > OdpsUtil.MAX_RETRY_TIME) {
-            throw DataXException.asDataXException(OdpsWriterErrorCode.ILLEGAL_VALUE, "您所配置的maxRetryTime 值错误. 该值不能小于1, 且不能大于 " + OdpsUtil.MAX_RETRY_TIME +
-                    ". 推荐的配置方式是给maxRetryTime 配置1-11之间的某个值. 请您检查配置并做出相应修改.");
+            throw DataXException.asDataXException(OdpsWriterErrorCode.ILLEGAL_VALUE, MESSAGE_SOURCE.message("odpsutil.3", OdpsUtil.MAX_RETRY_TIME));
         }
         MAX_RETRY_TIME = maxRetryTime;
     }
 
-    public static String formatPartition(String partitionString) {
+    public static String formatPartition(String partitionString, Boolean printLog) {
         if (null == partitionString) {
             return null;
         }
-
-        return partitionString.trim().replaceAll(" *= *", "=").replaceAll(" */ *", ",")
+        String parsedPartition = partitionString.trim().replaceAll(" *= *", "=").replaceAll(" */ *", ",")
                 .replaceAll(" *, *", ",").replaceAll("'", "");
+        if (printLog) {
+            LOG.info("format partition with rules:  remove all space;  remove all ';  replace / to ,");
+            LOG.info("original partiton {}  parsed partition {}", partitionString, parsedPartition);
+        }
+        return parsedPartition;
     }
 
 
@@ -77,13 +85,18 @@ public class OdpsUtil {
 
         String odpsServer = originalConfig.getString(Key.ODPS_SERVER);
         String project = originalConfig.getString(Key.PROJECT);
+        String securityToken = originalConfig.getString(Key.SECURITY_TOKEN);
 
         Account account;
         if (accountType.equalsIgnoreCase(Constant.DEFAULT_ACCOUNT_TYPE)) {
-            account = new AliyunAccount(accessId, accessKey);
+            if (StringUtils.isNotBlank(securityToken)) {
+                account = new com.aliyun.odps.account.StsAccount(accessId, accessKey, securityToken);
+            } else {
+                account = new AliyunAccount(accessId, accessKey);
+            }
         } else {
             throw DataXException.asDataXException(OdpsWriterErrorCode.ACCOUNT_TYPE_ERROR,
-                    String.format("不支持的账号类型:[%s]. 账号类型目前仅支持aliyun, taobao.", accountType));
+                    MESSAGE_SOURCE.message("odpsutil.4", accountType));
         }
 
         Odps odps = new Odps(account);
@@ -95,6 +108,7 @@ public class OdpsUtil {
         }
         odps.setDefaultProject(project);
         odps.setEndpoint(odpsServer);
+        odps.setUserAgent("DATAX");
 
         return odps;
     }
@@ -124,8 +138,7 @@ public class OdpsUtil {
                 parts.add(partition.getPartitionSpec().toString());
             }
         } catch (Exception e) {
-            throw DataXException.asDataXException(OdpsWriterErrorCode.GET_PARTITION_FAIL, String.format("获取 ODPS 目的表:%s 的所有分区失败. 请联系 ODPS 管理员处理.",
-                    table.getName()), e);
+            throw DataXException.asDataXException(OdpsWriterErrorCode.GET_PARTITION_FAIL, MESSAGE_SOURCE.message("odpsutil.5", table.getName()), e);
         }
         return parts;
     }
@@ -140,37 +153,45 @@ public class OdpsUtil {
             }
         } catch (Exception e) {
             throw DataXException.asDataXException(OdpsWriterErrorCode.CHECK_IF_PARTITIONED_TABLE_FAILED,
-                    String.format("检查 ODPS 目的表:%s 是否为分区表失败, 请联系 ODPS 管理员处理.", table.getName()), e);
+                    MESSAGE_SOURCE.message("odpsutil.6", table.getName()), e);
         }
         return false;
     }
 
 
     public static void truncateNonPartitionedTable(Odps odps, Table tab) {
-        String truncateNonPartitionedTableSql = "truncate table " + tab.getName() + ";";
+        truncateNonPartitionedTable(odps, tab.getName());
+    }
+
+    public static void truncateNonPartitionedTable(Odps odps, String tableName) {
+        String truncateNonPartitionedTableSql = "truncate table " + tableName + ";";
 
         try {
-            runSqlTaskWithRetry(odps, truncateNonPartitionedTableSql, MAX_RETRY_TIME, 1000, true);
+            LOG.info("truncate non partitioned table with sql: {}", truncateNonPartitionedTableSql);
+            runSqlTaskWithRetry(odps, truncateNonPartitionedTableSql, MAX_RETRY_TIME, 1000, true, "truncate", null);
         } catch (Exception e) {
             throw DataXException.asDataXException(OdpsWriterErrorCode.TABLE_TRUNCATE_ERROR,
-                    String.format(" 清空 ODPS 目的表:%s 失败, 请联系 ODPS 管理员处理.", tab.getName()), e);
+                    MESSAGE_SOURCE.message("odpsutil.7", tableName), e);
         }
     }
 
     public static void truncatePartition(Odps odps, Table table, String partition) {
         if (isPartitionExist(table, partition)) {
+            LOG.info("partition {} is already exist, truncate it to clean old data", partition);
             dropPart(odps, table, partition);
         }
+        LOG.info("begin to add partition {}", partition);
         addPart(odps, table, partition);
     }
 
     private static boolean isPartitionExist(Table table, String partition) {
         // check if exist partition 返回值不为 null
         List<String> odpsParts = OdpsUtil.listOdpsPartitions(table);
-
         int j = 0;
         for (; j < odpsParts.size(); j++) {
             if (odpsParts.get(j).replaceAll("'", "").equals(partition)) {
+                LOG.info("found a partiton {} equals to (ignore ' if contains) configured partiton {}",
+                        odpsParts.get(j), partition);
                 break;
             }
         }
@@ -185,11 +206,14 @@ public class OdpsUtil {
         addPart.append("alter table ").append(table.getName()).append(" add IF NOT EXISTS partition(")
                 .append(partSpec).append(");");
         try {
-            runSqlTaskWithRetry(odps, addPart.toString(), MAX_RETRY_TIME, 1000, true);
+            Map<String, String> hints = new HashMap<String, String>();
+            //开启ODPS SQL TYPE2.0类型
+            hints.put("odps.sql.type.system.odps2", "true");
+            LOG.info("add partition with sql: {}", addPart.toString());
+            runSqlTaskWithRetry(odps, addPart.toString(), MAX_RETRY_TIME, 1000, true, "addPart", hints);
         } catch (Exception e) {
             throw DataXException.asDataXException(OdpsWriterErrorCode.ADD_PARTITION_FAILED,
-                    String.format("添加 ODPS 目的表的分区失败. 错误发生在添加 ODPS 的项目:%s 的表:%s 的分区:%s. 请联系 ODPS 管理员处理.",
-                            table.getProject(), table.getName(), partition), e);
+                    MESSAGE_SOURCE.message("odpsutil.8", table.getProject(), table.getName(), partition), e);
         }
     }
 
@@ -206,7 +230,7 @@ public class OdpsUtil {
                 }, MAX_RETRY_TIME, 1000L, true);
             } catch (Exception e) {
                 throw DataXException.asDataXException(OdpsWriterErrorCode.CREATE_MASTER_UPLOAD_FAIL,
-                        "创建TunnelUpload失败. 请联系 ODPS 管理员处理.", e);
+                        MESSAGE_SOURCE.message("odpsutil.9"), e);
             }
         } else {
             final PartitionSpec partitionSpec = new PartitionSpec(partition);
@@ -219,7 +243,7 @@ public class OdpsUtil {
                 }, MAX_RETRY_TIME, 1000L, true);
             } catch (Exception e) {
                 throw DataXException.asDataXException(OdpsWriterErrorCode.CREATE_MASTER_UPLOAD_FAIL,
-                        "创建TunnelUpload失败. 请联系 ODPS 管理员处理.", e);
+                        MESSAGE_SOURCE.message("odpsutil.10"), e);
             }
         }
     }
@@ -238,7 +262,7 @@ public class OdpsUtil {
 
             } catch (Exception e) {
                 throw DataXException.asDataXException(OdpsWriterErrorCode.GET_SLAVE_UPLOAD_FAIL,
-                        "获取TunnelUpload失败. 请联系 ODPS 管理员处理.", e);
+                        MESSAGE_SOURCE.message("odpsutil.11"), e);
             }
         } else {
             final PartitionSpec partitionSpec = new PartitionSpec(partition);
@@ -252,7 +276,7 @@ public class OdpsUtil {
 
             } catch (Exception e) {
                 throw DataXException.asDataXException(OdpsWriterErrorCode.GET_SLAVE_UPLOAD_FAIL,
-                        "获取TunnelUpload失败. 请联系 ODPS 管理员处理.", e);
+                        MESSAGE_SOURCE.message("odpsutil.12"), e);
             }
         }
     }
@@ -265,11 +289,14 @@ public class OdpsUtil {
                 .append(" drop IF EXISTS partition(").append(partSpec)
                 .append(");");
         try {
-            runSqlTaskWithRetry(odps, dropPart.toString(), MAX_RETRY_TIME, 1000, true);
+            Map<String, String> hints = new HashMap<String, String>();
+            //开启ODPS SQL TYPE2.0类型
+            hints.put("odps.sql.type.system.odps2", "true");
+            LOG.info("drop partition with sql: {}", dropPart.toString());
+            runSqlTaskWithRetry(odps, dropPart.toString(), MAX_RETRY_TIME, 1000, true, "truncate", hints);
         } catch (Exception e) {
             throw DataXException.asDataXException(OdpsWriterErrorCode.ADD_PARTITION_FAILED,
-                    String.format("Drop  ODPS 目的表分区失败. 错误发生在项目:%s 的表:%s 的分区:%s .请联系 ODPS 管理员处理.",
-                            table.getProject(), table.getName(), partition), e);
+                    MESSAGE_SOURCE.message("odpsutil.13", table.getProject(), table.getName(), partition), e);
         }
     }
 
@@ -281,7 +308,7 @@ public class OdpsUtil {
             String[] kv = part.split("=");
             if (kv.length != 2) {
                 throw DataXException.asDataXException(OdpsWriterErrorCode.ILLEGAL_VALUE,
-                        String.format("ODPS 目的表自身的 partition:%s 格式不对. 正确的格式形如: pt=1,ds=hangzhou", partition));
+                        MESSAGE_SOURCE.message("odpsutil.14", partition));
             }
             partSpec.append(kv[0]).append("=");
             partSpec.append("'").append(kv[1].replace("'", "")).append("'");
@@ -292,6 +319,38 @@ public class OdpsUtil {
         return partSpec.toString();
     }
 
+    public static Instance runSqlTaskWithRetry(final Odps odps, final String sql, String tag) {
+        try {
+            long beginTime = System.currentTimeMillis();
+
+            Instance instance = runSqlTaskWithRetry(odps, sql, MAX_RETRY_TIME, 1000, true, tag, null);
+
+            long endIime = System.currentTimeMillis();
+            LOG.info(String.format("exectue odps sql: %s finished, cost time : %s ms",
+                sql, (endIime - beginTime)));
+            return instance;
+        } catch (Exception e) {
+            throw DataXException.asDataXException(OdpsWriterErrorCode.RUN_SQL_ODPS_EXCEPTION,
+                MESSAGE_SOURCE.message("odpsutil.16", sql), e);
+        }
+    }
+
+    public static ResultSet getSqlTaskRecordsWithRetry(final Odps odps, final String sql, String tag) {
+        Instance instance = runSqlTaskWithRetry(odps, sql, tag);
+        if (instance == null) {
+            LOG.error("can not get odps instance from sql {}", sql);
+            throw DataXException.asDataXException(OdpsWriterErrorCode.RUN_SQL_ODPS_EXCEPTION,
+                    MESSAGE_SOURCE.message("odpsutil.16", sql));
+        }
+        try {
+            return SQLTask.getResultSet(instance, instance.getTaskNames().iterator().next());
+        } catch (Exception e) {
+            throw DataXException.asDataXException(OdpsWriterErrorCode.RUN_SQL_ODPS_EXCEPTION,
+                    MESSAGE_SOURCE.message("odpsutil.16", sql), e);
+        }
+    }
+
+
     /**
      * 该方法只有在 sql 为幂等的才可以使用，且odps抛出异常时候才会进行重试
      *
@@ -299,12 +358,12 @@ public class OdpsUtil {
      * @param query   执行sql
      * @throws Exception
      */
-    public static void runSqlTaskWithRetry(final Odps odps, final String query, int retryTimes,
-                                            long sleepTimeInMilliSecond, boolean exponential) throws Exception {
+    public static Instance runSqlTaskWithRetry(final Odps odps, final String query, int retryTimes,
+                                            long sleepTimeInMilliSecond, boolean exponential, String tag,
+                                            Map<String, String> hints) throws Exception {
         for(int i = 0; i < retryTimes; i++) {
             try {
-                runSqlTask(odps, query);
-                return;
+                return runSqlTask(odps, query, tag, hints);
             } catch (DataXException e) {
                 if (OdpsWriterErrorCode.RUN_SQL_ODPS_EXCEPTION.equals(e.getErrorCode())) {
                     LOG.debug("Exception when calling callable", e);
@@ -337,36 +396,85 @@ public class OdpsUtil {
                 throw e;
             }
         }
+        return null;
     }
 
-    public static void runSqlTask(Odps odps, String query) {
+    public static Instance runSqlTask(Odps odps, String query, String tag, Map<String, String> hints) {
         if (StringUtils.isBlank(query)) {
-            return;
+            return null;
         }
 
-        String taskName = "datax_odpswriter_trunacte_" + UUID.randomUUID().toString().replace('-', '_');
-
+        String taskName = String.format("datax_odpswriter_%s_%s", tag, UUID.randomUUID().toString().replace('-', '_'));
         LOG.info("Try to start sqlTask:[{}] to run odps sql:[\n{}\n] .", taskName, query);
 
         //todo:biz_id set (目前ddl先不做)
         Instance instance;
         Instance.TaskStatus status;
         try {
-            instance = SQLTask.run(odps, odps.getDefaultProject(), query, taskName, null, null);
+            instance = SQLTask.run(odps, odps.getDefaultProject(), query, taskName, hints, null);
             instance.waitForSuccess();
             status = instance.getTaskStatus().get(taskName);
             if (!Instance.TaskStatus.Status.SUCCESS.equals(status.getStatus())) {
                 throw DataXException.asDataXException(OdpsWriterErrorCode.RUN_SQL_FAILED,
-                        String.format("ODPS 目的表在运行 ODPS SQL失败, 返回值为:%s. 请联系 ODPS 管理员处理. SQL 内容为:[\n%s\n].", instance.getTaskResults().get(taskName),
-                                query));
+                        MESSAGE_SOURCE.message("odpsutil.15", query));
             }
+            return instance;
         } catch (DataXException e) {
             throw e;
         } catch (Exception e) {
             throw DataXException.asDataXException(OdpsWriterErrorCode.RUN_SQL_ODPS_EXCEPTION,
-                    String.format("ODPS 目的表在运行 ODPS SQL 时抛出异常, 请联系 ODPS 管理员处理. SQL 内容为:[\n%s\n].", query), e);
+                    MESSAGE_SOURCE.message("odpsutil.16", query), e);
         }
     }
+
+
+    public static String generateTaskName(String tag) {
+        return String.format("datax_odpswriter_%s_%s", tag, UUID.randomUUID().toString().replace('-', '_'));
+    }
+    
+    public static void checkBlockComplete(final TableTunnel.UploadSession masterUpload, final Long[] blocks) {
+        Long[] serverBlocks;
+        try {
+            serverBlocks = 
+                    RetryUtil.executeWithRetry(new Callable<Long[]>() {
+                @Override
+                public Long[] call() throws Exception {
+                    return masterUpload.getBlockList();
+                }
+            }, MAX_RETRY_TIME, 1000L, true);
+        } catch (Exception e) {
+            throw DataXException.asDataXException(OdpsWriterErrorCode.COMMIT_BLOCK_FAIL,
+                    MESSAGE_SOURCE.message("odpsutil.17", masterUpload.getId()), e);
+        }
+        
+        HashMap<Long, Boolean> serverBlockMap = new HashMap<Long, Boolean>();
+        for (Long blockId : serverBlocks) {
+          serverBlockMap.put(blockId, true);
+        }
+        
+        for (Long blockId : blocks) {
+            if (!serverBlockMap.containsKey(blockId)) {
+                throw DataXException.asDataXException(OdpsWriterErrorCode.COMMIT_BLOCK_FAIL,
+                        "BlockId[" + blockId + "] upload failed!");
+            }
+          }
+        
+    }    
+    
+    public static void masterComplete(final TableTunnel.UploadSession masterUpload) {
+        try {
+            RetryUtil.executeWithRetry(new Callable<Void>() {
+                @Override
+                public Void call() throws Exception {
+                    masterUpload.commit();
+                    return null;
+                }
+            }, MAX_RETRY_TIME, 1000L, true);
+        } catch (Exception e) {
+            throw DataXException.asDataXException(OdpsWriterErrorCode.COMMIT_BLOCK_FAIL,
+                    MESSAGE_SOURCE.message("odpsutil.17", masterUpload.getId()), e);
+        }
+    }    
 
     public static void masterCompleteBlocks(final TableTunnel.UploadSession masterUpload, final Long[] blocks) {
         try {
@@ -379,30 +487,28 @@ public class OdpsUtil {
             }, MAX_RETRY_TIME, 1000L, true);
         } catch (Exception e) {
             throw DataXException.asDataXException(OdpsWriterErrorCode.COMMIT_BLOCK_FAIL,
-                    String.format("ODPS 目的表在提交 block:[\n%s\n] 时失败, uploadId=[%s]. 请联系 ODPS 管理员处理.", StringUtils.join(blocks, ","), masterUpload.getId()), e);
+                    MESSAGE_SOURCE.message("odpsutil.17", StringUtils.join(blocks, ","), masterUpload.getId()), e);
         }
     }
 
     public static void slaveWriteOneBlock(final TableTunnel.UploadSession slaveUpload, final ProtobufRecordPack protobufRecordPack,
-                                          final long blockId, final boolean isCompress) {
+                                          final long blockId, final Long timeoutInMs) {
         try {
             RetryUtil.executeWithRetry(new Callable<Void>() {
                 @Override
                 public Void call() throws Exception {
-                    TunnelRecordWriter tunnelRecordWriter = (TunnelRecordWriter)slaveUpload.openRecordWriter(blockId, isCompress);
-                    tunnelRecordWriter.write(protobufRecordPack);
-                    tunnelRecordWriter.close();
+                    slaveUpload.writeBlock(blockId, protobufRecordPack, timeoutInMs);
                     return null;
                 }
             }, MAX_RETRY_TIME, 1000L, true);
         } catch (Exception e) {
             throw DataXException.asDataXException(OdpsWriterErrorCode.WRITER_RECORD_FAIL,
-                    String.format("ODPS 目的表写 block:%s 失败， uploadId=[%s]. 请联系 ODPS 管理员处理.", blockId, slaveUpload.getId()), e);
+                    MESSAGE_SOURCE.message("odpsutil.18", blockId, slaveUpload.getId()), e);
         }
 
     }
 
-    public static List<Integer> parsePosition(List<String> allColumnList,
+    public static List<Integer> parsePosition(List<String> allColumnList, List<String> allPartColumnList,
                                               List<String> userConfiguredColumns) {
         List<Integer> retList = new ArrayList<Integer>();
 
@@ -416,9 +522,20 @@ public class OdpsUtil {
                     break;
                 }
             }
+
+            if (null != allPartColumnList) {
+                for (int i = 0, len = allPartColumnList.size(); i < len; i++) {
+                    if (allPartColumnList.get(i).equalsIgnoreCase(col)) {
+                        retList.add(-1);
+                        hasColumn = true;
+                        break;
+                    }
+                }
+            }
+
             if (!hasColumn) {
                 throw DataXException.asDataXException(OdpsWriterErrorCode.COLUMN_NOT_EXIST,
-                        String.format("ODPS 目的表的列配置错误. 由于您所配置的列:%s 不存在，会导致datax无法正常插入数据，请检查该列是否存在，如果存在请检查大小写等配置.", col));
+                        MESSAGE_SOURCE.message("odpsutil.19", col));
             }
         }
         return retList;
@@ -436,22 +553,81 @@ public class OdpsUtil {
         for(Column column: columns) {
             allColumns.add(column.getName());
             type = column.getType();
-            if (type == OdpsType.ARRAY || type == OdpsType.MAP) {
-                throw DataXException.asDataXException(OdpsWriterErrorCode.UNSUPPORTED_COLUMN_TYPE,
-                        String.format("DataX 写入 ODPS 表不支持该字段类型:[%s]. 目前支持抽取的字段类型有：bigint, boolean, datetime, double, string. " +
-                                        "您可以选择不抽取 DataX 不支持的字段或者联系 ODPS 管理员寻求帮助.",
-                                type));
-            }
         }
         return allColumns;
     }
 
-    public static List<OdpsType> getTableOriginalColumnTypeList(TableSchema schema) {
-        List<OdpsType> tableOriginalColumnTypeList = new ArrayList<OdpsType>();
+    public static List<String> getAllPartColumns(TableSchema schema) {
+        if (null == schema) {
+            throw new IllegalArgumentException("parameter schema can not be null.");
+        }
+
+        List<String> allPartColumns = new ArrayList<>();
+
+        List<Column> partCols = schema.getPartitionColumns();
+
+        for (Column column : partCols) {
+            allPartColumns.add(column.getName());
+        }
+
+        return allPartColumns;
+    }
+
+    public static String getPartColValFromDataXRecord(com.alibaba.datax.common.element.Record dataxRecord,
+                                                      List<Integer> positions, List<String> userConfiguredColumns,
+                                                      Map<String, DateTransForm> dateTransFormMap) {
+        StringBuilder partition = new StringBuilder();
+        for (int i = 0, len = dataxRecord.getColumnNumber(); i < len; i++) {
+            if (positions.get(i) == -1) {
+                if (partition.length() > 0) {
+                    partition.append(",");
+                }
+                String partName = userConfiguredColumns.get(i);
+                //todo: 这里应该根据分区列的类型做转换，这里先直接toString转换了
+                com.alibaba.datax.common.element.Column partitionCol = dataxRecord.getColumn(i);
+                String partVal = partitionCol.getRawData().toString();
+                if (StringUtils.isBlank(partVal)) {
+                    throw new DataXException(OdpsWriterErrorCode.ILLEGAL_VALUE, String.format(
+                            "value of column %s exit null value, it can not be used as partition column", partName));
+                }
+
+                // 如果分区列的值的格式是一个日期，并且用户设置列的转换规则
+                DateTransForm dateTransForm = null;
+                if (null != dateTransFormMap) {
+                    dateTransForm = dateTransFormMap.get(partName);
+                }
+                if (null != dateTransForm) {
+                    try {
+                        // 日期列
+                        if (partitionCol.getType().equals(com.alibaba.datax.common.element.Column.Type.DATE)) {
+                            partVal = OdpsUtil.date2StringWithFormat(partitionCol.asDate(), dateTransForm.getToFormat());
+                        }
+                        // String 列，需要先按照 fromFormat 转换为日期
+                        if (partitionCol.getType().equals(com.alibaba.datax.common.element.Column.Type.STRING)) {
+                            partVal = OdpsUtil.date2StringWithFormat(partitionCol.asDate(dateTransForm.getFromFormat()), dateTransForm.getToFormat());
+                        }
+                    } catch (DataXException e) {
+                        LOG.warn("Parse {} with format {} error! Please check the column config and {} config. So user original value '{}'. Detail info: {}",
+                                partVal, dateTransForm.toString(), Key.PARTITION_COL_MAPPING, partVal, e);
+                    }
+                }
+
+                partition.append(partName).append("=").append(partVal);
+            }
+        }
+        return partition.toString();
+    }
+
+    public static String date2StringWithFormat(Date date, String dateFormat) {
+        return  DateFormatUtils.format(date, dateFormat, TimeZone.getTimeZone("GMT+8"));
+    }
+
+    public static List<TypeInfo> getTableOriginalColumnTypeList(TableSchema schema) {
+        List<TypeInfo> tableOriginalColumnTypeList = new ArrayList<TypeInfo>();
 
         List<Column> columns = schema.getColumns();
         for (Column column : columns) {
-            tableOriginalColumnTypeList.add(column.getType());
+            tableOriginalColumnTypeList.add(column.getTypeInfo());
         }
 
         return tableOriginalColumnTypeList;
@@ -465,8 +641,7 @@ public class OdpsUtil {
             if (isPartitionedTable) {
                 //分区表
                 if (StringUtils.isBlank(partition)) {
-                    throw DataXException.asDataXException(OdpsWriterErrorCode.PARTITION_ERROR, String.format("您没有配置分区信息，因为你配置的表是分区表:%s 如果需要进行 truncate 操作，必须指定需要清空的具体分区. 请修改分区配置，格式形如 pt=${bizdate} .",
-                            table.getName()));
+                    throw DataXException.asDataXException(OdpsWriterErrorCode.PARTITION_ERROR, MESSAGE_SOURCE.message("odpsutil.21", table.getName()));
                 } else {
                     LOG.info("Try to truncate partition=[{}] in table=[{}].", partition, table.getName());
                     OdpsUtil.truncatePartition(odps, table, partition);
@@ -474,8 +649,7 @@ public class OdpsUtil {
             } else {
                 //非分区表
                 if (StringUtils.isNotBlank(partition)) {
-                    throw DataXException.asDataXException(OdpsWriterErrorCode.PARTITION_ERROR, String.format("分区信息配置错误，你的ODPS表是非分区表:%s 进行 truncate 操作时不需要指定具体分区值. 请检查您的分区配置，删除该配置项的值.",
-                            table.getName()));
+                    throw DataXException.asDataXException(OdpsWriterErrorCode.PARTITION_ERROR, MESSAGE_SOURCE.message("odpsutil.22", table.getName()));
                 } else {
                     LOG.info("Try to truncate table:[{}].", table.getName());
                     OdpsUtil.truncateNonPartitionedTable(odps, table);
@@ -487,7 +661,7 @@ public class OdpsUtil {
                 //分区表
                 if (StringUtils.isBlank(partition)) {
                     throw DataXException.asDataXException(OdpsWriterErrorCode.PARTITION_ERROR,
-                            String.format("您的目的表是分区表，写入分区表:%s 时必须指定具体分区值. 请修改您的分区配置信息，格式形如 格式形如 pt=${bizdate}.", table.getName()));
+                            MESSAGE_SOURCE.message("odpsutil.23", table.getName()));
                 } else {
                     boolean isPartitionExists = OdpsUtil.isPartitionExist(table, partition);
                     if (!isPartitionExists) {
@@ -500,7 +674,7 @@ public class OdpsUtil {
                 //非分区表
                 if (StringUtils.isNotBlank(partition)) {
                     throw DataXException.asDataXException(OdpsWriterErrorCode.PARTITION_ERROR,
-                            String.format("您的目的表是非分区表，写入非分区表:%s 时不需要指定具体分区值. 请删除分区配置信息", table.getName()));
+                            MESSAGE_SOURCE.message("odpsutil.24", table.getName()));
                 }
             }
         }
@@ -523,14 +697,12 @@ public class OdpsUtil {
             if (isPartitionedTable) {
                 //分区表
                 if (StringUtils.isBlank(partition)) {
-                    throw DataXException.asDataXException(OdpsWriterErrorCode.PARTITION_ERROR, String.format("您没有配置分区信息，因为你配置的表是分区表:%s 如果需要进行 truncate 操作，必须指定需要清空的具体分区. 请修改分区配置，格式形如 pt=${bizdate} .",
-                            table.getName()));
+                    throw DataXException.asDataXException(OdpsWriterErrorCode.PARTITION_ERROR, MESSAGE_SOURCE.message("odpsutil.25", table.getName()));
                 }
             } else {
                 //非分区表
                 if (StringUtils.isNotBlank(partition)) {
-                    throw DataXException.asDataXException(OdpsWriterErrorCode.PARTITION_ERROR, String.format("分区信息配置错误，你的ODPS表是非分区表:%s 进行 truncate 操作时不需要指定具体分区值. 请检查您的分区配置，删除该配置项的值.",
-                            table.getName()));
+                    throw DataXException.asDataXException(OdpsWriterErrorCode.PARTITION_ERROR, MESSAGE_SOURCE.message("odpsutil.26", table.getName()));
                 }
             }
         } else {
@@ -539,13 +711,13 @@ public class OdpsUtil {
                 //分区表
                 if (StringUtils.isBlank(partition)) {
                     throw DataXException.asDataXException(OdpsWriterErrorCode.PARTITION_ERROR,
-                            String.format("您的目的表是分区表，写入分区表:%s 时必须指定具体分区值. 请修改您的分区配置信息，格式形如 格式形如 pt=${bizdate}.", table.getName()));
+                            MESSAGE_SOURCE.message("odpsutil.27", table.getName()));
                 }
             } else {
                 //非分区表
                 if (StringUtils.isNotBlank(partition)) {
                     throw DataXException.asDataXException(OdpsWriterErrorCode.PARTITION_ERROR,
-                            String.format("您的目的表是非分区表，写入非分区表:%s 时不需要指定具体分区值. 请删除分区配置信息", table.getName()));
+                            MESSAGE_SOURCE.message("odpsutil.28", table.getName()));
                 }
             }
         }
@@ -558,29 +730,286 @@ public class OdpsUtil {
         if(e.getMessage() != null) {
             if(e.getMessage().contains(OdpsExceptionMsg.ODPS_PROJECT_NOT_FOUNT)) {
                 throw DataXException.asDataXException(OdpsWriterErrorCode.ODPS_PROJECT_NOT_FOUNT,
-                        String.format("加载 ODPS 目的表:%s 失败. " +
-                                "请检查您配置的 ODPS 目的表的 [project] 是否正确.", tableName), e);
+                        MESSAGE_SOURCE.message("odpsutil.29", tableName), e);
             } else if(e.getMessage().contains(OdpsExceptionMsg.ODPS_TABLE_NOT_FOUNT)) {
                 throw DataXException.asDataXException(OdpsWriterErrorCode.ODPS_TABLE_NOT_FOUNT,
-                        String.format("加载 ODPS 目的表:%s 失败. " +
-                                "请检查您配置的 ODPS 目的表的 [table] 是否正确.", tableName), e);
+                        MESSAGE_SOURCE.message("odpsutil.30", tableName), e);
             } else if(e.getMessage().contains(OdpsExceptionMsg.ODPS_ACCESS_KEY_ID_NOT_FOUND)) {
                 throw DataXException.asDataXException(OdpsWriterErrorCode.ODPS_ACCESS_KEY_ID_NOT_FOUND,
-                        String.format("加载 ODPS 目的表:%s 失败. " +
-                                "请检查您配置的 ODPS 目的表的 [accessId] [accessKey]是否正确.", tableName), e);
+                        MESSAGE_SOURCE.message("odpsutil.31", tableName), e);
             } else if(e.getMessage().contains(OdpsExceptionMsg.ODPS_ACCESS_KEY_INVALID)) {
                 throw DataXException.asDataXException(OdpsWriterErrorCode.ODPS_ACCESS_KEY_INVALID,
-                        String.format("加载 ODPS 目的表:%s 失败. " +
-                                "请检查您配置的 ODPS 目的表的 [accessKey] 是否正确.", tableName), e);
+                        MESSAGE_SOURCE.message("odpsutil.32", tableName), e);
             } else if(e.getMessage().contains(OdpsExceptionMsg.ODPS_ACCESS_DENY)) {
                 throw DataXException.asDataXException(OdpsWriterErrorCode.ODPS_ACCESS_DENY,
-                        String.format("加载 ODPS 目的表:%s 失败. " +
-                                "请检查您配置的 ODPS 目的表的 [accessId] [accessKey] [project]是否匹配.", tableName), e);
+                        MESSAGE_SOURCE.message("odpsutil.33", tableName), e);
             }
         }
         throw DataXException.asDataXException(OdpsWriterErrorCode.ILLEGAL_VALUE,
-                String.format("加载 ODPS 目的表:%s 失败. " +
-                        "请检查您配置的 ODPS 目的表的 project,table,accessId,accessKey,odpsServer等值.", tableName), e);
+                MESSAGE_SOURCE.message("odpsutil.34", tableName), e);
+    }
+
+    /**
+     * count统计数据，自动创建统计表
+     * @param tableName 统计表名字
+     * @return
+     */
+    public static String getCreateSummaryTableDDL(String tableName) {
+        return String.format("CREATE TABLE IF NOT EXISTS %s " +
+                        "(src_table_name STRING, " +
+                        "dest_table_name STRING, " +
+                        "src_row_num BIGINT, " +
+                        "src_query_time DATETIME, " +
+                        "read_succeed_records BIGINT," +
+                        "write_succeed_records BIGINT," +
+                        "dest_row_num BIGINT, " +
+                        "write_time DATETIME);",
+                tableName);
+    }
+
+    /**
+     * count统计数据，获取count dml
+     * @param tableName
+     * @return
+     */
+    public static String countTableSql(final String tableName, final String partition) {
+        if (StringUtils.isNotBlank(partition)) {
+            String[] partitions = partition.split("\\,");
+            String p = String.join(" and ", partitions);
+            return  String.format("SELECT COUNT(1) AS odps_num FROM %s WHERE %s;", tableName, p);
+        } else {
+            return  String.format("SELECT COUNT(1) AS odps_num FROM %s;", tableName);
+        }
+    }
+
+    /**
+     * count统计数据 dml 对应字段，用于查询
+     * @return
+     */
+    public static String countName() {
+        return "odps_num";
+    }
+
+    /**
+     * count统计数据dml
+     * @param summaryTableName 统计数据写入表
+     * @param sourceTableName datax reader 表
+     * @param destTableName datax writer 表
+     * @param srcCount  reader表行数
+     * @param queryTime reader表查询时间
+     * @param destCount  writer 表行书
+     * @return insert dml sql
+     */
+    public static String getInsertSummaryTableSql(String summaryTableName, String sourceTableName, String destTableName,
+                                                  Long srcCount, String queryTime, Number readSucceedRecords,
+                                                     Number writeSucceedRecords, Long destCount) {
+        final String sql = "INSERT INTO %s (src_table_name,dest_table_name," +
+                " src_row_num, src_query_time, read_succeed_records, write_succeed_records, dest_row_num, write_time) VALUES ( %s );";
+
+        String insertData = String.format("'%s', '%s', %s, %s, %s, %s, %s, getdate()",
+                sourceTableName, destTableName, srcCount, queryTime, readSucceedRecords, writeSucceedRecords, destCount );
+        return String.format(sql, summaryTableName, insertData);
+    }
+
+    public static void createTable(Odps odps, String tableName, final String sql) {
+        try {
+            LOG.info("create table with sql: {}", sql);
+            runSqlTaskWithRetry(odps, sql, MAX_RETRY_TIME, 1000, true, "create", null);
+        } catch (Exception e) {
+            throw DataXException.asDataXException(OdpsWriterErrorCode.RUN_SQL_FAILED,
+                    MESSAGE_SOURCE.message("odpsutil.7", tableName), e);
+        }
+    }
+
+    public static void createTableFromTable(Odps odps, String resourceTable, String targetTable) {
+        TableSchema schema = odps.tables().get(resourceTable).getSchema();
+        StringBuilder builder = new StringBuilder();
+        Iterator<Column> iterator = schema.getColumns().iterator();
+        while (iterator.hasNext()) {
+            Column c = iterator.next();
+            builder.append(String.format(" %s %s ", c.getName(), c.getTypeInfo().getTypeName()));
+            if (iterator.hasNext()) {
+                builder.append(",");
+            }
+        }
+        String createTableSql = String.format("CREATE TABLE IF NOT EXISTS %s (%s);", targetTable, builder.toString());
+
+        try {
+            LOG.info("create table with sql: {}", createTableSql);
+            runSqlTaskWithRetry(odps, createTableSql, MAX_RETRY_TIME, 1000, true, "create", null);
+        } catch (Exception e) {
+            throw DataXException.asDataXException(OdpsWriterErrorCode.RUN_SQL_FAILED,
+                    MESSAGE_SOURCE.message("odpsutil.7", targetTable), e);
+        }
+    }
+
+    public static Object truncateSingleFieldData(OdpsType type, Object data, int limit, Boolean enableOverLengthOutput) {
+        if (data == null) {
+            return data;
+        }
+        if (OdpsType.STRING.equals(type)) {
+            if(enableOverLengthOutput) {
+                LOG.warn(
+                        "InvalidData: The string's length is more than " + limit + " bytes. content:" + data);
+            }
+            LOG.info("before truncate string length:" + ((String) data).length());
+            //确保特殊字符场景下的截断
+            limit -= Constant.UTF8_ENCODED_CHAR_MAX_SIZE;
+            data = cutString((String) data, limit);
+            LOG.info("after truncate string length:" + ((String) data).length());
+        } else if (OdpsType.BINARY.equals(type)) {
+            byte[] oriDataBytes = ((Binary) data).data();
+            if(oriDataBytes == null){
+                return data;
+            }
+            int originLength = oriDataBytes.length;
+            if (originLength <= limit) {
+                return data;
+            }
+            if(enableOverLengthOutput) {
+                LOG.warn("InvalidData: The binary's length is more than " + limit + " bytes. content:" + byteArrToHex(oriDataBytes));
+            }
+            LOG.info("before truncate binary length:" + oriDataBytes.length);
+            byte[] newData = new byte[limit];
+            System.arraycopy(oriDataBytes, 0, newData, 0, limit);
+            LOG.info("after truncate binary length:" + newData.length);
+            return new Binary(newData);
+        }
+        return data;
+    }
+    public static Object setNull(OdpsType type,Object data, int limit, Boolean enableOverLengthOutput) {
+        if (data == null ) {
+            return null;
+        }
+        if (OdpsType.STRING.equals(type)) {
+            if(enableOverLengthOutput) {
+                LOG.warn(
+                        "InvalidData: The string's length is more than " + limit + " bytes. content:" + data);
+            }
+            return null;
+        } else if (OdpsType.BINARY.equals(type)) {
+            byte[] oriDataBytes = ((Binary) data).data();
+            int originLength = oriDataBytes.length;
+            if (originLength > limit) {
+                if(enableOverLengthOutput) {
+                    LOG.warn("InvalidData: The binary's length is more than " + limit + " bytes. content:" + new String(oriDataBytes));
+                }
+                return null;
+            }
+        }
+        return data;
+    }
+    public static boolean validateStringLength(String value, long limit) {
+        try {
+            if (value.length() * Constant.UTF8_ENCODED_CHAR_MAX_SIZE > limit
+                    && value.getBytes("utf-8").length > limit) {
+                return false;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return true;
+        }
+        return true;
+    }
+    public static String cutString(String sourceString, int cutBytes) {
+        if (sourceString == null || "".equals(sourceString.trim()) || cutBytes < 1) {
+            return "";
+        }
+        int lastIndex = 0;
+        boolean stopFlag = false;
+        int totalBytes = 0;
+        for (int i = 0; i < sourceString.length(); i++) {
+            String s = Integer.toBinaryString(sourceString.charAt(i));
+            if (s.length() > 8) {
+                totalBytes += 3;
+            } else {
+                totalBytes += 1;
+            }
+            if (!stopFlag) {
+                if (totalBytes == cutBytes) {
+                    lastIndex = i;
+                    stopFlag = true;
+                } else if (totalBytes > cutBytes) {
+                    lastIndex = i - 1;
+                    stopFlag = true;
+                }
+            }
+        }
+        if (!stopFlag) {
+            return sourceString;
+        } else {
+            return sourceString.substring(0, lastIndex + 1);
+        }
+    }
+    public static boolean dataOverLength(OdpsType type, Object data, int limit){
+        if (data == null ) {
+            return false;
+        }
+        if (OdpsType.STRING.equals(type)) {
+            if(!OdpsUtil.validateStringLength((String)data, limit)){
+                return true;
+            }
+        }else if (OdpsType.BINARY.equals(type)){
+            byte[] oriDataBytes = ((Binary) data).data();
+            if(oriDataBytes == null){
+                return false;
+            }
+            int originLength = oriDataBytes.length;
+            if (originLength > limit) {
+                return true;
+            }
+        }
+        return false;
+    }
+    public static Object processOverLengthData(Object data, OdpsType type, String overLengthRule, int maxFieldLength, Boolean enableOverLengthOutput) {
+        try{
+            //超长数据检查
+            if(OdpsWriter.maxOutputOverLengthRecord != null && OdpsWriter.globalTotalTruncatedRecordNumber.get() >= OdpsWriter.maxOutputOverLengthRecord){
+                enableOverLengthOutput = false;
+            }
+            if ("truncate".equalsIgnoreCase(overLengthRule)) {
+                if (OdpsUtil.dataOverLength(type, data, OdpsWriter.maxOdpsFieldLength)) {
+                    Object newData = OdpsUtil.truncateSingleFieldData(type, data, maxFieldLength, enableOverLengthOutput);
+                    OdpsWriter.globalTotalTruncatedRecordNumber.incrementAndGet();
+                    return newData;
+                }
+            } else if ("setNull".equalsIgnoreCase(overLengthRule)) {
+                if (OdpsUtil.dataOverLength(type, data, OdpsWriter.maxOdpsFieldLength)) {
+                    OdpsWriter.globalTotalTruncatedRecordNumber.incrementAndGet();
+                    return OdpsUtil.setNull(type, data, maxFieldLength, enableOverLengthOutput);
+                }
+            }
+        }catch (Throwable e){
+            LOG.warn("truncate overLength data failed!",  e);
+        }
+        return data;
+    }
+    private static final char HEX_CHAR_ARR[] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
+    /**
+     * 字节数组转十六进制字符串
+     * @param btArr
+     * @return
+     */
+    public static String byteArrToHex(byte[] btArr) {
+        char strArr[] = new char[btArr.length * 2];
+        int i = 0;
+        for (byte bt : btArr) {
+            strArr[i++] = HEX_CHAR_ARR[bt>>>4 & 0xf];
+            strArr[i++] = HEX_CHAR_ARR[bt & 0xf];
+        }
+        return new String(strArr);
+    }
+    public static byte[] hexToByteArr(String hexStr) {
+        char[] charArr = hexStr.toCharArray();
+        byte btArr[] = new byte[charArr.length / 2];
+        int index = 0;
+        for (int i = 0; i < charArr.length; i++) {
+            int highBit = hexStr.indexOf(charArr[i]);
+            int lowBit = hexStr.indexOf(charArr[++i]);
+            btArr[index] = (byte) (highBit << 4 | lowBit);
+            index++;
+        }
+        return btArr;
     }
 
 }

@@ -22,7 +22,7 @@
         <commons-lang3-version>3.3.2</commons-lang3-version>
         <commons-configuration-version>1.10</commons-configuration-version>
         <commons-cli-version>1.2</commons-cli-version>
-        <fastjson-version>1.1.46.sec10</fastjson-version>
+        <fastjson-version>1.2.49</fastjson-version>
         <guava-version>16.0.1</guava-version>
         <diamond.version>3.7.2.1-SNAPSHOT</diamond.version>
 
@@ -53,61 +53,71 @@
         <module>postgresqlreader</module>
         <module>kingbaseesreader</module>
         <module>oraclereader</module>
+        <module>cassandrareader</module>
+        <module>oceanbasev10reader</module>
+        <module>rdbmsreader</module>
+
         <module>odpsreader</module>
         <module>otsreader</module>
         <module>otsstreamreader</module>
-        <module>txtfilereader</module>
-        <module>hdfsreader</module>
-        <module>streamreader</module>
-        <module>ossreader</module>
-        <module>ftpreader</module>
-        <module>mongodbreader</module>
-        <module>rdbmsreader</module>
         <module>hbase11xreader</module>
         <module>hbase094xreader</module>
+        <module>hbase11xsqlreader</module>
+        <module>hbase20xsqlreader</module>
+
+        <module>ossreader</module>
+        <module>hdfsreader</module>
+        <module>ftpreader</module>
+        <module>txtfilereader</module>
+        <module>streamreader</module>
+
+        <module>mongodbreader</module>
+        <module>tdenginereader</module>
+        <module>gdbreader</module>
         <module>tsdbreader</module>
         <module>opentsdbreader</module>
-        <module>cassandrareader</module>
-        <module>gdbreader</module>
-        <module>oceanbasev10reader</module>
+
 
         <!-- writer -->
         <module>mysqlwriter</module>
-        <module>tdenginewriter</module>
         <module>drdswriter</module>
-        <module>odpswriter</module>
-        <module>txtfilewriter</module>
-        <module>ftpwriter</module>
-        <module>hdfswriter</module>
-        <module>streamwriter</module>
-        <module>otswriter</module>
         <module>oraclewriter</module>
         <module>sqlserverwriter</module>
         <module>postgresqlwriter</module>
         <module>kingbaseeswriter</module>
-        <module>osswriter</module>
-        <module>mongodbwriter</module>
         <module>adswriter</module>
-        <module>ocswriter</module>
+        <module>oceanbasev10writer</module>
+        <module>cassandrawriter</module>
+        <module>clickhousewriter</module>
+        <module>adbpgwriter</module>
+        <module>hologresjdbcwriter</module>
         <module>rdbmswriter</module>
+
+
+        <module>odpswriter</module>
+        <module>osswriter</module>
+        <module>otswriter</module>
         <module>hbase11xwriter</module>
         <module>hbase094xwriter</module>
         <module>hbase11xsqlwriter</module>
-        <module>hbase11xsqlreader</module>
+        <module>hbase20xsqlwriter</module>
+        <module>kuduwriter</module>
+        <module>ftpwriter</module>
+        <module>hdfswriter</module>
+        <module>txtfilewriter</module>
+        <module>streamwriter</module>
+
         <module>elasticsearchwriter</module>
+        <module>mongodbwriter</module>
+        <module>tdenginewriter</module>
+        <module>ocswriter</module>
         <module>tsdbwriter</module>
-        <module>adbpgwriter</module>
         <module>gdbwriter</module>
-        <module>cassandrawriter</module>
-        <module>clickhousewriter</module>
         <module>oscarwriter</module>
-        <module>oceanbasev10writer</module>
+
         <!-- common support module -->
         <module>plugin-rdbms-util</module>
         <module>plugin-unstructured-storage-util</module>
-        <module>hbase20xsqlreader</module>
-        <module>hbase20xsqlwriter</module>
-        <module>kuduwriter</module>
     </modules>
 
     <dependencyManagement>
@@ -202,6 +212,17 @@
             <id>central</id>
             <name>Nexus aliyun</name>
             <url>https://maven.aliyun.com/repository/central</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>spring</id>
+            <name>spring</name>
+            <url>https://maven.aliyun.com/repository/spring</url>
             <releases>
                 <enabled>true</enabled>
             </releases>

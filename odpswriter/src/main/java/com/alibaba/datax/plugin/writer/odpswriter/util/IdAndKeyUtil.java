@@ -1,5 +1,5 @@
 /**
- *  (C) 2010-2014 Alibaba Group Holding Limited.
+ *  (C) 2010-2022 Alibaba Group Holding Limited.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,11 @@ package com.alibaba.datax.plugin.writer.odpswriter.util;
 
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.util.Configuration;
-import com.alibaba.datax.plugin.writer.odpswriter.Constant;
+import com.alibaba.datax.common.util.IdAndKeyRollingUtil;
+import com.alibaba.datax.common.util.MessageSource;
 import com.alibaba.datax.plugin.writer.odpswriter.Key;
 import com.alibaba.datax.plugin.writer.odpswriter.OdpsWriterErrorCode;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +31,7 @@ import java.util.Map;
 
 public class IdAndKeyUtil {
     private static Logger LOG = LoggerFactory.getLogger(IdAndKeyUtil.class);
+    private static final MessageSource MESSAGE_SOURCE = MessageSource.loadResourceBundle(IdAndKeyUtil.class);
 
     public static Configuration parseAccessIdAndKey(Configuration originalConfig) {
         String accessId = originalConfig.getString(Key.ACCESS_ID);
@@ -50,36 +53,13 @@ public class IdAndKeyUtil {
 
     private static Configuration getAccessIdAndKeyFromEnv(Configuration originalConfig,
                                                           Map<String, String> envProp) {
-        String accessId = null;
-        String accessKey = null;
-
-        String skynetAccessID = envProp.get(Constant.SKYNET_ACCESSID);
-        String skynetAccessKey = envProp.get(Constant.SKYNET_ACCESSKEY);
-
-        if (StringUtils.isNotBlank(skynetAccessID)
-                || StringUtils.isNotBlank(skynetAccessKey)) {
-            /**
-             * 环境变量中，如果存在SKYNET_ACCESSID/SKYNET_ACCESSKEy（只要有其中一个变量，则认为一定是两个都存在的！），
-             * 则使用其值作为odps的accessId/accessKey(会解密)
-             */
-
-            LOG.info("Try to get accessId/accessKey from environment.");
-            accessId = skynetAccessID;
-            accessKey = DESCipher.decrypt(skynetAccessKey);
-            if (StringUtils.isNotBlank(accessKey)) {
-                originalConfig.set(Key.ACCESS_ID, accessId);
-                originalConfig.set(Key.ACCESS_KEY, accessKey);
-                LOG.info("Get accessId/accessKey from environment variables successfully.");
-            } else {
-                throw DataXException.asDataXException(OdpsWriterErrorCode.GET_ID_KEY_FAIL,
-                        String.format("从环境变量中获取accessId/accessKey 失败, accessId=[%s]", accessId));
-            }
-        } else {
-            // 无处获取（既没有配置在作业中，也没用在环境变量中）
+    	// 如果获取到ak，在getAccessIdAndKeyFromEnv中已经设置到originalConfig了
+    	String accessKey = IdAndKeyRollingUtil.getAccessIdAndKeyFromEnv(originalConfig);
+    	if (StringUtils.isBlank(accessKey)) {
+    		// 无处获取（既没有配置在作业中，也没用在环境变量中）
             throw DataXException.asDataXException(OdpsWriterErrorCode.GET_ID_KEY_FAIL,
-                    "无法获取到accessId/accessKey. 它们既不存在于您的配置中，也不存在于环境变量中.");
-        }
-
+                    MESSAGE_SOURCE.message("idandkeyutil.2"));
+    	}
         return originalConfig;
     }
 }

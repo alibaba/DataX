@@ -5,6 +5,7 @@ import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordReceiver;
 import com.alibaba.datax.common.spi.Writer;
 import com.alibaba.datax.common.util.Configuration;
+import com.alibaba.datax.common.util.ConfigurationUtil;
 import com.alibaba.datax.common.util.RetryUtil;
 import com.alibaba.datax.plugin.writer.conn.TSDBConnection;
 import com.aliyun.hitsdb.client.TSDB;
@@ -133,10 +134,11 @@ public class TSDBWriter extends Writer {
                 if (StringUtils.isBlank(database)) {
                     LOG.info("The parameter [" + Key.DATABASE + "] is blank.");
                 } else {
-                    tsdb.useDatabase(database);
+                	LOG.warn("The parameter [" + Key.DATABASE + "] : {} is ignored.");
+                    // tsdb.useDatabase(database);
                 }
 
-                LOG.info("Tsdb config:" + originalConfig.toJSON());
+                LOG.info("Tsdb config: {}", ConfigurationUtil.filterSensitive(originalConfig).toJSON());
 
             }
         }
