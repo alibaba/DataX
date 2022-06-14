@@ -236,59 +236,16 @@ public class UnstructuredStorageReaderUtil {
 	public static void doReadFromStream(BufferedReader reader, String context,
 										Configuration readerSliceConfig, RecordSender recordSender,
 										TaskPluginCollector taskPluginCollector) {
-		String delimiterInStr = readerSliceConfig.getString(Key.FIELD_DELIMITER);
-		if (delimiterInStr != null && delimiterInStr.length() > 1) {
-			readText(reader, context, readerSliceConfig, recordSender, taskPluginCollector);
-		} else {
-			readCsv(reader, context, readerSliceConfig, recordSender, taskPluginCollector);
-		}
-	}
-
-	private static void readText(BufferedReader reader,String context, Configuration readerSliceConfig,
-								 RecordSender recordSender, TaskPluginCollector taskPluginCollector) {
-		String encoding = readerSliceConfig.getString(Key.ENCODING, Constant.DEFAULT_ENCODING);
-		String fieldDelimiter = readerSliceConfig.getString(Key.FIELD_DELIMITER);
-		List<ColumnEntry> column = UnstructuredStorageReaderUtil.getListColumnEntry(readerSliceConfig, Key.COLUMN);
-		String nullFormat = readerSliceConfig.getString(Key.NULL_FORMAT);
-
-		try {
-			if (readerSliceConfig.getBool(Key.SKIP_HEADER, Constant.DEFAULT_SKIP_HEADER)) {
-				reader.readLine();
-			}
-
-			String line;
-			while ((line = reader.readLine()) != null) {
-				UnstructuredStorageReaderUtil.transportOneRecord(recordSender,
-					column, splitOneLine(line, fieldDelimiter), nullFormat, taskPluginCollector);
-			}
-		} catch (UnsupportedEncodingException uee) {
-			throw DataXException
-				.asDataXException(
-					UnstructuredStorageReaderErrorCode.OPEN_FILE_WITH_CHARSET_ERROR,
-					String.format("不支持的编码格式 : [%s]", encoding), uee);
-		} catch (FileNotFoundException fnfe) {
-			throw DataXException.asDataXException(
-				UnstructuredStorageReaderErrorCode.FILE_NOT_EXISTS,
-				String.format("无法找到文件 : [%s]", context), fnfe);
-		} catch (IOException ioe) {
-			throw DataXException.asDataXException(
-				UnstructuredStorageReaderErrorCode.READ_FILE_IO_ERROR,
-				String.format("读取文件错误 : [%s]", context), ioe);
-		} catch (Exception e) {
-			throw DataXException.asDataXException(
-				UnstructuredStorageReaderErrorCode.RUNTIME_EXCEPTION,
-				String.format("运行时异常 : %s", e.getMessage()), e);
-		} finally {
-			IOUtils.closeQuietly(reader);
-		}
-	}
-
-	private static void readCsv(BufferedReader reader, String context,
-							   Configuration readerSliceConfig, RecordSender recordSender,
-							   TaskPluginCollector taskPluginCollector) {
 		String encoding = readerSliceConfig.getString(Key.ENCODING,
 				Constant.DEFAULT_ENCODING);
-		String delimiterInStr = readerSliceConfig.getString(Key.FIELD_DELIMITER);
+		Character fieldDelimiter = null;
+		String delimiterInStr = readerSliceConfig
+				.getString(Key.FIELD_DELIMITER);
+		if (null != delimiterInStr && 1 != delimiterInStr.length()) {
+			throw DataXException.asDataXException(
+					UnstructuredStorageReaderErrorCode.ILLEGAL_VALUE,
+					String.format("仅仅支持单字符切分, 您配置的切分为 : [%s]", delimiterInStr));
+		}
 		if (null == delimiterInStr) {
 			LOG.warn(String.format("您没有配置列分隔符, 使用默认值[%s]",
 					Constant.DEFAULT_FIELD_DELIMITER));
@@ -296,7 +253,7 @@ public class UnstructuredStorageReaderUtil {
 
 		// warn: default value ',', fieldDelimiter could be \n(lineDelimiter)
 		// for no fieldDelimiter
-		Character fieldDelimiter = readerSliceConfig.getChar(Key.FIELD_DELIMITER,
+		fieldDelimiter = readerSliceConfig.getChar(Key.FIELD_DELIMITER,
 				Constant.DEFAULT_FIELD_DELIMITER);
 		Boolean skipHeader = readerSliceConfig.getBool(Key.SKIP_HEADER,
 				Constant.DEFAULT_SKIP_HEADER);
@@ -361,6 +318,11 @@ public class UnstructuredStorageReaderUtil {
 		// 注意: nullFormat 没有默认值
 		String nullFormat = configuration.getString(Key.NULL_FORMAT);
 		String delimiterInStr = configuration.getString(Key.FIELD_DELIMITER);
+		if (null != delimiterInStr && 1 != delimiterInStr.length()) {
+			throw DataXException.asDataXException(
+					UnstructuredStorageReaderErrorCode.ILLEGAL_VALUE,
+					String.format("仅仅支持单字符切分, 您配置的切分为 : [%s]", delimiterInStr));
+		}
 		if (null == delimiterInStr) {
 			LOG.warn(String.format("您没有配置列分隔符, 使用默认值[%s]",
 					Constant.DEFAULT_FIELD_DELIMITER));
@@ -610,6 +572,10 @@ public class UnstructuredStorageReaderUtil {
 			throw DataXException.asDataXException(UnstructuredStorageReaderErrorCode.REQUIRED_VALUE,
 					String.format("您提供配置文件有误，[%s]是必填参数.",
 							com.alibaba.datax.plugin.unstructuredstorage.reader.Key.FIELD_DELIMITER));
+		}else if(1 != delimiterInStr.length()){
+			// warn: if have, length must be one
+			throw DataXException.asDataXException(UnstructuredStorageReaderErrorCode.ILLEGAL_VALUE,
+					String.format("仅仅支持单字符切分, 您配置的切分为 : [%s]", delimiterInStr));
 		}
 	}
 
