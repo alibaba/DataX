@@ -1,6 +1,5 @@
 package com.alibaba.datax.plugin.reader.oceanbasev10reader.ext;
 
-import java.util.Arrays;
 import java.util.List;
 
 import com.alibaba.datax.common.constant.CommonConstant;
