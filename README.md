@@ -25,7 +25,8 @@ DataX本身作为数据同步框架，将不同数据源的同步抽象为从源
 
 # Quick Start
 
-##### Download [DataX下载地址](http://datax-opensource.oss-cn-hangzhou.aliyuncs.com/datax.tar.gz)
+##### Download [DataX下载地址](https://datax-opensource.oss-cn-hangzhou.aliyuncs.com/20220530/datax.tar.gz)
+
 
 ##### 请点击：[Quick Start](https://github.com/alibaba/DataX/blob/master/userGuid.md)
 
@@ -145,25 +146,9 @@ This software is free to use under the Apache License [Apache license](https://g
     9. 有大数据产品、云产品、中间件技术解决方案者优先考虑。
 ````
 
-钉钉用户群：
+用户咨询支持：
 
 钉钉群目前暂时受到了一些管控策略影响，建议大家有问题优先在这里提交问题 Issue，DataX研发和社区会定期回答Issue中的问题，知识库丰富后也能帮助到后来的使用者。
 
-- DataX开源用户交流群
-    - <img src="https://github.com/alibaba/DataX/blob/master/images/DataX%E5%BC%80%E6%BA%90%E7%94%A8%E6%88%B7%E4%BA%A4%E6%B5%81%E7%BE%A4.jpg" width="20%" height="20%">
 
-- DataX开源用户交流群2
-    - <img src="https://github.com/alibaba/DataX/blob/master/images/DataX%E5%BC%80%E6%BA%90%E7%94%A8%E6%88%B7%E4%BA%A4%E6%B5%81%E7%BE%A42.jpg" width="20%" height="20%">
-
-- DataX开源用户交流群3
-    - <img src="https://github.com/alibaba/DataX/blob/master/images/DataX%E5%BC%80%E6%BA%90%E7%94%A8%E6%88%B7%E4%BA%A4%E6%B5%81%E7%BE%A43.jpg" width="20%" height="20%">
-
-- DataX开源用户交流群4
-    - <img src="https://github.com/alibaba/DataX/blob/master/images/DataX%E5%BC%80%E6%BA%90%E7%94%A8%E6%88%B7%E4%BA%A4%E6%B5%81%E7%BE%A44.jpg" width="20%" height="20%">
-
-- DataX开源用户交流群5
-    - <img src="https://github.com/alibaba/DataX/blob/master/images/DataX%E5%BC%80%E6%BA%90%E7%94%A8%E6%88%B7%E4%BA%A4%E6%B5%81%E7%BE%A45.jpg" width="20%" height="20%">
-
-- DataX开源用户交流群6 
-    - <img src="https://user-images.githubusercontent.com/1905000/124073771-139cbd00-da75-11eb-9a3f-598cba145a76.png" width="20%" height="20%">
 
