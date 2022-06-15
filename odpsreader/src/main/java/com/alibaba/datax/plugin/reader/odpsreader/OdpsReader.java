@@ -505,13 +505,13 @@ public class OdpsReader extends Reader {
                 List<Pair<String, ColumnType>> parsedColumns = new ArrayList<Pair<String, ColumnType>>();
                 for (int i = 0; i < parsedColumnsTmp.size(); i++) {
                     Configuration eachColumnConfig = parsedColumnsTmp.get(i);
-                    String columnName = eachColumnConfig.getString("left");
+                    String columnName = eachColumnConfig.getKeys().iterator().next();
                     ColumnType columnType = ColumnType
-                        .asColumnType(eachColumnConfig.getString("right"));
+                        .asColumnType(eachColumnConfig.getString(columnName).toLowerCase());
                     parsedColumns.add(new MutablePair<String, ColumnType>(
                         columnName, columnType));
-
                 }
+
                 ReaderProxy readerProxy = new ReaderProxy(recordSender, downloadSession,
                         columnTypeMap, parsedColumns, partition, this.isPartitionedTable,
                         start, count, this.isCompress, this.readerSliceConf);
