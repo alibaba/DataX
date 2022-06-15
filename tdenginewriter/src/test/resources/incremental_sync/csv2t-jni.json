@@ -1,0 +1,106 @@
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "name": "txtfilereader",
+          "parameter": {
+            "path": [
+              "/root/workspace/tmp/a.txt"
+            ],
+            "encoding": "UTF-8",
+            "column": [
+              {
+                "index": 0,
+                "type": "date",
+                "format": "yyyy-MM-dd HH:mm:ss.SSS"
+              },
+              {
+                "index": 1,
+                "type": "long"
+              },
+              {
+                "index": 2,
+                "type": "long"
+              },
+              {
+                "index": 3,
+                "type": "long"
+              },
+              {
+                "index": 4,
+                "type": "long"
+              },
+              {
+                "index": 5,
+                "type": "double"
+              },
+              {
+                "index": 6,
+                "type": "double"
+              },
+              {
+                "index": 7,
+                "type": "boolean"
+              },
+              {
+                "index": 8,
+                "type": "string"
+              },
+              {
+                "index": 9,
+                "type": "string"
+              },
+              {
+                "index": 10,
+                "type": "date",
+                "format": "yyyy-MM-dd HH:mm:ss.SSS"
+              },
+              {
+                "index": 11,
+                "type": "string"
+              }
+            ],
+            "fieldDelimiter": ","
+          }
+        },
+        "writer": {
+          "name": "tdenginewriter",
+          "parameter": {
+            "username": "root",
+            "password": "taosdata",
+            "column": [
+              "ts",
+              "f1",
+              "f2",
+              "f3",
+              "f4",
+              "f5",
+              "f6",
+              "f7",
+              "f8",
+              "f9",
+              "t1",
+              "tbname"
+            ],
+            "connection": [
+              {
+                "table": [
+                  "stb2"
+                ],
+                "jdbcUrl": "jdbc:TAOS://192.168.1.93:6030/db2"
+              }
+            ],
+            "batchSize": 1000,
+            "ignoreTagsUnmatched": true
+          }
+        }
+      }
+    ],
+    "setting": {
+      "speed": {
+        "channel": 1
+      }
+    }
+  }
+}
