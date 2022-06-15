@@ -14,6 +14,13 @@ public final class Constant {
 
     public static final Object PK_TYPE_DECIMAL_ZERO_SCALE = "pkTypeDecimalZeroScale";
 
+    // 增加增量字段非主键
+    public final static String SPLIT_INCR_FIELD = "splitIncrPk";
+
+    public static final String INCR_TYPE = "incrType";
+
+    public static final String INCR_TYPE_TIMESTAMP = "incrTypeTimestamp";
+
     public static final String PK_TYPE_MAX_PK = "maxPK";
 
     public static final String PK_TYPE_MIN_PK = "minPK";
