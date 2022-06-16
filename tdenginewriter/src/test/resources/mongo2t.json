@@ -1,0 +1,66 @@
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "name": "mongodbreader",
+          "parameter": {
+            "address": [
+              "192.168.1.213:27017"
+            ],
+            "userName": "",
+            "userPassword": "",
+            "dbName": "testdb",
+            "collectionName": "monitor_data",
+            "column": [
+              {
+                "name": "ct",
+                "type": "date"
+              },
+              {
+                "name": "pv",
+                "type": "float"
+              },
+              {
+                "name": "tv",
+                "type": "float"
+              },
+              {
+                "name": "pid",
+                "type": "float"
+              }
+            ]
+          }
+        },
+        "writer": {
+          "name": "tdenginewriter",
+          "parameter": {
+            "username": "root",
+            "password": "hmdata",
+            "column": [
+              "ts",
+              "pressure",
+              "temperature",
+              "position_id"
+            ],
+            "connection": [
+              {
+                "table": [
+                  "pipeline_data"
+                ],
+                "jdbcUrl": "jdbc:TAOS-RS://192.168.1.213:6041/mongo3040"
+              }
+            ],
+            "batchSize": 1000,
+            "ignoreTagsUnmatched": true
+          }
+        }
+      }
+    ],
+    "setting": {
+      "speed": {
+        "channel": 1
+      }
+    }
+  }
+}

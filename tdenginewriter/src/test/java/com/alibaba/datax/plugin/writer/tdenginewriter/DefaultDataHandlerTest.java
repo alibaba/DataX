@@ -5,7 +5,6 @@ import com.alibaba.datax.common.element.LongColumn;
 import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.element.StringColumn;
 import com.alibaba.datax.common.plugin.TaskPluginCollector;
-import com.alibaba.datax.common.spi.Writer;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.core.transport.record.DefaultRecord;
 import org.junit.AfterClass;
@@ -60,7 +59,7 @@ public class DefaultDataHandlerTest {
         Map<String, TableMeta> tableMetas = schemaManager.loadTableMeta(tables);
         Map<String, List<ColumnMeta>> columnMetas = schemaManager.loadColumnMetas(tables);
         handler.setTableMetas(tableMetas);
-        handler.setColumnMetas(columnMetas);
+        handler.setTbnameColumnMetasMap(columnMetas);
         handler.setSchemaManager(schemaManager);
 
         int count = handler.writeBatch(conn, recordList);
@@ -98,7 +97,7 @@ public class DefaultDataHandlerTest {
         Map<String, TableMeta> tableMetas = schemaManager.loadTableMeta(tables);
         Map<String, List<ColumnMeta>> columnMetas = schemaManager.loadColumnMetas(tables);
         handler.setTableMetas(tableMetas);
-        handler.setColumnMetas(columnMetas);
+        handler.setTbnameColumnMetasMap(columnMetas);
         handler.setSchemaManager(schemaManager);
 
         int count = handler.writeBatch(conn, recordList);
@@ -138,7 +137,7 @@ public class DefaultDataHandlerTest {
         Map<String, TableMeta> tableMetas = schemaManager.loadTableMeta(tables);
         Map<String, List<ColumnMeta>> columnMetas = schemaManager.loadColumnMetas(tables);
         handler.setTableMetas(tableMetas);
-        handler.setColumnMetas(columnMetas);
+        handler.setTbnameColumnMetasMap(columnMetas);
         handler.setSchemaManager(schemaManager);
 
         int count = handler.writeBatch(connection, recordList);
@@ -177,7 +176,7 @@ public class DefaultDataHandlerTest {
         Map<String, TableMeta> tableMetas = schemaManager.loadTableMeta(tables);
         Map<String, List<ColumnMeta>> columnMetas = schemaManager.loadColumnMetas(tables);
         handler.setTableMetas(tableMetas);
-        handler.setColumnMetas(columnMetas);
+        handler.setTbnameColumnMetasMap(columnMetas);
         handler.setSchemaManager(schemaManager);
 
         int count = handler.writeBatch(conn, recordList);
@@ -216,7 +215,7 @@ public class DefaultDataHandlerTest {
         Map<String, TableMeta> tableMetas = schemaManager.loadTableMeta(tables);
         Map<String, List<ColumnMeta>> columnMetas = schemaManager.loadColumnMetas(tables);
         handler.setTableMetas(tableMetas);
-        handler.setColumnMetas(columnMetas);
+        handler.setTbnameColumnMetasMap(columnMetas);
         handler.setSchemaManager(schemaManager);
 
         int count = handler.writeBatch(conn, recordList);
@@ -255,7 +254,7 @@ public class DefaultDataHandlerTest {
         Map<String, TableMeta> tableMetas = schemaManager.loadTableMeta(tables);
         Map<String, List<ColumnMeta>> columnMetas = schemaManager.loadColumnMetas(tables);
         handler.setTableMetas(tableMetas);
-        handler.setColumnMetas(columnMetas);
+        handler.setTbnameColumnMetasMap(columnMetas);
         handler.setSchemaManager(schemaManager);
 
         int count = handler.writeBatch(conn, recordList);

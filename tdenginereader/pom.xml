@@ -30,12 +30,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>fastjson</artifactId>
-            <version>1.2.78</version>
-        </dependency>
-
-        <dependency>
             <groupId>com.alibaba.datax.tdenginewriter</groupId>
             <artifactId>tdenginewriter</artifactId>
             <version>0.0.1-SNAPSHOT</version>
@@ -45,13 +39,7 @@
         <dependency>
             <groupId>com.taosdata.jdbc</groupId>
             <artifactId>taos-jdbcdriver</artifactId>
-            <version>2.0.37</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.alibaba</groupId>
-                    <artifactId>fastjson</artifactId>
-                </exclusion>
-            </exclusions>
+            <version>2.0.39</version>
         </dependency>
 
         <dependency>
