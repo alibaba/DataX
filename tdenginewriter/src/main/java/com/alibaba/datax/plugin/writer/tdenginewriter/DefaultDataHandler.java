@@ -307,6 +307,8 @@ public class DefaultDataHandler implements DataHandler {
                 if (colMeta.type.equals("TIMESTAMP"))
                     return "\"" + column.asString() + "\"";
                 String value = column.asString();
+                if (value == null)
+                    return "NULL";
                 return "\'" + Utils.escapeSingleQuota(value) + "\'";
             case NULL:
             case BAD:
