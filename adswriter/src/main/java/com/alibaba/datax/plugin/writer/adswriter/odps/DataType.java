@@ -70,7 +70,7 @@ public class DataType {
         } else if ("datetime".equals(type)) {
             return DATETIME;
         } else {
-            throw new IllegalArgumentException("unkown type: " + type);
+            throw new IllegalArgumentException("unknown type: " + type);
         }
     }
 
