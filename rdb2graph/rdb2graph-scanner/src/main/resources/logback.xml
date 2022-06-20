@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- scan 配置文件如果发生改变，将会被重新加载  scanPeriod 检测间隔时间-->
+<configuration scan="true" scanPeriod="60 seconds" debug="false">
+    <contextName>spring-boot-log</contextName>
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+    <!-- 控制台 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- 日志格式 -->
+        <encoder>
+            <pattern>[%date] %clr([%level]) %clr([%logger]:%L) >>> %msg %n</pattern>
+            <charset>utf-8</charset>
+        </encoder>
+        <!--此日志appender是为开发使用，只配置最底级别，控制台输出的日志级别是大于或等于此级别的日志信息-->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>
+        </filter>
+    </appender>
+    <!-- 信息日志 -->
+    <appender name="INFO_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/info.log</file>
+        <!-- 循环政策：基于时间创建日志文件 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+             <!-- 日志命名:单个文件大于128MB 按照时间+自增i 生成log文件 -->
+            <fileNamePattern>logs/info-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>128MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <!-- 最大保存时间：30天-->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <append>true</append>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>[%date] %clr([%level]) %clr([%logger]:%L) >>> %msg %n</pattern>
+            <charset>utf-8</charset>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>info</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+     <!-- 错误日志 -->
+    <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/error.log</file>
+        <!-- 循环政策：基于时间创建日志文件 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 日志命名:单个文件大于2MB 按照时间+自增i 生成log文件 -->
+            <fileNamePattern>logs/error-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>2MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <!-- 最大保存时间：180天-->
+            <maxHistory>180</maxHistory>
+        </rollingPolicy>
+        <append>true</append>
+        <!-- 日志格式 -->
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>[%date] %clr([%level]) [%thread] %clr([%logger]:%L) >>> %msg %n</pattern>
+            <charset>utf-8</charset>
+        </encoder>
+        <!-- 日志级别过滤器 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+             <!-- 过滤的级别 -->
+		     <level>ERROR</level>
+		     <!-- 匹配时的操作：接收（记录） -->
+		     <onMatch>ACCEPT</onMatch>
+		     <!-- 不匹配时的操作：拒绝（不记录） -->
+		     <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+    <root level="INFO">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="INFO_FILE" />
+        <appender-ref ref="ERROR_FILE" />
+    </root>
+</configuration>

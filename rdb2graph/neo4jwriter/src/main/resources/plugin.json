@@ -1,0 +1,6 @@
+{
+    "name": "neo4jwriter",
+    "class": "com.leehom.arch.datax.plugin.rdb2graph.writer.neo4jwriter.Neo4jWriter",
+    "description": "",
+    "developer": "leehom"
+}
