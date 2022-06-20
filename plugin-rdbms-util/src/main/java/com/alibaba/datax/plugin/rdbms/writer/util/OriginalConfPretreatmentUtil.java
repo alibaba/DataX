@@ -32,7 +32,7 @@ public final class OriginalConfPretreatmentUtil {
 
         simplifyConf(originalConfig);
 
-        dealColumnConf(originalConfig);
+        dealColumnConf(originalConfig, dataBaseType);
         dealWriteMode(originalConfig, dataBaseType);
     }
 
@@ -91,7 +91,7 @@ public final class OriginalConfPretreatmentUtil {
         originalConfig.set(Constant.TABLE_NUMBER_MARK, tableNum);
     }
 
-    public static void dealColumnConf(Configuration originalConfig, ConnectionFactory connectionFactory, String oneTable) {
+    public static void dealColumnConf(Configuration originalConfig, ConnectionFactory connectionFactory, String oneTable, DataBaseType dataBaseType) {
         List<String> userConfiguredColumns = originalConfig.getList(Key.COLUMN, String.class);
         if (null == userConfiguredColumns || userConfiguredColumns.isEmpty()) {
             throw DataXException.asDataXException(DBUtilErrorCode.ILLEGAL_VALUE,
@@ -104,6 +104,7 @@ public final class OriginalConfPretreatmentUtil {
             }else{
                 allColumns = DBUtil.getTableColumnsByConn(DATABASE_TYPE,connectionFactory.getConnecttion(), oneTable, connectionFactory.getConnectionInfo());
             }
+            allColumns = parseColumns(allColumns, dataBaseType);
 
             LOG.info("table:[{}] all columns:[\n{}\n].", oneTable,
                     StringUtils.join(allColumns, ","));
@@ -127,7 +128,28 @@ public final class OriginalConfPretreatmentUtil {
         }
     }
 
-    public static void dealColumnConf(Configuration originalConfig) {
+    /**
+     * 转义字段列表（防止和系统字段冲突）
+     * @param allColumns
+     * @param dataBaseType
+     * @return
+     */
+    public static List<String> parseColumns(List<String> allColumns, DataBaseType dataBaseType) {
+        switch (dataBaseType) {
+            case MySql:
+                for (int i = 0; i < allColumns.size(); i++) {
+                    allColumns.set(i, "`" + allColumns.get(i) + "`");
+                }
+            case SQLServer:
+                for (int i = 0; i < allColumns.size(); i++) {
+                    allColumns.set(i, "\"" + allColumns.get(i) + "\"");
+                }
+        }
+
+        return allColumns;
+    }
+
+    public static void dealColumnConf(Configuration originalConfig, DataBaseType dataBaseType) {
         String jdbcUrl = originalConfig.getString(String.format("%s[0].%s",
                 Constant.CONN_MARK, Key.JDBC_URL));
 
@@ -137,7 +159,7 @@ public final class OriginalConfPretreatmentUtil {
                 "%s[0].%s[0]", Constant.CONN_MARK, Key.TABLE));
 
         JdbcConnectionFactory jdbcConnectionFactory = new JdbcConnectionFactory(DATABASE_TYPE, jdbcUrl, username, password);
-        dealColumnConf(originalConfig, jdbcConnectionFactory, oneTable);
+        dealColumnConf(originalConfig, jdbcConnectionFactory, oneTable, dataBaseType);
     }
 
     public static void dealWriteMode(Configuration originalConfig, DataBaseType dataBaseType) {
