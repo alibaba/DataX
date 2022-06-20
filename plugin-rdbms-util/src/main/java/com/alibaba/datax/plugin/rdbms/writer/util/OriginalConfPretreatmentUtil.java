@@ -140,10 +140,14 @@ public final class OriginalConfPretreatmentUtil {
                 for (int i = 0; i < allColumns.size(); i++) {
                     allColumns.set(i, "`" + allColumns.get(i) + "`");
                 }
+                break;
             case SQLServer:
                 for (int i = 0; i < allColumns.size(); i++) {
                     allColumns.set(i, "\"" + allColumns.get(i) + "\"");
                 }
+                break;
+            default:
+                break;
         }
 
         return allColumns;
