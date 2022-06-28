@@ -7,7 +7,10 @@ import com.alibaba.datax.common.element.StringColumn;
 import com.alibaba.datax.common.plugin.TaskPluginCollector;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.core.transport.record.DefaultRecord;
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -18,7 +21,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-@Ignore
 public class DefaultDataHandlerTest {
 
     private static final String host = "192.168.1.93";
@@ -27,7 +29,7 @@ public class DefaultDataHandlerTest {
     private final TaskPluginCollector taskPluginCollector = new TDengineWriter.Task().getTaskPluginCollector();
 
     @Test
-    public void writeSupTableBySQL() throws Exception {
+    public void writeSupTableBySQL() throws SQLException {
         // given
         createSupAndSubTable();
         Configuration configuration = Configuration.from("{" +
@@ -67,7 +69,7 @@ public class DefaultDataHandlerTest {
     }
 
     @Test
-    public void writeSupTableBySQL_2() throws Exception {
+    public void writeSupTableBySQL_2() throws SQLException {
         // given
         createSupAndSubTable();
         Configuration configuration = Configuration.from("{" +
@@ -105,7 +107,7 @@ public class DefaultDataHandlerTest {
     }
 
     @Test
-    public void writeSupTableBySchemaless() throws Exception {
+    public void writeSupTableBySchemaless() throws SQLException {
         // given
         createSupTable();
         Configuration configuration = Configuration.from("{" +
@@ -145,7 +147,7 @@ public class DefaultDataHandlerTest {
     }
 
     @Test
-    public void writeSubTableWithTableName() throws Exception {
+    public void writeSubTableWithTableName() throws SQLException {
         // given
         createSupAndSubTable();
         Configuration configuration = Configuration.from("{" +
@@ -184,7 +186,7 @@ public class DefaultDataHandlerTest {
     }
 
     @Test
-    public void writeSubTableWithoutTableName() throws Exception {
+    public void writeSubTableWithoutTableName() throws SQLException {
         // given
         createSupAndSubTable();
         Configuration configuration = Configuration.from("{" +
@@ -223,7 +225,7 @@ public class DefaultDataHandlerTest {
     }
 
     @Test
-    public void writeNormalTable() throws Exception {
+    public void writeNormalTable() throws SQLException {
         // given
         createSupAndSubTable();
         Configuration configuration = Configuration.from("{" +

@@ -1,7 +1,7 @@
 package com.alibaba.datax.plugin.writer.tdenginewriter;
 
 import com.alibaba.datax.core.Engine;
-import org.junit.Ignore;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -9,7 +9,6 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-@Ignore
 public class Stream2TDengineTest {
 
     private String host2 = "192.168.56.105";

@@ -124,14 +124,12 @@ public class SchemaManager {
                         }
                     }
                 } catch (SQLException e) {
-                    LOG.error(e.getMessage(), e);
+                    e.printStackTrace();
                 }
                 colMeta.value = value;
             });
 
-            LOG.debug("load column metadata of " + table + ": " +
-                    columnMetaList.stream().map(ColumnMeta::toString).collect(Collectors.joining(",", "[", "]"))
-            );
+            LOG.debug("load column metadata of " + table + ": " + Arrays.toString(columnMetaList.toArray()));
             ret.put(table, columnMetaList);
         }
         return ret;
@@ -145,9 +143,7 @@ public class SchemaManager {
         tableMeta.tags = rs.getInt("tags");
         tableMeta.tables = rs.getInt("tables");
 
-        if (LOG.isDebugEnabled()){
-            LOG.debug("load table metadata of " + tableMeta.tbname + ": " + tableMeta);
-        }
+        LOG.debug("load table metadata of " + tableMeta.tbname + ": " + tableMeta);
         return tableMeta;
     }
 

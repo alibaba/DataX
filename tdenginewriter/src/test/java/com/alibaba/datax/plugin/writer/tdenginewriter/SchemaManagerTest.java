@@ -1,6 +1,9 @@
 package com.alibaba.datax.plugin.writer.tdenginewriter;
 
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -10,7 +13,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-@Ignore
 public class SchemaManagerTest {
 
     private static Connection conn;
