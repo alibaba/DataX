@@ -93,7 +93,7 @@ public class TDengineReader extends Reader {
             }
             if (start >= end)
                 throw DataXException.asDataXException(TDengineReaderErrorCode.ILLEGAL_VALUE,
-                        "The parameter [" + Key.BEGIN_DATETIME + "] should be less than the parameter [" + Key.END_DATETIME + "].");
+                        "The parameter " + Key.BEGIN_DATETIME + ": " + beginDatetime + " should be less than the parameter " + Key.END_DATETIME + ": " + endDatetime + ".");
 
         }
 
@@ -119,7 +119,6 @@ public class TDengineReader extends Reader {
                 }
             }
 
-            LOG.info("Configuration: {}", configurations);
             return configurations;
         }
     }
@@ -142,15 +141,14 @@ public class TDengineReader extends Reader {
             try {
                 Class.forName("com.taosdata.jdbc.TSDBDriver");
                 Class.forName("com.taosdata.jdbc.rs.RestfulDriver");
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
+            } catch (ClassNotFoundException ignored) {
+                LOG.warn(ignored.getMessage(), ignored);
             }
         }
 
         @Override
         public void init() {
             this.readerSliceConfig = super.getPluginJobConf();
-            LOG.info("getPluginJobConf: {}", readerSliceConfig);
 
             String user = readerSliceConfig.getString(Key.USERNAME);
             String password = readerSliceConfig.getString(Key.PASSWORD);
@@ -174,7 +172,12 @@ public class TDengineReader extends Reader {
 
         @Override
         public void destroy() {
-
+            try {
+                if (conn != null)
+                    conn.close();
+            } catch (SQLException e) {
+                LOG.error(e.getMessage(), e);
+            }
         }
 
         @Override
@@ -199,22 +202,15 @@ public class TDengineReader extends Reader {
                 sqlList.addAll(querySql);
             }
 
-            try (Statement stmt = conn.createStatement()) {
-                for (String sql : sqlList) {
+            for (String sql : sqlList) {
+                try (Statement stmt = conn.createStatement()) {
                     ResultSet rs = stmt.executeQuery(sql);
                     while (rs.next()) {
                         Record record = buildRecord(recordSender, rs, mandatoryEncoding);
                         recordSender.sendToWriter(record);
                     }
-                }
-            } catch (SQLException e) {
-                throw DataXException.asDataXException(TDengineReaderErrorCode.RUNTIME_EXCEPTION, e.getMessage(), e);
-            } finally {
-                try {
-                    if (conn != null)
-                        conn.close();
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    LOG.error(e.getMessage(), e);
                 }
             }
         }

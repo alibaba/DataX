@@ -1,8 +1,5 @@
 package com.alibaba.datax.plugin.writer.odpswriter.util;
 
-/**
- * Created by hongjiao.hj on 2015/6/9.
- */
 public class OdpsExceptionMsg {
 
     public static final String ODPS_PROJECT_NOT_FOUNT = "ODPS-0420111: Project not found";

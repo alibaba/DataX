@@ -22,15 +22,6 @@ import java.util.stream.IntStream;
 public class DefaultDataHandler implements DataHandler {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultDataHandler.class);
 
-    static {
-        try {
-            Class.forName("com.taosdata.jdbc.TSDBDriver");
-            Class.forName("com.taosdata.jdbc.rs.RestfulDriver");
-        } catch (ClassNotFoundException e) {
-            LOG.error(e.getMessage(), e);
-        }
-    }
-
     private final TaskPluginCollector taskPluginCollector;
     private String username;
     private String password;
@@ -58,9 +49,17 @@ public class DefaultDataHandler implements DataHandler {
 
     private Map<String, List<ColumnMeta>> tbnameColumnMetasMap;
 
+    static {
+        try {
+            Class.forName("com.taosdata.jdbc.TSDBDriver");
+            Class.forName("com.taosdata.jdbc.rs.RestfulDriver");
+        } catch (ClassNotFoundException ignored) {
+        }
+    }
+
     public DefaultDataHandler(Configuration configuration, TaskPluginCollector taskPluginCollector) {
-        this.username = configuration.getString(Key.USERNAME, Constants.DEFAULT_USERNAME);
-        this.password = configuration.getString(Key.PASSWORD, Constants.DEFAULT_PASSWORD);
+        this.username = configuration.getString(Key.USERNAME);
+        this.password = configuration.getString(Key.PASSWORD);
         this.jdbcUrl = configuration.getString(Key.JDBC_URL);
         this.batchSize = configuration.getInt(Key.BATCH_SIZE, Constants.DEFAULT_BATCH_SIZE);
         this.tables = configuration.getList(Key.TABLE, String.class);
@@ -76,11 +75,13 @@ public class DefaultDataHandler implements DataHandler {
 
         try (Connection conn = DriverManager.getConnection(jdbcUrl, username, password)) {
             LOG.info("connection[ jdbcUrl: " + jdbcUrl + ", username: " + username + "] established.");
-            // prepare table_name -> table_meta
-            this.schemaManager = new SchemaManager(conn);
-            this.tableMetas = schemaManager.loadTableMeta(tables);
-            // prepare table_name -> column_meta
-            this.tbnameColumnMetasMap = schemaManager.loadColumnMetas(tables);
+            if (schemaManager == null) {
+                // prepare table_name -> table_meta
+                this.schemaManager = new SchemaManager(conn);
+                this.tableMetas = schemaManager.loadTableMeta(tables);
+                // prepare table_name -> column_meta
+                this.columnMetas = schemaManager.loadColumnMetas(tables);
+            }
 
             List<Record> recordBatch = new ArrayList<>();
             Record record;
@@ -91,7 +92,7 @@ public class DefaultDataHandler implements DataHandler {
                     try {
                         recordBatch.add(record);
                         affectedRows += writeBatch(conn, recordBatch);
-                    } catch (SQLException e) {
+                    } catch (Exception e) {
                         LOG.warn("use one row insert. because:" + e.getMessage());
                         affectedRows += writeEachRow(conn, recordBatch);
                     }
@@ -103,7 +104,7 @@ public class DefaultDataHandler implements DataHandler {
             if (!recordBatch.isEmpty()) {
                 try {
                     affectedRows += writeBatch(conn, recordBatch);
-                } catch (SQLException e) {
+                } catch (Exception e) {
                     LOG.warn("use one row insert. because:" + e.getMessage());
                     affectedRows += writeEachRow(conn, recordBatch);
                 }
@@ -127,8 +128,8 @@ public class DefaultDataHandler implements DataHandler {
             recordList.add(record);
             try {
                 affectedRows += writeBatch(conn, recordList);
-            } catch (SQLException e) {
-                LOG.error(e.getMessage());
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
                 this.taskPluginCollector.collectDirtyRecord(record, e);
             }
         }
@@ -146,7 +147,7 @@ public class DefaultDataHandler implements DataHandler {
      * 3. 对于tb，拼sql，例如：data: [ts, f1, f2, f3, t1, t2] tbColumn: [ts, f1, f2, t1] => insert into tb(ts, f1, f2) values(ts, f1, f2)
      * 4. 对于t，拼sql，例如：data: [ts, f1, f2, f3, t1, t2] tbColumn: [ts, f1, f2, f3, t1, t2] insert into t(ts, f1, f2, f3, t1, t2) values(ts, f1, f2, f3, t1, t2)
      */
-    public int writeBatch(Connection conn, List<Record> recordBatch) throws SQLException {
+    public int writeBatch(Connection conn, List<Record> recordBatch) throws Exception {
         int affectedRows = 0;
         for (String table : tables) {
             TableMeta tableMeta = tableMetas.get(table);
@@ -245,31 +246,62 @@ public class DefaultDataHandler implements DataHandler {
      * record[idx(tbname)] using table tags(record[idx(t1)]) (ts, f1, f2, f3) values(record[idx(ts)], record[idx(f1)], )
      * record[idx(tbname)] using table tags(record[idx(t1)]) (ts, f1, f2, f3) values(record[idx(ts)], record[idx(f1)], )
      */
-    private int writeBatchToSupTableBySQL(Connection conn, String table, List<Record> recordBatch) throws SQLException {
-        List<ColumnMeta> columnMetas = this.tbnameColumnMetasMap.get(table);
+    private int writeBatchToSupTableBySQL(Connection conn, String table, List<Record> recordBatch) throws Exception {
+        List<ColumnMeta> columnMetas = this.columnMetas.get(table);
 
         StringBuilder sb = new StringBuilder("insert into");
         for (Record record : recordBatch) {
             sb.append(" ").append(record.getColumn(indexOf("tbname")).asString())
                     .append(" using ").append(table)
-                    .append(" tags")
-                    .append(columnMetas.stream().filter(colMeta -> columns.contains(colMeta.field)).filter(colMeta -> {
-                        return colMeta.isTag;
-                    }).map(colMeta -> {
-                        return buildColumnValue(colMeta, record);
-                    }).collect(Collectors.joining(",", "(", ")")))
-                    .append(" ")
-                    .append(columnMetas.stream().filter(colMeta -> columns.contains(colMeta.field)).filter(colMeta -> {
+                    .append(" tags");
+//            sb.append(columnMetas.stream().filter(colMeta -> columns.contains(colMeta.field)).filter(colMeta -> {
+//                return colMeta.isTag;
+//            }).map(colMeta -> {
+//                return buildColumnValue(colMeta, record);
+//            }).collect(Collectors.joining(",", "(", ")")));
+            sb.append("(");
+            for (int i = 0; i < columns.size(); i++) {
+                ColumnMeta colMeta = columnMetas.get(i);
+                if (!columns.contains(colMeta.field))
+                    continue;
+                if (!colMeta.isTag)
+                    continue;
+                String tagValue = buildColumnValue(colMeta, record);
+                if (i == 0) {
+                    sb.append(tagValue);
+                } else {
+                    sb.append(",").append(tagValue);
+                }
+            }
+            sb.append(")");
+
+            sb.append(" ").append(columnMetas.stream().filter(colMeta -> columns.contains(colMeta.field)).filter(colMeta -> {
                         return !colMeta.isTag;
                     }).map(colMeta -> {
                         return colMeta.field;
                     }).collect(Collectors.joining(",", "(", ")")))
-                    .append(" values")
-                    .append(columnMetas.stream().filter(colMeta -> columns.contains(colMeta.field)).filter(colMeta -> {
-                        return !colMeta.isTag;
-                    }).map(colMeta -> {
-                        return buildColumnValue(colMeta, record);
-                    }).collect(Collectors.joining(",", "(", ")")));
+                    .append(" values");
+
+//            sb.append(columnMetas.stream().filter(colMeta -> columns.contains(colMeta.field)).filter(colMeta -> {
+//                return !colMeta.isTag;
+//            }).map(colMeta -> {
+//                return buildColumnValue(colMeta, record);
+//            }).collect(Collectors.joining(",", "(", ")")));
+            sb.append("(");
+            for (int i = 0; i < columnMetas.size(); i++) {
+                ColumnMeta colMeta = columnMetas.get(i);
+                if (!columns.contains(colMeta.field))
+                    continue;
+                if (colMeta.isTag)
+                    continue;
+                String colValue = buildColumnValue(colMeta, record);
+                if (i == 0) {
+                    sb.append(colValue);
+                } else {
+                    sb.append(",").append(colValue);
+                }
+            }
+            sb.append(")");
         }
         String sql = sb.toString();
 
@@ -285,10 +317,11 @@ public class DefaultDataHandler implements DataHandler {
         return count;
     }
 
-    private String buildColumnValue(ColumnMeta colMeta, Record record) {
+    private String buildColumnValue(ColumnMeta colMeta, Record record) throws Exception {
         Column column = record.getColumn(indexOf(colMeta.field));
         TimestampPrecision timestampPrecision = schemaManager.loadDatabasePrecision();
-        switch (column.getType()) {
+        Column.Type type = column.getType();
+        switch (type) {
             case DATE: {
                 Date value = column.asDate();
                 switch (timestampPrecision) {
@@ -317,8 +350,9 @@ public class DefaultDataHandler implements DataHandler {
             case DOUBLE:
             case INT:
             case LONG:
+                column.asString();
             default:
-                return column.asString();
+                throw new Exception("invalid column type: " + type);
         }
     }
 
@@ -466,8 +500,8 @@ public class DefaultDataHandler implements DataHandler {
      * else
      * insert into tb1 (ts, f1, f2) values( record[idx(ts)], record[idx(f1)], record[idx(f2)])
      */
-    private int writeBatchToSubTable(Connection conn, String table, List<Record> recordBatch) throws SQLException {
-        List<ColumnMeta> columnMetas = this.tbnameColumnMetasMap.get(table);
+    private int writeBatchToSubTable(Connection conn, String table, List<Record> recordBatch) throws Exception {
+        List<ColumnMeta> columnMetas = this.columnMetas.get(table);
 
         StringBuilder sb = new StringBuilder();
         sb.append("insert into ").append(table).append(" ")
@@ -493,11 +527,25 @@ public class DefaultDataHandler implements DataHandler {
             if (ignoreTagsUnmatched && !tagsAllMatch)
                 continue;
 
-            sb.append(columnMetas.stream().filter(colMeta -> columns.contains(colMeta.field)).filter(colMeta -> {
-                return !colMeta.isTag;
-            }).map(colMeta -> {
-                return buildColumnValue(colMeta, record);
-            }).collect(Collectors.joining(", ", "(", ") ")));
+//            sb.append(columnMetas.stream().filter(colMeta -> columns.contains(colMeta.field)).filter(colMeta -> {
+//                return !colMeta.isTag;
+//            }).map(colMeta -> {
+//                return buildColumnValue(colMeta, record);
+//            }).collect(Collectors.joining(", ", "(", ") ")));
+            sb.append("(");
+            for (int i = 0; i < columnMetas.size(); i++) {
+                ColumnMeta colMeta = columnMetas.get(i);
+                if (colMeta.isTag)
+                    continue;
+                String colValue = buildColumnValue(colMeta, record);
+                if (i == 0) {
+                    sb.append(colValue);
+                } else {
+                    sb.append(",").append(colValue);
+                }
+            }
+            sb.append(")");
+
             validRecords++;
         }
 
@@ -536,8 +584,8 @@ public class DefaultDataHandler implements DataHandler {
      * table: ["weather"], column: ["ts, f1, f2, f3, t1, t2"]
      * sql: insert into weather (ts, f1, f2, f3, t1, t2) values( record[idx(ts), record[idx(f1)], ...)
      */
-    private int writeBatchToNormalTable(Connection conn, String table, List<Record> recordBatch) throws SQLException {
-        List<ColumnMeta> columnMetas = this.tbnameColumnMetasMap.get(table);
+    private int writeBatchToNormalTable(Connection conn, String table, List<Record> recordBatch) throws Exception {
+        List<ColumnMeta> columnMetas = this.columnMetas.get(table);
 
         StringBuilder sb = new StringBuilder();
         sb.append("insert into ").append(table)
@@ -548,9 +596,22 @@ public class DefaultDataHandler implements DataHandler {
                 .append(" values ");
 
         for (Record record : recordBatch) {
-            sb.append(columnMetas.stream().filter(colMeta -> !colMeta.isTag).filter(colMeta -> columns.contains(colMeta.field)).map(colMeta -> {
-                return buildColumnValue(colMeta, record);
-            }).collect(Collectors.joining(",", "(", ")")));
+//            sb.append(columnMetas.stream().filter(colMeta -> columns.contains(colMeta.field)).map(colMeta -> {
+//                return buildColumnValue(colMeta, record);
+//            }).collect(Collectors.joining(",", "(", ")")));
+            sb.append("(");
+            for (int i = 0; i < columnMetas.size(); i++) {
+                ColumnMeta colMeta = columnMetas.get(i);
+                if (!columns.contains(colMeta.field))
+                    continue;
+                String colValue = buildColumnValue(colMeta, record);
+                if (i == 0) {
+                    sb.append(colValue);
+                } else {
+                    sb.append(",").append(colValue);
+                }
+            }
+            sb.append(")");
         }
 
         String sql = sb.toString();

@@ -2,12 +2,14 @@ package com.alibaba.datax.plugin.writer.tdenginewriter;
 
 import com.alibaba.datax.core.Engine;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.Random;
 
+@Ignore
 public class TDengine2TDengineTest {
 
     private static final String host1 = "192.168.56.105";

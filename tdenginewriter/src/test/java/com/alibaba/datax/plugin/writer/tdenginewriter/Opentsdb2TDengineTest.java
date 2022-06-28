@@ -2,10 +2,12 @@ package com.alibaba.datax.plugin.writer.tdenginewriter;
 
 import com.alibaba.datax.core.Engine;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.sql.*;
 
+@Ignore
 public class Opentsdb2TDengineTest {
 
     @Test
