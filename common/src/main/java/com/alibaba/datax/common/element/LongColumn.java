@@ -125,6 +125,11 @@ public class LongColumn extends Column {
 		}
 		return new Date(this.asLong());
 	}
+	
+	@Override
+	public Date asDate(String dateFormat) {
+		return this.asDate();
+	}
 
 	@Override
 	public byte[] asBytes() {

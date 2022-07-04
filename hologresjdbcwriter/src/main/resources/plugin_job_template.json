@@ -1,0 +1,11 @@
+{
+  "name": "hologreswriter",
+  "parameter": {
+    "url": "",
+    "username": "",
+    "password": "",
+    "database": "",
+    "table": "",
+    "partition": ""
+  }
+}

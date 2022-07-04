@@ -65,9 +65,9 @@ COPY命令将数据写入ADB PG数据库中。
             "writer": {
               "name": "adbpgwriter",
               "parameter": {
-                  "username": "username",
-                  "password": "password",
-                  "host": "host",
+                  "username": "",
+                  "password": "",
+                  "host": "127.0.0.1",
                   "port": "1234",
                   "database": "database",
                   "schema": "schema",

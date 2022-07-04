@@ -92,7 +92,13 @@ public class BoolColumn extends Column {
 		throw DataXException.asDataXException(
 				CommonErrorCode.CONVERT_NOT_SUPPORT, "Bool类型不能转为Date .");
 	}
-
+	
+	@Override
+	public Date asDate(String dateFormat) {
+		throw DataXException.asDataXException(
+				CommonErrorCode.CONVERT_NOT_SUPPORT, "Bool类型不能转为Date .");
+	}
+	
 	@Override
 	public byte[] asBytes() {
 		throw DataXException.asDataXException(

@@ -5,6 +5,8 @@ public class Key {
     public final static String ACCESS_ID = "accessId";
 
     public final static String ACCESS_KEY = "accessKey";
+    
+    public final static String SECURITY_TOKEN = "securityToken";
 
     public static final String PROJECT = "project";
 
@@ -30,5 +32,14 @@ public class Key {
     public final static String IS_COMPRESS = "isCompress";
 
     public final static String MAX_RETRY_TIME = "maxRetryTime";
+    
+    // 分区不存在时
+    public final static String SUCCESS_ON_NO_PATITION="successOnNoPartition";
 
+    // preSql
+    public final static String PRE_SQL="preSql";
+
+    // postSql
+    public final static String POST_SQL="postSql";
+    
 }

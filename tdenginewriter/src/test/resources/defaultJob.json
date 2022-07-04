@@ -1,0 +1,226 @@
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "name": "streamreader",
+          "parameter": {
+            "column": [
+              {
+                "type": "string",
+                "value": "tb1"
+              },
+              {
+                "type": "date",
+                "value": "2022-02-20 12:00:01"
+              },
+              {
+                "type": "date",
+                "value": "2022-02-20 12:00:02.123",
+                "dateFormat": "yyyy-MM-dd HH:mm:ss.SSS"
+              },
+              {
+                "type": "date",
+                "value": "2022-02-20 12:00:03.123456",
+                "dateFormat": "yyyy-MM-dd HH:mm:ss.SSSSSS"
+              },
+              {
+                "type": "date",
+                "value": "2022-02-20 12:00:04.123456789",
+                "dateFormat": "yyyy-MM-dd HH:mm:ss.SSSSSSSSS"
+              },
+              {
+                "type": "string",
+                "value": "2022-02-20 12:00:05.123"
+              },
+              {
+                "type": "string",
+                "value": "2022-02-20 12:00:06.123456"
+              },
+              {
+                "type": "string",
+                "value": "2022-02-20 12:00:07.123456789"
+              },
+              {
+                "type": "long",
+                "value": 1645329608000
+              },
+              {
+                "type": "long",
+                "value": 1645329609000000
+              },
+              {
+                "type": "long",
+                "value": 1645329610000000000
+              },
+              {
+                "type": "long",
+                "random": "0, 10"
+              },
+              {
+                "type": "long",
+                "random": "0, 100"
+              },
+              {
+                "type": "long",
+                "random": "0, 1000"
+              },
+              {
+                "type": "long",
+                "random": "0, 10000"
+              },
+              {
+                "type": "double",
+                "random": "0, 10"
+              },
+              {
+                "type": "double",
+                "random": "10, 20"
+              },
+              {
+                "type": "bool",
+                "random": "0, 50"
+              },
+              {
+                "type": "bytes",
+                "random": "0, 10"
+              },
+              {
+                "type": "string",
+                "random": "10, 50"
+              },
+              {
+                "type": "date",
+                "value": "2022-02-20 12:00:01"
+              },
+              {
+                "type": "date",
+                "value": "2022-02-20 12:00:02.123",
+                "dateFormat": "yyyy-MM-dd HH:mm:ss.SSS"
+              },
+              {
+                "type": "date",
+                "value": "2022-02-20 12:00:03.123456",
+                "dateFormat": "yyyy-MM-dd HH:mm:ss.SSSSSS"
+              },
+              {
+                "type": "date",
+                "value": "2022-02-20 12:00:04.123456789",
+                "dateFormat": "yyyy-MM-dd HH:mm:ss.SSSSSSSSS"
+              },
+              {
+                "type": "string",
+                "value": "2022-02-20 12:00:05.123"
+              },
+              {
+                "type": "string",
+                "value": "2022-02-20 12:00:06.123456"
+              },
+              {
+                "type": "string",
+                "value": "2022-02-20 12:00:07.123456789"
+              },
+              {
+                "type": "long",
+                "value": 1
+              },
+              {
+                "type": "long",
+                "value": 2
+              },
+              {
+                "type": "long",
+                "value": 3
+              },
+              {
+                "type": "long",
+                "value": 4
+              },
+              {
+                "type": "double",
+                "value": 5.55
+              },
+              {
+                "type": "double",
+                "value": 6.666666
+              },
+              {
+                "type": "bool",
+                "value": true
+              },
+              {
+                "type": "bytes",
+                "value": "abcABC123"
+              },
+              {
+                "type": "string",
+                "value": "北京朝阳望京"
+              }
+            ],
+            "sliceRecordCount": 10
+          }
+        },
+        "writer": {
+          "name": "tdenginewriter",
+          "parameter": {
+            "username": "root",
+            "password": "taosdata",
+            "column": [
+              "tbname",
+              "ts1",
+              "ts2",
+              "ts3",
+              "ts4",
+              "ts5",
+              "ts6",
+              "ts7",
+              "ts8",
+              "ts9",
+              "ts10",
+              "f1",
+              "f2",
+              "f3",
+              "f4",
+              "f5",
+              "f6",
+              "f7",
+              "f8",
+              "f9",
+              "t1",
+              "t2",
+              "t3",
+              "t4",
+              "t5",
+              "t6",
+              "t7",
+              "t8",
+              "t9",
+              "t10",
+              "t11",
+              "t12",
+              "t13",
+              "t14",
+              "t15",
+              "t16"
+            ],
+            "connection": [
+              {
+                "table": [
+                  "stb2"
+                ],
+                "jdbcUrl": "jdbc:TAOS-RS://192.168.56.105:6041/db2"
+              }
+            ],
+            "batchSize": 100,
+            "ignoreTagsUnmatched": true
+          }
+        }
+      }
+    ],
+    "setting": {
+      "speed": {
+        "channel": 1
+      }
+    }
+  }
+}
