@@ -45,7 +45,7 @@
 		<dependency>
 			<groupId>com.jcraft</groupId>
 			<artifactId>jsch</artifactId>
-			<version>0.1.51</version>
+			<version>0.1.54</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-net</groupId>
