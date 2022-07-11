@@ -93,6 +93,6 @@
             <useProjectArtifact>false</useProjectArtifact>
             <outputDirectory>/lib</outputDirectory>
             <scope>runtime</scope>
-        </dependencySe            m/////////////////////////////////l/ll/l//lk;:....t>
-    </dependencySets>k
+        </dependencySet>
+    </dependencySets>
 </assembly>
