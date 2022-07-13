@@ -133,7 +133,7 @@ String code3 = "Column column = record.getColumn(1);\n" +
                                 "type": "string"
                             },
                             {
-                                "value": 19890604,
+                                "value": 19491001,
                                 "type": "long"
                             },
                             {
