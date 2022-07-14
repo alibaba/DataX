@@ -430,7 +430,12 @@ public final class DBUtil {
         Statement stmt = conn.createStatement(ResultSet.TYPE_FORWARD_ONLY,
                 ResultSet.CONCUR_READ_ONLY);
         stmt.setFetchSize(fetchSize);
-        stmt.setQueryTimeout(queryTimeout);
+        try {
+            // hive-jdbc-1.x版本不支持
+            stmt.setQueryTimeout(queryTimeout);
+        } catch (SQLException e) {
+            // nothing
+        }
         return query(stmt, sql);
     }
 
@@ -662,8 +667,12 @@ public final class DBUtil {
             throws SQLException {
         Statement stmt = conn.createStatement(ResultSet.TYPE_FORWARD_ONLY,
                 ResultSet.CONCUR_READ_ONLY);
-        //默认3600 seconds
-        stmt.setQueryTimeout(Constant.SOCKET_TIMEOUT_INSECOND);
+        //默认3600 seconds 捕获异常，hive-jdbc-1.x版本不支持
+        try {
+            stmt.setQueryTimeout(Constant.SOCKET_TIMEOUT_INSECOND);
+        } catch (SQLException e) {
+            // nothing
+        }
         return query(stmt, sql);
     }
 

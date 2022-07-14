@@ -35,7 +35,11 @@ import org.slf4j.LoggerFactory;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_CORE_CONTAINER_JOB_LOG;
 
 /**
  * Created by jingxing on 14-8-24.
@@ -582,6 +586,8 @@ public class JobContainer extends AbstractContainer {
             return;
         }
 
+        Map<String, String> logs = new HashMap<>();
+
         Communication communication = super.getContainerCommunicator().collect();
         communication.setTimestamp(this.endTimeStamp);
 
@@ -602,8 +608,7 @@ public class JobContainer extends AbstractContainer {
 
         super.getContainerCommunicator().report(reportCommunication);
 
-
-        LOG.info(String.format(
+        String jobLog = String.format(
                 "\n" + "%-26s: %-18s\n" + "%-26s: %-18s\n" + "%-26s: %19s\n"
                         + "%-26s: %19s\n" + "%-26s: %19s\n" + "%-26s: %19s\n"
                         + "%-26s: %19s\n",
@@ -624,7 +629,9 @@ public class JobContainer extends AbstractContainer {
                 String.valueOf(CommunicationTool.getTotalReadRecords(communication)),
                 "读写失败总数",
                 String.valueOf(CommunicationTool.getTotalErrorRecords(communication))
-        ));
+        );
+        LOG.info(jobLog);
+        logs.put("prettyTaskResult", jobLog);
 
         if (communication.getLongCounter(CommunicationTool.TRANSFORMER_SUCCEED_RECORDS) > 0
                 || communication.getLongCounter(CommunicationTool.TRANSFORMER_FAILED_RECORDS) > 0
@@ -641,7 +648,10 @@ public class JobContainer extends AbstractContainer {
                     communication.getLongCounter(CommunicationTool.TRANSFORMER_FILTER_RECORDS)
             ));
         }
+        logs.put("communicationJsonStr", JSON.toJSONString(communication));
 
+        // 持久化
+        configuration.set(DATAX_CORE_CONTAINER_JOB_LOG, logs);
 
     }
 

@@ -45,6 +45,20 @@
             <scope>system</scope>
             <systemPath>${basedir}/src/main/libs/edb-jdbc16.jar</systemPath>
         </dependency>
+		<dependency>
+			<groupId>org.apache.hive</groupId>
+			<artifactId>hive-jdbc</artifactId>
+			<version>1.1.0-cdh5.16.2</version>
+			<scope>system</scope>
+			<systemPath>${basedir}/src/main/libs/hive-jdbc-1.1.0-cdh5.16.2-standalone.jar</systemPath>
+		</dependency>
+		<dependency>
+			<groupId>Impala</groupId>
+			<artifactId>ImpalaJDBC41</artifactId>
+			<version>2.6.2.1003</version>
+			<scope>system</scope>
+			<systemPath>${basedir}/src/main/libs/ImpalaJDBC41.jar</systemPath>
+		</dependency>
 
 		<dependency>
 			<groupId>org.slf4j</groupId>

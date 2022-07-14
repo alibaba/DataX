@@ -1,4 +1,5 @@
 package com.alibaba.datax.core;
+import java.util.*;
 
 import com.alibaba.datax.common.element.ColumnCast;
 import com.alibaba.datax.common.exception.DataXException;
@@ -6,6 +7,7 @@ import com.alibaba.datax.common.spi.ErrorCode;
 import com.alibaba.datax.common.statistics.PerfTrace;
 import com.alibaba.datax.common.statistics.VMInfo;
 import com.alibaba.datax.common.util.Configuration;
+import com.alibaba.datax.core.dto.DataxResult;
 import com.alibaba.datax.core.job.JobContainer;
 import com.alibaba.datax.core.taskgroup.TaskGroupContainer;
 import com.alibaba.datax.core.util.ConfigParser;
@@ -21,11 +23,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.alibaba.datax.core.util.container.CoreConstant.DATAX_CORE_CONTAINER_JOB_LOG;
 
 /**
  * Engine是DataX入口类，该类负责初始化Job或者Task的运行容器，并运行插件的Job或者Task逻辑
@@ -120,6 +121,10 @@ public class Engine {
     }
 
     public static void entry(final String[] args) throws Throwable {
+        doEntry(args);
+    }
+
+    public static DataxResult doEntry(final String[] args) throws Throwable {
         Options options = new Options();
         options.addOption("job", true, "Job config.");
         options.addOption("jobid", true, "Job unique id.");
@@ -169,6 +174,11 @@ public class Engine {
         ConfigurationValidate.doValidate(configuration);
         Engine engine = new Engine();
         engine.start(configuration);
+
+        DataxResult dataxResult = new DataxResult();
+        dataxResult.setConfiguration(configuration);
+        dataxResult.setJobLog(configuration.getMap(DATAX_CORE_CONTAINER_JOB_LOG, String.class));
+        return dataxResult;
     }
 
 

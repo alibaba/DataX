@@ -183,9 +183,9 @@ public class HdfsWriter extends Writer {
                     LOG.info(String.format("由于您配置了writeMode truncate,  [%s] 下面的内容将被覆盖重写", path));
                     hdfsHelper.deleteFiles(existFilePaths);
                 }
-            }else{
-                throw DataXException.asDataXException(HdfsWriterErrorCode.ILLEGAL_VALUE,
-                        String.format("您配置的path: [%s] 不存在, 请先在hive端创建对应的数据库和表.", path));
+            } else {
+                LOG.info(String.format("您配置的路径: [%s] 不存在,自动为您创建此路径", path));
+                hdfsHelper.createPath(path);
             }
         }
 
