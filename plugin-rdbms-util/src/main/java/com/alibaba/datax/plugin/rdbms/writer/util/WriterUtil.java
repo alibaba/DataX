@@ -145,6 +145,141 @@ public final class WriterUtil {
         return writeDataSqlTemplate;
     }
 
+    public static String getWriteTemplateWith(List<String> columnHolders, List<String> valueHolders, String writeMode, DataBaseType dataBaseType, boolean forceUseUpdate) {
+        boolean isWriteModeLegal = writeMode.trim().toLowerCase().startsWith("insert")
+                || writeMode.trim().toLowerCase().startsWith("replace")
+                || writeMode.trim().toLowerCase().startsWith("update");
+
+        if (!isWriteModeLegal) {
+            throw DataXException.asDataXException(DBUtilErrorCode.ILLEGAL_VALUE,
+                    String.format("您所配置的 writeMode:%s 错误. 因为DataX 目前仅支持replace,update 或 insert 方式. 请检查您的配置并作出修改.", writeMode));
+        }
+        String writeDataSqlTemplate = null;
+        if (forceUseUpdate && writeMode.trim().toLowerCase().startsWith("update")) {
+            if ((dataBaseType == DataBaseType.MySql || dataBaseType == DataBaseType.Tddl)) {
+                //update只在mysql下使用
+                writeDataSqlTemplate = String.format("INSERT INTO %%s (%s) VALUES(%s)%s",
+                        StringUtils.join(columnHolders, ","), StringUtils.join(valueHolders, ","),
+                        onDuplicateKeyUpdateString(columnHolders));
+            } else if (dataBaseType == DataBaseType.PostgreSQL) {
+                writeDataSqlTemplate = String.format("INSERT INTO %%s (%s) VALUES ( %s )%s",
+                        StringUtils.join(columnHolders, ","), StringUtils.join(valueHolders, ","),
+                        doPostgresqlUpdate(writeMode, columnHolders));
+            } else if (dataBaseType == DataBaseType.Oracle) {
+                // TODO: 2022/7/16 需要进一步完善
+                writeDataSqlTemplate = String.format("%s INSERT (%s) VALUES(%s)",
+                        doOracleUpdate(writeMode, columnHolders), StringUtils.join(columnHolders, ","),
+                        StringUtils.join(valueHolders, ","));
+            } else {
+                throw DataXException.asDataXException(DBUtilErrorCode.ILLEGAL_VALUE,
+                        String.format("当前数据库不支持 writeMode:%s 模式.", writeMode));
+            }
+        } else {
+            //这里是保护,如果其他错误的使用了update,需要更换为replace
+            if (writeMode.trim().toLowerCase().startsWith("update")) {
+                writeMode = "replace";
+            }
+            writeDataSqlTemplate = String.format("%s INTO %%s (%s) VALUES(%s)",
+                    writeMode, StringUtils.join(columnHolders, ","),
+                    StringUtils.join(valueHolders, ","));
+        }
+
+        return writeDataSqlTemplate;
+    }
+
+    /**
+     * INSERT INTO table_name(column_list) VALUES(value_list)
+     * ON CONFLICT target action;
+     * Postgresql 存在则用主键或唯一键更新
+     */
+    private static String doPostgresqlUpdate(String writeMode, List<String> columnHolders) {
+        String conflict = writeMode.replace("update", "");
+        StringBuilder sb = new StringBuilder();
+        sb.append(" ON CONFLICT ");
+        sb.append(conflict);
+        sb.append(" DO ");
+        if (columnHolders == null || columnHolders.size() < 1) {
+            sb.append("NOTHING");
+            return sb.toString();
+        }
+        sb.append(" UPDATE SET ");
+        boolean first = true;
+        for (String column : columnHolders) {
+            if (!first) {
+                sb.append(",");
+            } else {
+                first = false;
+            }
+            sb.append(column);
+            sb.append("=excluded.");
+            sb.append(column);
+        }
+        return sb.toString();
+    }
+
+    /**
+     * MERGE INTO [your table-name] [rename your table here]
+     * USING ( [write your query here] )[rename your query-sql and using just like a table]
+     * ON ([conditional expression here] AND [...]...)
+     * WHEN MATCHED THEN [here you can execute some update sql or something else ]
+     * WHEN NOT MATCHED THEN [execute something else here ! ]
+     * Ole 存在则更新
+     */
+    public static String doOracleUpdate(String writeMode, List<String> columnHolders) {
+        String[] sArray = getStrings(writeMode);
+        StringBuilder sb = new StringBuilder();
+        sb.append("MERGE INTO %s A USING ( SELECT ");
+
+        boolean first = true;
+        boolean first1 = true;
+        StringBuilder str = new StringBuilder();
+        StringBuilder update = new StringBuilder();
+        for (String columnHolder : columnHolders) {
+            if (Arrays.asList(sArray).contains(columnHolder)) {
+                if (!first) {
+                    sb.append(",");
+                    str.append(" AND ");
+                } else {
+                    first = false;
+                }
+                str.append("TMP.").append(columnHolder);
+                sb.append("?");
+                str.append(" = ");
+                sb.append(" AS ");
+                str.append("A.").append(columnHolder);
+                sb.append(columnHolder);
+            }
+        }
+
+        for (String columnHolder : columnHolders) {
+            if (!Arrays.asList(sArray).contains(columnHolder)) {
+                if (!first1) {
+                    update.append(",");
+                } else {
+                    first1 = false;
+                }
+                update.append(columnHolder);
+                update.append(" = ");
+                update.append("?");
+            }
+        }
+
+        sb.append(" FROM DUAL ) TMP ON (");
+        sb.append(str);
+        sb.append(" ) WHEN MATCHED THEN UPDATE SET ");
+        sb.append(update);
+        sb.append(" WHEN NOT MATCHED THEN ");
+        return sb.toString();
+    }
+
+    public static String[] getStrings(String writeMode) {
+        writeMode = writeMode.replace("update", "");
+        writeMode = writeMode.replace("(", "");
+        writeMode = writeMode.replace(")", "");
+        writeMode = writeMode.replace(" ", "");
+        return writeMode.split(",");
+    }
+
     public static String onDuplicateKeyUpdateString(List<String> columnHolders){
         if (columnHolders == null || columnHolders.size() < 1) {
             return "";

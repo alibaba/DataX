@@ -19,6 +19,12 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>42.2.18</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>com.alibaba.datax</groupId>
 			<artifactId>datax-common</artifactId>
 			<version>${datax-project-version}</version>

@@ -160,7 +160,11 @@ public final class OriginalConfPretreatmentUtil {
             forceUseUpdate = true;
         }
 
-        String writeDataSqlTemplate = WriterUtil.getWriteTemplate(columns, valueHolders, writeMode,dataBaseType, forceUseUpdate);
+        if (dataBaseType == DataBaseType.PostgreSQL && writeMode.toLowerCase().startsWith("update")) {
+            forceUseUpdate = true;
+        }
+
+        String writeDataSqlTemplate = WriterUtil.getWriteTemplateWith(columns, valueHolders, writeMode,dataBaseType, forceUseUpdate);
 
         LOG.info("Write data [\n{}\n], which jdbcUrl like:[{}]", writeDataSqlTemplate, jdbcUrl);
 

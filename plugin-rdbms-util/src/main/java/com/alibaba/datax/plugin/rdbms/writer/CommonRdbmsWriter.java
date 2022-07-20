@@ -209,7 +209,7 @@ public class CommonRdbmsWriter {
             this.jdbcUrl = writerSliceConfig.getString(Key.JDBC_URL);
 
             //ob10的处理
-            if (this.jdbcUrl.startsWith(Constant.OB10_SPLIT_STRING) && this.dataBaseType == DataBaseType.MySql) {
+            if (this.jdbcUrl.startsWith(Constant.OB10_SPLIT_STRING) && (this.dataBaseType == DataBaseType.MySql || this.dataBaseType == DataBaseType.PostgreSQL)) {
                 String[] ss = this.jdbcUrl.split(Constant.OB10_SPLIT_STRING_PATTERN);
                 if (ss.length != 3) {
                     throw DataXException
@@ -565,8 +565,10 @@ public class CommonRdbmsWriter {
                 if (dataBaseType != null && dataBaseType == DataBaseType.MySql && OriginalConfPretreatmentUtil.isOB10(jdbcUrl)) {
                     forceUseUpdate = true;
                 }
-
-                INSERT_OR_REPLACE_TEMPLATE = WriterUtil.getWriteTemplate(columns, valueHolders, writeMode, dataBaseType, forceUseUpdate);
+                if (dataBaseType != null && dataBaseType == DataBaseType.PostgreSQL && writeMode.toLowerCase().startsWith("update")) {
+                    forceUseUpdate = true;
+                }
+                INSERT_OR_REPLACE_TEMPLATE = WriterUtil.getWriteTemplateWith(columns, valueHolders, writeMode, dataBaseType, forceUseUpdate);
                 writeRecordSql = String.format(INSERT_OR_REPLACE_TEMPLATE, this.table);
             }
         }
