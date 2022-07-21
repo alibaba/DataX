@@ -17,7 +17,7 @@ public class CoreConstant {
 
 	public static final String DATAX_CORE_CONTAINER_JOB_ID = "core.container.job.id";
 
-	public static final String DATAX_CORE_CONTAINER_JOB_LOG = "core.container.job.id";
+	public static final String DATAX_CORE_CONTAINER_JOB_LOG = "core.container.job.log";
 
 	public static final String DATAX_CORE_CONTAINER_TRACE_ENABLE = "core.container.trace.enable";
 

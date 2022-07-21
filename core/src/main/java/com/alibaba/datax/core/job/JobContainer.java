@@ -608,6 +608,7 @@ public class JobContainer extends AbstractContainer {
 
         super.getContainerCommunicator().report(reportCommunication);
 
+        String snapshotLog = CommunicationTool.Stringify.getSnapshot(communication);
         String jobLog = String.format(
                 "\n" + "%-26s: %-18s\n" + "%-26s: %-18s\n" + "%-26s: %19s\n"
                         + "%-26s: %19s\n" + "%-26s: %19s\n" + "%-26s: %19s\n"
@@ -626,12 +627,12 @@ public class JobContainer extends AbstractContainer {
                 "记录写入速度",
                 String.valueOf(recordSpeedPerSecond)
                         + "rec/s", "读出记录总数",
-                String.valueOf(CommunicationTool.getTotalReadRecords(communication)),
+                String.valueOf(CommunicationTool.getTotalReadRecordsFixBug(communication)),
                 "读写失败总数",
                 String.valueOf(CommunicationTool.getTotalErrorRecords(communication))
         );
         LOG.info(jobLog);
-        logs.put("prettyTaskResult", jobLog);
+        logs.put("prettyTaskResult", String.format("%s\n%s", snapshotLog, jobLog));
 
         if (communication.getLongCounter(CommunicationTool.TRANSFORMER_SUCCEED_RECORDS) > 0
                 || communication.getLongCounter(CommunicationTool.TRANSFORMER_FAILED_RECORDS) > 0
