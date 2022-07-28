@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<sql>
+
+    <packageGroupId>
+        <![CDATA[
+			SELECT distinct
+                value
+            FROM
+                FINE_CONF_ENTITY
+            WHERE
+                id LIKE 'GroupConfig.groupHolder.%.groupId'
+		]]>
+    </packageGroupId>
+
+    <packageGroupName>
+        <![CDATA[
+			SELECT
+			    id,
+                value
+            FROM
+                FINE_CONF_ENTITY
+            WHERE
+                id LIKE 'GroupConfig.groupHolder.%.groupName'
+		]]>
+    </packageGroupName>
+
+    <packageGroupVersion>
+        <![CDATA[
+			SELECT
+			    id,
+                value
+            FROM
+                FINE_CONF_ENTITY
+            WHERE
+                id LIKE 'GroupConfig.groupHolder.%.version'
+		]]>
+    </packageGroupVersion>
+
+    <packageGroupInitTime>
+        <![CDATA[
+			SELECT
+			    id,
+                value
+            FROM
+                FINE_CONF_ENTITY
+            WHERE
+                id LIKE 'GroupConfig.groupHolder.%.initTime'
+		]]>
+    </packageGroupInitTime>
+
+    <packageGroupPackageId>
+        <![CDATA[
+			SELECT
+			    id,
+                value
+            FROM
+                FINE_CONF_ENTITY
+            WHERE
+                id LIKE 'GroupConfig.groupHolder.%.packageId'
+		]]>
+    </packageGroupPackageId>
+
+    <packageGroupCreateTime>
+        <![CDATA[
+			SELECT
+			    id,
+                value
+            FROM
+                FINE_CONF_ENTITY
+            WHERE
+                id LIKE 'DirectPackageConfStore.mapHolder.%.createTime'
+		]]>
+    </packageGroupCreateTime>
+
+    <packageGroupGroupNames>
+        <![CDATA[
+			SELECT
+			    id,
+                value
+            FROM
+                FINE_CONF_ENTITY
+            WHERE
+                id LIKE 'DirectPackageConfStore.mapHolder.%.groupNames'
+		]]>
+    </packageGroupGroupNames>
+
+    <packageGroupPackId>
+        <![CDATA[
+			SELECT distinct
+                value
+            FROM
+                FINE_CONF_ENTITY
+            WHERE
+                id LIKE 'DirectPackageConfStore.mapHolder.%.packId'
+		]]>
+    </packageGroupPackId>
+
+    <packageGroupTableIds>
+        <![CDATA[
+			SELECT
+			    id,
+                value
+            FROM
+                FINE_CONF_ENTITY
+            WHERE
+                id LIKE 'DirectPackageConfStore.mapHolder.%.tableIds'
+		]]>
+    </packageGroupTableIds>
+
+    <packageGroupUserName>
+        <![CDATA[
+			SELECT
+			    id,
+                value
+            FROM
+                FINE_CONF_ENTITY
+            WHERE
+                id LIKE 'DirectPackageConfStore.mapHolder.%.userName'
+		]]>
+    </packageGroupUserName>
+
+    <packageName>
+        <![CDATA[
+			SELECT
+			    id,
+                value
+            FROM
+                FINE_CONF_ENTITY
+            WHERE
+                id LIKE 'DirectPackageConfStore.mapHolder.%.name'
+		]]>
+    </packageName>
+
+    <packageGroupMap>
+        <![CDATA[
+			SELECT
+			    id,
+                value
+            FROM
+                FINE_CONF_ENTITY
+            WHERE
+                id LIKE 'GroupConfig.packageGroupMap.%'
+		]]>
+    </packageGroupMap>
+
+    <fieldTransferName>
+        <![CDATA[
+			SELECT
+			    id,
+                value
+            FROM
+                FINE_CONF_ENTITY
+            WHERE
+                id LIKE 'DirectFieldTransferNameConfDBStore.mapHolder.%'
+		]]>
+    </fieldTransferName>
+
+    <holderTables>
+        <![CDATA[
+			SELECT
+			    id,
+                value
+            FROM
+                FINE_CONF_ENTITY
+            WHERE
+                id LIKE 'ReportTablesConfig.holder.%.tables'
+		]]>
+    </holderTables>
+
+    <!--DirectEntryConfStore.mapHolder-->
+
+    <defaultTableId>
+        <![CDATA[
+			SELECT distinct
+                value
+            FROM
+                fine_conf_entity
+            WHERE
+                id LIKE 'DefaultTableIdNameStore.nameMap.%'
+		]]>
+    </defaultTableId>
+
+    <defaultTableIdFD>
+        <![CDATA[
+			SELECT distinct
+                value
+            FROM
+                fine_conf_entity
+            WHERE
+                id LIKE 'DefaultTableIdNameStoreFD.nameMap.%'
+		]]>
+    </defaultTableIdFD>
+
+    <holderEngineType>
+        <![CDATA[
+			SELECT distinct
+                value
+            FROM
+                fine_conf_entity
+            WHERE
+                id LIKE 'DirectEntryConfStore.mapHolder.%.engineType'
+		]]>
+    </holderEngineType>
+
+    <holderCreatorName>
+        <![CDATA[
+			SELECT distinct
+                value
+            FROM
+                fine_conf_entity
+            WHERE
+                id LIKE 'DirectEntryConfStore.mapHolder.%.creatorName'
+		]]>
+    </holderCreatorName>
+
+    <holderName>
+        <![CDATA[
+			SELECT distinct
+                value
+            FROM
+                fine_conf_entity
+            WHERE
+                id LIKE 'DirectEntryConfStore.mapHolder.%.name'
+		]]>
+    </holderName>
+
+    <holderEscapeMap>
+        <![CDATA[
+			SELECT distinct
+                value
+            FROM
+                fine_conf_entity-
+            WHERE
+                id LIKE 'DirectEntryConfStore.mapHolder.%.escapeMap.%'
+		]]>
+    </holderEscapeMap>
+    <holderTransferName>
+        <![CDATA[
+			SELECT distinct
+                value
+            FROM
+                fine_conf_entity
+            WHERE
+                id LIKE 'DirectEntryConfStore.mapHolder.%.transferName'
+		]]>
+    </holderTransferName>
+
+    <dashboardIndex>
+        <![CDATA[
+			SELECT
+                id,
+                applyTime,
+                createBy,
+                folder,
+                hangout,
+                initTime,
+                lastUpdateTime,
+                mountedDirIds,
+                name,
+                pId,
+                reportId
+            FROM
+                fine_dashboard_index
+		]]>
+    </dashboardIndex>
+
+    <fineClassName>
+        <![CDATA[
+			SELECT
+                id id,
+                className value
+            FROM
+                FINE_CONF_CLASSNAME
+            WHERE
+                id IN $1
+		]]>
+    </fineClassName>
+
+    <fineDbInfo>
+        <![CDATA[
+			SELECT
+                id,
+                value
+            FROM
+                fine_conf_entity
+            WHERE
+                id IN $1
+		]]>
+    </fineDbInfo>
+
+    <connectionCreateInKey>
+        <![CDATA[
+			SELECT distinct
+                f.value
+            FROM
+                fine_conf_entity f
+            WHERE
+                f.id = 'ConnectionConfig.connections'
+		]]>
+    </connectionCreateInKey>
+
+    <reportTable>
+        <![CDATA[
+			SELECT
+                CONCAT('ReportTablesConfig.holder.' , r.reportId , '.tables') id,
+                r.tables value
+            FROM
+                fine_report_tables_index r
+		]]>
+    </reportTable>
+</sql>

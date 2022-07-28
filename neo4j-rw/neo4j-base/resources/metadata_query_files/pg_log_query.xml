@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<sql>
+    <syncTableGuid>
+        <![CDATA[
+            INSERT
+            INTO
+                suggest_down_shelf_list_base_on_pg_log
+                (
+                    table_guid,
+                    create_time,
+                    system_id,
+                    db_name,
+                    schema_name,
+                    table_name,
+                    has_impact,
+                    has_lineage,
+                    unit_id
+                )
+                VALUES
+                (
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?
+                )
+            ON
+                DUPLICATE KEY
+            UPDATE
+                create_time = ?,
+                table_name = ?,
+                has_impact = ?,
+                has_lineage = ?,
+                unit_id = ?
+        ]]>
+    </syncTableGuid>
+    <clearOldData>
+        <![CDATA[
+            DELETE t1,t2
+            FROM
+                suggest_down_shelf_list_base_on_pg_log t1
+            LEFT JOIN
+                suggest_down_shelf_list_use_time t2
+            ON
+                t1.id = t2.table_id
+            WHERE
+                t1.system_id = ? and (t1.create_time != ? or t1.create_time is null)
+        ]]>
+    </clearOldData>
+
+    <syncTableUseTime>
+        <![CDATA[
+            INSERT
+            INTO
+                suggest_down_shelf_list_use_time
+                (
+                    table_id,
+                    use_time,
+                    use_time_day
+                )
+            SELECT
+                id,
+                str_to_date(?,'%Y-%m-%d %H:%i:%s'),
+                str_to_date(?,'%Y-%m-%d')
+            FROM
+                suggest_down_shelf_list_base_on_pg_log
+            WHERE
+                db_name = ?
+            AND schema_name = ?
+            AND table_guid LIKE ?
+        ]]>
+    </syncTableUseTime>
+</sql>

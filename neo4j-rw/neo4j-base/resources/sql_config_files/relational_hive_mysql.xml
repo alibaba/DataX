@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<sql>
+
+    <getTables type="NODE" workName="同步表" seq="1" nodeName="表" label="resource.relational.tableEntity" columns="moiName,comment,location,inputFormat,outputFormat,totalSize,isPartition,moiCreateDate,owner,isTemporary,guid,tableRows,numFiles,lastModifiedTime,moiUpdateDate,lastAccessTime,avgRowLength,parquetCompression,parquetCompress,dataLength,tblType,partitionCount">
+        <![CDATA[
+            SELECT
+                LOWER(t1.TBL_NAME)                           AS moiName,
+                t2.PARAM_VALUE                               AS COMMENT,
+                t3.LOCATION AS location,
+				t3.INPUT_FORMAT as inputFormat,
+				t3.OUTPUT_FORMAT as outputFormat,
+				cast (t4.PARAM_VALUE as UNSIGNED) as totalSize,
+				(select case when count(PART_ID) > 0 then 'true' else 'false' end  from PARTITIONS where TBL_ID = t1.tbl_id )  as isPartition,
+                FROM_UNIXTIME(t1.CREATE_TIME,'%Y%m%d%H%i%s') AS moiCreateDate,
+                t1.OWNER                                     AS owner,
+                CASE
+                    WHEN LOWER('${param.schema}') = 'temp'
+                    THEN 'true'
+                    ELSE 'false'
+                END AS isTemporary,
+                CONCAT('${param.systemId}',';','{{envCn}}',';','{{catalogCn}}',';','${param.importName}',';','${param.schema}',';',LOWER(t1.TBL_NAME)) AS guid,
+                (SELECT PARAM_VALUE FROM TABLE_PARAMS WHERE PARAM_KEY='numRows' and TBL_ID = t1.TBL_ID)  as tableRows,
+				(SELECT PARAM_VALUE FROM TABLE_PARAMS WHERE PARAM_KEY='numFiles' and TBL_ID = t1.TBL_ID)  as numFiles,
+				case when (SELECT PARAM_VALUE FROM TABLE_PARAMS WHERE PARAM_KEY='last_modified_time' and TBL_ID = t1.TBL_ID) > 0 then FROM_UNIXTIME((SELECT PARAM_VALUE FROM TABLE_PARAMS WHERE PARAM_KEY='last_modified_time' and TBL_ID = t1.TBL_ID),'%Y%m%d%H%i%s') else null end  as lastModifiedTime,
+				case when (SELECT PARAM_VALUE FROM TABLE_PARAMS WHERE PARAM_KEY='transient_lastDdlTime' and TBL_ID = t1.TBL_ID) > 0 then FROM_UNIXTIME((SELECT PARAM_VALUE FROM TABLE_PARAMS WHERE PARAM_KEY='transient_lastDdlTime' and TBL_ID = t1.TBL_ID),'%Y%m%d%H%i%s') else null end  as moiUpdateDate,
+				case when t1.LAST_ACCESS_TIME = 0 then null else FROM_UNIXTIME(t1.LAST_ACCESS_TIME,'%Y%m%d%H%i%s') end as lastAccessTime,
+				(SELECT PARAM_VALUE FROM TABLE_PARAMS WHERE PARAM_KEY='rawDataSize' and TBL_ID = t1.TBL_ID)  as avgRowLength,
+				(SELECT PARAM_VALUE FROM TABLE_PARAMS WHERE PARAM_KEY='parquet.compression' and TBL_ID = t1.TBL_ID)  as parquetCompression,
+				(SELECT PARAM_VALUE FROM TABLE_PARAMS WHERE PARAM_KEY='parquet.compress' and TBL_ID = t1.TBL_ID)  as parquetCompress,
+				cast (t4.PARAM_VALUE as UNSIGNED) as dataLength,
+				t1.TBL_TYPE as tblType,
+				(select count(PART_ID) from PARTITIONS where TBL_ID = t1.tbl_id )  as partitionCount
+            FROM
+                TBLS t1
+            LEFT JOIN
+                (
+                    SELECT
+                        TBL_ID,
+                        PARAM_KEY,
+                        PARAM_VALUE
+                    FROM
+                        TABLE_PARAMS
+                    WHERE
+                        PARAM_KEY = 'comment') t2
+            ON
+                t1.TBL_ID = t2.TBL_ID
+			left join SDS t3 on t1.SD_ID = t3.SD_ID
+			 LEFT JOIN
+                (
+                    SELECT
+                        TBL_ID,
+                        PARAM_KEY,
+                        PARAM_VALUE
+                    FROM
+                        TABLE_PARAMS
+                    WHERE
+                        PARAM_KEY = 'totalSize') t4
+            ON
+                t1.TBL_ID = t4.TBL_ID
+            WHERE
+                t1.DB_ID IN
+                (
+                    SELECT
+                        DB_ID
+                    FROM
+                        DBS
+                    WHERE
+                        LOWER(NAME) = LOWER('${param.schema}') )
+            AND t1.TBL_TYPE != 'VIRTUAL_VIEW'
+            ORDER BY
+                LOWER(t1.TBL_NAME) ASC
+        ]]>
+    </getTables>
+
+    <getTableColumn type="NODE" workName="同步表字段" seq="2" nodeName="表字段" label="resource.relational.columnEntity" sourceLabel="resource.relational.tableEntity" columns="moiCreateDate,moiName,comment,sqlSimpleType,moiSeq,columnId,guid,tableName">
+        <![CDATA[
+        SELECT * FROM
+			(
+				SELECT
+					FROM_UNIXTIME(TBLS.CREATE_TIME,'%Y%m%d%H%i%s') AS moiCreateDate,
+					LOWER(COLUMNS_V2.COLUMN_NAME) AS moiName,
+					COLUMNS_V2.COMMENT AS `comment`,
+					COLUMNS_V2.TYPE_NAME AS sqlSimpleType,
+					COLUMNS_V2.INTEGER_IDX AS moiSeq,
+					COLUMNS_V2.INTEGER_IDX AS columnId,
+          CONCAT('${param.systemId}',';','{{envCn}}',';','{{catalogCn}}',';','${param.importName}',';','${param.schema}',';',LOWER(TBLS.TBL_NAME),';',LOWER(COLUMNS_V2.COLUMN_NAME)) as guid,
+          LOWER(TBLS.TBL_NAME) as tableName
+				FROM
+					DBS
+				JOIN
+					TBLS
+				ON
+					TBLS.DB_ID = DBS.DB_ID
+				JOIN
+					SDS
+				ON
+					TBLS.SD_ID = SDS.SD_ID
+				 JOIN
+					COLUMNS_V2
+				ON
+					SDS.CD_ID = COLUMNS_V2.CD_ID
+				WHERE
+						TBLS.TBL_TYPE != 'VIRTUAL_VIEW'
+					AND
+						LOWER(DBS.NAME) = LOWER('${param.schema}')
+				UNION ALL
+				SELECT
+					FROM_UNIXTIME(TBLS.CREATE_TIME,'%Y%m%d%H%i%s') AS moiCreateDate,
+					LOWER(PARTITION_KEYS.PKEY_NAME) AS moiName,
+					PARTITION_KEYS.PKEY_COMMENT AS `comment`,
+					PARTITION_KEYS.PKEY_TYPE AS sqlSimpleType,
+					(999 + PARTITION_KEYS.INTEGER_IDX) AS moiSeq,
+					(999 + PARTITION_KEYS.INTEGER_IDX) AS columnId,
+                    CONCAT('${param.systemId}',';','{{envCn}}',';','{{catalogCn}}',';','${param.importName}',';','${param.schema}',';',LOWER(TBLS.TBL_NAME),';',LOWER(PARTITION_KEYS.PKEY_NAME)) as guid,
+                    TBLS.TBL_NAME as tableName
+				FROM
+					DBS
+				JOIN
+					TBLS
+				ON
+					TBLS.DB_ID = DBS.DB_ID
+				JOIN
+					SDS
+				ON
+					TBLS.SD_ID = SDS.SD_ID
+				JOIN
+					PARTITION_KEYS
+				ON PARTITION_KEYS.TBL_ID = TBLS.TBL_ID
+				WHERE
+						TBLS.TBL_TYPE != 'VIRTUAL_VIEW'
+					AND
+						LOWER(DBS.NAME) = LOWER('${param.schema}')
+			) t where t.moiName is not null order by t.moiName
+        ]]>
+    </getTableColumn>
+
+    <getView type="NODE" workName="同步表视图" seq="3" nodeName="视图" label="resource.relational.viewEntity" columns="moiName,guid,moiCreateDate,sql,creator">
+        <![CDATA[
+            select
+                LOWER(TBL_NAME) as moiName,
+                CONCAT('${param.systemId}',';','{{envCn}}',';','{{catalogCn}}',';','${param.importName}',';','${param.schema}',';',LOWER(TBL_NAME)) as guid,
+                FROM_UNIXTIME(CREATE_TIME,'%Y%m%d%H%i%s') as moiCreateDate,
+                VIEW_ORIGINAL_TEXT as `sql`,
+                OWNER as creator
+            from
+            TBLS where DB_ID IN( SELECT DB_ID FROM DBS WHERE LOWER(NAME) = LOWER('${param.schema}') ) and TBL_TYPE = 'VIRTUAL_VIEW'
+            order by LOWER(TBL_NAME)
+        ]]>
+    </getView>
+
+<!--    <getSQLIndexes type="NODE" workName="同步表索引" seq="4" nodeName="索引" label="resource.relational.sQLIndexEntity" columns="moiName,guid">-->
+<!--        <![CDATA[-->
+<!--            select-->
+<!--                LOWER(t1.INDEX_NAME) as moiName,-->
+<!--              CONCAT('${param.systemId}',';','{{envCn}}',';','{{catalogCn}}',';','${param.importName}',';','${param.schema}',';',LOWER(t1.INDEX_NAME),'_',LOWER(t2.TBL_NAME)) as guid-->
+<!--            from IDXS t1-->
+<!--            left join TBLS t2 on t1.ORIG_TBL_ID = t2.TBL_ID-->
+<!--            left join SDS t3 on t1.SD_ID = t3.SD_ID-->
+<!--            left join COLUMNS_V2 t4 on t3.CD_ID = t4.CD_ID-->
+<!--            inner join DBS t5 on t2.DB_ID = t5.DB_ID-->
+<!--             where LOWER(t5.NAME) = LOWER('${param.schema}')-->
+<!--        ]]>-->
+<!--    </getSQLIndexes>-->
+
+    <getViewColumn type="NODE" workName="同步视图字段" seq="5" nodeName="视图字段" label="resource.relational.columnEntity" sourceLabel="resource.relational.viewEntity" columns="moiCreateDate,moiName,comment,sqlSimpleType,moiSeq,columnId,guid">
+        <![CDATA[
+		SELECT
+				FROM_UNIXTIME(TBLS.CREATE_TIME,'%Y%m%d%H%i%s') AS moiCreateDate,
+				LOWER(COLUMNS_V2.COLUMN_NAME) AS moiName,
+				COLUMNS_V2.COMMENT AS `comment`,
+				COLUMNS_V2.TYPE_NAME AS sqlSimpleType,
+				COLUMNS_V2.INTEGER_IDX AS moiSeq,
+				COLUMNS_V2.INTEGER_IDX AS columnId,
+                CONCAT('${param.systemId}',';','{{envCn}}',';','{{catalogCn}}',';','${param.importName}',';','${param.schema}',';',LOWER(TBLS.TBL_NAME),';',LOWER(COLUMNS_V2.COLUMN_NAME)) as guid
+			FROM
+				DBS
+			JOIN
+				TBLS
+			ON
+				TBLS.DB_ID = DBS.DB_ID
+			JOIN
+				SDS
+			ON
+				TBLS.SD_ID = SDS.SD_ID
+			 JOIN
+				COLUMNS_V2
+			ON
+				SDS.CD_ID = COLUMNS_V2.CD_ID
+			WHERE
+					TBLS.TBL_TYPE = 'VIRTUAL_VIEW'
+		  AND LOWER(DBS.NAME) = LOWER('${param.schema}') order by LOWER(COLUMNS_V2.COLUMN_NAME)
+        ]]>
+    </getViewColumn>
+
+    <getSchemasToView type="RELATIONSHIP" workName="同步Schema->视图的关系" seq="6" label="resource.relational.schemaToViewEntity" srcLabel="resource.relational.schemaEntity" targetLabel="resource.relational.viewEntity">
+        <![CDATA[
+            select
+                CONCAT('${param.systemId}',';','{{envCn}}',';','{{catalogCn}}',';','${param.importName}',';','${param.schema}') as sourceGuid,
+                CONCAT('${param.systemId}',';','{{envCn}}',';','{{catalogCn}}',';','${param.importName}',';','${param.schema}',';',LOWER(TBL_NAME)) as targetGuid
+            from
+            TBLS where DB_ID IN( SELECT DB_ID FROM DBS WHERE LOWER(NAME) = LOWER('${param.schema}')) and TBL_TYPE = 'VIRTUAL_VIEW'
+        ]]>
+    </getSchemasToView>
+
+    <getViewToColumn type="RELATIONSHIP" workName="同步视图->视图字段的关系" seq="7" label="resource.relational.viewToColumnEntity" srcLabel="resource.relational.viewEntity" targetLabel="resource.relational.columnEntity">
+        <![CDATA[
+            SELECT
+                CONCAT('${param.systemId}',';','{{envCn}}',';','{{catalogCn}}',';','${param.importName}',';','${param.schema}',';',LOWER(TBLS.TBL_NAME)) as sourceGuid,
+                CONCAT('${param.systemId}',';','{{envCn}}',';','{{catalogCn}}',';','${param.importName}',';','${param.schema}',';',LOWER(TBLS.TBL_NAME),';',LOWER(COLUMNS_V2.COLUMN_NAME)) as targetGuid
+			FROM
+				DBS
+			JOIN
+				TBLS
+			ON
+				TBLS.DB_ID = DBS.DB_ID
+			JOIN
+				SDS
+			ON
+				TBLS.SD_ID = SDS.SD_ID
+			 JOIN
+				COLUMNS_V2
+			ON
+				SDS.CD_ID = COLUMNS_V2.CD_ID
+			WHERE
+					TBLS.TBL_TYPE = 'VIRTUAL_VIEW'
+		  AND LOWER(DBS.NAME) = LOWER('${param.schema}')
+
+        ]]>
+    </getViewToColumn>
+
+    <getSchemasToTable type="RELATIONSHIP" workName="同步Schema->表的关系" seq="8"  label="resource.relational.schemaToTableEntity" srcLabel="resource.relational.schemaEntity" targetLabel="resource.relational.tableEntity" >
+        <![CDATA[
+            select
+                CONCAT('${param.systemId}',';','{{envCn}}',';','{{catalogCn}}',';','${param.importName}',';','${param.schema}') as sourceGuid,
+                CONCAT('${param.systemId}',';','{{envCn}}',';','{{catalogCn}}',';','${param.importName}',';','${param.schema}',';',LOWER(TBL_NAME)) as targetGuid
+            from
+            TBLS where DB_ID IN( SELECT DB_ID FROM DBS WHERE LOWER(NAME) = LOWER('${param.schema}')) and TBL_TYPE != 'VIRTUAL_VIEW'
+
+        ]]>
+    </getSchemasToTable>
+
+    <getTableToColumn type="RELATIONSHIP" workName="同步表->字段的关系" seq="9" label="resource.relational.tableToColumnEntity" srcLabel="resource.relational.tableEntity" targetLabel="resource.relational.columnEntity" >
+        <![CDATA[
+        SELECT * FROM
+			(
+				SELECT
+                    CONCAT('${param.systemId}',';','{{envCn}}',';','{{catalogCn}}',';','${param.importName}',';','${param.schema}',';',LOWER(TBLS.TBL_NAME)) as sourceGuid,
+                    CONCAT('${param.systemId}',';','{{envCn}}',';','{{catalogCn}}',';','${param.importName}',';','${param.schema}',';',LOWER(TBLS.TBL_NAME),';',LOWER(COLUMNS_V2.COLUMN_NAME)) as targetGuid
+				FROM
+					DBS
+				JOIN
+					TBLS
+				ON
+					TBLS.DB_ID = DBS.DB_ID
+				JOIN
+					SDS
+				ON
+					TBLS.SD_ID = SDS.SD_ID
+			    JOIN
+					COLUMNS_V2
+				ON
+					SDS.CD_ID = COLUMNS_V2.CD_ID
+				WHERE
+						TBLS.TBL_TYPE != 'VIRTUAL_VIEW'
+					AND
+						LOWER(DBS.NAME) = LOWER('${param.schema}')
+				UNION ALL
+				SELECT
+                    CONCAT('${param.systemId}',';','{{envCn}}',';','{{catalogCn}}',';','${param.importName}',';','${param.schema}',';',LOWER(TBLS.TBL_NAME)) as sourceGuid,
+                    CONCAT('${param.systemId}',';','{{envCn}}',';','{{catalogCn}}',';','${param.importName}',';','${param.schema}',';',LOWER(TBLS.TBL_NAME),';',LOWER(PARTITION_KEYS.PKEY_NAME)) as targetGuid
+				FROM
+					DBS
+				JOIN
+					TBLS
+				ON
+					TBLS.DB_ID = DBS.DB_ID
+				JOIN
+					SDS
+				ON
+					TBLS.SD_ID = SDS.SD_ID
+				JOIN
+					PARTITION_KEYS
+				ON PARTITION_KEYS.TBL_ID = TBLS.TBL_ID
+				WHERE
+						TBLS.TBL_TYPE != 'VIRTUAL_VIEW'
+					AND
+						LOWER(DBS.NAME) = LOWER('${param.schema}')
+			) t where t.targetGuid is not null and t.sourceGuid is not null
+        ]]>
+    </getTableToColumn>
+
+<!--    <getSchemasToSqlIndex type="RELATIONSHIP" workName="同步Schema->索引的关系" seq="10" label="resource.relational.schemaToSQLIndexEntity" srcLabel="resource.relational.schemaEntity" targetLabel="resource.relational.sQLIndexEntity">-->
+<!--        <![CDATA[-->
+<!--            select-->
+<!--              CONCAT('${param.systemId}',';','{{envCn}}',';','{{catalogCn}}',';','${param.importName}',';','${param.schema}') as sourceGuid,-->
+<!--              CONCAT('${param.systemId}',';','{{envCn}}',';','{{catalogCn}}',';','${param.importName}',';','${param.schema}',';',LOWER(t1.INDEX_NAME),'_',LOWER(t2.TBL_NAME)) as targetGuid-->
+<!--            from IDXS t1-->
+<!--            left join TBLS t2 on t1.ORIG_TBL_ID = t2.TBL_ID-->
+<!--            left join SDS t3 on t1.SD_ID = t3.SD_ID-->
+<!--            left join COLUMNS_V2 t4 on t3.CD_ID = t4.CD_ID-->
+<!--            inner join DBS t5 on t2.DB_ID = t5.DB_ID-->
+<!--             where LOWER(t5.NAME) = LOWER('${param.schema}')-->
+
+<!--        ]]>-->
+<!--    </getSchemasToSqlIndex>-->
+
+<!--    <getSqlIndexToColumn type="RELATIONSHIP" workName="同步索引->字段的关系" seq="11" label="resource.relational.sQLIndexToColumnEntity" srcLabel="resource.relational.sQLIndexEntity" targetLabel="resource.relational.columnEntity">-->
+<!--        <![CDATA[-->
+<!--             select-->
+<!--              CONCAT('${param.systemId}',';','{{envCn}}',';','{{catalogCn}}',';','${param.importName}',';','${param.schema}',LOWER(t1.INDEX_NAME),'_',LOWER(t2.TBL_NAME)) as sourceGuid,-->
+<!--              CONCAT('${param.systemId}',';','{{envCn}}',';','{{catalogCn}}',';','${param.importName}',';','${param.schema}',';',LOWER(t2.TBL_NAME),';',LOWER(t4.COLUMN_NAME)) as targetGuid-->
+<!--            from IDXS t1-->
+<!--            left join TBLS t2 on t1.ORIG_TBL_ID = t2.TBL_ID-->
+<!--            left join SDS t3 on t1.SD_ID = t3.SD_ID-->
+<!--            left join COLUMNS_V2 t4 on t3.CD_ID = t4.CD_ID-->
+<!--            inner join DBS t5 on t2.DB_ID = t5.DB_ID-->
+<!--             where LOWER(t5.NAME) = LOWER('${param.schema}')-->
+<!--        ]]>-->
+<!--    </getSqlIndexToColumn>-->
+
+
+    <getTableToDirectory type="RELATIONSHIP" workName="同步表->目录的关系" seq="11" label="resource.relational.tableToDirectoryEntity" srcLabel="resource.relational.tableEntity" targetLabel="model.hadoop.hdfs.directoryEntity" >
+        SELECT
+        CONCAT('${param.systemId}',';','{{envCn}}',';','{{catalogCn}}',';','${param.importName}',';','${param.schema}',';',LOWER(t1.TBL_NAME)) AS sourceGuid,
+        CONCAT('${param.hdfsSystemId};','{{envCn}}',';HDFS',replace(SUBSTRING(REPLACE(t3.LOCATION,'hdfs://','') from LOCATE('/', REPLACE(t3.LOCATION,'hdfs://',''))),'/',';')) AS targetGuid
+        FROM
+            TBLS t1
+        LEFT JOIN SDS t3 ON t1.SD_ID = t3.SD_ID
+            WHERE
+                t1.DB_ID IN (
+                    SELECT
+                        DB_ID
+                    FROM
+                        DBS
+                    WHERE
+                        LOWER( NAME )= LOWER( 'dap_data_secure' ))
+                    AND t1.TBL_TYPE != 'VIRTUAL_VIEW'
+                ORDER BY
+                    LOWER( t1.TBL_NAME ) ASC
+    </getTableToDirectory>
+
+</sql>

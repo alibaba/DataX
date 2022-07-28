@@ -1,0 +1,432 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<sql>
+    <getSystemTag   type="NODE" workName="同步系统标签" seq="1" nodeName="标签" label="model.dap.dapSystemTagEntity" columns="moiName,guid,bmStatus">
+        <![CDATA[
+        SELECT
+        `name` as moiName,
+        `name` as guid,
+        bm_status as bmStatus
+        FROM
+        dap_system_tag
+        ]]>
+    </getSystemTag>
+
+    <getDapSystem   type="NODE" workName="获取到系统对象" seq="2" nodeName="系统对象" label="model.dap.dapSystemEntity" columns="systemId,moiName,guid,bmStatus">
+        <![CDATA[
+        select * from (
+            SELECT
+                t2.id as systemId,
+                t2.name as moiName,
+                CONCAT('${param.systemId}',';','${param.env}',';','模型',';','${param.importName}',';',t2.id) as guid,
+                t2.bm_status as bmStatus
+            FROM
+                dap_system_info t2 where 1 = 1 ${param.whereSystemIdClause}
+          ) t where t.guid is not null
+        ]]>
+    </getDapSystem>
+
+    <getModel  type="NODE" workName="同步模型对象" seq="3" nodeName="模型对象" label="model.dap.dapDataModelEntity" columns="dataModelId,moiName,guid,sysType,modelType,sysName,isUseCommonModel,resourceId,description,businessLine,bmStatus,databaseType">
+        <![CDATA[
+        select * from (
+            SELECT
+                a.id as dataModelId,
+                a.NAME as moiName,
+                CONCAT('${param.systemId}',';','${param.env}',';','模型',';','${param.importName}',';',t2.id,';',a.id) as guid,
+                a.sys_type as sysType,
+                a.model_type as modelType,
+                t2.NAME AS sysName,
+                a.is_use_common_model AS isUseCommonModel,
+                c.id AS resourceId,
+                a.description,
+                a.business_line as businessLine,
+                a.bm_status as bmStatus,
+                c.database_type as databaseType
+            FROM
+                dap_data_model AS a
+                inner JOIN dap_system_info AS t2 ON a.system_id = t2.id
+                AND a.bm_status = t2.bm_status
+                LEFT JOIN dap_system_datasource AS c ON t2.id = c.system_info_id
+                AND t2.bm_status = c.bm_status
+            WHERE
+                1=1 ${param.whereSystemIdClause}
+            ) t where t.guid is not null
+        ]]>
+    </getModel>
+
+    <getFirstModelTableGroup  type="NODE" workName="同步一级模型分组对象" seq="4" nodeName="模型分组对象" label="model.dap.dataModelTableGroupEntity" columns="dapModelGroupId,moiName,sort,guid,bmStatus">
+        <![CDATA[
+        select * from (
+              select
+         t.id as dapModelGroupId,
+         t.name as moiName,
+         t.group_rank as sort,
+				 CONCAT('${param.systemId}',';','${param.env}',';','模型',';','${param.importName}',';',t2.id,';',t1.id,';',t.id) as guid,
+				 t.bm_status as bmStatus
+					from dap_data_model_group t
+                     inner join dap_data_model t1 on t1.id = t.model_id
+					inner join dap_system_info t2 on t1.system_id = t2.id
+                where ( t.pid is null or t.pid = '' ) ${param.whereSystemIdClause}
+						order by t1.name
+		) t where t.guid is not null
+        ]]>
+    </getFirstModelTableGroup>
+
+
+    <getSecondModelTableGroup  type="NODE" workName="同步二级模型分组对象" seq="5" nodeName="模型分组对象" label="model.dap.dataModelTableGroupEntity" columns="dapModelGroupId,moiName,sort,guid,bmStatus">
+        <![CDATA[
+        select * from (
+        select
+              t.id as dapModelGroupId,
+              t.name as moiName,
+               t.group_rank as sort,
+                       CONCAT('${param.systemId}',';','${param.env}',';','模型',';','${param.importName}',';',t2.id,';',t1.id,';',(select id from dap_data_model_group where id = t.pid) ,';',t.id)
+                         as guid,
+                         t.bm_status as bmStatus
+                        from dap_data_model_group t
+                         inner join dap_data_model t1 on t1.id = t.model_id
+                        inner join dap_system_info t2 on t1.system_id = t2.id
+                    where  ( t.pid is not null and  t.pid != '')  ${param.whereSystemIdClause}
+                            order by t1.name
+            ) t where t.guid is not null
+        ]]>
+    </getSecondModelTableGroup>
+
+    <getModelTableEntity type="NODE" workName="获取到模型表对象" seq="6" nodeName="模型表对象" label="model.dap.dataModelTableEntity" columns="pId,dapModelTableId,createTime,moiName,moiDisplayName,businessDesc,schema,categoryId,tableCategory,guid,bmStatus,registerApi" >
+        <![CDATA[
+            select * from (
+                SELECT
+                    a.p_id as pId,
+                    a.p_id as dapModelTableId,
+                    DATE_FORMAT(a.CREATE_TIME,'%Y%m%d%H%i%s') AS createTime,
+                    a.eng_name AS moiName,
+                    a.NAME AS moiDisplayName,
+                    a.business_desc as businessDesc,
+                    a.table_schema as `schema`,
+                    a.category_id as categoryId,
+                    a.table_category as tableCategory,
+                    concat(d.guid,';',a.eng_name) as guid,
+                    a.bm_status as bmStatus,
+                    case when a.register_api then '1' else '0' end as registerApi
+                FROM
+                    dap_data_model_table AS a
+                    inner JOIN (
+                   select
+                                    t.id,
+                          t.name as moiName,
+                           t.group_rank as sort,
+                                    case when t.pid is null or t.pid = ''
+                                    then CONCAT('${param.systemId}',';','${param.env}',';','模型',';','${param.importName}',';',t2.id,';',t1.id,';',t.id)
+                                        else
+                           CONCAT('${param.systemId}',';','${param.env}',';','模型',';','${param.importName}',';',t2.id,';',t1.id,';',(select id from dap_data_model_group where id = t.pid) ,';',t.id)
+                                    end as guid
+                                    from dap_data_model_group t
+                                     inner join dap_data_model t1 on t1.id = t.model_id
+                                    inner join dap_system_info t2 on t1.system_id = t2.id
+                                where 1=1 ${param.whereSystemIdClause}
+                                        order by t1.name
+                ) AS d ON d.id = a.group_id
+                WHERE
+                   ( a.data_newest != 1 ) or (a.bm_status = -1)
+            ) t where t.guid is not null
+         ]]>
+    </getModelTableEntity>
+
+    <getModelColumnEntity type="NODE" workName="获取模型字段对象" seq="7" nodeName="模型字段对象" label="model.dap.dataModelColumnEntity" columns="dapModelColumnId,createTime,moiSeq,moiName,moiDisplayName,sqlSimpleType,length,primaryKey,notNull,defaultValue,autoIncrement,unSigned,zeroFill,standardName,businessDesc,guid,bmStatus">
+        <![CDATA[
+        select * from (
+            SELECT
+                b.id as dapModelColumnId,
+                DATE_FORMAT(b.CREATE_TIME,'%Y%m%d%H%i%s') AS createTime,
+                b.field_rank as moiSeq,
+                b.field_name as moiName,
+                b.COMMENT as moiDisplayName,
+                b.data_type as sqlSimpleType,
+                b.length as length,
+                if(b.primary_key = 0, '否', '是') as primaryKey,
+                if(b.not_null=0,'否', '是') as notNull,
+                b.default_value as defaultValue,
+                if(b.auto_increment = 0,'否', '是') as autoIncrement,
+                if(b.un_signed = 0,'否', '是') as `unSigned`,
+                b.zero_fill as `zeroFill`,
+                c.eng_name AS standardName,
+                b.business_desc as businessDesc,
+                CONCAT(d.guid,';',b.field_name) as guid,
+                b.bm_status as bmStatus
+            FROM
+                dap_data_model_table_field AS b
+                LEFT JOIN dap_standard_basic AS c ON b.standard_id = c.standard_unique_id
+                inner join (
+                                SELECT
+                                    a.id as id,
+                                    a.bm_status,
+																		a.data_newest,
+                                    CONCAT(d.guid,';',a.eng_name) as guid
+                                FROM
+                                    dap_data_model_table AS a
+                                INNER JOIN (
+                                    select
+                                        t.id,
+                                        case when t.pid is null or t.pid = ''
+                                        then CONCAT('${param.systemId}',';','${param.env}',';','模型',';','${param.importName}',';',t2.id,';',t1.id,';',t.id)
+                                        else
+                                             CONCAT('${param.systemId}',';','${param.env}',';','模型',';','${param.importName}',';',t2.id,';',t1.id,';',(select id from dap_data_model_group where id = t.pid) ,';',t.id)
+                                        end as guid
+                                    from dap_data_model_group t
+                                         inner join dap_data_model t1 on t1.id = t.model_id
+                                         inner join dap_system_info t2 on t1.system_id = t2.id
+                                   where 1=1 ${param.whereSystemIdClause}
+                                   order by t1.name
+                            ) AS d ON d.id = a.group_id
+                            WHERE
+                               1=1
+
+                ) d on b.model_table_id = d.id
+            WHERE
+                  ( b.data_newest != 1 and d.data_newest != 1 )  or (b.bm_status = -1)
+         ) t where t.guid is not null
+        ]]>
+    </getModelColumnEntity>
+
+
+    <getDataModelIndexEntity type="NODE" workName="获取模型索引对象" seq="8" nodeName="模型索引对象" label="model.dap.dataModelIndexEntity" columns="guid,moiName,keyType,keyMethod,moiDisplayName,bmStatus,fieldIds">
+        <![CDATA[
+        select * from (
+                select
+                       CONCAT(t.guid,';',t2.key_name) as guid,
+                       t2.key_name as moiName,
+                       t2.key_type as keyType,
+                       t2.key_method as keyMethod,
+                       t2.key_chin_name as  moiDisplayName,
+                       t2.bm_status as bmStatus,
+                       t2.field_ids as fieldIds
+                from dap_data_model_subordinate_key t2
+                         left join (
+
+                                                    SELECT
+                                                  a.id as id,
+                                                  a.bm_status,a.data_newest,
+                                                                    a.eng_name,
+                                                  concat(d.guid,';',a.eng_name) as guid
+                                          FROM
+                                                 dap_data_model_table AS a
+                                                                INNER JOIN (
+                                                                    select
+                                                                        t.id,
+                                                                        case when t.pid is null or t.pid = ''
+                                                                        then CONCAT('${param.systemId}',';','${param.env}',';','模型',';','${param.importName}',';',t2.id,';',t1.id,';',t.id)
+                                                                        else
+                                                                             CONCAT('${param.systemId}',';','${param.env}',';','模型',';','${param.importName}',';',t2.id,';',t1.id,';',(select id from dap_data_model_group where id = t.pid) ,';',t.id)
+                                                                        end as guid
+                                                                    from dap_data_model_group t
+                                                                         inner join dap_data_model t1 on t1.id = t.model_id
+                                                                         inner join dap_system_info t2 on t1.system_id = t2.id
+                                                                   where 1 = 1 ${param.whereSystemIdClause}
+                                                                   order by t1.name
+                                                            ) AS d ON d.id = a.group_id
+                                                            WHERE
+                                                                1 = 1
+
+                                 ) t on t.id = t2.model_table_id and 1 = 1 and t.data_newest != 1
+                where t2.data_newest != 1
+               ) t where t.guid is not null
+        ]]>
+    </getDataModelIndexEntity>
+
+
+    <getDapDataModelFolderToDapSystem type="RELATIONSHIP" workName="同步模型文件夹->系统的关系" seq="11" label="model.dap.dapDataModelFolderToDapSystemEntity" srcLabel="model.dap.dapDataModelFolderEntity" targetLabel="model.dap.dapSystemEntity">
+        <![CDATA[
+        select * from (
+        SELECT
+            CONCAT('${param.systemId}',';','${param.env}',';','模型',';','${param.importName}') as sourceGuid,
+            CONCAT('${param.systemId}',';','${param.env}',';','模型',';','${param.importName}',';',t2.id) as targetGuid
+        FROM
+            dap_system_info t2 where 1 = 1 ${param.whereSystemIdClause}
+         ) t where t.sourceGuid is not null and t.targetGuid is not null
+        ]]>
+    </getDapDataModelFolderToDapSystem>
+
+    <getDapSystemToDapDataModel  type="RELATIONSHIP" workName="同步系统->模型的关系" seq="12" label="model.dap.dapSystemToDapDataModelEntity" srcLabel="model.dap.dapSystemEntity" targetLabel="model.dap.dapDataModelEntity">
+        <![CDATA[
+        select * from (
+            SELECT
+			    CONCAT('${param.systemId}',';','${param.env}',';','模型',';','${param.importName}',';',t2.id) as sourceGuid,
+                CONCAT('${param.systemId}',';','${param.env}',';','模型',';','${param.importName}',';',t2.id,';',a.id) as targetGuid
+            FROM
+                dap_data_model AS a
+                inner JOIN dap_system_info AS t2 ON a.system_id = t2.id
+                AND a.bm_status = t2.bm_status
+                LEFT JOIN dap_system_datasource AS c ON t2.id = c.system_info_id
+                AND t2.bm_status = c.bm_status
+            WHERE
+                1 =1 ${param.whereSystemIdClause}
+                ) t where t.sourceGuid is not null and t.targetGuid is not null
+        ]]>
+    </getDapSystemToDapDataModel>
+
+    <getDapSystemTagToDapDataModelEntity  type="RELATIONSHIP" workName="同步标签->模型的关系" seq="13" label="model.dap.dapSystemTagToDapDataModelEntity" srcLabel="model.dap.dapSystemTagEntity" targetLabel="model.dap.dapDataModelEntity">
+        <![CDATA[
+        select * from (
+        SELECT
+             e.NAME AS sourceGuid,
+             CONCAT('${param.systemId}',';','${param.env}',';','模型',';','${param.importName}',';',t2.id,';',a.id) as targetGuid
+        FROM
+            dap_data_model AS a
+            inner JOIN dap_system_info AS t2 ON a.system_id = t2.id
+            AND a.bm_status = t2.bm_status
+            LEFT JOIN dap_system_datasource AS c ON t2.id = c.system_info_id
+            AND t2.bm_status = c.bm_status
+            LEFT JOIN dap_data_model_system_tag_middle AS d ON a.id = d.rel_data_id
+            AND a.bm_status = d.bm_status
+            INNER JOIN dap_system_tag AS e ON e.id = d.system_tag_id
+            AND a.bm_status = e.bm_status
+        WHERE
+            1 =1 ${param.whereSystemIdClause}
+        ) t where t.sourceGuid is not null and t.targetGuid is not null
+        ]]>
+    </getDapSystemTagToDapDataModelEntity>
+
+    <getDapDataModelToDataModelTableGroupEntity  type="RELATIONSHIP" workName="同步模型->模型分组的关系" seq="14" label="model.dap.dapDataModelToDataModelTableGroupEntity" srcLabel="model.dap.dapDataModelEntity" targetLabel="model.dap.dataModelTableGroupEntity">
+        <![CDATA[
+        select * from (
+       	select
+          CONCAT('${param.systemId}',';','${param.env}',';','模型',';','${param.importName}',';',t2.id , ';' , t1.id) as sourceGuid,
+				   CONCAT('${param.systemId}',';','${param.env}',';','模型',';','${param.importName}',';',t2.id,';',t1.id,';',t.id) as targetGuid
+					from dap_data_model_group t
+                     INNER join dap_data_model t1 on t1.id = t.model_id
+					inner join dap_system_info t2 on t1.system_id = t2.id
+                where 1 = 1 and t.pid is null or t.pid = '' ${param.whereSystemIdClause}
+						order by t1.name
+		) t where t.sourceGuid is not null and t.targetGuid is not null
+        ]]>
+    </getDapDataModelToDataModelTableGroupEntity >
+
+    <getDataModelTableGroupToDataModelTableGroupEntity type="RELATIONSHIP" workName="同步一级分组->二级分组的关系" seq="15" label="model.dap.dataModelTableGroupToDataModelTableGroupEntity" srcLabel="model.dap.dataModelTableGroupEntity" targetLabel="model.dap.dataModelTableGroupEntity">
+        select * from (
+        select
+        CONCAT('${param.systemId}',';','${param.env}',';','模型',';','${param.importName}',';',t2.id,';',t1.id,';',(select id from dap_data_model_group where id = t.pid)) as sourceGuid,
+        CONCAT('${param.systemId}',';','${param.env}',';','模型',';','${param.importName}',';',t2.id,';',t1.id,';',(select id from dap_data_model_group where id = t.pid) ,';',t.id) as targetGuid
+        from dap_data_model_group t
+        INNER join dap_data_model t1 on t1.id = t.model_id
+        inner join dap_system_info t2 on t1.system_id = t2.id
+        where 1 = 1 and t.pid is not null and t.pid != ''  ${param.whereSystemIdClause}
+        order by t1.name
+        ) t where t.sourceGuid is not null and t.targetGuid is not null
+    </getDataModelTableGroupToDataModelTableGroupEntity>
+
+    <getDataModelTableGroupToDataModelEntity type="RELATIONSHIP" workName="同步模型分组->模型的关系" seq="16" label="model.dap.dataModelTableGroupToDataModelTableEntity" srcLabel="model.dap.dataModelTableGroupEntity" targetLabel="model.dap.dataModelTableEntity">
+        <![CDATA[
+        select * from (
+        SELECT
+            concat(d.guid) as sourceGuid,
+            concat(d.guid,';',a.eng_name) as targetGuid
+        FROM
+            dap_data_model_table AS a
+        inner JOIN (
+        select
+            t.id,
+            t.name as moiName,
+            t.group_rank as sort,
+            case when t.pid is null or t.pid = ''
+            then CONCAT('${param.systemId}',';','${param.env}',';','模型',';','${param.importName}',';',t2.id,';',t1.id,';',t.id)
+            else
+            CONCAT('${param.systemId}',';','${param.env}',';','模型',';','${param.importName}',';',t2.id,';',t1.id,';',(select id from dap_data_model_group where id = t.pid) ,';',t.id)
+            end as guid
+        from dap_data_model_group t
+            inner join dap_data_model t1 on t1.id = t.model_id
+            inner join dap_system_info t2 on t1.system_id = t2.id
+        where 1= 1 ${param.whereSystemIdClause}
+            order by t1.name
+        ) AS d ON d.id = a.group_id
+        WHERE
+            (a.data_newest != 1) or (a.bm_status = -1)
+        ) t where t.sourceGuid is not null and t.targetGuid is not null
+        ]]>
+    </getDataModelTableGroupToDataModelEntity>
+
+    <!-- 还需要同步模型表到真实表之间的关系，首要用sql实现，如果实现不了，就用代码实现 -->
+
+    <getDataModelTableToDataModelColumnEntity  type="RELATIONSHIP" workName="同步模型表->模型字段的关系" seq="17" label="model.dap.dataModelTableToDataModelColumnEntity" srcLabel="model.dap.dataModelTableEntity" targetLabel="model.dap.dataModelColumnEntity">
+        <![CDATA[
+        select * from (
+            SELECT
+								d.guid as sourceGuid,
+                CONCAT(d.guid,';',b.field_name) as targetGuid
+            FROM
+                dap_data_model_table_field AS b
+                LEFT JOIN dap_standard_basic AS c ON b.standard_id = c.standard_unique_id
+                inner join (
+                                SELECT
+                                    a.id as id,
+                                    a.bm_status,
+																		a.data_newest,
+                                    CONCAT(d.guid,';',a.eng_name) as guid
+                                FROM
+                                    dap_data_model_table AS a
+                                INNER JOIN (
+                                    select
+                                        t.id,
+                                        case when t.pid is null or t.pid = ''
+                                        then CONCAT('${param.systemId}',';','${param.env}',';','模型',';','${param.importName}',';',t2.id,';',t1.id,';',t.id)
+                                        else
+                                             CONCAT('${param.systemId}',';','${param.env}',';','模型',';','${param.importName}',';',t2.id,';',t1.id,';',(select id from dap_data_model_group where id = t.pid) ,';',t.id)
+                                        end as guid
+                                    from dap_data_model_group t
+                                         inner join dap_data_model t1 on t1.id = t.model_id
+                                         inner join dap_system_info t2 on t1.system_id = t2.id
+                                   where 1 = 1  ${param.whereSystemIdClause}
+                                   order by t1.name
+                            ) AS d ON d.id = a.group_id
+                            WHERE
+                                1 = 1
+
+                ) d on b.model_table_id = d.id
+            WHERE
+                 (b.data_newest != 1 and d.data_newest != 1) or (b.bm_status = -1)
+           ) t where t.sourceGuid is not null and t.targetGuid is not null
+        ]]>
+    </getDataModelTableToDataModelColumnEntity>
+
+    <getDataModelTableToDataModelIndexEntity  type="RELATIONSHIP" workName="同步模型表->模型索引的关系" seq="20" label="model.dap.dataModelTableToDataModelIndexEntity" srcLabel="model.dap.dataModelTableEntity" targetLabel="model.dap.dataModelIndexEntity">
+
+        <![CDATA[
+        select * from (
+            select
+					   t.guid as sourceGuid,
+                       CONCAT(t.guid,';',t2.key_name) as targetGuid
+                from dap_data_model_subordinate_key t2
+                         inner join (
+
+                                                    SELECT
+                                                  a.id as id,
+                                                  a.bm_status,a.data_newest,
+                                                                    a.eng_name,
+                                                  concat(d.guid,';',a.eng_name) as guid
+                                          FROM
+                                                 dap_data_model_table AS a
+                                                                INNER JOIN (
+                                                                    select
+                                                                        t.id,
+                                                                        case when t.pid is null or t.pid = ''
+                                                                        then CONCAT('${param.systemId}',';','${param.env}',';','模型',';','${param.importName}',';',t2.id,';',t1.id,';',t.id)
+                                                                        else
+                                                                             CONCAT('${param.systemId}',';','${param.env}',';','模型',';','${param.importName}',';',t2.id,';',t1.id,';',(select id from dap_data_model_group where id = t.pid) ,';',t.id)
+                                                                        end as guid
+                                                                    from dap_data_model_group t
+                                                                         inner join dap_data_model t1 on t1.id = t.model_id
+                                                                         inner join dap_system_info t2 on t1.system_id = t2.id
+                                                                   where 1= 1  ${param.whereSystemIdClause}
+                                                                   order by t1.name
+                                                            ) AS d ON d.id = a.group_id
+                                                            WHERE
+                                                                1 = 1
+
+                                 ) t on t.id = t2.model_table_id and 1 = 1 and t.data_newest != 1
+                where 1 = 1
+                  and t2.data_newest != 1
+                  ) t where t.sourceGuid is not null and t.targetGuid is not null
+
+        ]]>
+    </getDataModelTableToDataModelIndexEntity>
+
+</sql>

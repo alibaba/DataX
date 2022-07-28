@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<sql>
+    <getPgSchema>
+        <![CDATA[
+            SELECT oid,
+                NSPNAME as nspName
+            FROM PG_NAMESPACE
+        ]]>
+    </getPgSchema>
+
+    <getPgFunctionCount>
+        <![CDATA[
+            SELECT
+                COUNT(oid)
+            FROM
+                PG_PROC
+            WHERE
+                PROKIND = 'f'
+            AND PRONAMESPACE in
+                (
+                    SELECT
+                        OID
+                    FROM
+                        PG_NAMESPACE
+                    WHERE
+                        NSPNAME IN $schemas)
+        ]]>
+    </getPgFunctionCount>
+    <getPgFunction>
+        <![CDATA[
+            SELECT
+                oid,
+                PRONAME                         AS NAME,
+                pg_get_function_identity_arguments(oid)  AS params,
+                pg_get_function_result(oid)		AS resultText,
+                PROSRC                          AS text,
+                PRONAMESPACE                    AS nameSpaceId,
+                PRONARGS                        AS nargs,
+                pg_get_functiondef(oid)         AS functionDef,
+                proargtypes::text				AS proargTypes,
+                proallargtypes                  AS proAllArgType,
+                proargmodes                     AS proArgMode,
+                proargnames                     AS proArgName
+            FROM
+                PG_PROC
+            WHERE
+                PROKIND = 'f'
+            AND PRONAMESPACE in
+                (
+                    SELECT
+                        OID
+                    FROM
+                        PG_NAMESPACE
+                    WHERE
+                        NSPNAME IN $schemas) order by oid
+        ]]>
+    </getPgFunction>
+
+    <getPgType>
+        <![CDATA[
+            SELECT
+                oid,
+                typname typName,
+                typcategory typCategory
+            FROM
+                pg_type
+            WHERE
+                oid = '$oid'
+        ]]>
+    </getPgType>
+</sql>

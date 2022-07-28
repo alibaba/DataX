@@ -1,0 +1,7 @@
+{
+  "name": "neo4jWriter",
+  "class": "cn.com.bluemoon.writer.neo4j.BmNeo4jWriter",
+  "description": " ",
+  "developer": "Lilike"
+}
+

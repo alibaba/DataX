@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<sql>
+
+    <getFileInfoPartitioned>
+        <![CDATA[
+			SELECT DISTINCT
+                t.part_d part_d
+            FROM
+                meta_manager.hdfs_file_info t
+		]]>
+    </getFileInfoPartitioned>
+
+    <getFileInfoCount>
+        <![CDATA[
+			SELECT
+                COUNT(DISTINCT path) total
+            FROM
+                meta_manager.hdfs_file_info
+            WHERE
+                part_d = '$partD'
+		]]>
+    </getFileInfoCount>
+
+    <getFileInfo>
+        <![CDATA[
+            SELECT DISTINCT
+                path                                                       path,
+                `replication`                                              replicationCount,
+                modification_time                                          modificationTime,
+                access_time                                                accessTime,
+                preferred_blocksize                                        preferredBlockSize,
+                blocks_count                                               blocksCount,
+                file_size                                                  fileSize,
+                ns_quota                                                   nsQuota,
+                ds_quota                                                   dsQuota,
+                permission                                                 permission,
+                username                                                   userName,
+                groupname                                                  groupName,
+                part_d                                                     partD
+            FROM
+                meta_manager.hdfs_file_info WHERE part_d = '$partD' ORDER BY path LIMIT $limit OFFSET $offset
+
+		]]>
+    </getFileInfo>
+
+</sql>

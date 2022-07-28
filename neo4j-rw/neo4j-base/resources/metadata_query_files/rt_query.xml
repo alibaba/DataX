@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<sql>
+    <getCanalInstance>
+        <![CDATA[
+            SELECT
+                name,
+                content
+            FROM
+                canal_instance_config
+        ]]>
+    </getCanalInstance>
+
+    <getSource>
+        <![CDATA[
+            SELECT
+                t1.source_id    sourceId,
+                t1.source_level sourceLevel,
+                t1.business_id  businessId,
+                t1.theme_id     themeId,
+                t1.table_name   tableName,
+                t1.description,
+                t1.creator_id    creatorId,
+                t1.creator_name  creatorName,
+                t1.create_time   createTime,
+                t1.modifier_id   modifierId,
+                t1.modifier_name modifierName,
+                t1.update_time   updateTime,
+                t2.prop_value    propValue,
+                t3.business_name businessName,
+                t4.theme_name    themeName
+            FROM
+                rt_pf_source t1
+            LEFT JOIN
+                (
+                    SELECT
+                        source_id,
+                        prop_value
+                    FROM
+                        rt_pf_source_properties
+                    WHERE
+                        is_delete = 0
+                    AND prop_key = 'topic' )t2
+            ON
+                t1.source_id = t2.source_id
+            LEFT JOIN
+                rt_pf_business t3
+            ON
+                t1.business_id = t3.business_id
+            LEFT JOIN
+                rt_pf_theme t4
+            ON
+                t1.theme_id = t4.theme_id
+            WHERE
+                t1.is_delete = 0
+
+        ]]>
+    </getSource>
+
+    <getSourceField>
+        <![CDATA[
+            SELECT
+                t1.field_id fieldId,
+                t1.source_id sourceId,
+                t1.field_name fieldName,
+                t1.length,
+                t1.decimals,
+                t1.is_primary_key isPrimaryKey,
+                t1.description,
+                t2.field_type_name fieldType
+            FROM
+                rt_pf_source_field t1
+            LEFT JOIN
+                rt_pf_field_type t2
+            ON
+                t1.field_type_id = t2.field_type_id
+            WHERE
+                t1.is_delete = 0
+        ]]>
+    </getSourceField>
+
+    <getBusiness>
+        <![CDATA[
+            SELECT
+                business_id   businessId,
+                business_code businessCode,
+                business_name businessName
+            FROM
+                rt_pf_business
+            WHERE
+                is_delete = 0
+        ]]>
+    </getBusiness>
+
+    <getTheme>
+        <![CDATA[
+            SELECT
+                theme_id    themeId,
+                theme_code  themeCode,
+                theme_name  themeName,
+                business_id businessId
+            FROM
+                rt_pf_theme
+            WHERE
+                is_delete = 0
+        ]]>
+    </getTheme>
+
+    <getUdf>
+        <![CDATA[
+            SELECT
+                udf_id udfId,
+                udf_name udfName,
+                udf_level udfLevel
+            FROM
+                rt_pf_udf where is_delete = 0
+        ]]>
+    </getUdf>
+
+    <getJob>
+        <![CDATA[
+            SELECT
+                t1.job_id              jobId,
+                t1.job_name            jobName,
+                t1.theme_id            themeId,
+                t1.job_type            jobType,
+                t1.business_id         businessId,
+                t1.technical_member_id technicalMemberId,
+                t1.business_member_id  businessMemberId,
+                t1.description         description,
+                t1.job_version_id      jobVersionId,
+                t1.creator_name        creatorName,
+                t1.create_time         createTime,
+                t1.modifier_name       modifierName,
+                t1.update_time         updateTime,
+                t2.version_name        versionName
+            FROM
+                rt_pf_job t1
+            INNER JOIN
+                rt_pf_job_version t2
+            ON
+                t1.job_version_id = t2.job_version_id
+            WHERE
+                t1.is_delete = 0
+            AND t2.is_delete = 0
+        ]]>
+    </getJob>
+
+    <getJobRelateSource>
+        <![CDATA[
+            SELECT
+                t1.job_id     jobId,
+                t2.source_id  sourceId,
+                t3.table_name tableName
+            FROM
+                rt_pf_job t1
+            INNER JOIN
+                (
+                    SELECT
+                        job_version_id,
+                        source_id
+                    FROM
+                        rt_pf_job_source
+                    WHERE
+                        is_delete = 0) t2
+            ON
+                t1.job_version_id = t2.job_version_id
+            INNER JOIN
+                rt_pf_source t3
+            ON
+                t2.source_id = t3.source_id
+            WHERE
+                t1.is_delete = 0
+        ]]>
+    </getJobRelateSource>
+
+    <getJobRelateExport>
+        <![CDATA[
+            SELECT
+                t1.job_id     jobId,
+                t2.table_name tableName
+            FROM
+                rt_pf_job t1
+            INNER JOIN
+                rt_pf_job_export t2
+            ON
+                t1.job_version_id = t2.job_version_id
+            where t1.is_delete = 0 and t2.is_delete = 0
+        ]]>
+    </getJobRelateExport>
+
+    <getJobRelateUdf>
+        <![CDATA[
+            SELECT
+                t1.job_id    jobId,
+                t2.udf_id    udfId
+            FROM
+                rt_pf_job t1
+            INNER JOIN
+                (
+                    SELECT
+                        job_version_id,
+                        udf_id
+                    FROM
+                        rt_pf_job_udf
+                    WHERE
+                        is_delete = 0) t2
+            ON
+                t1.job_version_id = t2.job_version_id
+            WHERE
+                t1.is_delete = 0
+        ]]>
+    </getJobRelateUdf>
+
+    <getJobSql>
+        <![CDATA[
+            SELECT
+                t1.job_id        jobId,
+                t2.sql_statement sqlText
+            FROM
+                rt_pf_job t1
+            LEFT JOIN
+                (
+                    SELECT
+                        job_version_id,
+                        sql_statement
+                    FROM
+                        rt_pf_job_sql
+                    WHERE
+                        is_delete = 0) t2
+            ON
+                t1.job_version_id = t2.job_version_id
+            WHERE
+                t1.is_delete = 0
+        ]]>
+    </getJobSql>
+
+</sql>

@@ -1,0 +1,56 @@
+{
+  "job": {
+    "setting": {
+      "speed": {
+        "channel": 1
+      },
+      "errorLimit": {
+        "record": 0,
+        "percentage": 0.02
+      }
+    },
+    "content": [
+      {
+        "reader": {
+          "name": "mysqlreader",
+          "parameter": {
+            "username": "root",
+            "password": "root",
+            "connection": [
+              {
+                "querySql": [
+                  "SELECT DISTINCT t.table_name AS moiName, t.table_comment AS COMMENT, DATE_FORMAT(t.CREATE_TIME,'%Y%m%d%H%i%s') AS moiCreateDate, DATE_FORMAT(t.UPDATE_TIME,'%Y%m%d%H%i%s')AS moiUpdateDate, t.TABLE_SCHEMA as owner, CONCAT('mysql.',t.TABLE_SCHEMA,'.',t.TABLE_SCHEMA,'.',t.TABLE_NAME) as moiDataId, CONCAT('mysql.',t.TABLE_SCHEMA,'.',t.TABLE_SCHEMA) as moiParentDataId FROM information_schema. TABLES t WHERE t.table_schema = 'lilike' AND t.table_type = 'BASE TABLE' ORDER BY moiName ASC;"
+                ],
+                "jdbcUrl": [
+                  "jdbc:mysql://127.0.0.1:3306/information_schema"
+                ]
+              }
+            ]
+          }
+        },
+        "writer": {
+          "name": "neo4jWriter",
+          "parameter": {
+            "db.uri": "bolt://192.168.234.4:7687",
+            "db.username": "neo4j",
+            "db.password": "123456",
+            "batchSize": "100",
+            "column": [
+              "moiName",
+              "COMMENT",
+              "moiCreateDate",
+              "moiUpdateDate",
+              "owner",
+              "moiDataId",
+              "moiParentDataId"
+            ],
+            "create.type": "NODE",
+            "create.NODE.label": "resource.relational.tableEntity",
+            "create.NODE.mode": "COMPARE",
+            "create.NODE.compare.id": "moiDataId"
+          }
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "job": {
+    "setting": {
+      "speed": {
+        "channel": 5
+      }
+    },
+    "content": [
+      {
+        "reader": {
+          "name": "mysqlreader",
+          "parameter": {
+            "username": "root",
+            "password": "root",
+            "where": "",
+            "connection": [
+              {
+                "querySql": [
+                  " SELECT CONCAT('mysql.',TABLE_SCHEMA) as sourceDataId, CONCAT('mysql.',TABLE_SCHEMA,'.',table_name) as targetDataId FROM information_schema.`TABLES` where TABLE_SCHEMA = 'lilike' and TABLE_TYPE = 'BASE TABLE'"
+                ],
+                "jdbcUrl": [
+                  "jdbc:mysql://127.0.0.1:3306/information_schema"
+                ]
+              }
+            ]
+          }
+        },
+        "writer": {
+          "name": "neo4jWriter",
+          "parameter": {
+            "db.uri": "bolt://192.168.234.4:7687",
+            "db.username": "neo4j",
+            "db.password": "123456",
+            "batchSize": "100",
+            "column": [
+              "sourceDataId",
+              "targetDataId"
+            ],
+            "create.type":"RELATIONSHIP",
+            "create.RELATIONSHIP.src.label":"resource.relational.tableEntity",
+            "create.RELATIONSHIP.target.label":"resource.relational.columnEntity",
+            "create.RELATIONSHIP.label":"resource.relational.tableToColumnEntity",
+            "create.RELATIONSHIP.src.degree.dir":"-",
+            "create.RELATIONSHIP.target.degree.dir":"->",
+            "create.RELATIONSHIP.mode":"MERGE"
+          }
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "job": {
+    "setting": {
+      "speed": {
+        "channel": 1
+      },
+      "errorLimit": {
+        "record": 0,
+        "percentage": 0.02
+      }
+    },
+    "content": [
+      {
+        "reader": {
+          "name": "postgresqlreader",
+          "parameter": {
+            "username": "root",
+            "password": "root",
+            "connection": [
+              {
+                "querySql": [
+                  "with c2s as (\nselect\n\tdistinct table_catalog ,\n\ttable_schema\nfrom\n\tinformation_schema.tables)\nselect\n\tt.tablename as moiName,\n\tcoalesce(ds.description) as comment,\n\tt.tableowner as owner,\n\tconcat('pgsql.', c2s.table_catalog, '.', t.schemaname, '.', t.tablename) as moiDataId,\n\tconcat('pgsql.', c2s.table_catalog, '.', t.schemaname) as moiParentDataId\nfrom\n\tpg_catalog.pg_tables t\nleft join pg_catalog.pg_class c on\n\tt.tablename = c.relname\nleft join pg_catalog.pg_description ds on\n\tds.objoid = c.oid::regclass\n\tand ds.objsubid = 0\nleft join c2s on\n\tt.schemaname = c2s.table_schema\nwhere\n\tt.schemaname = 'public'"
+                ],
+                "jdbcUrl": [
+                  "jdbc:mysql://127.0.0.1:3306/information_schema"
+                ]
+              }
+            ]
+          }
+        },
+        "writer": {
+          "name": "neo4jWriter",
+          "parameter": {
+            "db.uri": "bolt://192.168.234.4:7687",
+            "db.username": "neo4j",
+            "db.password": "123456",
+            "batchSize": "100",
+            "column": [
+              "moiName",
+              "comment",
+              "owner",
+              "moiDataId",
+              "moiParentDataId"
+            ],
+            "create.type": "NODE",
+            "create.NODE.label": "resource.relational.tableEntity",
+            "create.NODE.mode": "COMPARE",
+            "create.NODE.compare.id": "moiDataId"
+          }
+        }
+      }
+    ]
+  }
+}

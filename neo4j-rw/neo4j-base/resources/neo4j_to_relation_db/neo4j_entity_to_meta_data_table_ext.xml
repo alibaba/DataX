@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<datax>
+    <syncTable
+            mapColumns="table_guid,table_name_cn,table_name_en,schema_name,version_name,system_id,sync_time,meta_data_update_time,bm_status"
+            targetTable="meta_data_table_ext" seq="1">
+        <countCql>
+            match(s:`model.bank.systemEntity`)-[]->(v:`model.bank.versionEntity`)-[]->(c1:`resource.relational.catalogEntity`)
+            -[]->
+            (c2:`resource.relational.catalogEntity`)-[]->(s2:`resource.relational.schemaEntity`)-[]->(t:`resource.relational.tableEntity`)
+            where s.systemId = '${systemId}' and s2.moiName = '${schemaName}' and v.moiName = '${versionName}'
+            return count(t.guid) as total
+        </countCql>
+        <cql>
+            match(s:`model.bank.systemEntity`)-[]->(v:`model.bank.versionEntity`)-[]->(c1:`resource.relational.catalogEntity`)
+            -[]->
+            (c2:`resource.relational.catalogEntity`)-[]->(s2:`resource.relational.schemaEntity`)-[]->(t:`resource.relational.tableEntity`)
+            where s.systemId = '${systemId}' and s2.moiName = '${schemaName}' and v.moiName = '${versionName}'
+            return t.guid as table_guid ,  t.comment as table_name_cn,
+            t.moiName as table_name_en, s2.moiName as schema_name, v.moiName as version_name,
+            s.systemId as system_id,datetime.realtime() as sync_time,
+            apoc.date.format(apoc.date.parse(t.moiCreateDate + '','ms','yyyyMMddHHmmss'),'ms','yyyy-MM-dd HH:mm:ss') as meta_data_update_time,
+            1 as bm_status
+        </cql>
+        <postSql>
+            <sql comment="新增的表视为新增的维护状态">
+                UPDATE meta_data_table_ext SET maintain_status = 1 WHERE maintain_status is null
+            </sql>
+            <sql comment="如果是已经维护好的表，并且今天有更新，那么就是修改的维护状态">
+                UPDATE meta_data_table_ext SET maintain_status = 0 WHERE maintain_status = 2 AND meta_data_update_time  >= '${today}'
+            </sql>
+            <sql comment="如果是新增进来的表，插入用户是dataX">
+                update meta_data_table_ext set create_user_id = 'dataX',create_time = now() where create_user_id is null
+            </sql>
+            <sql comment="默认安全等级是涉密">
+                update meta_data_table_ext set safe_level = 4 where safe_level is null
+            </sql>
+            <sql comment="修改系统扩展表状态为待分析">
+                INSERT INTO `data_asset_platform`.`meta_data_system_ext`(`system_id`, `analysis_status`, `create_user_id`, `create_time`, `update_user_id`, `update_time`) SELECT DISTINCT t1.system_id,0 as analysis_status,'dataX' as create_user_id,now() as create_time,'dataX' as update_user_id,now() as update_time FROM meta_data_table_ext t1 left join meta_data_system_ext t2 on t1.system_id = t2.system_id WHERE t1.maintain_status = 1 AND t1.create_time >= '${today}' and (t2.system_id is null or t2.analysis_status = 2) on duplicate key UPDATE analysis_status = 0
+            </sql>
+            <sql comment="删除数据库中已经不存在的表">
+                update meta_data_table_ext set bm_status = -1 where bm_status = 1 and sync_time &lt;= '${today}' and system_id = '${systemId}' and schema_name = '${schemaName}'
+            </sql>
+            <sql comment="更新表的业务线">
+                update meta_data_table_ext set bus_line_id = (SELECT
+                biz_line_id
+                FROM
+                dap_system_info
+                WHERE
+                id = '${systemId}'
+                and type != 2)
+                where maintain_status = 1 and system_id = '${systemId}'
+            </sql>
+        </postSql>
+    </syncTable>
+
+    <syncColumn
+        mapColumns="table_guid,column_guid,column_name_en,sync_time,meta_data_update_time,bm_status"
+        targetTable="meta_data_column_ext"
+        seq="2"
+    >
+    <countCql>
+        match(s:`model.bank.systemEntity`)-[]->(v:`model.bank.versionEntity`)-[]->(c1:`resource.relational.catalogEntity`)
+        -[]->(c2:`resource.relational.catalogEntity`)-[]->(s2:`resource.relational.schemaEntity`)-[]->(t:`resource.relational.tableEntity`)
+        -[]->(cc:`resource.relational.columnEntity`)
+        where s.systemId = '${systemId}' and s2.moiName = '${schemaName}' and v.moiName = '${versionName}'
+        return count(cc.guid) as total
+    </countCql>
+    <cql>
+        match(s:`model.bank.systemEntity`)-[]->(v:`model.bank.versionEntity`)-[]->(c1:`resource.relational.catalogEntity`)
+        -[]->(c2:`resource.relational.catalogEntity`)-[]->(s2:`resource.relational.schemaEntity`)-[]->(t:`resource.relational.tableEntity`)
+        -[]->(cc:`resource.relational.columnEntity`)
+        where s.systemId = '${systemId}' and s2.moiName = '${schemaName}' and v.moiName = '${versionName}'
+        return t.guid as table_guid , cc.guid as column_guid,
+        cc.moiName as column_name_en, datetime.realtime() as sync_time,
+        apoc.date.format(apoc.date.parse(t.moiCreateDate + '','ms','yyyyMMddHHmmss'),'ms','yyyy-MM-dd HH:mm:ss') as meta_data_update_time,
+        1 as bm_status
+    </cql>
+
+        <postSql>
+            <sql comment="如果是新增的，那么维护状态就是新增">
+                UPDATE meta_data_column_ext SET maintain_status = 1 WHERE maintain_status is null
+            </sql>
+            <sql comment="如果元数据更新时间是今天，并且状态是已经维护，修改维护状态">
+                UPDATE meta_data_column_ext SET maintain_status = 0 WHERE maintain_status = 2 AND meta_data_update_time >= '${today}'
+            </sql>
+            <sql comment="设置默认的用户和创建时间">
+                update meta_data_column_ext set create_user_id = 'dataX',create_time = now()  where create_user_id is null
+            </sql>
+            <sql comment="设置默认的安全等级">
+                update meta_data_column_ext set safe_level = 4 where safe_level is null
+            </sql>
+            <sql comment="更新表的维护状态">
+                update meta_data_table_ext set maintain_status = 0 where maintain_status = 2 and table_guid in (select DISTINCT table_guid from meta_data_column_ext where  maintain_status in (0,1))
+            </sql>
+        </postSql>
+    </syncColumn>
+
+</datax>

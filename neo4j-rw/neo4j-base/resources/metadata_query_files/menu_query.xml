@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<sql>
+    <getMallSysMenu>
+        <![CDATA[
+            SELECT
+                '0' isViews,
+                menu_id menuId,
+                menu_name menuName,
+                menu_label menuLabel,
+                function_path functionPath,
+                parents_id parentId,
+                menu_level menuLevel,
+                del_flag delFlag,
+                CAST(if_down_shelf AS CHAR) ifDownShelf,
+                app_code appCode,
+                changed_name changedName,
+                changed_time changedTime
+            FROM
+                mall_sys_menu
+            WHERE
+                function_path LIKE $reportDomain
+        ]]>
+    </getMallSysMenu>
+
+    <getMallSysMenuByMenuId>
+        <![CDATA[
+            SELECT
+                '0' isViews,
+                menu_id menuId,
+                menu_name menuName,
+                menu_label menuLabel,
+                parents_id parentId,
+                menu_level menuLevel,
+                del_flag delFlag,
+                app_code appCode
+            FROM
+                mall_sys_menu
+            WHERE
+                menu_id in $parentIds
+        ]]>
+    </getMallSysMenuByMenuId>
+
+    <getMallSysPortalViewMenu>
+        <![CDATA[
+            SELECT
+                '1' isViews,
+                v.menu_id menuId,
+                v.view_id viewId,
+                v.menu_name menuName,
+                v.menu_desc menuLabel,
+                v.menu_path functionPath,
+                v.parent_id parentId,
+                v.menu_level menuLevel,
+                CAST(v.is_del AS CHAR) delFlag,
+                v.op_name changedName,
+                v.op_time changedTime,
+                CAST(p.if_down_shelf AS CHAR) ifDownShelf
+            FROM
+                mall_sys_portal_view_menu v
+            LEFT JOIN
+                mall_sys_menu p
+            ON
+                v.relation_menu_id = p.menu_id
+            WHERE
+                v.menu_path LIKE $reportDomain
+        ]]>
+    </getMallSysPortalViewMenu>
+
+    <getMallSysPortalViewMenuByMenuId>
+        <![CDATA[
+            SELECT
+                '1' isViews,
+                v.menu_id menuId,
+                v.view_id viewId,
+                v.menu_name menuName,
+                v.menu_desc menuLabel,
+                v.parent_id parentId,
+                v.menu_level menuLevel,
+                CAST(v.is_del AS CHAR) delFlag
+            FROM
+                mall_sys_portal_view_menu v
+            WHERE
+                v.menu_id in $parentIds
+        ]]>
+    </getMallSysPortalViewMenuByMenuId>
+
+    <getMallSysApp>
+        <![CDATA[
+            SELECT
+                app_code appCode,
+                app_name appName
+            FROM
+                mall_sys_application
+            WHERE
+                app_code in $appCodes
+        ]]>
+    </getMallSysApp>
+
+    <getPortalViewInfo>
+        <![CDATA[
+            SELECT
+                view_id viewId,
+                view_name viewName
+            FROM
+                mall_sys_portal_view_info
+            WHERE
+                view_id in $viewIds
+        ]]>
+    </getPortalViewInfo>
+
+    <getEcnMenuVisitCnt7>
+        <![CDATA[
+            SELECT
+                template_nam                templateName,
+                system_code                 systemCode,
+                SUM(sql_exec_cnt::INT)      visitCnt7
+            FROM
+                BLUEMOON.S_COM_BMREPORT_OPERATE_LOG_OVERVIEW_SUM
+            WHERE
+                DATA_DT::INT >= $dataDtCnt7
+            GROUP BY
+                template_nam,system_code
+        ]]>
+    </getEcnMenuVisitCnt7>
+
+    <getEcnMenuVisitCnt30>
+        <![CDATA[
+            SELECT
+                template_nam                templateName,
+                system_code                 systemCode,
+                SUM(sql_exec_cnt::INT)      visitCnt30
+            FROM
+                BLUEMOON.S_COM_BMREPORT_OPERATE_LOG_OVERVIEW_SUM
+            WHERE
+                DATA_DT::INT >= $dataDtCnt30
+            GROUP BY
+                template_nam,system_code
+        ]]>
+    </getEcnMenuVisitCnt30>
+
+    <getEcnMenuVisitCnt60>
+        <![CDATA[
+            SELECT
+                template_nam                    templateName,
+                system_code                     systemCode,
+                SUM(sql_exec_cnt::INT)          visitCnt60
+            FROM
+                BLUEMOON.S_COM_BMREPORT_OPERATE_LOG_OVERVIEW_SUM
+            WHERE
+                DATA_DT::INT >= $dataDtCnt60
+            GROUP BY
+                template_nam,system_code
+        ]]>
+    </getEcnMenuVisitCnt60>
+
+    <getEcnMenuVisitCnt90>
+        <![CDATA[
+            SELECT
+                template_nam                    templateName,
+                system_code                     systemCode,
+                SUM(sql_exec_cnt::INT)          visitCnt90
+            FROM
+                BLUEMOON.S_COM_BMREPORT_OPERATE_LOG_OVERVIEW_SUM
+            WHERE
+                DATA_DT::INT >= $dataDtCnt90
+            GROUP BY
+                template_nam,system_code
+        ]]>
+    </getEcnMenuVisitCnt90>
+
+    <getEcnMenuVisitUser>
+        <![CDATA[
+            SELECT DISTINCT ON(template_nam)
+                template_nam                    templateName,
+                data_tm                         lastVisitTime,
+                col_operator                    lastVisitUserName
+            FROM
+                RES.res_com_bmreport_operate_log_overview_dtl
+            ORDER BY template_nam,data_tm DESC
+        ]]>
+    </getEcnMenuVisitUser>
+
+</sql>

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<sql>
+
+    <getSchemas>
+        <![CDATA[
+			SELECT
+                DISTINCT TABLE_SCHEM AS moiName
+            FROM
+                SYSTEM.CATALOG
+		]]>
+    </getSchemas>
+
+    <getTables>
+        <![CDATA[
+			SELECT
+                TABLE_NAME AS moiName,
+                REMARKS AS comment,
+                '$parentGuid' || ';' || TABLE_SCHEM AS sourceGuid,
+                '$parentGuid' || ';' || TABLE_SCHEM || ';' || TABLE_NAME AS guid
+            FROM
+                SYSTEM.CATALOG
+            WHERE
+                TABLE_SCHEM = '$schemaName'
+                AND TABLE_TYPE = '$tableType'
+            ORDER BY
+                moiName
+		]]>
+    </getTables>
+
+    <getTablesSchemaIsNull>
+        <![CDATA[
+			SELECT
+                TABLE_NAME AS moiName,
+                REMARKS AS comment,
+                '$parentGuid' || ';' || 'NONE'AS sourceGuid,
+                '$parentGuid' || ';' || 'NONE' || ';' || TABLE_NAME AS guid
+            FROM
+                SYSTEM.CATALOG
+            WHERE
+                TABLE_SCHEM is null
+                AND TABLE_TYPE = '$tableType'
+            ORDER BY
+                moiName
+		]]>
+    </getTablesSchemaIsNull>
+
+    <getTableColumnsTotal>
+        <![CDATA[
+           SELECT
+                count(1) AS total
+            FROM
+                SYSTEM.CATALOG
+            WHERE
+                TABLE_SCHEM = '$schemaName'
+                AND TABLE_NAME IN (
+                SELECT
+                    TABLE_NAME
+                FROM
+                    SYSTEM.CATALOG
+                WHERE
+                    TABLE_SCHEM = '$schemaName'
+                    AND TABLE_TYPE = '$tableType' )
+                AND COLUMN_NAME IS NOT NULL
+		]]>
+    </getTableColumnsTotal>
+
+    <getTableColumns>
+        <![CDATA[
+           SELECT
+                COLUMN_NAME AS moiName,
+                ORDINAL_POSITION AS columnId,
+                NULLABLE AS isNullable,
+                DATA_TYPE AS sqlSimpleType,
+                COLUMN_SIZE AS LENGTH,
+                DECIMAL_DIGITS AS PRECISION,
+                REMARKS AS comment,
+                '$parentGuid' || ';' || TABLE_SCHEM || ';' || TABLE_NAME AS sourceGuid,
+                '$parentGuid' || ';' || TABLE_SCHEM || ';' || TABLE_NAME || ';' || COLUMN_NAME AS guid
+            FROM
+                SYSTEM.CATALOG
+            WHERE
+                TABLE_SCHEM = '$schemaName'
+                AND TABLE_NAME IN (
+                SELECT
+                    TABLE_NAME
+                FROM
+                    SYSTEM.CATALOG
+                WHERE
+                    TABLE_SCHEM = '$schemaName'
+                    AND TABLE_TYPE = '$tableType' )
+                AND COLUMN_NAME IS NOT NULL
+            ORDER BY
+                TABLE_NAME,
+                columnId
+            LIMIT $limit OFFSET $offset
+		]]>
+    </getTableColumns>
+
+    <getTableColumnsSchemaIsNullTotal>
+        <![CDATA[
+           SELECT
+                count(1) AS total
+            FROM
+                SYSTEM.CATALOG
+            WHERE
+                TABLE_SCHEM IS NULL
+                AND TABLE_NAME IN (
+                SELECT
+                    TABLE_NAME
+                FROM
+                    SYSTEM.CATALOG
+                WHERE
+                    TABLE_SCHEM IS NULL
+                    AND TABLE_TYPE = '$tableType' )
+                AND COLUMN_NAME IS NOT NULL
+		]]>
+    </getTableColumnsSchemaIsNullTotal>
+
+    <getTableColumnsSchemaIsNull>
+        <![CDATA[
+           SELECT
+                COLUMN_NAME AS moiName,
+                ORDINAL_POSITION AS columnId,
+                NULLABLE AS isNullable,
+                DATA_TYPE AS sqlSimpleType,
+                COLUMN_SIZE AS LENGTH,
+                DECIMAL_DIGITS AS PRECISION,
+                REMARKS AS comment,
+                '$parentGuid' || ';' || 'NONE' || ';' || TABLE_NAME AS sourceGuid,
+                '$parentGuid' || ';' || 'NONE' || ';' || TABLE_NAME || ';' || COLUMN_NAME AS guid
+            FROM
+                SYSTEM.CATALOG
+            WHERE
+                TABLE_SCHEM IS NULL
+                AND TABLE_NAME IN (
+                SELECT
+                    TABLE_NAME
+                FROM
+                    SYSTEM.CATALOG
+                WHERE
+                    TABLE_SCHEM IS NULL
+                    AND TABLE_TYPE = '$tableType' )
+                AND COLUMN_NAME IS NOT NULL
+            ORDER BY
+                TABLE_NAME,
+                columnId
+            LIMIT $limit OFFSET $offset
+		]]>
+    </getTableColumnsSchemaIsNull>
+
+</sql>

@@ -108,6 +108,7 @@
         <module>hbase20xsqlreader</module>
         <module>hbase20xsqlwriter</module>
         <module>kuduwriter</module>
+        <module>neo4j-rw</module>
     </modules>
 
     <distributionManagement>

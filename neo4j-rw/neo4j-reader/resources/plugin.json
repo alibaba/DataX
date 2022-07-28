@@ -1,0 +1,7 @@
+{
+  "name": "neo4jReader",
+  "class": "cn.com.bluemoon.reader.neo4j.BmNeo4jReader",
+  "description": " ",
+  "developer": "Lilike"
+}
+

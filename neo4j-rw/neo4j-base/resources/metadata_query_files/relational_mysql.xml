@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<sql>
+	<getSchemas>
+		<![CDATA[
+		    select  schema_name as name from information_schema.schemata where schema_name = '${schemaName}'
+		]]>
+	</getSchemas>
+
+	<getTables>
+		<![CDATA[
+			select DISTINCT
+				 t.table_name as name,
+				 t.table_comment as comment,
+				 t.CREATE_TIME as createDate,
+				 t.UPDATE_TIME as updateDate,
+				 t.engine as engine,
+				 t.table_schema as owner,
+				 t.TABLE_COLLATION as tableCollation
+			from information_schema.TABLES t
+				where t.table_schema =  '${schemaName}'
+				<#if tableNames??>
+					and t.table_name in (
+					<#list tableNames as tableName>
+						'${tableName}'
+							<#sep> ,
+					</#list> )
+				</#if>
+
+			and t.table_type = 'BASE TABLE'
+       			order by name asc
+		]]>
+    </getTables>
+	
+	<getTableColumn>
+		<![CDATA[
+	        SELECT
+					c.column_name AS `name`,
+					c.ordinal_position AS seq,
+					c.column_default AS initialValue,
+					c.is_nullable AS isNullable,
+					c.data_type AS sqlSimpleType,
+					c.character_maximum_length AS length,
+					c.numeric_precision AS `precision`,
+					c.numeric_scale AS scale,
+					c.column_comment AS comment,
+					c.CHARACTER_SET_NAME AS characterSetName,
+				  	case when c.COLUMN_KEY = 'PRI' then 'YES' else 'NO' end as isPrimary,
+					c.column_type as columnType,
+					c.table_name as tableName,
+					c.COLUMN_DEFAULT as columnDefault,
+				  	case when c.EXTRA = 'auto_increment' then 'YES' else 'NO' end as isAutoIncrement,
+				  	extra
+				FROM
+					information_schema.COLUMNS c
+				WHERE
+					c.TABLE_SCHEMA = '${schemaName}'
+				<#if tableNames??>
+					and c.table_name in (
+					<#list tableNames as tableName>
+						'${tableName}'
+							<#sep> ,
+					</#list> )
+				</#if>
+		]]>
+	</getTableColumn>
+
+	<getSQLIndexes>
+	    <![CDATA[
+			SELECT DISTINCT
+				table_schema AS schemaName,
+				table_name AS tableName,
+				index_name AS name,
+				index_type AS idxMethod,
+				index_comment AS comment,
+			  	case when index_type = 'FULLTEXT' then 'fulltext'
+			  	when
+					NON_UNIQUE = 0 and INDEX_NAME != 'PRIMARY' then 'unique'
+			  	when
+					NON_UNIQUE = 0 and INDEX_NAME = 'PRIMARY' then 'primary'
+			  	when
+					NON_UNIQUE = 1 and INDEX_NAME != 'PRIMARY' then 'normal'
+			  	end as idxType,
+				column_name as fieldName,
+			  	SEQ_IN_INDEX as seqInIndex,
+				case when `COLLATION` = 'A' then 'asc' else 'desc' end as sorting
+			FROM
+				information_schema.statistics s
+			WHERE
+				s.index_schema = '${schemaName}'
+				<#if tableNames??>
+					and s.table_name in (
+					<#list tableNames as tableName>
+						'${tableName}'
+							<#sep> ,
+					</#list> )
+				</#if>
+			order by name,seq_in_index
+	    ]]>
+	</getSQLIndexes>
+
+</sql>

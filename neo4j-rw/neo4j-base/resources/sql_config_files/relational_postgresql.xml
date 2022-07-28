@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<sql>
+
+    <getTables  type="NODE" workName="同步表" seq="1" nodeName="表" label="resource.relational.tableEntity" columns="moiName,comment,owner,isTemporary,guid,tableRows,avgRowLength,dataLength,indexLength">
+        <![CDATA[
+            select
+                  t.tablename as moiName,
+                  COALESCE(ds.description) as comment,
+                  t.tableowner as owner,
+                  case when lower('${param.schema}') = 'temp' then 'true' else 'false' end as isTemporary,
+                  CONCAT('${param.systemId}',';','${param.env}',';','数据字典',';','${param.importName}',';',t.schemaname,';',t.tablename) as guid,
+				  c.reltuples::DECIMAL::text as tableRows,
+				  pg_total_relation_size(relid)::DECIMAL::text as avgRowLength,
+				  pg_relation_size(relid)::DECIMAL::text as dataLength,
+				  pg_indexes_size(relid)::DECIMAL::text as indexLength
+            from pg_catalog.pg_tables t
+                left join pg_catalog.pg_class c  on t.tablename = c.relname
+                left join pg_catalog.pg_description ds on ds.objoid = c.oid and ds.objsubid = 0
+            	left join pg_catalog.pg_namespace pn  on c.relnamespace = pn.oid and t.schemaname  = pn.nspname
+							left join pg_catalog.pg_statio_user_tables t1 on (t1.schemaname=pn.nspname and t1.relname=t.tablename)
+            where pn.nspname =  '${param.schema}' order by t.tablename
+		]]>
+    </getTables>
+
+
+
+    <getTableColumn  type="NODE" workName="同步表字段" seq="2" nodeName="表字段"  label="resource.relational.columnEntity" sourceLabel="resource.relational.tableEntity" columns="guid,moiName,columnId,moiSeq,initialValue,isNullable,sqlSimpleType,length,precision,scale,comment,characterSetName,isPartition,owner,isPrimaryKey,tableName">
+        <![CDATA[
+        SELECT distinct
+            CONCAT('${param.systemId}',';','${param.env}',';','数据字典',';','${param.importName}',';',t.schemaname,';',t.tablename,';',(a.attname)::information_schema.sql_identifier) as guid,
+            (a.attname)::information_schema.sql_identifier AS moiName,
+            (a.attnum)::information_schema.cardinal_number AS columnId,
+            (a.attnum)::information_schema.cardinal_number AS moiSeq,
+            (pg_get_expr(ad.adbin, ad.adrelid))::information_schema.character_data AS initialValue,
+        (
+        CASE
+        WHEN (a.attnotnull
+        OR  ((t1.typtype = 'd'::"char")
+        AND t1.typnotnull))
+        THEN 'NO'::text
+        ELSE 'YES'::text
+        END)::information_schema.character_data AS isNullable,
+        (
+        CASE
+        WHEN (t1.typtype = 'd'::"char")
+        THEN
+        CASE
+        WHEN ((bt.typelem <> (0)::oid)
+        AND (bt.typlen = (-1)))
+        THEN 'ARRAY'::text
+        WHEN (nbt.nspname = 'pg_catalog'::name)
+        THEN format_type(t1.typbasetype, NULL::INTEGER)
+        ELSE 'USER-DEFINED'::text
+        END
+        ELSE
+        CASE
+        WHEN ((t1.typelem <> (0)::oid)
+        AND (t1.typlen = (-1)))
+        THEN 'ARRAY'::text
+        WHEN (nt.nspname = 'pg_catalog'::name)
+        THEN format_type(a.atttypid, NULL::INTEGER)
+        ELSE 'USER-DEFINED'::text
+        END
+        END)::information_schema.character_data AS sqlSimpleType,
+        (information_schema._pg_char_max_length(information_schema._pg_truetypid(a.*, t1.*),
+        information_schema._pg_truetypmod(a.*, t1.*)))::information_schema.cardinal_number AS length,
+        (information_schema._pg_numeric_precision(information_schema._pg_truetypid(a.*, t1.*),
+        information_schema._pg_truetypmod(a.*, t1.*)))::information_schema.cardinal_number AS precision,
+        (information_schema._pg_numeric_scale(information_schema._pg_truetypid(a.*, t1.*),
+        information_schema._pg_truetypmod(a.*, t1.*)))::information_schema.cardinal_number AS scale,
+        COALESCE(ds.description) as comment,
+        (COALESCE(bt.typname, t1.typname))::information_schema.sql_identifier AS characterSetName,
+        '' as isPartition,t.tableowner as owner,
+        CASE
+            WHEN a1.attname = a.attname
+            THEN 'true'
+        ELSE 'false'
+            END AS isPrimaryKey,
+        t.tablename as tableName
+        FROM pg_catalog.pg_tables t
+        left join pg_catalog.pg_class c on t.tablename = c.relname
+        left join pg_catalog.pg_namespace n on c.relnamespace = n.oid and t.schemaname = n.nspname
+        LEFT JOIN (pg_attribute a LEFT JOIN pg_attrdef ad ON a.attrelid = ad.adrelid AND a.attnum = ad.adnum) ON c.oid = a.attrelid AND a.attnum>0
+       	left join pg_catalog.pg_description ds  on ds.objoid = a.attrelid  and ds.objsubid=a.attnum
+        LEFT JOIN ((pg_type t1 JOIN pg_namespace nt ON t1.typnamespace = nt.oid)
+        LEFT JOIN (pg_type bt JOIN pg_namespace nbt ON  bt.typnamespace = nbt.oid)  ON  t1.typtype = 'd'::"char"  AND t1.typbasetype = bt.oid) ON a.atttypid = t1.oid
+        LEFT JOIN pg_constraint c1 ON n.oid = c1.connamespace AND c.oid = c1.conrelid AND c1.contype = 'p'
+        LEFT JOIN (
+        SELECT
+            r.oid AS roid,
+            r.relname,
+            nr.nspname AS nr_nspname,
+            c.conname,
+        information_schema._pg_expandarray(c.conkey) AS x
+            FROM pg_namespace nr,  pg_class r, pg_constraint c
+        WHERE
+        nr.oid = r.relnamespace AND r.oid = c.conrelid AND c.contype = 'p' AND NOT pg_is_other_temp_schema(nr.oid) ) ss ON
+         t.schemaname = ss.nr_nspname AND t.tablename = ss.relname AND c1.conname = ss.conname
+        LEFT JOIN pg_attribute a1
+        on ss.roid = a1.attrelid  AND a.attname = a1.attname
+        left join pg_catalog.pg_description ds_col on ds_col.objoid = c.oid  and ds_col.objsubid = a.attnum
+        WHERE n.nspname =  '${param.schema}' and position ('dropped' in a.attname) = 0
+            ORDER BY columnId ASC
+        	]]>
+    </getTableColumn>
+
+    <getView type="NODE" workName="同步表视图" seq="3" nodeName="视图" label="resource.relational.viewEntity" columns="moiName,guid,sql">
+        <![CDATA[
+        select
+        pv.viewname as moiName,
+        CONCAT('${param.systemId}',';','${param.env}',';','数据字典',';','${param.importName}' ,';',pv.schemaname,';',pv.viewname) as guid,
+        pv.definition as sql
+        from pg_catalog.pg_views pv
+        where schemaname  = '${param.schema}' order by pv.viewname
+        ]]>
+    </getView>
+
+
+    <getViewColumn type="NODE" workName="同步视图字段" seq="5" nodeName="视图字段" label="resource.relational.columnEntity" sourceLabel="resource.relational.viewEntity" columns="guid,moiName,columnId,moiSeq,initialValue,isNullable,sqlSimpleType,length,precision,scale,comment,characterSetName,owner">
+        <![CDATA[ select
+            CONCAT('${param.systemId}',';','${param.env}',';','数据字典',';','${param.importName}',';',n.nspname,';',pv.viewname,';',(a.attname)::information_schema.sql_identifier) as guid,
+            (a.attname)::information_schema.sql_identifier as moiName,
+            (a.attnum)::information_schema.cardinal_number AS columnId,
+            (a.attnum)::information_schema.cardinal_number AS moiSeq,
+            (pg_get_expr(ad.adbin, ad.adrelid))::information_schema.character_data AS initialValue,
+            ( CASE WHEN (a.attnotnull OR  ((t1.typtype = 'd'::"char") AND t1.typnotnull)) THEN 'NO'::text ELSE 'YES'::text END)::information_schema.character_data AS isNullable,
+            ( CASE WHEN (t1.typtype = 'd'::"char") THEN CASE WHEN ((bt.typelem <> (0)::oid) AND (bt.typlen = (-1))) THEN 'ARRAY'::text WHEN (nbt.nspname = 'pg_catalog'::name) THEN format_type(t1.typbasetype, NULL::INTEGER) ELSE 'USER-DEFINED'::text END ELSE CASE WHEN ((t1.typelem <> (0)::oid) AND (t1.typlen = (-1))) THEN 'ARRAY'::text WHEN (nt.nspname = 'pg_catalog'::name) THEN format_type(a.atttypid, NULL::INTEGER) ELSE 'USER-DEFINED'::text END END)::information_schema.character_data AS sqlSimpleType,
+            (information_schema._pg_char_max_length(information_schema._pg_truetypid(a.*, t1.*),
+            information_schema._pg_truetypmod(a.*, t1.*)))::information_schema.cardinal_number AS length,
+            (information_schema._pg_numeric_precision(information_schema._pg_truetypid(a.*, t1.*),
+            information_schema._pg_truetypmod(a.*, t1.*)))::information_schema.cardinal_number AS precision,
+            (information_schema._pg_numeric_scale(information_schema._pg_truetypid(a.*, t1.*),
+            information_schema._pg_truetypmod(a.*, t1.*)))::information_schema.cardinal_number AS scale,
+            COALESCE(ds.description) as comment,
+            (COALESCE(bt.typname, t1.typname))::information_schema.sql_identifier AS characterSetName,
+            pv.viewowner as owner
+        from pg_catalog.pg_views pv
+            left join pg_catalog.pg_class c on pv.viewname = c.relname
+            left join pg_catalog.pg_namespace n on c.relnamespace = n.oid
+            left join pg_catalog.pg_description ds  on ds.objoid = c.oid  and ds.objsubid = 0
+            left join (pg_attribute a left join pg_attrdef ad on a.attrelid = ad.adrelid and a.attnum = ad.adnum) on c.oid = a.attrelid and a.attnum>0
+            LEFT JOIN ((pg_type t1 JOIN pg_namespace nt ON t1.typnamespace = nt.oid)
+            LEFT JOIN (pg_type bt JOIN pg_namespace nbt ON  bt.typnamespace = nbt.oid)  ON  t1.typtype = 'd'::"char"  AND t1.typbasetype = bt.oid) ON a.atttypid = t1.oid
+        where n.nspname = '${param.schema}' order by a.attname
+        ]]>
+    </getViewColumn>
+
+
+    <getSQLIndexes type="NODE" workName="同步表索引" seq="4" nodeName="索引" label="resource.relational.sQLIndexEntity" columns="moiName,guid,type,ddl">
+        <![CDATA[
+        SELECT
+            i.indexname AS moiName,
+            CONCAT('${param.systemId}',';','${param.env}',';','数据字典',';','${param.importName}',';',i.schemaname,';',i.indexname,'_',i.tablename) as guid,
+            CASE WHEN strpos(i.indexdef, 'UNIQUE INDEX') > 0 THEN 'UNIQUE' ELSE 'NORMAL' END AS type,
+            i.indexdef AS ddl
+        FROM pg_catalog.pg_indexes i
+            WHERE i.schemaname = '${param.schema}' order by  i.indexname
+            ]]>
+    </getSQLIndexes>
+
+
+    <getSchemasToView type="RELATIONSHIP" workName="同步Schema->视图的关系" seq="6" label="resource.relational.schemaToViewEntity" srcLabel="resource.relational.schemaEntity" targetLabel="resource.relational.viewEntity">
+        <![CDATA[
+        select
+            CONCAT('${param.systemId}',';','${param.env}',';','数据字典',';','${param.importName}',';',pv.schemaname) as sourceGuid,
+            CONCAT('${param.systemId}',';','${param.env}',';','数据字典',';','${param.importName}' ,';',pv.schemaname,';',pv.viewname) as targetGuid
+        from pg_catalog.pg_views pv
+            where schemaname  = '${param.schema}'
+             ]]>
+    </getSchemasToView>
+
+
+    <getViewToColumn type="RELATIONSHIP" workName="同步视图->视图字段的关系" seq="7" label="resource.relational.viewToColumnEntity" srcLabel="resource.relational.viewEntity" targetLabel="resource.relational.columnEntity">
+        <![CDATA[
+        select
+        CONCAT('${param.systemId}',';','${param.env}',';','数据字典',';','${param.importName}',';',pv.schemaname,';',pv.viewname) as sourceGuid,
+        CONCAT('${param.systemId}',';','${param.env}',';','数据字典',';','${param.importName}',';',pv.schemaname,';',pv.viewname,';',(a.attname)::information_schema.sql_identifier) as targetGuid
+        from pg_catalog.pg_views pv
+        left join pg_catalog.pg_class c on pv.viewname = c.relname
+        left join pg_catalog.pg_namespace n on c.relnamespace = n.oid
+        left join pg_catalog.pg_description ds  on ds.objoid = c.oid  and ds.objsubid = 0
+        left join (pg_attribute a left join pg_attrdef ad on a.attrelid = ad.adrelid and a.attnum = ad.adnum) on c.oid = a.attrelid and a.attnum>0
+        LEFT JOIN ((pg_type t1 JOIN pg_namespace nt ON t1.typnamespace = nt.oid)
+        LEFT JOIN (pg_type bt JOIN pg_namespace nbt ON  bt.typnamespace = nbt.oid)  ON  t1.typtype = 'd'::"char"  AND t1.typbasetype = bt.oid) ON a.atttypid = t1.oid
+        where n.nspname = '${param.schema}'
+          ]]>
+    </getViewToColumn>
+
+
+    <getSchemasToTable type="RELATIONSHIP" workName="同步Schema->表的关系" seq="8"  label="resource.relational.schemaToTableEntity" srcLabel="resource.relational.schemaEntity" targetLabel="resource.relational.tableEntity" >
+        <![CDATA[
+        select
+            CONCAT('${param.systemId}',';','${param.env}',';','数据字典',';','${param.importName}',';',t.schemaname) as sourceGuid,
+            CONCAT('${param.systemId}',';','${param.env}',';','数据字典',';','${param.importName}',';',t.schemaname,';',t.tablename) as targetGuid
+        from pg_catalog.pg_tables t
+                left join pg_catalog.pg_class c  on t.tablename = c.relname
+                left join pg_catalog.pg_description ds on ds.objoid = c.oid and ds.objsubid = 0
+            	left join pg_catalog.pg_namespace pn  on c.relnamespace = pn.oid and t.schemaname  = pn.nspname
+            where pn.nspname =  '${param.schema}'
+              ]]>
+    </getSchemasToTable>
+
+    <getTableToColumn type="RELATIONSHIP" workName="同步表->字段的关系" seq="9" label="resource.relational.tableToColumnEntity" srcLabel="resource.relational.tableEntity" targetLabel="resource.relational.columnEntity" >
+        <![CDATA[
+        select
+        CONCAT('${param.systemId}',';','${param.env}',';','数据字典',';','${param.importName}',';',t.schemaname,';',t.tablename) as sourceGuid,
+        CONCAT('${param.systemId}',';','${param.env}',';','数据字典',';','${param.importName}',';',t.schemaname,';',t.tablename,';',(a.attname)::information_schema.sql_identifier) as targetGuid
+        FROM pg_catalog.pg_tables t
+        left join pg_catalog.pg_class c on t.tablename = c.relname
+        left join pg_catalog.pg_namespace n on c.relnamespace = n.oid and t.schemaname = n.nspname
+        left join pg_catalog.pg_description ds  on ds.objoid = c.oid and ds.objsubid = 0
+        LEFT JOIN (pg_attribute a LEFT JOIN pg_attrdef ad ON a.attrelid = ad.adrelid AND a.attnum = ad.adnum) ON c.oid = a.attrelid AND a.attnum>0
+        LEFT JOIN ((pg_type t1 JOIN pg_namespace nt ON t1.typnamespace = nt.oid)
+        LEFT JOIN (pg_type bt JOIN pg_namespace nbt ON  bt.typnamespace = nbt.oid)  ON  t1.typtype = 'd'::"char"  AND t1.typbasetype = bt.oid) ON a.atttypid = t1.oid
+        LEFT JOIN pg_constraint c1 ON n.oid = c1.connamespace AND c.oid = c1.conrelid AND c1.contype = 'p'
+        LEFT JOIN (
+        SELECT
+        r.oid AS roid,
+        r.relname,
+        nr.nspname AS nr_nspname,
+        c.conname,
+        information_schema._pg_expandarray(c.conkey) AS x
+        FROM pg_namespace nr,  pg_class r, pg_constraint c
+        WHERE
+        nr.oid = r.relnamespace AND r.oid = c.conrelid AND c.contype = 'p' AND NOT pg_is_other_temp_schema(nr.oid) ) ss  ON
+         t.schemaname = ss.nr_nspname AND t.tablename = ss.relname AND c1.conname = ss.conname
+        left join pg_catalog.pg_description ds_col on ds_col.objoid = c.oid and ds_col.objsubid = a.attnum
+        WHERE n.nspname =  '${param.schema}' and position ('dropped' in a.attname) = 0
+             ]]>
+    </getTableToColumn>
+
+    <getSchemasToSqlIndex type="RELATIONSHIP" workName="同步Schema->索引的关系" seq="10" label="resource.relational.schemaToSQLIndexEntity" srcLabel="resource.relational.schemaEntity" targetLabel="resource.relational.sQLIndexEntity">
+        <![CDATA[
+        select
+            CONCAT('${param.systemId}',';','${param.env}',';','数据字典',';','${param.importName}',';',i.schemaname) as sourceGuid,
+            CONCAT('${param.systemId}',';','${param.env}',';','数据字典',';','${param.importName}',';',i.schemaname,';',i.indexname,'_',i.tablename) as targetGuid
+        FROM pg_catalog.pg_indexes i
+            WHERE i.schemaname = '${param.schema}'
+              ]]>
+    </getSchemasToSqlIndex>
+
+    <getSqlIndexToColumn type="RELATIONSHIP" workName="同步索引->字段的关系" seq="11" label="resource.relational.sQLIndexToColumnEntity" srcLabel="resource.relational.sQLIndexEntity" targetLabel="resource.relational.columnEntity">
+        <![CDATA[
+        select
+            CONCAT('${param.systemId}',';','${param.env}',';','数据字典',';','${param.importName}',';',ns.nspname,';',i.relname,'_',t.relname) as sourceGuid,
+            CONCAT('${param.systemId}',';','${param.env}',';','数据字典',';','${param.importName}',';',ns.nspname,';',t.relname,';', a.attname ) as targetGuid
+        from pg_namespace ns, pg_class t, pg_class i, pg_index ix, pg_attribute a
+            where ns.oid = t.relnamespace and t.oid = ix.indrelid and i.oid = ix.indexrelid
+         and a.attrelid = t.oid and a.attnum = ANY(ix.indkey) and t.relkind = 'r' and ns.nspname = '${param.schema}'
+                ]]>
+    </getSqlIndexToColumn>
+
+</sql>

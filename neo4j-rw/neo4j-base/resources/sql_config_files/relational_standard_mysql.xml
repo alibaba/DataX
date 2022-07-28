@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<sql>
+    <getDapStandardBasic   type="NODE" workName="同步基础标准" seq="1" nodeName="基础标准" label="model.dap.dapStandardEntity" columns="standardId,guid,topicName,firstCategory,secondCategory,thirdCategory,moiDisplayName,moiName,standardType">
+        <![CDATA[
+         select a.id as standardId ,
+                    CONCAT('${param.systemId}',';','${param.env}',';','标准',';','${param.importName}',';',a.id) as guid,
+                   (select code_name from dap_system_category where id = a.topic_id limit 1) as topicName,
+                   (select code_name from dap_system_category where id = a.first_category limit 1) as firstCategory,
+                   (select code_name from dap_system_category where id = a.second_category limit 1) as secondCategory,
+                   (select code_name from dap_system_category where id = a.third_category limit 1) as thirdCategory,
+                   a.name as moiDisplayName,
+                   a.eng_name as moiName,
+                   0 as standardType
+            from dap_standard_basic a
+            where a.bm_status = 1
+              and a.publish_newest = 1
+            order by a.publish_time desc
+        ]]>
+    </getDapStandardBasic>
+
+    <getDapStandardIndex   type="NODE" workName="同步指标标准" seq="2" nodeName="指标标准" label="model.dap.dapStandardEntity" columns="standardId,guid,topicName,firstCategory,secondCategory,thirdCategory,systemName,moiDisplayName,moiName,standardType">
+        <![CDATA[
+            select
+                    a.id as standardId,
+                    CONCAT('${param.systemId}',';','${param.env}',';','标准',';','${param.importName}',';',a.id) as guid,
+                   (select code_name from dap_system_category where id = a.theme limit 1) as topicName,
+                   (select code_name from dap_system_category where id = a.primary_sort limit 1) as firstCategory,
+                   (select code_name from dap_system_category where id = a.secondary_sort limit 1) as secondCategory,
+                   (select code_name from dap_system_category where id = a.third_sort limit 1) as thirdCategory,
+                   (select `name` from dap_system_info where id = a.data_source_system) as systemName,
+                   a.index_chin_name    as moiDisplayName,
+                   a.index_eng_name     as moiName,
+                   1                    as standardType
+            from dap_standard_index a
+            where a.bm_status = 1
+              and a.publish_newest = 1
+            order by a.publish_time desc
+        ]]>
+    </getDapStandardIndex>
+
+
+    <getDapStandardFolderEntityToBasicDapStandardEntity  type="RELATIONSHIP" workName="同步指标文件夹->基础标准" seq="3" label="model.dap.dapStandardFolderToDapStandardEntity" srcLabel="model.dap.dapStandardFolderEntity" targetLabel="model.dap.dapStandardEntity">
+        select
+            CONCAT('${param.systemId}',';','${param.env}',';','标准',';','${param.importName}') as sourceGuid,
+            CONCAT('${param.systemId}',';','${param.env}',';','标准',';','${param.importName}',';',a.id) as targetGuid
+        from dap_standard_basic a
+            where a.bm_status = 1
+        and a.publish_newest = 1
+        order by a.publish_time desc
+    </getDapStandardFolderEntityToBasicDapStandardEntity>
+
+
+    <getDapStandardFolderEntityToIndexDapStandardEntity  type="RELATIONSHIP" workName="同步指标文件夹->指标标准" seq="3" label="model.dap.dapStandardFolderToDapStandardEntity" srcLabel="model.dap.dapStandardFolderEntity" targetLabel="model.dap.dapStandardEntity">
+        select
+        CONCAT('${param.systemId}',';','${param.env}',';','标准',';','${param.importName}') as sourceGuid,
+        CONCAT('${param.systemId}',';','${param.env}',';','标准',';','${param.importName}',';',a.id) as targetGuid
+        from dap_standard_index a
+        where a.bm_status = 1
+        and a.publish_newest = 1
+        order by a.publish_time desc
+    </getDapStandardFolderEntityToIndexDapStandardEntity>
+
+
+
+</sql>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+<datax>
+    <syncTable
+            mapColumns="system_id,db_name,schema_name,table_name,table_guid,table_rows,avg_row_length,index_length,data_length,db_type,file_cnt,table_business,record_created_time,collect_time,table_classification"
+            targetTable="meta_data_table_volume_snapshot_mon" seq="1">
+        <countCql>
+            match (n:`model.bank.systemEntity`)-[]->(v:`model.bank.versionEntity`)-[]->
+            (c:`resource.relational.catalogEntity`)-[]->(cc:`resource.relational.catalogEntity`)-[]->
+            (s:`resource.relational.schemaEntity`)-[]->(t:`resource.relational.tableEntity`)
+            where n.systemId =  '${systemId}' and v.moiName = '${versionName}' and s.moiName = '${schemaName}'
+            return count(t.guid) as total
+        </countCql>
+        <cql>
+            match (n:`model.bank.systemEntity`)-[]->(v:`model.bank.versionEntity`)-[]->
+            (c:`resource.relational.catalogEntity`)-[]->(cc:`resource.relational.catalogEntity`)-[]->
+            (s:`resource.relational.schemaEntity`)-[]->(t:`resource.relational.tableEntity`)
+            where n.systemId =  '${systemId}' and v.moiName = '${versionName}' and s.moiName = '${schemaName}'
+            return n.guid as system_id,cc.moiName as db_name,s.moiName as schema_name,
+            t.moiName as table_name,t.guid as table_guid,t.tableRows as table_rows,
+            t.avgRowLength as avg_row_length,t.indexLength as index_length,t.dataLength as data_length,
+            s.dbType as db_type,t.numFiles as file_cnt,t.bizLineId as table_business,
+            case when s.dbType = 'postgresql' then null else apoc.date.format(apoc.date.parse(t.moiCreateDate + '','ms','yyyyMMddHHmmss'),'ms','yyyy-MM-dd HH:mm:ss') end as record_created_time, apoc.date.format(apoc.date.currentTimestamp() + 1000 * 60 * 60 * 8 ,'ms','yyyy-MM-dd 00:00:00') as collect_time,
+            case when s.dbType = 'mysql' then 1 when s.dbType = 'postgresql' then 2 when s.dbType = 'hive' then 3 else null end as table_classification
+        </cql>
+        <postSql>
+
+            <sql comment="其他的操作">
+                select 1
+            </sql>
+        </postSql>
+    </syncTable>
+
+    <!-- 同步hive表关联到的hdfs的相关指标 -->
+    <syncDirecotryData
+            mapColumns="table_guid,collect_time,block_cnt"
+            targetTable="meta_data_table_volume_snapshot_mon" seq="2">
+        <countCql>
+            match (n:`model.bank.systemEntity`)-[]->(v:`model.bank.versionEntity`)-[]->
+            (c:`resource.relational.catalogEntity`)-[]->(cc:`resource.relational.catalogEntity`)-[]->
+            (s:`resource.relational.schemaEntity`)-[]->(t:`resource.relational.tableEntity`)-[]->(hd:`model.hadoop.hdfs.directoryEntity`)
+            where n.systemId =  '${systemId}' and v.moiName = '${versionName}' and s.moiName = '${schemaName}'
+            return count(t.guid) as total
+        </countCql>
+        <cql>
+            match (n:`model.bank.systemEntity`)-[]->(v:`model.bank.versionEntity`)-[]->
+            (c:`resource.relational.catalogEntity`)-[]->(cc:`resource.relational.catalogEntity`)-[]->
+            (s:`resource.relational.schemaEntity`)-[]->(t:`resource.relational.tableEntity`)-[]->(hd:`model.hadoop.hdfs.directoryEntity`)
+            where n.systemId =  '${systemId}' and v.moiName = '${versionName}' and s.moiName = '${schemaName}'
+            return t.guid as table_guid,apoc.date.format(apoc.date.currentTimestamp() + 1000 * 60 * 60 * 8 ,'ms','yyyy-MM-dd 00:00:00') as collect_time,hd.blocksCount as block_cnt
+        </cql>
+    </syncDirecotryData>
+
+</datax>
