@@ -8,6 +8,7 @@ import com.alibaba.datax.common.statistics.PerfTrace;
 import com.alibaba.datax.common.statistics.VMInfo;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.core.dto.DataxResult;
+import com.alibaba.datax.common.util.MessageSource;
 import com.alibaba.datax.core.job.JobContainer;
 import com.alibaba.datax.core.taskgroup.TaskGroupContainer;
 import com.alibaba.datax.core.util.ConfigParser;
@@ -140,6 +141,9 @@ public class Engine {
         RUNTIME_MODE = cl.getOptionValue("mode");
 
         Configuration configuration = ConfigParser.parse(jobPath);
+        // 绑定i18n信息
+        MessageSource.init(configuration);
+        MessageSource.reloadResourceBundle(Configuration.class);
 
         long jobId;
         if (!"-1".equalsIgnoreCase(jobIdString)) {
