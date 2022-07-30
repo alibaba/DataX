@@ -51,8 +51,8 @@ public class HdfsWriter extends Writer {
             this.defaultFS = this.writerSliceConfig.getNecessaryValue(Key.DEFAULT_FS, HdfsWriterErrorCode.REQUIRED_VALUE);
             //fileType check
             this.fileType = this.writerSliceConfig.getNecessaryValue(Key.FILE_TYPE, HdfsWriterErrorCode.REQUIRED_VALUE);
-            if( !fileType.equalsIgnoreCase("ORC") && !fileType.equalsIgnoreCase("TEXT")){
-                String message = "HdfsWriter插件目前只支持ORC和TEXT两种格式的文件,请将filetype选项的值配置为ORC或者TEXT";
+            if( !fileType.equalsIgnoreCase("ORC") && !fileType.equalsIgnoreCase("TEXT") && !fileType.equalsIgnoreCase("PARQUET")){
+                String message = "HdfsWriter插件目前只支持ORC、TEXT、PARQUET格式的文件,请将filetype选项的值配置为ORC或TEXT或PARQUET";
                 throw DataXException.asDataXException(HdfsWriterErrorCode.ILLEGAL_VALUE, message);
             }
             //path
@@ -122,6 +122,19 @@ public class HdfsWriter extends Writer {
                     if(!orcSupportedCompress.contains(compress)){
                         throw DataXException.asDataXException(HdfsWriterErrorCode.ILLEGAL_VALUE,
                                 String.format("目前ORC FILE仅支持SNAPPY压缩, 不支持您配置的 compress 模式 : [%s]",
+                                        compress));
+                    }
+                }
+
+            } else if(fileType.equalsIgnoreCase("PARQUET")){
+                Set<String> parquetSupportedCompress = Sets.newHashSet("NONE", "SNAPPY");
+                if(null == compress){
+                    this.writerSliceConfig.set(Key.COMPRESS, "NONE");
+                }else {
+                    compress = compress.toUpperCase().trim();
+                    if(!parquetSupportedCompress.contains(compress)){
+                        throw DataXException.asDataXException(HdfsWriterErrorCode.ILLEGAL_VALUE,
+                                String.format("目前SNAPPY FILE仅支持SNAPPY压缩, 不支持您配置的 compress 模式 : [%s]",
                                         compress));
                     }
                 }
@@ -215,8 +228,11 @@ public class HdfsWriter extends Writer {
             String fileSuffix;
             //临时存放路径
             String storePath =  buildTmpFilePath(this.path);
+            LOG.info("用户提供路径为：[{}]", this.path);
+            LOG.info("临时文件路径为：[{}]", storePath);
             //最终存放路径
             String endStorePath = buildFilePath();
+            LOG.info("最终存放路径为：[{}]", endStorePath);
             this.path = endStorePath;
             for (int i = 0; i < mandatoryNumber; i++) {
                 // handle same file name
@@ -264,20 +280,27 @@ public class HdfsWriter extends Writer {
 
         private String buildFilePath() {
             boolean isEndWithSeparator = false;
+            // !!!!都统一为/，hdfs没有【windows目录分隔符】！！！傻逼！
+            // 用windows分隔符，在同步异常情况下，删除逻辑获取父目录错误（textFileStartWrite、orcFileStartWrite、parquetFileStartWrite等异常删除父目录）！！
+            // 直接删除了整个schema的文件！！ 也就是，存在删库情况！！！
+            // !!!!都统一为/，hdfs没有【windows目录分隔符】！！！傻逼！
+            // 用windows分隔符，在同步异常情况下，删除逻辑获取父目录错误（textFileStartWrite、orcFileStartWrite、parquetFileStartWrite等异常删除父目录）！！
+            // 直接删除了整个schema的文件！！ 也就是，存在删库情况！！！
+            // !!!!都统一为/，hdfs没有【windows目录分隔符】！！！傻逼！
+            // 用windows分隔符，在同步异常情况下，删除逻辑获取父目录错误（textFileStartWrite、orcFileStartWrite、parquetFileStartWrite等异常删除父目录）！！
+            // 直接删除了整个schema的文件！！ 也就是，存在删库情况！！！
             switch (IOUtils.DIR_SEPARATOR) {
                 case IOUtils.DIR_SEPARATOR_UNIX:
-                    isEndWithSeparator = this.path.endsWith(String
-                            .valueOf(IOUtils.DIR_SEPARATOR));
+                    isEndWithSeparator = this.path.endsWith("/");
                     break;
                 case IOUtils.DIR_SEPARATOR_WINDOWS:
-                    isEndWithSeparator = this.path.endsWith(String
-                            .valueOf(IOUtils.DIR_SEPARATOR_WINDOWS));
+                    isEndWithSeparator = this.path.endsWith("/");
                     break;
                 default:
                     break;
             }
             if (!isEndWithSeparator) {
-                this.path = this.path + IOUtils.DIR_SEPARATOR;
+                this.path = this.path + "/";
             }
             return this.path;
         }
@@ -290,14 +313,21 @@ public class HdfsWriter extends Writer {
         private String buildTmpFilePath(String userPath) {
             String tmpFilePath;
             boolean isEndWithSeparator = false;
+            // !!!!都统一为/，hdfs没有【windows目录分隔符】！！！傻逼！
+            // 用windows分隔符，在同步异常情况下，删除逻辑获取父目录错误（textFileStartWrite、orcFileStartWrite、parquetFileStartWrite等异常删除父目录）！！
+            // 直接删除了整个schema的文件！！ 也就是，存在删库情况！！！
+            // !!!!都统一为/，hdfs没有【windows目录分隔符】！！！傻逼！
+            // 用windows分隔符，在同步异常情况下，删除逻辑获取父目录错误（textFileStartWrite、orcFileStartWrite、parquetFileStartWrite等异常删除父目录）！！
+            // 直接删除了整个schema的文件！！ 也就是，存在删库情况！！！
+            // !!!!都统一为/，hdfs没有【windows目录分隔符】！！！傻逼！
+            // 用windows分隔符，在同步异常情况下，删除逻辑获取父目录错误（textFileStartWrite、orcFileStartWrite、parquetFileStartWrite等异常删除父目录）！！
+            // 直接删除了整个schema的文件！！ 也就是，存在删库情况！！！
             switch (IOUtils.DIR_SEPARATOR) {
                 case IOUtils.DIR_SEPARATOR_UNIX:
-                    isEndWithSeparator = userPath.endsWith(String
-                            .valueOf(IOUtils.DIR_SEPARATOR));
+                    isEndWithSeparator = userPath.endsWith("/");
                     break;
                 case IOUtils.DIR_SEPARATOR_WINDOWS:
-                    isEndWithSeparator = userPath.endsWith(String
-                            .valueOf(IOUtils.DIR_SEPARATOR_WINDOWS));
+                    isEndWithSeparator = userPath.endsWith("/");
                     break;
                 default:
                     break;
@@ -305,20 +335,20 @@ public class HdfsWriter extends Writer {
             String tmpSuffix;
             tmpSuffix = UUID.randomUUID().toString().replace('-', '_');
             if (!isEndWithSeparator) {
-                tmpFilePath = String.format("%s__%s%s", userPath, tmpSuffix, IOUtils.DIR_SEPARATOR);
+                tmpFilePath = String.format("%s__%s%s", userPath, tmpSuffix, "/");
             }else if("/".equals(userPath)){
-                tmpFilePath = String.format("%s__%s%s", userPath, tmpSuffix, IOUtils.DIR_SEPARATOR);
+                tmpFilePath = String.format("%s__%s%s", userPath, tmpSuffix, "/");
             }else{
-                tmpFilePath = String.format("%s__%s%s", userPath.substring(0,userPath.length()-1), tmpSuffix, IOUtils.DIR_SEPARATOR);
+                tmpFilePath = String.format("%s__%s%s", userPath.substring(0,userPath.length()-1), tmpSuffix, "/");
             }
             while(hdfsHelper.isPathexists(tmpFilePath)){
                 tmpSuffix = UUID.randomUUID().toString().replace('-', '_');
                 if (!isEndWithSeparator) {
-                    tmpFilePath = String.format("%s__%s%s", userPath, tmpSuffix, IOUtils.DIR_SEPARATOR);
+                    tmpFilePath = String.format("%s__%s%s", userPath, tmpSuffix, "/");
                 }else if("/".equals(userPath)){
-                    tmpFilePath = String.format("%s__%s%s", userPath, tmpSuffix, IOUtils.DIR_SEPARATOR);
+                    tmpFilePath = String.format("%s__%s%s", userPath, tmpSuffix, "/");
                 }else{
-                    tmpFilePath = String.format("%s__%s%s", userPath.substring(0,userPath.length()-1), tmpSuffix, IOUtils.DIR_SEPARATOR);
+                    tmpFilePath = String.format("%s__%s%s", userPath.substring(0,userPath.length()-1), tmpSuffix, "/");
                 }
             }
             return tmpFilePath;
@@ -344,6 +374,7 @@ public class HdfsWriter extends Writer {
             this.fileType = this.writerSliceConfig.getString(Key.FILE_TYPE);
             //得当的已经是绝对路径，eg：hdfs://10.101.204.12:9000/user/hive/warehouse/writer.db/text/test.textfile
             this.fileName = this.writerSliceConfig.getString(Key.FILE_NAME);
+            LOG.info("文件绝对路径为：{}", this.fileName);
 
             hdfsHelper = new HdfsHelper();
             hdfsHelper.getFileSystem(defaultFS, writerSliceConfig);
@@ -366,6 +397,10 @@ public class HdfsWriter extends Writer {
                 //写ORC FILE
                 hdfsHelper.orcFileStartWrite(lineReceiver,this.writerSliceConfig, this.fileName,
                         this.getTaskPluginCollector());
+            } else if (fileType.equalsIgnoreCase("PARQUET")) {
+              //写PARQUET FILE
+              hdfsHelper.parquetFileStartWrite(lineReceiver, this.writerSliceConfig, this.fileName,
+                      this.getTaskPluginCollector());
             }
 
             LOG.info("end do write");

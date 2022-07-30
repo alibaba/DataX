@@ -14,16 +14,20 @@ import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.hadoop.fs.*;
 import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
+import org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat;
+import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.mapred.*;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -53,6 +57,7 @@ public  class HdfsHelper {
             }
         }
         hadoopConf.set(HDFS_DEFAULTFS_KEY, defaultFS);
+        hadoopConf.setBoolean("fs.hdfs.impl.disable.cache", true);
 
         //是否有Kerberos认证
         this.haveKerberos = taskConfig.getBool(Key.HAVE_KERBEROS, false);
@@ -63,6 +68,8 @@ public  class HdfsHelper {
         }
         this.kerberosAuthentication(this.kerberosPrincipal, this.kerberosKeytabFilePath);
         conf = new JobConf(hadoopConf);
+        conf.setBoolean("fs.hdfs.impl.disable.cache", true);
+
         try {
             fileSystem = FileSystem.get(conf);
         } catch (IOException e) {
@@ -236,11 +243,18 @@ public  class HdfsHelper {
                     }
                 }
             }catch (Exception e) {
+                LOG.error("重命名文件时发生异常", e);
                 String message = String.format("重命名文件时发生异常,请检查您的网络是否正常！");
                 LOG.error(message);
                 throw DataXException.asDataXException(HdfsWriterErrorCode.CONNECT_HDFS_IO_ERROR, e);
             }finally {
-                deleteDir(tmpFilesParent);
+                try {
+                    if (tmpFilesParent != null) {
+                        deleteDir(tmpFilesParent);
+                    }
+                } catch (Exception e) {
+                    LOG.error("删除临时文件异常", e);
+                }
             }
         }
     }
@@ -339,8 +353,17 @@ public  class HdfsHelper {
         } catch (Exception e) {
             String message = String.format("写文件文件[%s]时发生IO异常,请检查您的网络是否正常！", fileName);
             LOG.error(message);
-            Path path = new Path(fileName);
-            deleteDir(path.getParent());
+            // ！一定要控制，以免逻辑错误导致删除其他父类的目录！！！！！！只对跟写入到表path（可能是分区目录）的才允许删除！
+            String basePath = config.getString(Key.PATH, null);
+            LOG.info("只允许删除作业最上层目录：[{}]", basePath);
+            if (basePath != null) {
+                Path path = new Path(fileName);
+                LOG.warn("警告！要删除的父目录：[{}]，【{}】有最短目录[{}]", path.getParent().toString(),
+                        path.getParent().toString().contains(basePath), basePath);
+                if (path.getParent().toString().contains(basePath)) {
+                    deleteDir(path.getParent());
+                }
+            }
             throw DataXException.asDataXException(HdfsWriterErrorCode.Write_FILE_IO_ERROR, e);
         }
     }
@@ -417,8 +440,17 @@ public  class HdfsHelper {
         } catch (Exception e) {
             String message = String.format("写文件文件[%s]时发生IO异常,请检查您的网络是否正常！", fileName);
             LOG.error(message);
-            Path path = new Path(fileName);
-            deleteDir(path.getParent());
+            // ！一定要控制，以免逻辑错误导致删除其他父类的目录！！！！！！只对跟写入到表path（可能是分区目录）的才允许删除！
+            String basePath = config.getString(Key.PATH, null);
+            LOG.info("只允许删除作业最上层目录：[{}]", basePath);
+            if (basePath != null) {
+                Path path = new Path(fileName);
+                LOG.warn("警告！要删除的父目录：[{}]，【{}】有最短目录[{}]", path.getParent().toString(),
+                        path.getParent().toString().contains(basePath), basePath);
+                if (path.getParent().toString().contains(basePath)) {
+                    deleteDir(path.getParent());
+                }
+            }
             throw DataXException.asDataXException(HdfsWriterErrorCode.Write_FILE_IO_ERROR, e);
         }
     }
@@ -583,4 +615,60 @@ public  class HdfsHelper {
         transportResult.setLeft(recordList);
         return transportResult;
     }
+
+    /**
+     * 写parquetfile类型文件
+     */
+    public void parquetFileStartWrite(RecordReceiver lineReceiver, Configuration config, String fileName,
+                                      TaskPluginCollector taskPluginCollector) {
+        List<Configuration> columns = config.getListConfiguration(Key.COLUMN);
+        String compress = config.getString(Key.COMPRESS, null);
+        List<String> columnNames = getColumnNames(columns);
+        List<ObjectInspector> columnTypeInspectors = getColumnTypeInspectors(columns);
+        StructObjectInspector inspector = ObjectInspectorFactory
+                .getStandardStructObjectInspector(columnNames, columnTypeInspectors);
+
+        ParquetHiveSerDe parquetHiveSerDe = new ParquetHiveSerDe();
+
+        MapredParquetOutputFormat outFormat = new MapredParquetOutputFormat();
+        if (!"NONE".equalsIgnoreCase(compress) && null != compress) {
+            Class<? extends CompressionCodec> codecClass = getCompressCodec(compress);
+            if (null != codecClass) {
+                FileOutputFormat.setOutputCompressorClass(conf, codecClass);
+            }
+        }
+        try {
+            Properties colProp = new Properties();
+//            colProp = null; // 模拟写入异常情况下，catch处理分析
+            colProp.setProperty("columns", String.join(",", columnNames));
+            List<String> colTypes = new ArrayList<>();
+            columns.forEach(col -> colTypes.add(col.getString(Key.TYPE)));
+            colProp.setProperty("columns.types", String.join(",", colTypes));
+            RecordWriter writer = (RecordWriter) outFormat.getHiveRecordWriter(conf, new Path(fileName), ObjectWritable.class, true, colProp, Reporter.NULL);
+            Record record = null;
+            while ((record = lineReceiver.getFromReader()) != null) {
+                MutablePair<List<Object>, Boolean> transportResult = transportOneRecord(record, columns, taskPluginCollector);
+                if (!transportResult.getRight()) {
+                    writer.write(null, parquetHiveSerDe.serialize(transportResult.getLeft(), inspector));
+                }
+            }
+            writer.close(Reporter.NULL);
+        } catch (Exception e) {
+            String message = String.format("写文件文件[%s]时发生IO异常,请检查您的网络是否正常！", fileName);
+            LOG.error(message);
+            // ！一定要控制，以免逻辑错误导致删除其他父类的目录！！！！！！只对跟写入到表path（可能是分区目录）的才允许删除！
+            String basePath = config.getString(Key.PATH, null);
+            LOG.info("只允许删除作业最上层目录：[{}]", basePath);
+            if (basePath != null) {
+                Path path = new Path(fileName);
+                LOG.warn("警告！要删除的父目录：[{}]，【{}】有最短目录[{}]", path.getParent().toString(),
+                        path.getParent().toString().contains(basePath), basePath);
+                if (path.getParent().toString().contains(basePath)) {
+                    deleteDir(path.getParent());
+                }
+            }
+            throw DataXException.asDataXException(HdfsWriterErrorCode.Write_FILE_IO_ERROR, e);
+        }
+    }
+
 }
