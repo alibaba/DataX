@@ -1,15 +1,15 @@
 {
   "name": "clickhousereader",
   "parameter": {
-    "username": "solar_reader",
-    "password": "Solar123",
+    "username": "reade",
+    "password": "1234",
     "connection": [
       {
         "jdbcUrl": [
-          "jdbc:clickhouse://cc-2zee72617ct1iesyx.public.clickhouse.ads.aliyuncs.com:8123/solar"
+          "jdbc:clickhouse://host:8123/solar"
         ],
         "querySql": [
-          "select * from d_events where _ds='2022-06-01' and  _tenant_id ='343b5b2ccf448119' and _prokey = '4a6ef2dfbd5c4c34' and _appkey ='a1e3a57ff19d6e95' "
+          "select * from xxtable where ds='2022-06-01' "
         ]
       }
     ],
