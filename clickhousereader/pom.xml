@@ -9,8 +9,8 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>clickhousewriter</artifactId>
-    <name>clickhousewriter</name>
+    <artifactId>clickhousereader</artifactId>
+    <name>clickhousereader</name>
     <packaging>jar</packaging>
 
     <dependencies>
@@ -92,4 +92,5 @@
             </plugin>
         </plugins>
     </build>
+
 </project>
