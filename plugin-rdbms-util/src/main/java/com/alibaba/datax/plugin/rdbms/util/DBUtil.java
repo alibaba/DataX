@@ -477,6 +477,7 @@ public final class DBUtil {
             try {
                 rs.close();
             } catch (SQLException unused) {
+                LOG.error("rs close failed. {}", unused.getMessage());
             }
         }
 
@@ -484,6 +485,7 @@ public final class DBUtil {
             try {
                 stmt.close();
             } catch (SQLException unused) {
+                LOG.error("stmt close failed. {}", unused.getMessage());
             }
         }
 
@@ -491,6 +493,7 @@ public final class DBUtil {
             try {
                 conn.close();
             } catch (SQLException unused) {
+                LOG.error("conn close failed. {}", unused.getMessage());
             }
         }
     }
@@ -779,7 +782,7 @@ public final class DBUtil {
                     DBUtilErrorCode.RS_ASYNC_ERROR, "异步获取ResultSet失败", e);
         }
     }
-    
+
     public static void loadDriverClass(String pluginType, String pluginName) {
         try {
             String pluginJsonPath = StringUtils.join(

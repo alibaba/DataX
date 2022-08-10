@@ -6,13 +6,13 @@
     "connection": [
       {
         "jdbcUrl": [
-          "jdbc:clickhouse://host:8123/solar"
+          "jdbc:clickhouse://host:8123/db"
         ],
         "querySql": [
           "select * from xxtable where ds='2022-06-01' "
         ]
       }
     ],
-    "batchSize": 100
+    "fetchSize": 100
   }
 }

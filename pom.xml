@@ -76,6 +76,7 @@
         <module>gdbreader</module>
         <module>tsdbreader</module>
         <module>opentsdbreader</module>
+        <module>clickhousereader</module>
 
 
         <!-- writer -->
@@ -118,7 +119,7 @@
         <!-- common support module -->
         <module>plugin-rdbms-util</module>
         <module>plugin-unstructured-storage-util</module>
-        <module>clickhousereader</module>
+
     </modules>
 
     <dependencyManagement>

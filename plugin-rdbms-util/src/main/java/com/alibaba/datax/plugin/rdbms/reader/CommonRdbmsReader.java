@@ -27,10 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.Types;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -217,7 +214,12 @@ public class CommonRdbmsReader {
                         querySql, basicMsg);
 
             }catch (Exception e) {
-                throw RdbmsException.asQueryException(this.dataBaseType, e, querySql, table, username);
+                if (dataBaseType == DataBaseType.ClickHouse && (e instanceof SQLFeatureNotSupportedException)) {
+                    LOG.warn("clickhouse jdbc bad exception. Actually it's good");
+                }
+                else {
+                    throw RdbmsException.asQueryException(this.dataBaseType, e, querySql, table, username);
+                }
             } finally {
                 DBUtil.closeDBResources(null, conn);
             }

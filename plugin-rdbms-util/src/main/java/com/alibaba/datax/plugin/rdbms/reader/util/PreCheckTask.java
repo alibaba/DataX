@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -71,7 +72,12 @@ public class PreCheckTask implements Callable<Boolean>{
                 } catch (ParserException e) {
                     throw RdbmsException.asSqlParserException(this.dataBaseType, e, querySql);
                 } catch (Exception e) {
-                    throw RdbmsException.asQueryException(this.dataBaseType, e, querySql, table, userName);
+                    if (dataBaseType == DataBaseType.ClickHouse && (e instanceof SQLFeatureNotSupportedException)) {
+                        LOG.warn("clickhouse jdbc bad exception. Actually it's good");
+                    }
+                    else {
+                        throw RdbmsException.asQueryException(this.dataBaseType, e, querySql, table, userName);
+                    }
                 } finally {
                     DBUtil.closeDBResources(rs, null, null);
                 }

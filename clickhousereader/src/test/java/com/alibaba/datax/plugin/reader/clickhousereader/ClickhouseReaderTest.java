@@ -39,7 +39,7 @@ public class ClickhouseReaderTest {
 
         Assert.assertEquals("solar_reader", conf.getString("username"));
         Assert.assertEquals("Solar123", conf.getString("password"));
-        Assert.assertEquals(new Integer(100), conf.getInt("batchSize"));
+        Assert.assertEquals(new Integer(10), conf.getInt("fetchSize"));
 
         job.destroy();
     }
