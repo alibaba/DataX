@@ -11,7 +11,7 @@ import org.junit.Test;
 /**
  * @author : donghao
  * @version : 1.0
- * @className : com.alibaba.datax.plugin.writer.clickhousereader.ClickhouseReadTest
+ * @className : com.alibaba.datax.plugin.reader.clickhousereader.ClickhouseReaderTest
  * @description: 测试类
  * @date : 2022-07-27 11:18
  */
