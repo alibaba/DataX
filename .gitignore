@@ -155,4 +155,4 @@ local.properties
 .cache-main
 .scala_dependencies
 .worksheet
-src/main/resources/conf/*
+/src/main/resources/conf/

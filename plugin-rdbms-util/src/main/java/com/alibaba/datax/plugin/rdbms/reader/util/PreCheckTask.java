@@ -72,12 +72,7 @@ public class PreCheckTask implements Callable<Boolean>{
                 } catch (ParserException e) {
                     throw RdbmsException.asSqlParserException(this.dataBaseType, e, querySql);
                 } catch (Exception e) {
-                    if (dataBaseType == DataBaseType.ClickHouse && (e instanceof SQLFeatureNotSupportedException)) {
-                        LOG.warn("clickhouse jdbc bad exception. Actually it's good");
-                    }
-                    else {
-                        throw RdbmsException.asQueryException(this.dataBaseType, e, querySql, table, userName);
-                    }
+                    throw RdbmsException.asQueryException(this.dataBaseType, e, querySql, table, userName);
                 } finally {
                     DBUtil.closeDBResources(rs, null, null);
                 }
