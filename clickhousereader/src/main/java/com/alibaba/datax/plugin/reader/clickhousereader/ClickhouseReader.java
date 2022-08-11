@@ -41,7 +41,6 @@ public class ClickhouseReader extends Reader {
             }
             this.commonRdbmsReaderMaster = new CommonRdbmsReader.Job(DATABASE_TYPE);
             this.commonRdbmsReaderMaster.init(this.originalConfig);
-            this.commonRdbmsReaderMaster.preCheck(this.originalConfig, DATABASE_TYPE);
             LOG.info("ClickhouseReader Job初始化成功");
         }
 
