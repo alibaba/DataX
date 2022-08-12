@@ -501,17 +501,20 @@ public class CommonRdbmsWriter {
 
                 case Types.TIMESTAMP:
                     java.sql.Timestamp sqlTimestamp = null;
+                    java.sql.Timestamp tsNano = null;
                     try {
-                        utilDate = column.asDate();
+//                        utilDate = column.asDate();
+                        tsNano = (java.sql.Timestamp)(column.asDate());
                     } catch (DataXException e) {
                         throw new SQLException(String.format(
                                 "TIMESTAMP 类型转换错误：[%s]", column));
                     }
 
-                    if (null != utilDate) {
-                        sqlTimestamp = new java.sql.Timestamp(
-                                utilDate.getTime());
-                    }
+//                    if (null != utilDate) {
+//                        sqlTimestamp = new java.sql.Timestamp(
+//                                utilDate.getTime());
+//                    }
+                    sqlTimestamp=tsNano;
                     preparedStatement.setTimestamp(columnIndex + 1, sqlTimestamp);
                     break;
 
