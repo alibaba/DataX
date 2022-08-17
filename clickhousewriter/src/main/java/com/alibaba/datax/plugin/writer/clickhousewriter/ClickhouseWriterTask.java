@@ -1,20 +1,19 @@
 package com.alibaba.datax.plugin.writer.clickhousewriter;
 
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Types;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.alibaba.datax.common.element.Column;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.plugin.rdbms.util.DBUtilErrorCode;
 import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
 import com.alibaba.datax.plugin.rdbms.writer.CommonRdbmsWriter;
 import com.alibaba.fastjson.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Types;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
 
 /**
  * @author : donghao

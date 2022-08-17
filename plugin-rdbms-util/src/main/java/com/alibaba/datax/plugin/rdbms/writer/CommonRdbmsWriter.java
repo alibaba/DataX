@@ -260,6 +260,7 @@ public class CommonRdbmsWriter {
         }
 
         public void startWriteWithConnection(RecordReceiver recordReceiver, TaskPluginCollector taskPluginCollector, Connection connection) {
+
             this.taskPluginCollector = taskPluginCollector;
 
             // 用于写入数据的时候的类型根据目的表字段类型转换
@@ -293,6 +294,7 @@ public class CommonRdbmsWriter {
                         bufferBytes = 0;
                     }
                 }
+                LOG.info("get transport records, contain records:{}.", writeBuffer.size());
                 if (!writeBuffer.isEmpty()) {
                     doBatchInsert(connection, writeBuffer);
                     writeBuffer.clear();
@@ -331,6 +333,7 @@ public class CommonRdbmsWriter {
 
             Connection connection = DBUtil.getConnection(this.dataBaseType,
                     this.jdbcUrl, username, password);
+
 
             LOG.info("Begin to execute postSqls:[{}]. context info:{}.",
                     StringUtils.join(this.postSqls, ";"), BASIC_MESSAGE);

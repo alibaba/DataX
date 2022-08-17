@@ -195,18 +195,50 @@ public class CommonRdbmsReader {
                     this.transportOneRecord(recordSender, rs, metaData, columnNumber, mandatoryEncoding,
                         taskPluginCollector);
                     lastTime = System.nanoTime();
+                    LOG.info("transport one record to writer, current rowNum:{}.", rs.getRow());
                 }
 
                 allResultPerfRecord.end(rsNextUsedTime);
                 // 目前大盘是依赖这个打印，而之前这个Finish read record是包含了sql查询和result next的全部时间
                 LOG.info("Finished read record by Sql: [{}\n] {}.", querySql, basicMsg);
-
             } catch (Exception e) {
-                throw RdbmsException.asQueryException(this.dataBaseType, e, querySql, table, username);
+                LOG.info("JDBC exception, come to retry!");
+                // 数据库主动断开连接，重试一次
+                queryPerfRecord.start();
+                conn = DBUtil.getConnection(this.dataBaseType, jdbcUrl, username, password);
+                // session config .etc related
+                DBUtil.dealWithSessionConfig(conn, readerSliceConfig, this.dataBaseType, basicMsg);
+                try {
+                    rs = DBUtil.query(conn, querySql, fetchSize);
+                    queryPerfRecord.end();
+
+                    ResultSetMetaData metaData = rs.getMetaData();
+                    columnNumber = metaData.getColumnCount();
+
+                    // 这个统计干净的result_Next时间
+                    PerfRecord allResultPerfRecord = new PerfRecord(taskGroupId, taskId, PerfRecord.PHASE.RESULT_NEXT_ALL);
+                    allResultPerfRecord.start();
+
+                    long rsNextUsedTime = 0;
+                    long lastTime = System.nanoTime();
+                    while (rs.next()) {
+                        rsNextUsedTime += (System.nanoTime() - lastTime);
+                        this.transportOneRecord(recordSender, rs, metaData, columnNumber, mandatoryEncoding,
+                                taskPluginCollector);
+                        lastTime = System.nanoTime();
+                        LOG.info("transport one record to writer, current rowNum:{}.", rs.getRow());
+                    }
+                    allResultPerfRecord.end(rsNextUsedTime);
+                    // 目前大盘是依赖这个打印，而之前这个Finish read record是包含了sql查询和result next的全部时间
+                    LOG.info("Try again and Finished read record by Sql: [{}\n] {}.", querySql, basicMsg);
+                } catch (Exception ex) {
+                    throw RdbmsException.asQueryException(this.dataBaseType, ex, querySql, table, username);
+                }
             } finally {
                 DBUtil.closeDBResources(null, conn);
             }
         }
+
 
         public void post(Configuration originalConfig) {
             // do nothing
