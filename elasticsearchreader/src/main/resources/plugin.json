@@ -1,0 +1,6 @@
+{
+    "name": "elasticsearchreader",
+    "class": "com.alibaba.datax.plugin.reader.elasticsearchreader.EsReader",
+    "description": "适用于: 生产环境.  原理: TODO",
+    "developer": "kesc"
+}
