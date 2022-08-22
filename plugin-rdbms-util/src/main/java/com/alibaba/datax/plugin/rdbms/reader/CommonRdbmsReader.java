@@ -195,7 +195,6 @@ public class CommonRdbmsReader {
                     this.transportOneRecord(recordSender, rs, metaData, columnNumber, mandatoryEncoding,
                         taskPluginCollector);
                     lastTime = System.nanoTime();
-                    LOG.info("transport one record to writer, current rowNum:{}.", rs.getRow());
                 }
 
                 allResultPerfRecord.end(rsNextUsedTime);
@@ -226,7 +225,6 @@ public class CommonRdbmsReader {
                         this.transportOneRecord(recordSender, rs, metaData, columnNumber, mandatoryEncoding,
                                 taskPluginCollector);
                         lastTime = System.nanoTime();
-                        LOG.info("transport one record to writer, current rowNum:{}.", rs.getRow());
                     }
                     allResultPerfRecord.end(rsNextUsedTime);
                     // 目前大盘是依赖这个打印，而之前这个Finish read record是包含了sql查询和result next的全部时间
