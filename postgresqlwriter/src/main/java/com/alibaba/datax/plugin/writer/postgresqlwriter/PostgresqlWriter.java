@@ -67,6 +67,8 @@ public class PostgresqlWriter extends Writer {
 				public String calcValueHolder(String columnType){
 					if("serial".equalsIgnoreCase(columnType)){
 						return "?::int";
+					}else if("bigserial".equalsIgnoreCase(columnType)){
+						return "?::int8";
 					}else if("bit".equalsIgnoreCase(columnType)){
 						return "?::bit varying";
 					}

@@ -1,0 +1,36 @@
+{
+  "job":{
+    "content":[{
+      "reader": {
+        "name": "opentsdbreader",
+        "parameter": {
+          "endpoint": "http://192.168.56.105:4242",
+          "column": ["weather_temperature"],
+          "beginDateTime": "2021-01-01 00:00:00",
+          "endDateTime": "2021-01-01 01:00:00"
+        }
+      },
+      "writer": {
+        "name": "tdenginewriter",
+        "parameter": {
+          "username": "root",
+          "password": "taosdata",
+          "connection": [
+            {
+              "table": [
+                "meters"
+              ],
+              "jdbcUrl": "jdbc:TAOS://192.168.56.105:6030/test?timestampFormat=TIMESTAMP"
+            }
+          ],
+          "batchSize": 1000
+        }
+      }
+    }],
+    "setting": {
+      "speed": {
+        "channel": 1
+      }
+    }
+  }
+}

@@ -36,18 +36,18 @@
 			<artifactId>guava</artifactId>
             <version>16.0.1</version>
 		</dependency>
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.52</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/src/main/libs/bcprov-jdk15on-1.52.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>com.aliyun.odps</groupId>
-            <artifactId>odps-sdk-core</artifactId>
-            <version>0.20.7-public</version>
-        </dependency>
+		<dependency>
+			<groupId>org.xerial</groupId>
+			<artifactId>sqlite-jdbc</artifactId>
+			<version>3.34.0</version>
+		</dependency>
+
+		<!-- ref:http://odps.alibaba-inc.com/doc/prddoc/odps_sdk_v2/sdk.html -->
+		<dependency>
+			<groupId>com.aliyun.odps</groupId>
+			<artifactId>odps-sdk-core</artifactId>
+			<version>0.38.4-public</version>
+		</dependency>
 
         <dependency>
             <groupId>org.mockito</groupId>
@@ -87,29 +87,22 @@
 			<version>1.4.10</version>
 			<scope>test</scope>
 		</dependency>
-
 		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<version>1.8.5</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.powermock</groupId>
-			<artifactId>powermock-api-mockito</artifactId>
-			<version>1.4.10</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.powermock</groupId>
-			<artifactId>powermock-module-junit4</artifactId>
-			<version>1.4.10</version>
-			<scope>test</scope>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>1.8</version>
 		</dependency>
 	</dependencies>
 
 	<build>
+        <resources>
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                </includes>
+            </resource>
+        </resources>
 		<plugins>
 			<!-- compiler plugin -->
 			<plugin>

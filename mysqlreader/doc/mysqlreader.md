@@ -165,7 +165,7 @@ MysqlReader插件实现了从Mysql读取数据。在底层实现上，MysqlReade
 
 	  支持常量配置，用户需要按照Mysql SQL语法格式:
 	  ["id", "\`table\`", "1", "'bazhen.csy'", "null", "to_char(a + 1)", "2.3" , "true"]
-	  id为普通列名，\`table\`为包含保留在的列名，1为整形数字常量，'bazhen.csy'为字符串常量，null为空指针，to_char(a + 1)为表达式，2.3为浮点数，true为布尔值。
+	  id为普通列名，\`table\`为包含保留字的列名，1为整形数字常量，'bazhen.csy'为字符串常量，null为空指针，to_char(a + 1)为表达式，2.3为浮点数，true为布尔值。
 
 	* 必选：是 <br />
 
@@ -197,9 +197,9 @@ MysqlReader插件实现了从Mysql读取数据。在底层实现上，MysqlReade
 
 * **querySql**
 
-	* 描述：在有些业务场景下，where这一配置项不足以描述所筛选的条件，用户可以通过该配置型来自定义筛选SQL。当用户配置了这一项之后，DataX系统就会忽略table，column这些配置型，直接使用这个配置项的内容对数据进行筛选，例如需要进行多表join后同步数据，使用select a,b from table_a join table_b on table_a.id = table_b.id <br />
+	* 描述：在有些业务场景下，where这一配置项不足以描述所筛选的条件，用户可以通过该配置型来自定义筛选SQL。当用户配置了这一项之后，DataX系统就会忽略column这些配置型，直接使用这个配置项的内容对数据进行筛选，例如需要进行多表join后同步数据，使用select a,b from table_a join table_b on table_a.id = table_b.id <br />
 
-	 `当用户配置querySql时，MysqlReader直接忽略table、column、where条件的配置`，querySql优先级大于table、column、where选项。
+	 `当用户配置querySql时，MysqlReader直接忽略column、where条件的配置`，querySql优先级大于column、where选项。querySql和table不能同时存在
 
 	* 必选：否 <br />
 

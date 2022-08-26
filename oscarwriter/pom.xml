@@ -39,12 +39,18 @@
             <artifactId>plugin-rdbms-util</artifactId>
             <version>${datax-project-version}</version>
         </dependency>
-        <dependency>
+    <!--    <dependency>
             <groupId>com.oscar</groupId>
             <artifactId>oscar</artifactId>
             <version>7.0.8</version>
             <scope>system</scope>
             <systemPath>${basedir}/src/main/lib/oscarJDBC.jar</systemPath>
+        </dependency>-->
+        <!--驱动文件找不到了，暂时替换成下面这个-->
+        <dependency>
+            <groupId>com.csicit.thirdparty</groupId>
+            <artifactId>oscar</artifactId>
+            <version>1.0.1</version>
         </dependency>
 
     </dependencies>

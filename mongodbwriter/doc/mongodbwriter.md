@@ -116,10 +116,10 @@ MongoDBWriter通过Datax框架获取Reader生成的数据，然后将Datax支持
                                 "type": "int"
                             }
                         ],
-						"upsertInfo": {
-							"isUpsert": "true",
-							"upsertKey": "unique_id"
-						}
+                      "writeMode": {
+                        "isReplace": "true",
+                        "replaceKey": "unique_id"
+                      }
                     }
                 }
             }
@@ -135,11 +135,11 @@ MongoDBWriter通过Datax框架获取Reader生成的数据，然后将Datax支持
 * collectionName： MonogoDB的集合名。【必填】
 * column：MongoDB的文档列名。【必填】
 * name：Column的名字。【必填】
-* type：Column的类型。【选填】
+* type：Column的类型。【必填】
 * splitter：特殊分隔符，当且仅当要处理的字符串要用分隔符分隔为字符数组时，才使用这个参数，通过这个参数指定的分隔符，将字符串分隔存储到MongoDB的数组中。【选填】
-* upsertInfo：指定了传输数据时更新的信息。【选填】
-* isUpsert：当设置为true时，表示针对相同的upsertKey做更新操作。【选填】
-* upsertKey：upsertKey指定了没行记录的业务主键。用来做更新时使用。【选填】
+* writeMode：指定了传输数据时更新的信息。【选填】
+* isReplace：当设置为true时，表示针对相同的replaceKey做更新操作。【选填】
+* replaceKey：replaceKey指定了每行记录的业务主键。用来做更新时使用。【选填】
 
 #### 5 类型转换
 

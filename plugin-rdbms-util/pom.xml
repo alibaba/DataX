@@ -30,7 +30,7 @@
 		<dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.34</version>
+            <version>${mysql.driver.version}</version>
             <scope>test</scope>
         </dependency>
 		<dependency>
@@ -63,5 +63,5 @@
             <artifactId>guava</artifactId>
             <version>r05</version>
         </dependency>
-    </dependencies>
+	</dependencies>
 </project>

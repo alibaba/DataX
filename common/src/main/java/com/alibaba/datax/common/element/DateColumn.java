@@ -89,6 +89,11 @@ public class DateColumn extends Column {
 
 		return new Date((Long)this.getRawData());
 	}
+	
+	@Override
+	public Date asDate(String dateFormat) {
+		return asDate();
+	}
 
 	@Override
 	public byte[] asBytes() {
