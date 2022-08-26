@@ -1,0 +1,15 @@
+{
+    "name": "elasticsearchwriter",
+    "parameter": {
+        "endpoint": "http://xxx:9200",
+        "accessId": "",
+        "accessKey": "",
+        "index": "",
+        "type": "",
+        "cleanup": true,
+        "discovery": false,
+        "batchSize": 1000,
+        "splitter": ",",
+        "column": []
+    }
+}
