@@ -300,10 +300,10 @@ public class ESWriter extends Writer {
             if (column.getType() != Column.Type.DATE && esColumn.getFormat() != null) {
                 DateTimeFormatter formatter = DateTimeFormat.forPattern(esColumn.getFormat());
                 date = formatter.withZone(dtz).parseDateTime(column.asString());
-                return date.toString();
+                return date.toString(esColumn.getFormat());
             } else if (column.getType() == Column.Type.DATE) {
                 date = new DateTime(column.asLong(), dtz);
-                return date.toString();
+                return date.toString(esColumn.getFormat());
             } else {
                 return column.asString();
             }
