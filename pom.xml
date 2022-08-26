@@ -80,6 +80,7 @@
 
         <!-- writer -->
         <module>mysqlwriter</module>
+        <module>starrockswriter</module>
         <module>drdswriter</module>
         <module>oraclewriter</module>
         <module>sqlserverwriter</module>
@@ -87,8 +88,6 @@
         <module>kingbaseeswriter</module>
         <module>adswriter</module>
         <module>oceanbasev10writer</module>
-        <module>cassandrawriter</module>
-        <module>clickhousewriter</module>
         <module>adbpgwriter</module>
         <module>hologresjdbcwriter</module>
         <module>rdbmswriter</module>
@@ -114,6 +113,8 @@
         <module>tsdbwriter</module>
         <module>gdbwriter</module>
         <module>oscarwriter</module>
+        <module>cassandrawriter</module>
+        <module>clickhousewriter</module>
 
         <!-- common support module -->
         <module>plugin-rdbms-util</module>
