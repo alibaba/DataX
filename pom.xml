@@ -88,8 +88,6 @@
         <module>kingbaseeswriter</module>
         <module>adswriter</module>
         <module>oceanbasev10writer</module>
-        <module>cassandrawriter</module>
-        <module>clickhousewriter</module>
         <module>adbpgwriter</module>
         <module>hologresjdbcwriter</module>
         <module>rdbmswriter</module>
@@ -117,7 +115,7 @@
         <module>oscarwriter</module>
         <module>cassandrawriter</module>
         <module>clickhousewriter</module>
-        <!-- <module>oscarwriter</module> -->
+
         <!-- common support module -->
         <module>plugin-rdbms-util</module>
         <module>plugin-unstructured-storage-util</module>
