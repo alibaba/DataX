@@ -22,8 +22,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 public class ESWriter extends Writer {
@@ -135,6 +137,8 @@ public class ESWriter extends Writer {
                             field.put("eager_global_ordinals", jo.getBoolean("eager_global_ordinals"));
                         case TEXT:
                             field.put("analyzer", jo.getString("analyzer"));
+                            // 支持text类型字段的fields属性
+                            field.put("fields", jo.getObject("fields", Map.class));
                             // 优化disk使用,也同步会提高index性能
                             // https://www.elastic.co/guide/en/elasticsearch/reference/current/tune-for-disk-usage.html
                             field.put("norms", jo.getBoolean("norms"));
@@ -170,6 +174,7 @@ public class ESWriter extends Writer {
             Map<String, Object> rootMappings = new HashMap<String, Object>();
             Map<String, Object> typeMappings = new HashMap<String, Object>();
             typeMappings.put("properties", propMap);
+            addMappings(typeMappings);
             rootMappings.put(typeName, typeMappings);
 
             mappings = JSON.toJSONString(rootMappings);
@@ -179,6 +184,20 @@ public class ESWriter extends Writer {
             }
 
             return mappings;
+        }
+
+        /**
+         * 添加es支持的mappings属性配置
+         * key: mappings
+         * value: 同es的mappings配置
+         * 示例: "mappings": {"_all":{"enabled":false},"dynamic":"true"}
+         */
+        private void addMappings(Map<String, Object> typeMappings){
+            Map<String,Object> mappings = conf.getMap("mappings");
+            if(mappings == null)
+                return;
+
+            typeMappings.putAll(mappings);
         }
 
         @Override
@@ -291,6 +310,9 @@ public class ESWriter extends Writer {
         }
 
         private String getDateStr(ESColumn esColumn, Column column) {
+            if(column.asString()==null || column.asString().isEmpty()){
+                return null;
+            }
             DateTime date = null;
             DateTimeZone dtz = DateTimeZone.getDefault();
             if (esColumn.getTimezone() != null) {
