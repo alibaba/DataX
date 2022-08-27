@@ -1,7 +1,8 @@
 # DataX OBSWriter 说明
 
-
 ------------
+
+针对华为云OBS对象存储的插件，由潍坊雷鸣云网络科技 www.leimingyun.com 开发。
 
 ## 1 快速介绍
 
@@ -184,6 +185,5 @@ OBS本身不提供数据类型，该类型是DataX OBSWriter定义：
 
 略
 
-## 7 其他
-针对华为云OBS对象存储的插件，本插件由潍坊雷鸣云网络科技 www.leimingyun.com 开发，有需要欢迎联系。
+
 
