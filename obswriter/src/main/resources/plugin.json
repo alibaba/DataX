@@ -1,0 +1,7 @@
+{
+    "name": "obswriter",
+    "class": "com.alibaba.datax.plugin.writer.obswriter.ObsWriter",
+    "description": "",
+    "developer": "alibaba"
+}
+
