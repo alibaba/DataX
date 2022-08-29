@@ -1,0 +1,6 @@
+{
+    "name": "starrockswriter",
+    "class": "com.starrocks.connector.datax.plugin.writer.starrockswriter.StarRocksWriter",
+    "description": "useScene: prod. mechanism: StarRocksStreamLoad. warn: The more you know about the database, the less problems you encounter.",
+    "developer": "starrocks"
+}
