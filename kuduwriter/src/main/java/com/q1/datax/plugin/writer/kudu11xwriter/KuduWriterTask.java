@@ -1,7 +1,6 @@
 package com.q1.datax.plugin.writer.kudu11xwriter;
 
-import com.alibaba.datax.common.element.Column;
-import com.alibaba.datax.common.element.Record;
+import com.alibaba.datax.common.element.*;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordReceiver;
 import com.alibaba.datax.common.plugin.TaskPluginCollector;
@@ -9,6 +8,7 @@ import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.common.util.RetryUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kudu.client.*;
+import org.apache.kudu.util.TimestampUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,6 +86,7 @@ public class KuduWriterTask {
                 CountDownLatch countDownLatch = new CountDownLatch(columnLists.size());
                 Upsert upsert = table.newUpsert();
                 Insert insert = table.newInsert();
+
                 PartialRow row;
                 if (isUpsert) {
                     //覆盖更新
@@ -134,7 +135,48 @@ public class KuduWriterTask {
                                         break;
                                     case BOOLEAN:
                                         synchronized (lock) {
-                                            row.addBoolean(name, Boolean.getBoolean(rawData));
+                                            //原版要中获取布尔值错误。不该使用Boolean.getBoolean，要用Boolean.valueOf
+                                            //row.addBoolean(name, Boolean.getBoolean(rawData));
+                                            //布尔类型  字符串转布尔类型
+                                            if((column instanceof BoolColumn) || (column instanceof StringColumn)){
+                                                row.addBoolean(name, Boolean.valueOf(rawData));
+                                            }
+                                            //整型转布尔类型  因为从mysql oracle传过来的布尔类型都是整型
+                                            if(column instanceof LongColumn){
+                                                if("1".equals(rawData)){
+                                                    row.addBoolean(name, true);
+                                                }else if("0".equals(rawData)){
+                                                    row.addBoolean(name, false);
+                                                }else{
+                                                    row.setNull(name);
+                                                }
+                                            }
+                                        }
+                                        break;
+                                    //新增timestamp类型
+                                    case TIMESTAMP:
+                                        synchronized (lock) {
+                                            if (column instanceof DateColumn){
+                                                DateColumn cols = (DateColumn)column;
+                                                switch(cols.getSubType()) {
+                                                    case DATE:
+                                                        row.addTimestamp(name,TimestampUtil.microsToTimestamp(cols.asLong()*1000)); //转微秒
+                                                        break;
+                                                    case TIME:
+                                                        row.setNull(name);
+                                                        break;
+                                                    case DATETIME:
+                                                        row.addTimestamp(name,TimestampUtil.microsToTimestamp(cols.asLong()*1000)); //转微秒
+                                                        break;
+                                                    default:
+                                                        row.setNull(name);
+                                                }
+                                            }
+                                            //整型转时间戳    注意要精确到微秒
+                                            if(column instanceof LongColumn){
+                                                row.addTimestamp(name,TimestampUtil.microsToTimestamp(((LongColumn)column).asLong()));
+                                            }
+
                                         }
                                         break;
                                     case STRING:
