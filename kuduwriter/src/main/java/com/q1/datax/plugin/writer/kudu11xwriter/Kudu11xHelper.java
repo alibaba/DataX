@@ -55,8 +55,11 @@ public class Kudu11xHelper {
         try {
             String masterAddress = (String) conf.get(Key.KUDU_MASTER);
             kuduClient = new KuduClient.KuduClientBuilder(masterAddress)
-                    .defaultAdminOperationTimeoutMs((Long) conf.get(Key.KUDU_ADMIN_TIMEOUT))
-                    .defaultOperationTimeoutMs((Long) conf.get(Key.KUDU_SESSION_TIMEOUT))
+                    //.defaultAdminOperationTimeoutMs((Long) conf.get(Key.KUDU_ADMIN_TIMEOUT))
+                    //修改从json配置文件中读取kuduwriter的timeout sessionTimeout不能进行数据转换的问题。 java.lang.Integer cannot be cast to java.lang.Long
+                    .defaultAdminOperationTimeoutMs(Long.parseLong(conf.get(Key.KUDU_ADMIN_TIMEOUT).toString()))
+                    //.defaultOperationTimeoutMs((Long) conf.get(Key.KUDU_SESSION_TIMEOUT))
+                    .defaultOperationTimeoutMs(Long.parseLong(conf.get(Key.KUDU_SESSION_TIMEOUT).toString()))
                     .build();
         } catch (Exception e) {
             throw DataXException.asDataXException(Kudu11xWriterErrorcode.GET_KUDU_CONNECTION_ERROR, e);
