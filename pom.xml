@@ -106,6 +106,7 @@
         <module>txtfilewriter</module>
         <module>streamwriter</module>
         <module>obswriter</module>
+        <module>obsreader</module>
 
         <module>elasticsearchwriter</module>
         <module>mongodbwriter</module>

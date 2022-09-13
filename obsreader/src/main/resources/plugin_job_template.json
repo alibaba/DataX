@@ -1,0 +1,14 @@
+{
+    "name": "obsreader",
+    "parameter": {
+        "endpoint": "",
+        "accessKey": "",
+        "secretKey": "",
+        "bucket": "",
+        "object": [],
+        "column": [],
+        "encoding": "",
+        "fieldDelimiter": "",
+        "compress": ""
+    }
+}

@@ -1,0 +1,7 @@
+{
+    "name": "obsreader",
+    "class": "com.alibaba.datax.plugin.reader.obsreader.ObsReader",
+    "description": "",
+    "developer": "alibaba"
+}
+
