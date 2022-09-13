@@ -1,0 +1,13 @@
+{
+    "name": "obswriter",
+    "parameter": {
+        "endpoint": "",
+        "accessKey": "",
+        "secretKey": "",
+        "bucket": "",
+        "object": "",
+        "encoding": "",
+        "fieldDelimiter": "",
+        "writeMode": ""
+    }
+}

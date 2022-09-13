@@ -215,6 +215,14 @@
             </includes>
             <outputDirectory>datax</outputDirectory>
         </fileSet>
+        <fileSet>
+            <directory>obsreader/target/datax/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>datax</outputDirectory>
+        </fileSet>
+        
 
         <!-- writer -->
         <fileSet>
@@ -443,6 +451,13 @@
         </fileSet>
         <fileSet>
             <directory>hologresjdbcwriter/target/datax/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>datax</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>obswriter/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
             </includes>
