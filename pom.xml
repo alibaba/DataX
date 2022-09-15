@@ -210,6 +210,17 @@
 
     <repositories>
         <repository>
+            <id>maven-central</id>
+            <name>Nexus Maven Central</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
             <id>central</id>
             <name>Nexus aliyun</name>
             <url>https://maven.aliyun.com/repository/central</url>
@@ -234,6 +245,17 @@
     </repositories>
 
     <pluginRepositories>
+        <pluginRepository>
+            <id>maven-central</id>
+            <name>Nexus Maven Central</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
         <pluginRepository>
             <id>central</id>
             <name>Nexus aliyun</name>
