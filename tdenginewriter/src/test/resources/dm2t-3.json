@@ -58,7 +58,7 @@
                 "table": [
                   "stb2"
                 ],
-                "jdbcUrl": "jdbc:TAOS-RS://192.168.1.93:6041/db2"
+                "jdbcUrl": "jdbc:TAOS://192.168.1.93:6030/db2"
               }
             ],
             "batchSize": 1000,
