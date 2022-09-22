@@ -119,6 +119,8 @@
         <!-- common support module -->
         <module>plugin-rdbms-util</module>
         <module>plugin-unstructured-storage-util</module>
+        <module>influxdbreader</module>
+        <module>influxdbreader</module>
     </modules>
 
     <dependencyManagement>
