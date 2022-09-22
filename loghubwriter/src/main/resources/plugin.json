@@ -1,0 +1,6 @@
+{
+    "name": "loghubwriter",
+    "class": "com.alibaba.datax.plugin.writer.loghubwriter.LogHubWriter",
+    "description": "适用于: 将数据导入到SLS LogHub中",
+    "developer": "alibaba"
+}

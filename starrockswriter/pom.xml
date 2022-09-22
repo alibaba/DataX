@@ -8,7 +8,7 @@
 	</parent>
 	<artifactId>starrockswriter</artifactId>
 	<name>starrockswriter</name>
-    <version>release</version>
+    <version>1.1.0</version>
 	<packaging>jar</packaging>
 
 	<dependencies>
@@ -31,7 +31,6 @@
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>com.alibaba.datax</groupId>
 			<artifactId>plugin-rdbms-util</artifactId>
@@ -70,7 +69,7 @@
 		<dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.34</version>
+            <version>5.1.46</version>
         </dependency>
 	</dependencies>
 

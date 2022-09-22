@@ -1,0 +1,13 @@
+{
+    "name": "loghubwriter",
+    "parameter": {
+        "endpoint": "",
+        "accessId": "",
+        "accessKey": "",
+        "project": "",
+        "logstore": "",
+        "topic": "",
+        "batchSize":1024,
+        "column": []
+    }
+}

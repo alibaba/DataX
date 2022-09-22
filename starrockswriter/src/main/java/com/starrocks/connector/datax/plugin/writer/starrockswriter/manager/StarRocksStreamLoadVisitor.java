@@ -62,17 +62,37 @@ public class StarRocksStreamLoadVisitor {
             .append(writerOptions.getTable())
             .append("/_stream_load")
             .toString();
-        LOG.debug(String.format("Start to join batch data: rows[%d] bytes[%d] label[%s].", flushData.getRows().size(), flushData.getBytes(), flushData.getLabel()));
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(String.format("Start to join batch data: rows[%d] bytes[%d] label[%s].", flushData.getRows().size(), flushData.getBytes(), flushData.getLabel()));
+        }
         Map<String, Object> loadResult = doHttpPut(loadUrl, flushData.getLabel(), joinRows(flushData.getRows(), flushData.getBytes().intValue()));
         final String keyStatus = "Status";
         if (null == loadResult || !loadResult.containsKey(keyStatus)) {
-            throw new IOException("Unable to flush data to StarRocks: unknown result status.");
+            LOG.error("unknown result status. {}", loadResult);
+            throw new IOException("Unable to flush data to StarRocks: unknown result status. " + loadResult);
         }
-        LOG.debug(new StringBuilder("StreamLoad response:\n").append(JSON.toJSONString(loadResult)).toString());
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(new StringBuilder("StreamLoad response:\n").append(JSON.toJSONString(loadResult)).toString());
+        }
         if (RESULT_FAILED.equals(loadResult.get(keyStatus))) {
-            throw new IOException(
-                new StringBuilder("Failed to flush data to StarRocks.\n").append(JSON.toJSONString(loadResult)).toString()
-            );
+            StringBuilder errorBuilder = new StringBuilder("Failed to flush data to StarRocks.\n");
+            if (loadResult.containsKey("Message")) {
+                errorBuilder.append(loadResult.get("Message"));
+                errorBuilder.append('\n');
+            }
+            if (loadResult.containsKey("ErrorURL")) {
+                LOG.error("StreamLoad response: {}", loadResult);
+                try {
+                    errorBuilder.append(doHttpGet(loadResult.get("ErrorURL").toString()));
+                    errorBuilder.append('\n');
+                } catch (IOException e) {
+                    LOG.warn("Get Error URL failed. {} ", loadResult.get("ErrorURL"), e);
+                }
+            } else {
+                errorBuilder.append(JSON.toJSONString(loadResult));
+                errorBuilder.append('\n');
+            }
+            throw new IOException(errorBuilder.toString());
         } else if (RESULT_LABEL_EXISTED.equals(loadResult.get(keyStatus))) {
             LOG.debug(new StringBuilder("StreamLoad response:\n").append(JSON.toJSONString(loadResult)).toString());
             // has to block-checking the state to get the final result
@@ -210,9 +230,26 @@ public class StarRocksStreamLoadVisitor {
             httpPut.setEntity(new ByteArrayEntity(data));
             httpPut.setConfig(RequestConfig.custom().setRedirectsEnabled(true).build());
             try (CloseableHttpResponse resp = httpclient.execute(httpPut)) {
-                HttpEntity respEntity = getHttpEntity(resp);
-                if (respEntity == null)
+                int code = resp.getStatusLine().getStatusCode();
+                if (200 != code) {
+                    String errorText;
+                    try {
+                        HttpEntity respEntity = resp.getEntity();
+                        errorText = EntityUtils.toString(respEntity);
+                    } catch (Exception err) {
+                        errorText = "find errorText failed: " + err.getMessage();
+                    }
+                    LOG.warn("Request failed with code:{}, err:{}", code, errorText);
+                    Map<String, Object> errorMap = new HashMap<>();
+                    errorMap.put("Status", "Fail");
+                    errorMap.put("Message", errorText);
+                    return errorMap;
+                }
+                HttpEntity respEntity = resp.getEntity();
+                if (null == respEntity) {
+                    LOG.warn("Request failed with empty response.");
                     return null;
+                }
                 return (Map<String, Object>)JSON.parse(EntityUtils.toString(respEntity));
             }
         }
@@ -236,6 +273,32 @@ public class StarRocksStreamLoadVisitor {
             return null;
         }
         return respEntity;
+    }
+	
+    private String doHttpGet(String getUrl) throws IOException {
+        LOG.info("Executing GET from {}.", getUrl);
+        try (CloseableHttpClient httpclient = buildHttpClient()) {
+            HttpGet httpGet = new HttpGet(getUrl);
+            try (CloseableHttpResponse resp = httpclient.execute(httpGet)) {
+                HttpEntity respEntity = resp.getEntity();
+                if (null == respEntity) {
+                    LOG.warn("Request failed with empty response.");
+                    return null;
+                }
+                return EntityUtils.toString(respEntity);
+            }
+        }
+    }
+
+    private CloseableHttpClient buildHttpClient(){
+        final HttpClientBuilder httpClientBuilder = HttpClients.custom()
+            .setRedirectStrategy(new DefaultRedirectStrategy() {
+                @Override
+                protected boolean isRedirectable(String method) {
+                    return true;
+                }
+            });
+        return httpClientBuilder.build();
     }
 
 }

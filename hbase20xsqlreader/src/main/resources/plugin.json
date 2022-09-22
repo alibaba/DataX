@@ -2,6 +2,6 @@
     "name": "hbase20xsqlreader",
     "class": "com.alibaba.datax.plugin.reader.hbase20xsqlreader.HBase20xSQLReader",
     "description": "useScene: prod. mechanism: read data from phoenix through queryserver.",
-    "developer": "bake"
+    "developer": "alibaba"
 }
 

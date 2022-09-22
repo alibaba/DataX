@@ -411,6 +411,15 @@ public class Configuration {
 		return list;
 	}
 
+	public <T> List<T> getListWithJson(final String path, Class<T> t) {
+		Object object = this.get(path, List.class);
+		if (null == object) {
+			return null;
+		}
+
+		return JSON.parseArray(JSON.toJSONString(object),t);
+	}
+
 	/**
 	 * 根据用户提供的json path，寻址List对象，如果对象不存在，返回null
 	 */
