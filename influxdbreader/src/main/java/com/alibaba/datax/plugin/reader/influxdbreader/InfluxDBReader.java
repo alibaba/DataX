@@ -1,5 +1,7 @@
 package com.alibaba.datax.plugin.reader.influxdbreader;
 
+import com.alibaba.datax.common.element.Column;
+import com.alibaba.datax.common.element.DoubleColumn;
 import com.alibaba.datax.common.element.LongColumn;
 import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.element.StringColumn;
@@ -22,37 +24,16 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.temporal.ChronoField;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import org.joda.time.DateTime;
 import java.util.Map;
 
 public class InfluxDBReader extends Reader {
-    /**
-     *  map: [measurement,tagKeys]
-     */
-    private static Map<String, List<String>> measurementTagKeysMap;
-
-    /**
-     * measurement : FieldKeys
-     */
-    private static Map<String, List<String>> measurementFieldKeysMap;
-
-    /**
-     * measurement list
-     */
-    private static List<String> measurements;
-
     public static class Job extends Reader.Job {
-
         private static final Logger LOG = LoggerFactory.getLogger(Job.class);
         private static final String DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
-
         private Configuration originalConfig;
-        private String url;
-        private char[] token;
-        private String org;
-        private String bucket;
-
 
         @Override
         public void init() {
@@ -130,80 +111,6 @@ public class InfluxDBReader extends Reader {
 
         @Override
         public void prepare() {
-            // 1. build connection
-            this.url = this.originalConfig.getString(Key.URL);
-            this.token = this.originalConfig.getString(Key.TOKEN).toCharArray();
-            this.org = this.originalConfig.getString(Key.ORG);
-            this.bucket = this.originalConfig.getString(Key.BUCKET);
-            InfluxDBClient influxDBClient = InfluxDBClientFactory.create(url, token, org, bucket);
-            // 2. query measurement
-            measurements = new ArrayList<>();
-            // 2.1 generate query flux
-            StringBuilder queryMeasurementsFlux = new StringBuilder();
-            queryMeasurementsFlux.append("import \"influxdata/influxdb/schema\"\n");
-            queryMeasurementsFlux.append("\n");
-            queryMeasurementsFlux.append("schema.measurements(bucket: \"");
-            queryMeasurementsFlux.append(bucket);
-            queryMeasurementsFlux.append("\")");
-            // 2.2 query
-            QueryApi queryMeasurementsApi = influxDBClient.getQueryApi();
-            List<FluxTable> measurementsTables = queryMeasurementsApi.query(queryMeasurementsFlux.toString());
-            for (FluxTable fluxTable : measurementsTables) {
-                List<FluxRecord> records = fluxTable.getRecords();
-                for (FluxRecord fluxRecord : records) {
-                    measurements.add(String.valueOf(fluxRecord.getValueByKey("_value")));
-                }
-            }
-            // 3. query tagKeys
-            // 4. query fieldKeys
-            // 有些 measurement 的 tagKey 可能是后加的，这时候根据 tagkeyApi 查询会查询出所有的 tagKeys
-            for (String measurement : measurements) {
-                // 3.1 generate tagKeys query flux
-                StringBuilder queryTagKeysFlux = new StringBuilder();
-                queryTagKeysFlux.append("import \"influxdata/influxdb/schema\"\n");
-                queryTagKeysFlux.append("\n");
-                queryTagKeysFlux.append("schema.measurementTagKeys(\n");
-                queryTagKeysFlux.append("    bucket: \"");
-                queryTagKeysFlux.append(bucket);
-                queryTagKeysFlux.append("\",\n");
-                queryTagKeysFlux.append("    measurement: \"");
-                queryTagKeysFlux.append(measurement);
-                queryTagKeysFlux.append("\",\n)");
-                // 3.2 query
-                List<String> tagKeys = new ArrayList<>();
-                measurementTagKeysMap.put(measurement, tagKeys);
-                QueryApi queryTagKeysApi = influxDBClient.getQueryApi();
-                List<FluxTable> TagKeysTables = queryTagKeysApi.query(queryTagKeysFlux.toString());
-                for (FluxTable fluxTable : TagKeysTables) {
-                    List<FluxRecord> records = fluxTable.getRecords();
-                    // 固定从下标 4 开始，为第一个 tagKey
-                    for (int i = 4; i < records.size(); i++) {
-                        tagKeys.add(String.valueOf(records.get(i).getValueByKey("_value")));
-                    }
-                }
-                // 4.1 generate fieldKeys query flux
-                StringBuilder queryFieldKeysFlux = new StringBuilder();
-                queryFieldKeysFlux.append("import \"influxdata/influxdb/schema\"\n");
-                queryFieldKeysFlux.append("\n");
-                queryFieldKeysFlux.append("schema.measurementFieldKeys(\n");
-                queryFieldKeysFlux.append("    bucket: \"");
-                queryFieldKeysFlux.append(bucket);
-                queryFieldKeysFlux.append("\",\n");
-                queryFieldKeysFlux.append("    measurement: \"");
-                queryFieldKeysFlux.append(measurement);
-                queryFieldKeysFlux.append("\",\n)");
-                // 4.2 query
-                List<String> fieldKeys = new ArrayList<>();
-                measurementFieldKeysMap.put(measurement, fieldKeys);
-                QueryApi queryFieldKeysApi = influxDBClient.getQueryApi();
-                List<FluxTable> fieldKeysTables = queryFieldKeysApi.query(queryTagKeysFlux.toString());
-                for (FluxTable fluxTable : fieldKeysTables) {
-                    List<FluxRecord> records = fluxTable.getRecords();
-                    for (FluxRecord fluxRecord : records) {
-                        fieldKeys.add(String.valueOf(fluxRecord.getValueByKey("_value")));
-                    }
-                }
-            }
         }
 
         @Override
@@ -261,32 +168,94 @@ public class InfluxDBReader extends Reader {
 
     public static class Task extends Reader.Task {
         private static final Logger LOG = LoggerFactory.getLogger(Task.class);
+
+        /**
+         * measurement list
+         */
+        private static List<String> measurements;
+
+        /**
+         *  map: [measurement,tagKeys]
+         */
+        private Map<String, List<String>> measurementTagKeysMap;
+        private Configuration readerSliceConfig;
         private InfluxDBClient influxDBClient;
         private String url;
         private char[] token;
         private String org;
         private String bucket;
-        private Long startTime;
-        private Long endTime;
+        private String startTime;
+        private String endTime;
 
         @Override
         public void init() {
-            Configuration readerSliceConfig = super.getPluginJobConf();
+            this.readerSliceConfig = super.getPluginJobConf();
             LOG.info("getPluginJobConf: {}", JSON.toJSONString(readerSliceConfig));
 
-            this.url = readerSliceConfig.getString(Key.URL);
-            this.token = readerSliceConfig.getString(Key.TOKEN).toCharArray();
-            this.org = readerSliceConfig.getString(Key.ORG);
-            this.bucket = readerSliceConfig.getString(Key.BUCKET);
+            this.measurementTagKeysMap = new HashMap<>();
+
+            List<Configuration> connectionList = this.readerSliceConfig.getListConfiguration(Key.CONNECTION);
+            Configuration conn = connectionList.get(0);
+            this.url = conn.getString(Key.URL);
+            this.token = conn.getString(Key.TOKEN).toCharArray();
+            this.org = conn.getString(Key.ORG);
+            this.bucket = conn.getString(Key.BUCKET);
+
 
             this.influxDBClient = InfluxDBClientFactory.create(url, token, org, bucket);
 
-            this.startTime = readerSliceConfig.getLong(Key.BEGIN_DATETIME);
-            this.endTime = readerSliceConfig.getLong(Key.END_DATETIME);
+            this.startTime = readerSliceConfig.getString(Key.BEGIN_DATETIME);
+            this.endTime = readerSliceConfig.getString(Key.END_DATETIME);
         }
 
         @Override
         public void prepare() {
+            // 1. build connection
+            InfluxDBClient influxDBClient = InfluxDBClientFactory.create(url, token, org, bucket);
+            // 2. query measurement
+            measurements = new ArrayList<>();
+            // 2.1 generate query flux
+            StringBuilder queryMeasurementsFlux = new StringBuilder();
+            queryMeasurementsFlux.append("import \"influxdata/influxdb/schema\"\n");
+            queryMeasurementsFlux.append("\n");
+            queryMeasurementsFlux.append("schema.measurements(bucket: \"");
+            queryMeasurementsFlux.append(bucket);
+            queryMeasurementsFlux.append("\")");
+            // 2.2 query
+            QueryApi queryMeasurementsApi = influxDBClient.getQueryApi();
+            List<FluxTable> measurementsTables = queryMeasurementsApi.query(queryMeasurementsFlux.toString());
+            for (FluxTable fluxTable : measurementsTables) {
+                List<FluxRecord> records = fluxTable.getRecords();
+                for (FluxRecord fluxRecord : records) {
+                    measurements.add(String.valueOf(fluxRecord.getValueByKey("_value")));
+                }
+            }
+            // 3. query tagKeys
+            for (String measurement : measurements) {
+                // 3.1 generate tagKeys query flux
+                StringBuilder queryTagKeysFlux = new StringBuilder();
+                queryTagKeysFlux.append("import \"influxdata/influxdb/schema\"\n");
+                queryTagKeysFlux.append("\n");
+                queryTagKeysFlux.append("schema.measurementTagKeys(\n");
+                queryTagKeysFlux.append("    bucket: \"");
+                queryTagKeysFlux.append(bucket);
+                queryTagKeysFlux.append("\",\n");
+                queryTagKeysFlux.append("    measurement: \"");
+                queryTagKeysFlux.append(measurement);
+                queryTagKeysFlux.append("\",\n)");
+                // 3.2 query
+                List<String> tagKeys = new ArrayList<>();
+                measurementTagKeysMap.put(measurement, tagKeys);
+                QueryApi queryTagKeysApi = influxDBClient.getQueryApi();
+                List<FluxTable> TagKeysTables = queryTagKeysApi.query(queryTagKeysFlux.toString());
+                for (FluxTable fluxTable : TagKeysTables) {
+                    List<FluxRecord> records = fluxTable.getRecords();
+                    // 固定从下标 4 开始，为第一个 tagKey
+                    for (int i = 4; i < records.size(); i++) {
+                        tagKeys.add(String.valueOf(records.get(i).getValueByKey("_value")));
+                    }
+                }
+            }
         }
 
         @Override
@@ -304,6 +273,9 @@ public class InfluxDBReader extends Reader {
                 queryFlux.append("0, stop: ");
                 queryFlux.append(this.endTime);
                 queryFlux.append(") |> filter(fn: (r) => r._measurement == \"");
+
+                // TODO intervalTime 需要进一步拆分: 1day
+
                 // measurement
                 queryFlux.append(measurement);
                 queryFlux.append("\")");
@@ -318,11 +290,12 @@ public class InfluxDBReader extends Reader {
                         long time = fluxRecord.getTime().getLong(ChronoField.NANO_OF_SECOND);
                         LongColumn timeColumn = new LongColumn(time);
                         record.addColumn(timeColumn);
-
-                        String fieldValue = String.valueOf(fluxRecord.getValue());
-                        StringColumn fieldValueColumn = new StringColumn(fieldValue);
-                        record.addColumn(fieldValueColumn);
-
+                        try {
+                            Column fieldValueColumn = getColumn(fluxRecord.getValues());
+                            record.addColumn(fieldValueColumn);
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
                         String fieldKey = fluxRecord.getField();
                         StringColumn fieldKeyColumn = new StringColumn(fieldKey);
                         record.addColumn(fieldKeyColumn);
@@ -356,5 +329,28 @@ public class InfluxDBReader extends Reader {
         @Override
         public void destroy() {
         }
+
+        /**
+         * 判断 value 数据类型，并返回相应 column
+         * @param value
+         * @return
+         * @throws Exception
+         */
+        private static Column getColumn(Object value) throws Exception {
+            Column valueColumn;
+            if (value instanceof Double) {
+                valueColumn = new DoubleColumn((Double) value);
+            } else if (value instanceof Long) {
+                valueColumn = new LongColumn((Long) value);
+            } else if (value instanceof String) {
+                valueColumn = new StringColumn((String) value);
+            } else if (value instanceof Integer) {
+                valueColumn = new LongColumn(((Integer)value).longValue());
+            } else {
+                throw new Exception(String.format("value not supported type: [%s]", value.getClass().getSimpleName()));
+            }
+            return valueColumn;
+        }
+
     }
 }
