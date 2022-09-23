@@ -135,22 +135,13 @@ public class InfluxDBReader extends Reader {
                 throw DataXException.asDataXException(
                         InfluxDBReaderErrorCode.ILLEGAL_VALUE, "Analysis [" + Key.END_DATETIME + "] failed.", e);
             }
-            if (TimeUtils.isSecond(startTime)) {
-                startTime *= 1000;
-            }
-            if (TimeUtils.isSecond(endTime)) {
-                endTime *= 1000;
-            }
-            DateTime startDateTime = new DateTime(TimeUtils.getTimeInHour(startTime));
-            DateTime endDateTime = new DateTime(TimeUtils.getTimeInHour(endTime));
-
             // split
-            while (startDateTime.isBefore(endDateTime)) {
+            while (startTime < endTime) {
                 Configuration clone = this.originalConfig.clone();
-                clone.set(Key.BEGIN_DATETIME, startDateTime.getMillis());
-                startDateTime = startDateTime.plusHours(splitIntervalH);
+                clone.set(Key.BEGIN_DATETIME, (startTime / 1000));
+                startTime = startTime + splitIntervalH * 60 * 60 * 1000;
                 // Make sure the time interval is [start, end).
-                clone.set(Key.END_DATETIME, startDateTime.getMillis() - 1);
+                clone.set(Key.END_DATETIME, (startTime / 1000 - 1));
                 configurations.add(clone);
                 LOG.info("Configuration: {}", JSON.toJSONString(clone));
             }
@@ -184,8 +175,8 @@ public class InfluxDBReader extends Reader {
         private char[] token;
         private String org;
         private String bucket;
-        private String startTime;
-        private String endTime;
+        private long startTime;
+        private long endTime;
 
         @Override
         public void init() {
@@ -201,11 +192,10 @@ public class InfluxDBReader extends Reader {
             this.org = conn.getString(Key.ORG);
             this.bucket = conn.getString(Key.BUCKET);
 
-
             this.influxDBClient = InfluxDBClientFactory.create(url, token, org, bucket);
 
-            this.startTime = readerSliceConfig.getString(Key.BEGIN_DATETIME);
-            this.endTime = readerSliceConfig.getString(Key.END_DATETIME);
+            this.startTime = this.readerSliceConfig.getLong(Key.BEGIN_DATETIME);
+            this.endTime = this.readerSliceConfig.getLong(Key.END_DATETIME);
         }
 
         @Override
@@ -267,15 +257,17 @@ public class InfluxDBReader extends Reader {
                 StringBuilder queryFlux = new StringBuilder();
                 queryFlux.append("from(bucket:\"");
                 queryFlux.append(this.bucket);
-                queryFlux.append("\\\") |> range(start: ");
+                queryFlux.append("\") |> range(start: ");
                 // startTime
                 queryFlux.append(this.startTime);
-                queryFlux.append("0, stop: ");
+                queryFlux.append(", stop: ");
                 queryFlux.append(this.endTime);
                 queryFlux.append(") |> filter(fn: (r) => r._measurement == \"");
                 // measurement
                 queryFlux.append(measurement);
                 queryFlux.append("\")");
+
+                LOG.info("queryFlux:" + queryFlux.toString());
                 // TODO intervalTime 需要进一步拆分: 1day
                 // 2. query and write to DataX record
                 QueryApi queryApi = influxDBClient.getQueryApi();
@@ -289,7 +281,7 @@ public class InfluxDBReader extends Reader {
                         LongColumn timeColumn = new LongColumn(time);
                         record.addColumn(timeColumn);
                         try {
-                            Column fieldValueColumn = getColumn(fluxRecord.getValues());
+                            Column fieldValueColumn = getColumn(fluxRecord.getValues().get("_value"));
                             record.addColumn(fieldValueColumn);
                         } catch (Exception e) {
                             throw new RuntimeException(e);

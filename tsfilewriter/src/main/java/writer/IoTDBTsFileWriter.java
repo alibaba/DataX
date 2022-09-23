@@ -123,6 +123,7 @@ public class IoTDBTsFileWriter extends Writer {
             long total = 0;
             while ((record = recordReceiver.getFromReader()) != null) {
                 try {
+                    LOG.info("record : ", record);
                     writeWithRecord(record);
                 } catch (Exception e) {
                     LOG.error("write with record error ", e);
@@ -206,7 +207,7 @@ public class IoTDBTsFileWriter extends Writer {
 
             TsFileWriter writer = writers.get(vsgIndex);
             // 判断tsfile大小是否到达阈值
-            if (writer.getIOWriter().getFile().length() > threshold) {
+            if (writer != null && writer.getIOWriter().getFile().length() > threshold) {
                 writer.close();
                 writer = null;
             }
