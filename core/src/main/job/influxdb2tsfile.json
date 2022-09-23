@@ -1,0 +1,40 @@
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "name": "influxdbreader",
+          "parameter": {
+            "connection": [
+              {
+                "url": "http://172.20.48.111:8086",
+                "token": "ty1lVsJUYYfSO-Da0IMXWig2Tpuhzr-uqv7PEFwB71WcPo5NVLFyK3AYAG8QbTskUN62-37rU7-C9Pw9JNAKEA==",
+                "org": "tsdb",
+                "bucket": "shen"
+              }
+            ],
+            "column": [],
+            "splitIntervalH": 24,
+            "beginDateTime": "2022-09-20 00:00:00",
+            "endDateTime": "2022-09-23 00:00:00",
+            "measurements":[]
+          }
+        },
+        "writer": {
+          "name": "iotdbtsfilewriter",
+          "parameter": {
+            "storeGroup": "root.influxdb",
+            "baseDir": "data",
+            "vsgNum": 4,
+            "tsfileThresholdM": 1
+          }
+        }
+      }
+    ],
+    "setting": {
+      "speed": {
+        "channel": "2"
+      }
+    }
+  }
+}

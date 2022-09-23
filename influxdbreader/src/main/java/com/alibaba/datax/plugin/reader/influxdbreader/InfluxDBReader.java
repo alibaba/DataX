@@ -172,7 +172,7 @@ public class InfluxDBReader extends Reader {
         /**
          * measurement list
          */
-        private static List<String> measurements;
+        private List<String> measurements;
 
         /**
          *  map: [measurement,tagKeys]
@@ -273,12 +273,10 @@ public class InfluxDBReader extends Reader {
                 queryFlux.append("0, stop: ");
                 queryFlux.append(this.endTime);
                 queryFlux.append(") |> filter(fn: (r) => r._measurement == \"");
-
-                // TODO intervalTime 需要进一步拆分: 1day
-
                 // measurement
                 queryFlux.append(measurement);
                 queryFlux.append("\")");
+                // TODO intervalTime 需要进一步拆分: 1day
                 // 2. query and write to DataX record
                 QueryApi queryApi = influxDBClient.getQueryApi();
                 List<FluxTable> tables = queryApi.query(queryFlux.toString());

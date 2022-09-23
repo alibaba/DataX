@@ -1,6 +1,6 @@
 {
   "name": "iotdbtsfilewriter",
-  "class": "com.alibaba.datax.plugin.writer.writer.IoTDBTsFileWriter",
+  "class": "writer.IoTDBTsFileWriter",
   "description": {
     "useScene": "往iotdb的tsfile中直写数据点",
     "mechanism": "直写iotdb的tsfile文件",

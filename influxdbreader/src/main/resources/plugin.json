@@ -1,0 +1,6 @@
+{
+    "name": "influxdbreader",
+    "class": "com.alibaba.datax.plugin.reader.influxdbreader.InfluxDBReader",
+    "description": "useScene: test. mechanism: use datax framework to transport data from influxdb. warn: The more you know about the data, the less problems you encounter.",
+    "developer": "yonyou"
+}
