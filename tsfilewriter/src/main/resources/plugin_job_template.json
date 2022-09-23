@@ -1,0 +1,9 @@
+{
+  "name": "iotdbtsfilewriter",
+  "parameter": {
+    "storeGroup": "root.influxdb",
+    "baseDir": "data",
+    "vsgNum": 4,
+    "tsfileThresholdM": 1
+  }
+}
