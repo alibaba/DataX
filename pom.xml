@@ -120,6 +120,7 @@
         <module>plugin-rdbms-util</module>
         <module>plugin-unstructured-storage-util</module>
         <module>tsfilewriter</module>
+        <module>influxdbreader</module>
     </modules>
 
     <dependencyManagement>
