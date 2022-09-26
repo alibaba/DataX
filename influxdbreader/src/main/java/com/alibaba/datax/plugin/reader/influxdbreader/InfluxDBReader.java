@@ -9,7 +9,6 @@ import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordSender;
 import com.alibaba.datax.common.spi.Reader;
 import com.alibaba.datax.common.util.Configuration;
-import com.alibaba.datax.plugin.reader.influxdbreader.util.TimeUtils;
 import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
 import org.apache.commons.lang3.StringUtils;
@@ -26,7 +25,6 @@ import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import org.joda.time.DateTime;
 import java.util.Map;
 
 public class InfluxDBReader extends Reader {
@@ -138,10 +136,10 @@ public class InfluxDBReader extends Reader {
             // split
             while (startTime < endTime) {
                 Configuration clone = this.originalConfig.clone();
-                clone.set(Key.BEGIN_DATETIME, (startTime / 1000));
+                clone.set(Key.BEGIN_DATETIME, startTime);
                 startTime = startTime + splitIntervalH * 60 * 60 * 1000;
                 // Make sure the time interval is [start, end).
-                clone.set(Key.END_DATETIME, (startTime / 1000 - 1));
+                clone.set(Key.END_DATETIME, (startTime - 1));
                 configurations.add(clone);
                 LOG.info("Configuration: {}", JSON.toJSONString(clone));
             }
@@ -155,6 +153,7 @@ public class InfluxDBReader extends Reader {
         @Override
         public void destroy() {
         }
+
     }
 
     public static class Task extends Reader.Task {
@@ -254,14 +253,18 @@ public class InfluxDBReader extends Reader {
             for (String measurement : measurements) {
                 // 1. 读取 [startTime, endTime] 范围内的数据
                 // 1.1 generate query flux
+                long queryStartTime = this.startTime / 1000;
+                long queryEndTime = this.endTime / 1000;
+                LOG.info("this.startTime:{},queryStartTime:{},this.endTime:{},queryEndTime:{}", this.startTime, queryStartTime, this.endTime, queryEndTime);
                 StringBuilder queryFlux = new StringBuilder();
                 queryFlux.append("from(bucket:\"");
                 queryFlux.append(this.bucket);
                 queryFlux.append("\") |> range(start: ");
                 // startTime
-                queryFlux.append(this.startTime);
+                // TODO 时间区间
+                queryFlux.append(queryStartTime);
                 queryFlux.append(", stop: ");
-                queryFlux.append(this.endTime);
+                queryFlux.append(queryEndTime);
                 queryFlux.append(") |> filter(fn: (r) => r._measurement == \"");
                 // measurement
                 queryFlux.append(measurement);
@@ -276,8 +279,7 @@ public class InfluxDBReader extends Reader {
                     List<FluxRecord> records = fluxTable.getRecords();
                     for (FluxRecord fluxRecord : records) {
                         Record record = recordSender.createRecord();
-                        // TODO time 精度？
-                        long time = fluxRecord.getTime().getLong(ChronoField.NANO_OF_SECOND);
+                        long time = fluxRecord.getTime().toEpochMilli();
                         LongColumn timeColumn = new LongColumn(time);
                         record.addColumn(timeColumn);
                         try {
@@ -305,6 +307,7 @@ public class InfluxDBReader extends Reader {
                             record.addColumn(tagValueColumn);
                         }
 
+                        System.out.println("InfluxDB Record:" + record.toString());
                         // 3. send to writer
                         recordSender.sendToWriter(record);
                     }
@@ -335,12 +338,11 @@ public class InfluxDBReader extends Reader {
             } else if (value instanceof String) {
                 valueColumn = new StringColumn((String) value);
             } else if (value instanceof Integer) {
-                valueColumn = new LongColumn(((Integer)value).longValue());
+                valueColumn = new LongColumn(((Integer) value).longValue());
             } else {
                 throw new Exception(String.format("value not supported type: [%s]", value.getClass().getSimpleName()));
             }
             return valueColumn;
         }
-
     }
 }
