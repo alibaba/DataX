@@ -255,7 +255,6 @@ public class InfluxDBReader extends Reader {
                 // 1.1 generate query flux
                 long queryStartTime = this.startTime / 1000;
                 long queryEndTime = this.endTime / 1000;
-                LOG.info("this.startTime:{},queryStartTime:{},this.endTime:{},queryEndTime:{}", this.startTime, queryStartTime, this.endTime, queryEndTime);
                 StringBuilder queryFlux = new StringBuilder();
                 queryFlux.append("from(bucket:\"");
                 queryFlux.append(this.bucket);
@@ -270,7 +269,6 @@ public class InfluxDBReader extends Reader {
                 queryFlux.append(measurement);
                 queryFlux.append("\")");
 
-                LOG.info("queryFlux:" + queryFlux.toString());
                 // TODO intervalTime 需要进一步拆分: 1day
                 // 2. query and write to DataX record
                 QueryApi queryApi = influxDBClient.getQueryApi();
