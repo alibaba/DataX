@@ -52,7 +52,7 @@ public abstract class AbstractScheduler {
         this.containerCommunicator.registerCommunication(configurations);
 
         int totalTasks = calculateTaskCount(configurations);
-        startAllTaskGroup(configurations);
+        startAllTaskGroup(configurations);      //真正运行改结果
 
         Communication lastJobContainerCommunication = new Communication();
 

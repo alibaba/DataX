@@ -54,8 +54,8 @@ public class ESWriter extends Writer {
                     false,
                     false);
 
-            String indexName = Key.getIndexName(conf);
-            String typeName = Key.getTypeName(conf);
+            String indexName = Key.getIndexName(conf);      //这就是那个conf
+            String typeName = Key.getTypeName(conf);        //
             boolean dynamic = Key.getDynamic(conf);
             String mappings = genMappings(typeName);
             String settings = JSONObject.toJSONString(
@@ -64,8 +64,8 @@ public class ESWriter extends Writer {
             log.info(String.format("index:[%s], type:[%s], mappings:[%s]", indexName, typeName, mappings));
 
             try {
-                boolean isIndicesExists = esClient.indicesExists(indexName);
-                if (Key.isCleanup(this.conf) && isIndicesExists) {
+                boolean isIndicesExists = esClient.indicesExists(indexName);        //是否存在
+                if (Key.isCleanup(this.conf) && isIndicesExists) {      //如果存在就删除
                     esClient.deleteIndex(indexName);
                 }
                 // 强制创建,内部自动忽略已存在的情况
@@ -397,7 +397,7 @@ public class ESWriter extends Writer {
                 return RetryUtil.executeWithRetry(new Callable<Integer>() {
                     @Override
                     public Integer call() throws Exception {
-                        JestResult jestResult = esClient.bulkInsert(bulkaction, 1);
+                        JestResult jestResult = esClient.bulkInsert(bulkaction, 1);     //实际插入过程
                         if (jestResult.isSucceeded()) {
                             return writerBuffer.size();
                         }

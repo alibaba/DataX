@@ -93,7 +93,7 @@ public class JobContainer extends AbstractContainer {
      * post以及destroy和statistics
      */
     @Override
-    public void start() {
+    public void start() {       //job 米那是TaskGroup
         LOG.info("DataX jobContainer starts job.");
 
         boolean hasException = false;
@@ -130,7 +130,6 @@ public class JobContainer extends AbstractContainer {
             LOG.error("Exception when job run", e);
 
             hasException = true;
-
             if (e instanceof OutOfMemoryError) {
                 this.destroy();
                 System.gc();
@@ -285,7 +284,7 @@ public class JobContainer extends AbstractContainer {
      * reader和writer的初始化
      */
     private void init() {
-        this.jobId = this.configuration.getLong(
+        this.jobId = this.configuration.getLong(                    //这里是第一个job
                 CoreConstant.DATAX_CORE_CONTAINER_JOB_ID, -1);
 
         if (this.jobId < 0) {
@@ -300,7 +299,7 @@ public class JobContainer extends AbstractContainer {
         JobPluginCollector jobPluginCollector = new DefaultJobPluginCollector(
                 this.getContainerCommunicator());
         //必须先Reader ，后Writer
-        this.jobReader = this.initJobReader(jobPluginCollector);
+        this.jobReader = this.initJobReader(jobPluginCollector);        //初始化Reader
         this.jobWriter = this.initJobWriter(jobPluginCollector);
     }
 
@@ -390,7 +389,7 @@ public class JobContainer extends AbstractContainer {
             this.needChannelNumber = 1;
         }
 
-        List<Configuration> readerTaskConfigs = this
+        List<Configuration> readerTaskConfigs = this        //切分数据
                 .doReaderSplit(this.needChannelNumber);
         int taskNumber = readerTaskConfigs.size();
         List<Configuration> writerTaskConfigs = this
@@ -421,7 +420,7 @@ public class JobContainer extends AbstractContainer {
                 CoreConstant.DATAX_JOB_SETTING_SPEED_BYTE, 0) > 0);
         if (isByteLimit) {
             long globalLimitedByteSpeed = this.configuration.getInt(
-                    CoreConstant.DATAX_JOB_SETTING_SPEED_BYTE, 10 * 1024 * 1024);
+                    CoreConstant.DATAX_JOB_SETTING_SPEED_BYTE, 10 * 1024 * 1024);   //全局
 
             // 在byte流控情况下，单个Channel流量最大值必须设置，否则报错！
             Long channelLimitedByteSpeed = this.configuration
@@ -476,7 +475,6 @@ public class JobContainer extends AbstractContainer {
 
             LOG.info("Job set Channel-Number to " + this.needChannelNumber
                     + " channels.");
-
             return;
         }
 
@@ -489,7 +487,7 @@ public class JobContainer extends AbstractContainer {
      * schedule首先完成的工作是把上一步reader和writer split的结果整合到具体taskGroupContainer中,
      * 同时不同的执行模式调用不同的调度策略，将所有任务调度起来
      */
-    private void schedule() {
+    private void schedule() {       //这个就是开始调度
         /**
          * 这里的全局speed和每个channel的速度设置为B/s
          */
@@ -498,7 +496,7 @@ public class JobContainer extends AbstractContainer {
         int taskNumber = this.configuration.getList(
                 CoreConstant.DATAX_JOB_CONTENT).size();
 
-        this.needChannelNumber = Math.min(this.needChannelNumber, taskNumber);
+        this.needChannelNumber = Math.min(this.needChannelNumber, taskNumber);      //取最小值
         PerfTrace.getInstance().setChannelNumber(needChannelNumber);
 
         /**
@@ -506,7 +504,7 @@ public class JobContainer extends AbstractContainer {
          */
 
         List<Configuration> taskGroupConfigs = JobAssignUtil.assignFairly(this.configuration,
-                this.needChannelNumber, channelsPerTaskGroup);
+                this.needChannelNumber, channelsPerTaskGroup);      //公平调度算法
 
         LOG.info("Scheduler starts [{}] taskGroups.", taskGroupConfigs.size());
 
@@ -532,7 +530,7 @@ public class JobContainer extends AbstractContainer {
 
             this.startTransferTimeStamp = System.currentTimeMillis();
 
-            scheduler.schedule(taskGroupConfigs);
+            scheduler.schedule(taskGroupConfigs);       // 进行调度，其实是真正的用法
 
             this.endTransferTimeStamp = System.currentTimeMillis();
         } catch (Exception e) {

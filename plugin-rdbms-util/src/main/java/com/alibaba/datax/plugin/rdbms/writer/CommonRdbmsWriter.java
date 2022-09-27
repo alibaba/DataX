@@ -219,7 +219,7 @@ public class CommonRdbmsWriter {
                 LOG.info("this is ob1_0 jdbc url.");
                 this.username = ss[1].trim() + ":" + this.username;
                 this.jdbcUrl = ss[2];
-                LOG.info("this is ob1_0 jdbc url. user=" + this.username + " :url=" + this.jdbcUrl);
+                LOG.info("this is ob1_0 jdbc url. user=" + this.username + " :url=" + this.jdbcUrl);    //得到
             }
 
             this.table = writerSliceConfig.getString(Key.TABLE);

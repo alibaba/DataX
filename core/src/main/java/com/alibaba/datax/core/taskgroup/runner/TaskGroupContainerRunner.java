@@ -17,12 +17,12 @@ public class TaskGroupContainerRunner implements Runnable {
 	}
 
 	@Override
-	public void run() {
+	public void run() {				//最终
 		try {
             Thread.currentThread().setName(
                     String.format("taskGroup-%d", this.taskGroupContainer.getTaskGroupId()));
             this.taskGroupContainer.start();
-			this.state = State.SUCCEEDED;
+			this.state = State.SUCCEEDED;		//该种任务已经完成
 		} catch (Throwable e) {
 			this.state = State.FAILED;
 			throw DataXException.asDataXException(

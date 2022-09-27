@@ -31,5 +31,4 @@ public abstract class AbstractContainer {
     }
 
     public abstract void start();
-
 }

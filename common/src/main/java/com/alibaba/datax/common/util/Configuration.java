@@ -602,7 +602,7 @@ public class Configuration {
 	 * @return Java表示的JSON对象
 	 */
 	public Object set(final String path, final Object object) {
-		checkPath(path);
+		checkPath(path);		//
 
 		Object result = this.get(path);
 

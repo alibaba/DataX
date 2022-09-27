@@ -15,7 +15,7 @@ import java.util.List;
  * */
 public abstract class Writer extends BaseObject {
 	/**
-	 * 每个Writer插件必须实现Job内部类
+	 * 每个Writer插件必须实现Job内部类A
 	 */
 	public abstract static class Job extends AbstractJobPlugin {
 		/**

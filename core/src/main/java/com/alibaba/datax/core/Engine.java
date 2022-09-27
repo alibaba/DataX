@@ -91,7 +91,6 @@ public class Engine {
         PerfTrace perfTrace = PerfTrace.getInstance(isJob, instanceId, taskGroupId, priority, traceEnable);
         perfTrace.setJobInfo(jobInfoConfig,perfReportEnable,channelNumber);
         container.start();
-
     }
 
 
