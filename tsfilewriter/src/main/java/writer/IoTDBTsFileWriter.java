@@ -30,8 +30,10 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -92,7 +94,7 @@ public class IoTDBTsFileWriter extends Writer {
 
         private final static int tagStartIndex = 5;
 
-        private final Set devices = new HashSet();
+        private final Map<Integer,Set<String>> devices = new HashMap<>();
 
         private final ConcurrentMap<Integer, TsFileWriter> writers = new ConcurrentHashMap<>();
 
@@ -123,7 +125,10 @@ public class IoTDBTsFileWriter extends Writer {
             long total = 0;
             while ((record = recordReceiver.getFromReader()) != null) {
                 try {
-                    LOG.info("record : ", record);
+                    if (record.toString().equals("")) {
+                        LOG.warn("record is empty : {}", record);
+                    }
+//                    LOG.info("record : {}", record);
                     writeWithRecord(record);
                 } catch (Exception e) {
                     LOG.error("write with record error ", e);
@@ -164,9 +169,11 @@ public class IoTDBTsFileWriter extends Writer {
         private void writeWithRecord(Record record) throws Exception {
 
             long time = record.getColumn(timeIndex).asLong();
-            String deviceId = getDeviceFullPath(record);
-            int vsgIndex = deviceId.hashCode() % vsgNum;
             String measurement = record.getColumn(fieldIndex).asString();
+            measurement = measurement.replace(".","dot");
+            String deviceId = getDeviceFullPath(record);
+            int vsgIndex = Math.abs(deviceId.hashCode() % vsgNum);
+
             TsFileWriter writer = getOrInitTsFileWriter(record, vsgIndex);
             // register schema
             MeasurementSchema schema;
@@ -174,10 +181,10 @@ public class IoTDBTsFileWriter extends Writer {
             schema = new MeasurementSchema(measurement,
                     transferDataType(record.getColumn(valueIndex)), transferEncodeType(record.getColumn(valueIndex)));
 
-
-            if (!devices.contains(deviceId)) {
+            Set<String> set = devices.computeIfAbsent(vsgIndex, x -> new HashSet<>());
+            if (!set.contains(new Path(deviceId, measurement).toString())) {
                 writer.registerTimeseries(new Path(deviceId), schema);
-                devices.add(deviceId);
+                set.add(new Path(deviceId, measurement).toString());
             }
 
 
@@ -203,12 +210,14 @@ public class IoTDBTsFileWriter extends Writer {
          * @param vsgIndex vsgIndex
          * @return TsFileWriter
          */
-        private TsFileWriter getOrInitTsFileWriter(Record record, int vsgIndex) throws IOException {
+        private synchronized TsFileWriter getOrInitTsFileWriter(Record record, int vsgIndex) throws IOException {
 
             TsFileWriter writer = writers.get(vsgIndex);
             // 判断tsfile大小是否到达阈值
             if (writer != null && writer.getIOWriter().getFile().length() > threshold) {
+
                 writer.close();
+                devices.get(vsgIndex).clear();
                 writer = null;
             }
             if (writer == null) {
