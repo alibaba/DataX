@@ -23,6 +23,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.temporal.ChronoField;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -177,6 +178,8 @@ public class InfluxDBReader extends Reader {
         private long startTime;
         private long endTime;
 
+        private long miniTaskIntervalSecond;
+
         @Override
         public void init() {
             this.readerSliceConfig = super.getPluginJobConf();
@@ -195,6 +198,7 @@ public class InfluxDBReader extends Reader {
 
             this.startTime = this.readerSliceConfig.getLong(Key.BEGIN_DATETIME);
             this.endTime = this.readerSliceConfig.getLong(Key.END_DATETIME);
+            this.miniTaskIntervalSecond = this.readerSliceConfig.getLong(Key.MINI_TASK_INTERVAL_SECOND, Constant.MINI_TASK_INTERVAL_SECOND);
         }
 
         @Override
@@ -250,34 +254,36 @@ public class InfluxDBReader extends Reader {
         @Override
         @SuppressWarnings("unchecked")
         public void startRead(RecordSender recordSender) {
-            for (String measurement : measurements) {
-                // 1. 读取 [startTime, endTime] 范围内的数据
-                // 1.1 generate query flux
+            // 1. 计算切分数量
+            QueryApi queryApi = influxDBClient.getQueryApi();
+            while (startTime < endTime) {
+                // 1. 毫秒转换成秒
                 long queryStartTime = this.startTime / 1000;
-                long queryEndTime = this.endTime / 1000;
+                long queryEndTime = (this.startTime + this.miniTaskIntervalSecond * 1000) / 1000;
+                // 1. 读取 [queryStartTime, queryEndTime] 范围内的数据
+                // 1.1 generate query flux
                 StringBuilder queryFlux = new StringBuilder();
                 queryFlux.append("from(bucket:\"");
                 queryFlux.append(this.bucket);
                 queryFlux.append("\") |> range(start: ");
-                // startTime
-                // TODO 时间区间
                 queryFlux.append(queryStartTime);
                 queryFlux.append(", stop: ");
                 queryFlux.append(queryEndTime);
-                queryFlux.append(") |> filter(fn: (r) => r._measurement == \"");
-                // measurement
-                queryFlux.append(measurement);
-                queryFlux.append("\")");
-
-                // TODO intervalTime 需要进一步拆分: 1day
+                queryFlux.append(")");
+                LOG.info("queryFlux:{}", queryFlux);
+                // 更新时间
+                this.startTime += (this.miniTaskIntervalSecond * 1000);
                 // 2. query and write to DataX record
-                QueryApi queryApi = influxDBClient.getQueryApi();
+                List<FluxRecord> records;
                 List<FluxTable> tables = queryApi.query(queryFlux.toString());
+                String measurement;
+                long time;
                 for (FluxTable fluxTable : tables) {
-                    List<FluxRecord> records = fluxTable.getRecords();
+                    records = fluxTable.getRecords();
                     for (FluxRecord fluxRecord : records) {
+                        measurement = fluxRecord.getMeasurement();
                         Record record = recordSender.createRecord();
-                        long time = fluxRecord.getTime().toEpochMilli();
+                        time = fluxRecord.getTime().toEpochMilli();
                         LongColumn timeColumn = new LongColumn(time);
                         record.addColumn(timeColumn);
                         try {
@@ -304,8 +310,6 @@ public class InfluxDBReader extends Reader {
                             StringColumn tagValueColumn = new StringColumn(tagValue);
                             record.addColumn(tagValueColumn);
                         }
-
-                        System.out.println("InfluxDB Record:" + record.toString());
                         // 3. send to writer
                         recordSender.sendToWriter(record);
                     }
@@ -319,6 +323,7 @@ public class InfluxDBReader extends Reader {
 
         @Override
         public void destroy() {
+            influxDBClient.close();
         }
 
         /**

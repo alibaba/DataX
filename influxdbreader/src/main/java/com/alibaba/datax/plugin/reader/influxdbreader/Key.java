@@ -15,4 +15,5 @@ public class Key {
     public static final String END_DATETIME = "endDateTime";
     static final String INTERVAL_DATE_TIME = "splitIntervalH";
     static final Integer INTERVAL_DATE_TIME_DEFAULT_VALUE = 240;
+    static final String MINI_TASK_INTERVAL_SECOND = "miniTaskIntervalSecond";
 }
