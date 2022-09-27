@@ -9,8 +9,10 @@ import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordSender;
 import com.alibaba.datax.common.spi.Reader;
 import com.alibaba.datax.common.util.Configuration;
+import com.influxdb.client.InfluxDBClientOptions;
 import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
+import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,12 +23,11 @@ import com.influxdb.client.QueryApi;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.temporal.ChronoField;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class InfluxDBReader extends Reader {
     public static class Job extends Reader.Job {
@@ -110,6 +111,10 @@ public class InfluxDBReader extends Reader {
 
         @Override
         public void prepare() {
+//            System.setProperty("sun.net.client.defaultConnectTimeout", String
+//                    .valueOf(10000));
+//            com.influxdb.exceptions.InfluxException: SocketTimeoutException reading next record: java.net.SocketTimeoutException: timeout
+//            com.influxdb.client.
         }
 
         @Override
@@ -177,7 +182,6 @@ public class InfluxDBReader extends Reader {
         private String bucket;
         private long startTime;
         private long endTime;
-
         private long miniTaskIntervalSecond;
 
         @Override
@@ -194,7 +198,19 @@ public class InfluxDBReader extends Reader {
             this.org = conn.getString(Key.ORG);
             this.bucket = conn.getString(Key.BUCKET);
 
-            this.influxDBClient = InfluxDBClientFactory.create(url, token, org, bucket);
+            OkHttpClient.Builder okHttpClient = new OkHttpClient.Builder()
+                    .readTimeout(1, TimeUnit.MINUTES)
+                    .writeTimeout(1, TimeUnit.MINUTES)
+                    .connectTimeout(1, TimeUnit.MINUTES);
+            InfluxDBClientOptions options = InfluxDBClientOptions
+                    .builder()
+                    .url(url)
+                    .authenticateToken(token)
+                    .org(org)
+                    .bucket(bucket)
+                    .okHttpClient(okHttpClient)
+                    .build();
+            this.influxDBClient = InfluxDBClientFactory.create(options);
 
             this.startTime = this.readerSliceConfig.getLong(Key.BEGIN_DATETIME);
             this.endTime = this.readerSliceConfig.getLong(Key.END_DATETIME);
