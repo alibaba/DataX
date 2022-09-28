@@ -14,9 +14,9 @@
               }
             ],
             "column": [],
-            "splitIntervalH": 72,
+            "splitIntervalH": 24,
             "miniTaskIntervalSecond": 3600,
-            "beginDateTime": "2022-09-02 00:00:00",
+            "beginDateTime": "2022-09-20 00:00:00",
             "endDateTime": "2022-09-23 00:00:00",
             "measurements":[]
           }
@@ -25,7 +25,7 @@
           "name": "iotdbtsfilewriter",
           "parameter": {
             "storeGroup": "root.influxdb",
-            "baseDir": "data",
+            "outputDir": "data",
             "vsgNum": 1,
             "tsfileThresholdM": 1000
           }

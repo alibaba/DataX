@@ -72,17 +72,21 @@ public class IoTDBTsFileWriter extends Writer {
         private static final Logger LOG = LoggerFactory.getLogger(Task.class);
 
 
-        private String storeGroup = "root.ln";
+        private String storageGroup = "root.ln";
 
         private String baseDir = "data";
 
-        private long threshold = 2000;
+        private long threshold;
 
         private final static String separator = ".";
+
+        private final static String separatorReplace = "_";
 
         private final static String FILE_NAME_SEPARATOR = "-";
 
         private int vsgNum = 4;
+
+        private final static int DEFAULT_THRESHOLD = 1000;
 
         private final static int timeIndex = 0;
 
@@ -101,10 +105,10 @@ public class IoTDBTsFileWriter extends Writer {
         @Override
         public void init() {
             Configuration writerSliceConfig = getPluginJobConf();
-            this.vsgNum = writerSliceConfig.getInt("vsgNum", 1);
-            this.storeGroup = writerSliceConfig.getString("storeGroup", "root.influx");
-            this.baseDir = writerSliceConfig.getString("baseDir", "data");
-            this.threshold = writerSliceConfig.getLong("tsfileThresholdM", 2000) * 1000 * 1000;
+            this.vsgNum = writerSliceConfig.getInt(Key.VSG_NUM, 1);
+            this.storageGroup = writerSliceConfig.getString(Key.STORAGE_GROUP, "root.influx");
+            this.baseDir = writerSliceConfig.getString(Key.OUTPUT_DIR, "data");
+            this.threshold = writerSliceConfig.getLong(Key.TSFILE_SIZE_THRESHOLD_M, DEFAULT_THRESHOLD) * 1000 * 1000;
         }
 
         @Override
@@ -114,6 +118,7 @@ public class IoTDBTsFileWriter extends Writer {
                 try {
                     writer.close();
                 } catch (IOException e) {
+                    LOG.error("tsfile writer close error :", e);
                     throw new RuntimeException(e);
                 }
             }
@@ -170,38 +175,30 @@ public class IoTDBTsFileWriter extends Writer {
 
             long time = record.getColumn(timeIndex).asLong();
             String measurement = record.getColumn(fieldIndex).asString();
-            measurement = measurement.replace(".","dot");
+            measurement = measurement.replace(separator,separatorReplace);
             String deviceId = getDeviceFullPath(record);
             int vsgIndex = Math.abs(deviceId.hashCode() % vsgNum);
 
             TsFileWriter writer = getOrInitTsFileWriter(record, vsgIndex);
             // register schema
-            MeasurementSchema schema;
-
-            schema = new MeasurementSchema(measurement,
+            MeasurementSchema schema = new MeasurementSchema(measurement,
                     transferDataType(record.getColumn(valueIndex)), transferEncodeType(record.getColumn(valueIndex)));
 
-            Set<String> set = devices.computeIfAbsent(vsgIndex, x -> new HashSet<>());
-            if (!set.contains(new Path(deviceId, measurement).toString())) {
+            Set<String> set = devices.computeIfAbsent(vsgIndex, x -> new HashSet<>(1024));
+            if (!set.contains(new Path(deviceId, measurement).getFullPath())) {
                 writer.registerTimeseries(new Path(deviceId), schema);
-                set.add(new Path(deviceId, measurement).toString());
+                set.add(new Path(deviceId, measurement).getFullPath());
             }
-
-
             // construct TsRecord
             TSRecord tsRecord = new TSRecord(time, deviceId);
-
-            DataPoint dPoint;
             try {
-                dPoint = transferDataPoint(measurement, record.getColumn(valueIndex));
+                DataPoint dPoint = transferDataPoint(measurement, record.getColumn(valueIndex));
+                tsRecord.addTuple(dPoint);
+                // write
+                writer.write(tsRecord);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            tsRecord.addTuple(dPoint);
-
-            // write
-            writer.write(tsRecord);
-
         }
 
         /**
@@ -217,17 +214,18 @@ public class IoTDBTsFileWriter extends Writer {
             if (writer != null && writer.getIOWriter().getFile().length() > threshold) {
 
                 writer.close();
+                // TODO is null?
                 devices.get(vsgIndex).clear();
                 writer = null;
             }
             if (writer == null) {
                 String tsFileDir = baseDir
                         + File.separator
-                        + storeGroup
+                        + storageGroup
                         + File.separator
                         + vsgIndex
                         + File.separator
-                        + 0;
+                        + "0";
                 FSFactoryProducer.getFSFactory().getFile(tsFileDir).mkdirs();
 
                 String path = record.getColumn(timeIndex).asDate().getTime()
@@ -337,14 +335,14 @@ public class IoTDBTsFileWriter extends Writer {
          */
         private String getDeviceFullPath(Record record) {
             // added sg
-            StringBuilder sb = new StringBuilder(storeGroup);
+            StringBuilder sb = new StringBuilder(storageGroup);
 
             // added _measurement
             sb.append(separator).append(record.getColumn(measurementIndex).asString());
-
-            if (tagStartIndex <= record.getColumnNumber()) {
+            int columnNum = record.getColumnNumber();
+            if (tagStartIndex <= columnNum) {
                 // added tags
-                for (int i = tagStartIndex; i < record.getColumnNumber(); i = i + 2) {
+                for (int i = tagStartIndex; i < columnNum; i += 2) {
                     sb.append(separator).append(record.getColumn(i).asString());
                 }
             }
