@@ -111,10 +111,6 @@ public class InfluxDBReader extends Reader {
 
         @Override
         public void prepare() {
-//            System.setProperty("sun.net.client.defaultConnectTimeout", String
-//                    .valueOf(10000));
-//            com.influxdb.exceptions.InfluxException: SocketTimeoutException reading next record: java.net.SocketTimeoutException: timeout
-//            com.influxdb.client.
         }
 
         @Override
@@ -143,7 +139,7 @@ public class InfluxDBReader extends Reader {
             while (startTime < endTime) {
                 Configuration clone = this.originalConfig.clone();
                 clone.set(Key.BEGIN_DATETIME, startTime);
-                startTime = startTime + splitIntervalH * 60 * 60 * 1000;
+                startTime = startTime + splitIntervalH * Constant.DEFAULT_HOUR_TO_MILLISECOND;
                 // Make sure the time interval is [start, end).
                 clone.set(Key.END_DATETIME, (startTime - 1));
                 configurations.add(clone);
@@ -164,17 +160,10 @@ public class InfluxDBReader extends Reader {
 
     public static class Task extends Reader.Task {
         private static final Logger LOG = LoggerFactory.getLogger(Task.class);
-
-        /**
-         * measurement list
-         */
-        private List<String> measurements;
-
         /**
          *  map: [measurement,tagKeys]
          */
         private Map<String, List<String>> measurementTagKeysMap;
-        private Configuration readerSliceConfig;
         private InfluxDBClient influxDBClient;
         private String url;
         private char[] token;
@@ -186,22 +175,26 @@ public class InfluxDBReader extends Reader {
 
         @Override
         public void init() {
-            this.readerSliceConfig = super.getPluginJobConf();
+            Configuration readerSliceConfig = super.getPluginJobConf();
             LOG.info("getPluginJobConf: {}", JSON.toJSONString(readerSliceConfig));
 
-            this.measurementTagKeysMap = new HashMap<>();
+            this.measurementTagKeysMap = new HashMap<>(1024);
 
-            List<Configuration> connectionList = this.readerSliceConfig.getListConfiguration(Key.CONNECTION);
+            List<Configuration> connectionList = readerSliceConfig.getListConfiguration(Key.CONNECTION);
             Configuration conn = connectionList.get(0);
             this.url = conn.getString(Key.URL);
             this.token = conn.getString(Key.TOKEN).toCharArray();
             this.org = conn.getString(Key.ORG);
             this.bucket = conn.getString(Key.BUCKET);
 
+            int readTimeout = conn.getInt(Key.READE_TIMEOUT, Constant.DEFAULT_READ_TIMEOUT_SECOND);
+            int writeTimeout = conn.getInt(Key.WRITE_TIMEOUT, Constant.DEFAULT_WRITE_TIMEOUT_SECOND);
+            int connectTimeout = conn.getInt(Key.CONNECT_TIMEOUT, Constant.DEFAULT_CONNECT_TIMEOUT_SECOND);
+
             OkHttpClient.Builder okHttpClient = new OkHttpClient.Builder()
-                    .readTimeout(1, TimeUnit.MINUTES)
-                    .writeTimeout(1, TimeUnit.MINUTES)
-                    .connectTimeout(1, TimeUnit.MINUTES);
+                    .readTimeout(readTimeout, TimeUnit.SECONDS)
+                    .writeTimeout(writeTimeout, TimeUnit.SECONDS)
+                    .connectTimeout(connectTimeout, TimeUnit.SECONDS);
             InfluxDBClientOptions options = InfluxDBClientOptions
                     .builder()
                     .url(url)
@@ -212,9 +205,9 @@ public class InfluxDBReader extends Reader {
                     .build();
             this.influxDBClient = InfluxDBClientFactory.create(options);
 
-            this.startTime = this.readerSliceConfig.getLong(Key.BEGIN_DATETIME);
-            this.endTime = this.readerSliceConfig.getLong(Key.END_DATETIME);
-            this.miniTaskIntervalSecond = this.readerSliceConfig.getLong(Key.MINI_TASK_INTERVAL_SECOND, Constant.MINI_TASK_INTERVAL_SECOND);
+            this.startTime = readerSliceConfig.getLong(Key.BEGIN_DATETIME);
+            this.endTime = readerSliceConfig.getLong(Key.END_DATETIME);
+            this.miniTaskIntervalSecond = readerSliceConfig.getLong(Key.MINI_TASK_INTERVAL_SECOND, Constant.DEFAULT_HOUR_TO_MILLISECOND);
         }
 
         @Override
@@ -222,17 +215,18 @@ public class InfluxDBReader extends Reader {
             // 1. build connection
             InfluxDBClient influxDBClient = InfluxDBClientFactory.create(url, token, org, bucket);
             // 2. query measurement
-            measurements = new ArrayList<>();
+            /**
+             * measurement list
+             */
+            List<String> measurements = new ArrayList<>();
             // 2.1 generate query flux
-            StringBuilder queryMeasurementsFlux = new StringBuilder();
-            queryMeasurementsFlux.append("import \"influxdata/influxdb/schema\"\n");
-            queryMeasurementsFlux.append("\n");
-            queryMeasurementsFlux.append("schema.measurements(bucket: \"");
-            queryMeasurementsFlux.append(bucket);
-            queryMeasurementsFlux.append("\")");
+            String queryMeasurementsFlux = "import \"influxdata/influxdb/schema\"\n" +
+                    "schema.measurements(bucket: \"" +
+                    bucket +
+                    "\")";
             // 2.2 query
             QueryApi queryMeasurementsApi = influxDBClient.getQueryApi();
-            List<FluxTable> measurementsTables = queryMeasurementsApi.query(queryMeasurementsFlux.toString());
+            List<FluxTable> measurementsTables = queryMeasurementsApi.query(queryMeasurementsFlux);
             for (FluxTable fluxTable : measurementsTables) {
                 List<FluxRecord> records = fluxTable.getRecords();
                 for (FluxRecord fluxRecord : records) {
@@ -242,23 +236,23 @@ public class InfluxDBReader extends Reader {
             // 3. query tagKeys
             for (String measurement : measurements) {
                 // 3.1 generate tagKeys query flux
-                StringBuilder queryTagKeysFlux = new StringBuilder();
-                queryTagKeysFlux.append("import \"influxdata/influxdb/schema\"\n");
-                queryTagKeysFlux.append("\n");
-                queryTagKeysFlux.append("schema.measurementTagKeys(\n");
-                queryTagKeysFlux.append("    bucket: \"");
-                queryTagKeysFlux.append(bucket);
-                queryTagKeysFlux.append("\",\n");
-                queryTagKeysFlux.append("    measurement: \"");
-                queryTagKeysFlux.append(measurement);
-                queryTagKeysFlux.append("\",\n)");
+                String queryTagKeysFlux = "import \"influxdata/influxdb/schema\"\n" +
+                        "\n" +
+                        "schema.measurementTagKeys(\n" +
+                        "    bucket: \"" +
+                        bucket +
+                        "\",\n" +
+                        "    measurement: \"" +
+                        measurement +
+                        "\",\n)";
                 // 3.2 query
                 List<String> tagKeys = new ArrayList<>();
                 measurementTagKeysMap.put(measurement, tagKeys);
                 QueryApi queryTagKeysApi = influxDBClient.getQueryApi();
-                List<FluxTable> TagKeysTables = queryTagKeysApi.query(queryTagKeysFlux.toString());
-                for (FluxTable fluxTable : TagKeysTables) {
+                List<FluxTable> tagKeysTables = queryTagKeysApi.query(queryTagKeysFlux);
+                for (FluxTable fluxTable : tagKeysTables) {
                     List<FluxRecord> records = fluxTable.getRecords();
+                    // TODO 最好不使用 i = 4 取 tagKey
                     // 固定从下标 4 开始，为第一个 tagKey
                     for (int i = 4; i < records.size(); i++) {
                         tagKeys.add(String.valueOf(records.get(i).getValueByKey("_value")));
@@ -268,7 +262,6 @@ public class InfluxDBReader extends Reader {
         }
 
         @Override
-        @SuppressWarnings("unchecked")
         public void startRead(RecordSender recordSender) {
             // 1. 计算切分数量
             QueryApi queryApi = influxDBClient.getQueryApi();
@@ -315,15 +308,20 @@ public class InfluxDBReader extends Reader {
                         StringColumn measurementColumn = new StringColumn(measurement);
                         record.addColumn(measurementColumn);
 
-                        // obtain TagKeys
+                        // obtain TagKeys and TagValues
                         List<String> tagKeys = measurementTagKeysMap.get(measurement);
                         Map<String, Object> values = fluxRecord.getValues();
                         for (String tagKey : tagKeys) {
                             StringColumn tagKeyColumn = new StringColumn(tagKey);
                             record.addColumn(tagKeyColumn);
 
-                            String tagValue = String.valueOf(values.getOrDefault(tagKey, "@"));
-                            StringColumn tagValueColumn = new StringColumn(tagValue);
+                            StringColumn tagValueColumn;
+                            Object tagValueObj = values.get(tagKey);
+                            if (tagValueObj != null) {
+                                tagValueColumn = new StringColumn(String.valueOf(tagValueObj));
+                            } else {
+                                tagValueColumn = new StringColumn(null);
+                            }
                             record.addColumn(tagValueColumn);
                         }
                         // 3. send to writer
@@ -344,9 +342,9 @@ public class InfluxDBReader extends Reader {
 
         /**
          * 判断 value 数据类型，并返回相应 column
-         * @param value
-         * @return
-         * @throws Exception
+         * @param value columnValue
+         * @return column
+         * @throws Exception exception
          */
         private static Column getColumn(Object value) throws Exception {
             Column valueColumn;

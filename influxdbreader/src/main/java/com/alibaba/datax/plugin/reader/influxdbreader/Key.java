@@ -16,4 +16,7 @@ public class Key {
     static final String INTERVAL_DATE_TIME = "splitIntervalH";
     static final Integer INTERVAL_DATE_TIME_DEFAULT_VALUE = 240;
     static final String MINI_TASK_INTERVAL_SECOND = "miniTaskIntervalSecond";
+    static final String READE_TIMEOUT = "readTimeout";
+    static final String WRITE_TIMEOUT = "writeTimeout";
+    static final String CONNECT_TIMEOUT = "connectTimeout";
 }
