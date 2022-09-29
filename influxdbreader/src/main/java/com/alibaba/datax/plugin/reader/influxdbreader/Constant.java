@@ -6,4 +6,5 @@ public final class Constant {
     static final int DEFAULT_READ_TIMEOUT_SECOND = 60;
     static final int DEFAULT_WRITE_TIMEOUT_SECOND = 60;
     static final int DEFAULT_CONNECT_TIMEOUT_SECOND = 60;
+    static final int DEFAULT_QUERY_LIMIT = 100000;
 }

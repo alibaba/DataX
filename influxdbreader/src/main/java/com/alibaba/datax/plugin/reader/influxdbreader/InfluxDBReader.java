@@ -117,7 +117,7 @@ public class InfluxDBReader extends Reader {
         public List<Configuration> split(int adviceNumber) {
             List<Configuration> configurations = new ArrayList<>();
             // get time interval
-            Integer splitIntervalH = this.originalConfig.getInt(Key.INTERVAL_DATE_TIME,
+            Integer splitIntervalHour = this.originalConfig.getInt(Key.INTERVAL_DATE_TIME,
                     Key.INTERVAL_DATE_TIME_DEFAULT_VALUE);
             // get time range
             SimpleDateFormat format = new SimpleDateFormat(Constant.DEFAULT_DATA_FORMAT);
@@ -139,9 +139,9 @@ public class InfluxDBReader extends Reader {
             while (startTime < endTime) {
                 Configuration clone = this.originalConfig.clone();
                 clone.set(Key.BEGIN_DATETIME, startTime);
-                startTime = startTime + splitIntervalH * Constant.DEFAULT_HOUR_TO_MILLISECOND;
-                // Make sure the time interval is [start, end).
-                clone.set(Key.END_DATETIME, (startTime - 1));
+                startTime = startTime + splitIntervalHour * Constant.DEFAULT_HOUR_TO_MILLISECOND;
+                // flux range 函数查询范围 [start, stop).
+                clone.set(Key.END_DATETIME, startTime);
                 configurations.add(clone);
                 LOG.info("Configuration: {}", JSON.toJSONString(clone));
             }
@@ -220,8 +220,7 @@ public class InfluxDBReader extends Reader {
              */
             List<String> measurements = new ArrayList<>();
             // 2.1 generate query flux
-            String queryMeasurementsFlux = "import \"influxdata/influxdb/schema\"\n" +
-                    "schema.measurements(bucket: \"" +
+            String queryMeasurementsFlux = "import \"influxdata/influxdb/schema\" schema.measurements(bucket: \"" +
                     bucket +
                     "\")";
             // 2.2 query
@@ -236,15 +235,13 @@ public class InfluxDBReader extends Reader {
             // 3. query tagKeys
             for (String measurement : measurements) {
                 // 3.1 generate tagKeys query flux
-                String queryTagKeysFlux = "import \"influxdata/influxdb/schema\"\n" +
-                        "\n" +
-                        "schema.measurementTagKeys(\n" +
-                        "    bucket: \"" +
+                String queryTagKeysFlux = "import \"influxdata/influxdb/schema\"" +
+                        " schema.measurementTagKeys(" +
+                        "bucket: \"" +
                         bucket +
-                        "\",\n" +
-                        "    measurement: \"" +
+                        "\", measurement: \"" +
                         measurement +
-                        "\",\n)";
+                        "\")";
                 // 3.2 query
                 List<String> tagKeys = new ArrayList<>();
                 measurementTagKeysMap.put(measurement, tagKeys);
@@ -252,7 +249,6 @@ public class InfluxDBReader extends Reader {
                 List<FluxTable> tagKeysTables = queryTagKeysApi.query(queryTagKeysFlux);
                 for (FluxTable fluxTable : tagKeysTables) {
                     List<FluxRecord> records = fluxTable.getRecords();
-                    // TODO 最好不使用 i = 4 取 tagKey
                     // 固定从下标 4 开始，为第一个 tagKey
                     for (int i = 4; i < records.size(); i++) {
                         tagKeys.add(String.valueOf(records.get(i).getValueByKey("_value")));
@@ -269,65 +265,83 @@ public class InfluxDBReader extends Reader {
                 // 1. 毫秒转换成秒
                 long queryStartTime = this.startTime / 1000;
                 long queryEndTime = (this.startTime + this.miniTaskIntervalSecond * 1000) / 1000;
-                // 1. 读取 [queryStartTime, queryEndTime] 范围内的数据
-                // 1.1 generate query flux
-                StringBuilder queryFlux = new StringBuilder();
-                queryFlux.append("from(bucket:\"");
-                queryFlux.append(this.bucket);
-                queryFlux.append("\") |> range(start: ");
-                queryFlux.append(queryStartTime);
-                queryFlux.append(", stop: ");
-                queryFlux.append(queryEndTime);
-                queryFlux.append(")");
-                LOG.info("queryFlux:{}", queryFlux);
-                // 更新时间
-                this.startTime += (this.miniTaskIntervalSecond * 1000);
-                // 2. query and write to DataX record
-                List<FluxRecord> records;
-                List<FluxTable> tables = queryApi.query(queryFlux.toString());
-                String measurement;
-                long time;
-                for (FluxTable fluxTable : tables) {
-                    records = fluxTable.getRecords();
-                    for (FluxRecord fluxRecord : records) {
-                        measurement = fluxRecord.getMeasurement();
-                        Record record = recordSender.createRecord();
-                        time = fluxRecord.getTime().toEpochMilli();
-                        LongColumn timeColumn = new LongColumn(time);
-                        record.addColumn(timeColumn);
-                        try {
-                            Column fieldValueColumn = getColumn(fluxRecord.getValues().get("_value"));
-                            record.addColumn(fieldValueColumn);
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
+                int offset = 0;
+                // 读取 miniTask 中的数据，会进一步根据 Limit 查询，防止单次查询数据量过大造成数据丢失问题。
+                while (true) {
+                    // 1. 读取 [queryStartTime, queryEndTime] 范围内的数据
+                    // 1.1 generate query flux
+                    // 每个 miniTask 会再按 Limit 批量查询，防止数据过多，出现数据丢失情况
+                    String queryFlux = "from(bucket:\""
+                            + "shen"
+                            + "\") |> range(start: "
+                            + queryStartTime
+                            + ", stop: "
+                            + queryEndTime
+                            + ") |> limit(n:" +
+                            Constant.DEFAULT_QUERY_LIMIT +
+                            ", offset:" +
+                            offset +
+                            ")";
+                    LOG.info("queryFlux:{}", queryFlux);
+                    // 2. query and write to DataX record
+                    List<FluxRecord> records;
+                    try {
+                        List<FluxTable> tables = queryApi.query(queryFlux);
+                        // 退出循环
+                        if (tables == null || tables.size() == 0) {
+                            break;
                         }
-                        String fieldKey = fluxRecord.getField();
-                        StringColumn fieldKeyColumn = new StringColumn(fieldKey);
-                        record.addColumn(fieldKeyColumn);
+                        String measurement;
+                        long time;
+                        for (FluxTable fluxTable : tables) {
+                            records = fluxTable.getRecords();
+                            // 更新 offset
+                            offset += records.size();
+                            for (FluxRecord fluxRecord : records) {
+                                measurement = fluxRecord.getMeasurement();
+                                Record record = recordSender.createRecord();
+                                time = fluxRecord.getTime().toEpochMilli();
+                                LongColumn timeColumn = new LongColumn(time);
+                                record.addColumn(timeColumn);
+                                try {
+                                    Column fieldValueColumn = getColumn(fluxRecord.getValues().get("_value"));
+                                    record.addColumn(fieldValueColumn);
+                                } catch (Exception e) {
+                                    throw new RuntimeException(e);
+                                }
+                                String fieldKey = fluxRecord.getField();
+                                StringColumn fieldKeyColumn = new StringColumn(fieldKey);
+                                record.addColumn(fieldKeyColumn);
 
-                        StringColumn measurementColumn = new StringColumn(measurement);
-                        record.addColumn(measurementColumn);
+                                StringColumn measurementColumn = new StringColumn(measurement);
+                                record.addColumn(measurementColumn);
 
-                        // obtain TagKeys and TagValues
-                        List<String> tagKeys = measurementTagKeysMap.get(measurement);
-                        Map<String, Object> values = fluxRecord.getValues();
-                        for (String tagKey : tagKeys) {
-                            StringColumn tagKeyColumn = new StringColumn(tagKey);
-                            record.addColumn(tagKeyColumn);
+                                // obtain TagKeys and TagValues
+                                List<String> tagKeys = measurementTagKeysMap.get(measurement);
+                                Map<String, Object> values = fluxRecord.getValues();
+                                for (String tagKey : tagKeys) {
+                                    StringColumn tagKeyColumn = new StringColumn(tagKey);
+                                    record.addColumn(tagKeyColumn);
 
-                            StringColumn tagValueColumn;
-                            Object tagValueObj = values.get(tagKey);
-                            if (tagValueObj != null) {
-                                tagValueColumn = new StringColumn(String.valueOf(tagValueObj));
-                            } else {
-                                tagValueColumn = new StringColumn(null);
+                                    StringColumn tagValueColumn;
+                                    Object tagValueObj = values.get(tagKey);
+                                    if (tagValueObj != null) {
+                                        tagValueColumn = new StringColumn(String.valueOf(tagValueObj));
+                                    } else {
+                                        tagValueColumn = new StringColumn(null);
+                                    }
+                                    record.addColumn(tagValueColumn);
+                                }
+                                // 3. send to writer
+                                recordSender.sendToWriter(record);
                             }
-                            record.addColumn(tagValueColumn);
                         }
-                        // 3. send to writer
-                        recordSender.sendToWriter(record);
+                    } catch (Exception e) {
+                        LOG.error("[startRead] [query range [{}, {}] failed]. [Probably Because query too many records at one time]. [Probably need to split tasks smaller].", queryStartTime, queryEndTime);
                     }
                 }
+                // 更新查询时间
+                this.startTime += this.miniTaskIntervalSecond * 1000;
             }
         }
 
