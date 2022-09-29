@@ -5,50 +5,50 @@ import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordReceiver;
 import com.alibaba.datax.common.plugin.TaskPluginCollector;
+import com.alibaba.datax.common.util.Configuration;
+import com.taosdata.jdbc.SchemalessWriter;
+import com.taosdata.jdbc.enums.SchemalessProtocolType;
+import com.taosdata.jdbc.enums.SchemalessTimestampType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Properties;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
 public class OpentsdbDataHandler implements DataHandler {
     private static final Logger LOG = LoggerFactory.getLogger(OpentsdbDataHandler.class);
-    private static final String DEFAULT_BATCH_SIZE = "1";
+    private SchemalessWriter writer;
+
+    private String jdbcUrl;
+    private String user;
+    private String password;
+    int batchSize;
+
+    public OpentsdbDataHandler(Configuration config) {
+        // opentsdb json protocol use JNI and schemaless API to write
+        this.jdbcUrl = config.getString(Key.JDBC_URL);
+        this.user = config.getString(Key.USERNAME, "root");
+        this.password = config.getString(Key.PASSWORD, "taosdata");
+        this.batchSize = config.getInt(Key.BATCH_SIZE, Constants.DEFAULT_BATCH_SIZE);
+    }
 
     @Override
-    public long handle(RecordReceiver lineReceiver, Properties properties, TaskPluginCollector collector) {
-        // opentsdb json protocol use JNI and schemaless API to write
-        String host = properties.getProperty(Key.HOST);
-        int port = Integer.parseInt(properties.getProperty(Key.PORT));
-        String dbname = properties.getProperty(Key.DBNAME);
-        String user = properties.getProperty(Key.USER);
-        String password = properties.getProperty(Key.PASSWORD);
-
-        JniConnection conn = null;
-        long count = 0;
-        try {
-            conn = new JniConnection(properties);
-            conn.open(host, port, dbname, user, password);
-            LOG.info("TDengine connection established, host: " + host + ", port: " + port + ", dbname: " + dbname + ", user: " + user);
-            int batchSize = Integer.parseInt(properties.getProperty(Key.BATCH_SIZE, DEFAULT_BATCH_SIZE));
-            count = writeOpentsdb(lineReceiver, conn, batchSize);
+    public int handle(RecordReceiver lineReceiver, TaskPluginCollector collector) {
+        int count = 0;
+        try (Connection conn = DriverManager.getConnection(jdbcUrl, user, password);) {
+            LOG.info("connection[ jdbcUrl: " + jdbcUrl + ", username: " + user + "] established.");
+            writer = new SchemalessWriter(conn);
+            count = write(lineReceiver, batchSize);
         } catch (Exception e) {
-            LOG.error(e.getMessage());
-            e.printStackTrace();
-        } finally {
-            try {
-                if (conn != null)
-                    conn.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            LOG.info("TDengine connection closed");
+            throw DataXException.asDataXException(TDengineWriterErrorCode.RUNTIME_EXCEPTION, e);
         }
 
         return count;
     }
 
-    private long writeOpentsdb(RecordReceiver lineReceiver, JniConnection conn, int batchSize) {
-        long recordIndex = 1;
+    private int write(RecordReceiver lineReceiver, int batchSize) throws DataXException {
+        int recordIndex = 1;
         try {
             Record record;
             StringBuilder sb = new StringBuilder();
@@ -56,14 +56,14 @@ public class OpentsdbDataHandler implements DataHandler {
                 if (batchSize == 1) {
                     String jsonData = recordToString(record);
                     LOG.debug(">>> " + jsonData);
-                    conn.insertOpentsdbJson(jsonData);
+                    writer.write(jsonData, SchemalessProtocolType.JSON, SchemalessTimestampType.NOT_CONFIGURED);
                 } else if (recordIndex % batchSize == 1) {
                     sb.append("[").append(recordToString(record)).append(",");
                 } else if (recordIndex % batchSize == 0) {
                     sb.append(recordToString(record)).append("]");
                     String jsonData = sb.toString();
                     LOG.debug(">>> " + jsonData);
-                    conn.insertOpentsdbJson(jsonData);
+                    writer.write(jsonData, SchemalessProtocolType.JSON, SchemalessTimestampType.NOT_CONFIGURED);
                     sb.delete(0, sb.length());
                 } else {
                     sb.append(recordToString(record)).append(",");
@@ -72,11 +72,11 @@ public class OpentsdbDataHandler implements DataHandler {
             }
             if (sb.length() != 0 && sb.charAt(0) == '[') {
                 String jsonData = sb.deleteCharAt(sb.length() - 1).append("]").toString();
+                System.err.println(jsonData);
                 LOG.debug(">>> " + jsonData);
-                conn.insertOpentsdbJson(jsonData);
+                writer.write(jsonData, SchemalessProtocolType.JSON, SchemalessTimestampType.NOT_CONFIGURED);
             }
         } catch (Exception e) {
-            LOG.error("TDengineWriter ERROR: " + e.getMessage());
             throw DataXException.asDataXException(TDengineWriterErrorCode.RUNTIME_EXCEPTION, e);
         }
         return recordIndex - 1;

@@ -3,13 +3,16 @@ package com.alibaba.datax.plugin.writer.tdenginewriter;
 import com.alibaba.datax.common.spi.ErrorCode;
 
 public enum TDengineWriterErrorCode implements ErrorCode {
-    RUNTIME_EXCEPTION("TDengineWriter-00", "运行时异常"),
-    TYPE_ERROR("TDengineWriter-00", "Datax类型无法正确映射到TDengine类型");
+
+    REQUIRED_VALUE("TDengineWriter-00", "parameter value is missing"),
+    ILLEGAL_VALUE("TDengineWriter-01", "invalid parameter value"),
+    RUNTIME_EXCEPTION("TDengineWriter-02", "runtime exception"),
+    TYPE_ERROR("TDengineWriter-03", "data type mapping error");
 
     private final String code;
     private final String description;
 
-    private TDengineWriterErrorCode(String code, String description) {
+    TDengineWriterErrorCode(String code, String description) {
         this.code = code;
         this.description = description;
     }
@@ -26,7 +29,6 @@ public enum TDengineWriterErrorCode implements ErrorCode {
 
     @Override
     public String toString() {
-        return String.format("Code:[%s], Description:[%s]. ", this.code,
-                this.description);
+        return String.format("Code:[%s], Description:[%s]. ", this.code, this.description);
     }
 }

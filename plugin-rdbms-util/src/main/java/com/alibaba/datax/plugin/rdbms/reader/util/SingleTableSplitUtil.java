@@ -93,6 +93,7 @@ public class SingleTableSplitUtil {
 
                 allQuerySql.add(tempQuerySql);
                 tempConfig.set(Key.QUERY_SQL, tempQuerySql);
+                tempConfig.set(Key.WHERE, (hasWhere ? ("(" + where + ") and") : "") + range);
                 pluginParams.add(tempConfig);
             }
         } else {
@@ -103,6 +104,7 @@ public class SingleTableSplitUtil {
                     + String.format(" %s IS NOT NULL", splitPkName);
             allQuerySql.add(tempQuerySql);
             tempConfig.set(Key.QUERY_SQL, tempQuerySql);
+            tempConfig.set(Key.WHERE, (hasWhere ? "(" + where + ") and" : "") + String.format(" %s IS NOT NULL", splitPkName));
             pluginParams.add(tempConfig);
         }
 
@@ -118,6 +120,7 @@ public class SingleTableSplitUtil {
                 StringUtils.join(allQuerySql, "\n"));
 
         tempConfig.set(Key.QUERY_SQL, tempQuerySql);
+        tempConfig.set(Key.WHERE, (hasWhere ? "(" + where + ") and" : "") + String.format(" %s IS NULL", splitPkName));
         pluginParams.add(tempConfig);
         
         return pluginParams;
@@ -254,6 +257,7 @@ public class SingleTableSplitUtil {
 
         switch (SingleTableSplitUtil.DATABASE_TYPE) {
             case Oracle:
+            case OceanBase:
                 isValidLongType |= type == Types.NUMERIC;
                 break;
             default:

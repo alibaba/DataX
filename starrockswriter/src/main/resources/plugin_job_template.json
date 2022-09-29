@@ -1,0 +1,14 @@
+{
+    "name": "starrockswriter",
+    "parameter": {
+        "username": "",
+        "password": "",
+        "database": "",
+        "table": "",
+        "column": [],
+        "preSql": [],
+        "postSql": [], 
+        "jdbcUrl": "",
+        "loadUrl": []
+    }
+}

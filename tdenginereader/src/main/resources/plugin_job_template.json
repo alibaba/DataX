@@ -1,0 +1,23 @@
+{
+  "name": "tdenginereader",
+  "parameter": {
+    "user": "",
+    "password": "",
+    "connection": [
+      {
+        "table": [
+          ""
+        ],
+        "jdbcUrl": [
+          ""
+        ]
+      }
+    ],
+    "column": [
+      ""
+    ],
+    "beginDateTime": "",
+    "endDateTime": "",
+    "where": ""
+  }
+}
