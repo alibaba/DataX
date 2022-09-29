@@ -45,6 +45,6 @@ public class DorisJsonCodec extends DorisCodec {
             rowMap.put(fieldName, this.convertColumn(row.getColumn(idx)));
             ++idx;
         }
-        return JSON.toJSONString(rowMap);
+        return JSON.toJSONString(rowMap, SerializerFeature.WriteMapNullValue);
     }
 }
