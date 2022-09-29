@@ -6,6 +6,7 @@
     "database": "",
     "table": "",
     "column": [],
+    "timeZone": "",
     "preSql": [],
     "postSql": [],
     "jdbcUrl": "",

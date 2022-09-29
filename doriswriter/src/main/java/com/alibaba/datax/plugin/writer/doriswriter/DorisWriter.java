@@ -48,6 +48,7 @@ public class DorisWriter extends Writer {
         private Key keys;
         private DorisCodec rowCodec;
         private int batchNum = 0;
+        private String labelPrefix;
 
         public Task() {
         }
@@ -55,7 +56,12 @@ public class DorisWriter extends Writer {
         @Override
         public void init() {
             this.keys = new Key(super.getPluginJobConf());
-            this.rowCodec = new DorisJsonCodec(this.keys.getColumns());
+            if (Key.DEFAULT_FORMAT_CSV.equalsIgnoreCase(this.keys.getFormat())) {
+                this.rowCodec = new DorisCsvCodec(this.keys.getColumns(), this.keys.getColumnSeparator(), this.keys.getTimeZone());
+            } else {
+                this.rowCodec = new DorisJsonCodec(this.keys.getColumns(), this.keys.getTimeZone());
+            }
+            this.labelPrefix = this.keys.getLabelPrefix() + UUID.randomUUID();
             this.dorisWriterEmitter = new DorisWriterEmitter(keys);
         }
 
@@ -66,7 +72,7 @@ public class DorisWriter extends Writer {
         @Override
         public void startWrite(RecordReceiver recordReceiver) {
             String lineDelimiter = this.keys.getLineDelimiter();
-            DorisFlushBatch flushBatch = new DorisFlushBatch(lineDelimiter);
+            DorisFlushBatch flushBatch = new DorisFlushBatch(lineDelimiter, this.keys.getFormat());
             long batchCount = 0;
             long batchByteSize = 0L;
             Record record;
@@ -93,7 +99,7 @@ public class DorisWriter extends Writer {
                     // clear buffer
                     batchCount = 0;
                     batchByteSize = 0L;
-                    flushBatch = new DorisFlushBatch(lineDelimiter);
+                    flushBatch = new DorisFlushBatch(lineDelimiter, this.keys.getFormat());
                 }
             } // end of while
 
@@ -103,14 +109,12 @@ public class DorisWriter extends Writer {
         }
 
         private void flush(DorisFlushBatch flushBatch) {
-            final String label = getStreamLoadLabel();
-            flushBatch.setLabel(label);
-            dorisWriterEmitter.doStreamLoad(flushBatch);
+            flushBatch.setLabel(getStreamLoadLabel());
+            dorisWriterEmitter.emit(flushBatch);
         }
 
         private String getStreamLoadLabel() {
-            String labelPrefix = this.keys.getLabelPrefix();
-            return labelPrefix + UUID.randomUUID().toString() + "_" + (batchNum++);
+            return labelPrefix + "_" + (batchNum++);
         }
 
         @Override

@@ -17,15 +17,20 @@
 
 package com.alibaba.datax.plugin.writer.doriswriter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 // A wrapper class to hold a batch of loaded rows
 public class DorisFlushBatch {
-    private String lineDelimiter;
+    private final String format;
+    private final String lineDelimiter;
     private String label;
-    private long rows = 0;
-    private StringBuilder data = new StringBuilder();
+    private long byteSize = 0;
+    private List<String> data = new ArrayList<>();
 
-    public DorisFlushBatch(String lineDelimiter) {
-        this.lineDelimiter = lineDelimiter;
+    public DorisFlushBatch(String lineDelimiter, String format) {
+        this.lineDelimiter = EscapeHandler.escapeString(lineDelimiter);
+        this.format = format;
     }
 
     public void setLabel(String label) {
@@ -37,22 +42,25 @@ public class DorisFlushBatch {
     }
 
     public long getRows() {
-        return rows;
+        return data.size();
     }
 
     public void putData(String row) {
-        if (data.length() > 0) {
-            data.append(lineDelimiter);
-        }
-        data.append(row);
-        rows++;
+        data.add(row);
+        byteSize += row.getBytes().length;
     }
 
-    public StringBuilder getData() {
-        return data;
+    public String getData() {
+        String result;
+        if (Key.DEFAULT_FORMAT_CSV.equalsIgnoreCase(format)) {
+            result = String.join(this.lineDelimiter, data);
+        } else {
+            result = data.toString();
+        }
+        return result;
     }
 
     public long getSize() {
-        return data.length();
+        return byteSize;
     }
 }

@@ -17,34 +17,26 @@
 
 package com.alibaba.datax.plugin.writer.doriswriter;
 
-import com.alibaba.datax.common.element.Record;
-import com.alibaba.fastjson.JSON;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+/**
+ * Handler for escape in properties.
+ */
+public class EscapeHandler {
+    public static final String ESCAPE_DELIMITERS_FLAGS = "\\x";
+    public static final Pattern ESCAPE_PATTERN = Pattern.compile("\\\\x([0-9|a-f|A-F]{2})");
 
-// Convert DataX data to json
-public class DorisJsonCodec extends DorisCodec {
-    private Map<String, Object> rowMap;
-
-    public DorisJsonCodec(final List<String> fieldNames, final String timeZone) {
-        super(fieldNames, timeZone);
-        this.rowMap = new HashMap<>(this.fieldNames.size());
-    }
-
-    @Override
-    public String serialize(final Record row) {
-        if (null == this.fieldNames) {
-            return "";
+    public static String escapeString(String source) {
+        if (source.startsWith(ESCAPE_DELIMITERS_FLAGS)) {
+            Matcher m = ESCAPE_PATTERN.matcher(source);
+            StringBuffer buf = new StringBuffer();
+            while (m.find()) {
+                m.appendReplacement(buf, String.format("%s", (char) Integer.parseInt(m.group(1), 16)));
+            }
+            m.appendTail(buf);
+            return buf.toString();
         }
-
-        rowMap.clear();
-        int idx = 0;
-        for (final String fieldName : this.fieldNames) {
-            rowMap.put(fieldName, this.convertColumn(row.getColumn(idx)));
-            ++idx;
-        }
-        return JSON.toJSONString(rowMap);
+        return source;
     }
 }

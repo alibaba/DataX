@@ -22,16 +22,17 @@ import com.alibaba.datax.common.element.DateColumn;
 import com.alibaba.datax.common.element.Record;
 import org.apache.commons.lang3.time.DateFormatUtils;
 
+import java.time.ZoneId;
 import java.util.List;
 import java.util.TimeZone;
 
 public abstract class DorisCodec {
-    protected static String timeZone = "GMT+8";
-    protected static TimeZone timeZoner = TimeZone.getTimeZone(timeZone);
+    protected final TimeZone timeZone;
     protected final List<String> fieldNames;
 
-    public DorisCodec(final List<String> fieldNames) {
+    public DorisCodec(final List<String> fieldNames, final String timeZone) {
         this.fieldNames = fieldNames;
+        this.timeZone = TimeZone.getTimeZone(ZoneId.of(timeZone));
     }
 
     public abstract String serialize(Record row);
@@ -60,9 +61,9 @@ public abstract class DorisCodec {
                 final DateColumn.DateType dateType = ((DateColumn) col).getSubType();
                 switch (dateType) {
                     case DATE:
-                        return DateFormatUtils.format(col.asDate(), "yyyy-MM-dd", timeZoner);
+                        return DateFormatUtils.format(col.asDate(), "yyyy-MM-dd", timeZone);
                     case DATETIME:
-                        return DateFormatUtils.format(col.asDate(), "yyyy-MM-dd HH:mm:ss", timeZoner);
+                        return DateFormatUtils.format(col.asDate(), "yyyy-MM-dd HH:mm:ss", timeZone);
                     default:
                         return col.asString();
                 }
