@@ -26,8 +26,8 @@ public class DorisCsvCodec extends DorisCodec {
 
     private final String columnSeparator;
 
-    public DorisCsvCodec(final List<String> fieldNames, String columnSeparator, String timeZone) {
-        super(fieldNames, timeZone);
+    public DorisCsvCodec(final List<String> fieldNames, String columnSeparator) {
+        super(fieldNames);
         this.columnSeparator = EscapeHandler.escapeString(columnSeparator);
     }
 

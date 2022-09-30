@@ -49,7 +49,7 @@ public class Key implements Serializable {
     public static final String LOAD_PROPS_COLUMN_SEPARATOR = "column_separator";
 
     public static final String MAX_BATCH_ROWS = "maxBatchRows";
-    public static final String MAX_BATCH_BYTE_SIZE = "maxBatchByteSize";
+    public static final String BATCH_BYTE_SIZE = "batchByteSize";
     public static final String MAX_RETRIES = "maxRetries";
     public static final String LABEL_PREFIX = "labelPrefix";
     public static final String FORMAT = "format";
@@ -57,7 +57,7 @@ public class Key implements Serializable {
     private final Configuration options;
 
     private static final long DEFAULT_MAX_BATCH_ROWS = 50_0000;
-    private static final long DEFAULT_MAX_BATCH_BYTE_SIZE = 90 * 1024 * 1024; // 90MB
+    private static final long DEFAULT_BATCH_BYTE_SIZE = 90 * 1024 * 1024;
     private static final int DEFAULT_MAX_RETRIES = 0;
 
     private static final String DEFAULT_LABEL_PREFIX = "datax_doris_writer_";
@@ -130,7 +130,7 @@ public class Key implements Serializable {
     }
 
     public long getBatchByteSize() {
-        return this.options.getLong(MAX_BATCH_BYTE_SIZE, DEFAULT_MAX_BATCH_BYTE_SIZE);
+        return this.options.getLong(BATCH_BYTE_SIZE, DEFAULT_BATCH_BYTE_SIZE);
     }
 
     public int getMaxRetries() {

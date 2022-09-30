@@ -57,9 +57,9 @@ public class DorisWriter extends Writer {
         public void init() {
             this.keys = new Key(super.getPluginJobConf());
             if (Key.DEFAULT_FORMAT_CSV.equalsIgnoreCase(this.keys.getFormat())) {
-                this.rowCodec = new DorisCsvCodec(this.keys.getColumns(), this.keys.getColumnSeparator(), this.keys.getTimeZone());
+                this.rowCodec = new DorisCsvCodec(this.keys.getColumns(), this.keys.getColumnSeparator());
             } else {
-                this.rowCodec = new DorisJsonCodec(this.keys.getColumns(), this.keys.getTimeZone());
+                this.rowCodec = new DorisJsonCodec(this.keys.getColumns());
             }
             this.labelPrefix = this.keys.getLabelPrefix() + UUID.randomUUID();
             this.dorisWriterEmitter = new DorisWriterEmitter(keys);

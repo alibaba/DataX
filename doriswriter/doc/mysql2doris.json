@@ -13,7 +13,7 @@
                             }
                         ],
                         "username": "root",
-                        "password": "123456",
+                        "password": "",
                         "where": ""
                     }
                 },
@@ -28,7 +28,7 @@
                         "table": "t3",
                         "column": ["k1", "k2", "k3"],
                         "username": "root",
-                        "password": "12345",
+                        "password": "",
                         "postSql": [],
                         "preSql": []
                     }

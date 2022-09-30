@@ -19,6 +19,7 @@ package com.alibaba.datax.plugin.writer.doriswriter;
 
 import com.alibaba.datax.common.element.Record;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 
 import java.util.HashMap;
 import java.util.List;
@@ -28,8 +29,8 @@ import java.util.Map;
 public class DorisJsonCodec extends DorisCodec {
     private Map<String, Object> rowMap;
 
-    public DorisJsonCodec(final List<String> fieldNames, final String timeZone) {
-        super(fieldNames, timeZone);
+    public DorisJsonCodec(final List<String> fieldNames) {
+        super(fieldNames);
         this.rowMap = new HashMap<>(this.fieldNames.size());
     }
 

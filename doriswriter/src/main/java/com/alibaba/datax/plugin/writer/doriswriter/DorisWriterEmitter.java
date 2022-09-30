@@ -53,6 +53,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.net.URLEncoder;
 
 // Used to load batch of rows to Doris using stream load
 public class DorisWriterEmitter {
@@ -112,7 +113,7 @@ public class DorisWriterEmitter {
         if (StringUtils.isEmpty(host)) {
             throw DataXException.asDataXException(DBUtilErrorCode.WRITE_DATA_ERROR, "None of the load url can be connected.");
         }
-        final String loadUrl = host + "/api/" + this.keys.getDatabase() + "/" + this.keys.getTable() + "/_stream_load";
+        String loadUrl = host + "/api/" + this.keys.getDatabase() + "/" + this.keys.getTable() + "/_stream_load";
         // do http put request and get response
         final Map<String, Object> loadResult;
         try {
@@ -239,54 +240,4 @@ public class DorisWriterEmitter {
         return "Basic " + new String(encodedAuth);
     }
 
-    // for test
-    public static void main(String[] args) throws IOException {
-        String json = "{\n" +
-                "                        \"beLoadUrl\": [\"127.0.0.1:8040\"],\n" +
-                "                        \"column\": [\"name\", \"age\", \"cdate\", \"cdatetime\"],\n" +
-                "                        \"database\": \"test\",\n" +
-                "                        \"jdbcUrl\": \"jdbc:mysql://127.0.0.1:9030/\",\n" +
-                "                        \"loadProps\": {\n" +
-//                "                        \"line_delimiter\": \"\\\\x03\",\n" +
-//                "                        \"column_separator\": \"\\\\x04\",\n" +
-                "                        },\n" +
-                "                        \"format\": \"csv\",\n" +
-                "                        \"password\": \"\",\n" +
-                "                        \"postSql\": [],\n" +
-                "                        \"preSql\": [],\n" +
-                "                        \"table\": \"test_datax\",\n" +
-                "                        \"maxRetries\": \"0\",\n" +
-                "                        \"username\": \"root\"\n" +
-                "                    }";
-        Configuration configuration = Configuration.from(json);
-        Key key = new Key(configuration);
-
-        DorisWriterEmitter emitter = new DorisWriterEmitter(key);
-        DorisFlushBatch flushBatch = new DorisFlushBatch(key.getLineDelimiter(), key.getFormat());
-
-        Map<String, String> row1 = Maps.newHashMap();
-        row1.put("cdate", "2021-02-02");
-        row1.put("cdatetime", "2021-02-02 00:00:00");
-        row1.put("name", "zhangsan");
-        row1.put("age", "18");
-        Map<String, String> row2 = Maps.newHashMap();
-        row2.put("cdate", "2022-02-02");
-        row2.put("cdatetime", "2022-02-02 10:00:00");
-        row2.put("name", "lisi");
-        row2.put("age", "180");
-        String rowStr1 = JSON.toJSONString(row1);
-        String rowStr2 = JSON.toJSONString(row2);
-        if ("csv".equals(key.getFormat())) {
-            rowStr1 = String.join(EscapeHandler.escapeString(key.getColumnSeparator()), "2021-02-02", "2021-02-02 00:00:00", "zhangsan", "18");
-            rowStr2 = String.join(EscapeHandler.escapeString(key.getColumnSeparator()), "2022-02-02", "2022-02-02 10:00:00", "lisi", "180");
-        }
-        System.out.println("rows1: " + rowStr1);
-        System.out.println("rows2: " + rowStr2);
-
-        for (int i = 0; i < 1; ++i) {
-            flushBatch.putData(rowStr1);
-            flushBatch.putData(rowStr2);
-        }
-        emitter.emit(flushBatch);
-    }
 }

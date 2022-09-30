@@ -24,15 +24,12 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.time.ZoneId;
 import java.util.List;
-import java.util.TimeZone;
 
 public abstract class DorisCodec {
-    protected final TimeZone timeZone;
     protected final List<String> fieldNames;
 
-    public DorisCodec(final List<String> fieldNames, final String timeZone) {
+    public DorisCodec(final List<String> fieldNames) {
         this.fieldNames = fieldNames;
-        this.timeZone = TimeZone.getTimeZone(ZoneId.of(timeZone));
     }
 
     public abstract String serialize(Record row);
@@ -61,9 +58,9 @@ public abstract class DorisCodec {
                 final DateColumn.DateType dateType = ((DateColumn) col).getSubType();
                 switch (dateType) {
                     case DATE:
-                        return DateFormatUtils.format(col.asDate(), "yyyy-MM-dd", timeZone);
+                        return DateFormatUtils.format(col.asDate(), "yyyy-MM-dd");
                     case DATETIME:
-                        return DateFormatUtils.format(col.asDate(), "yyyy-MM-dd HH:mm:ss", timeZone);
+                        return DateFormatUtils.format(col.asDate(), "yyyy-MM-dd HH:mm:ss");
                     default:
                         return col.asString();
                 }
