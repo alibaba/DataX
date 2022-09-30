@@ -19,6 +19,15 @@ public class TaskContext {
     private boolean weakRead = true;
     private String userSavePoint;
     private String compatibleMode = ObReaderUtils.OB_COMPATIBLE_MODE_MYSQL;
+
+    public String getPartitionName() {
+        return partitionName;
+    }
+
+    public void setPartitionName(String partitionName) {
+        this.partitionName = partitionName;
+    }
+
     private String partitionName;
 
     // 断点续读的保存点
@@ -164,13 +173,5 @@ public class TaskContext {
 
     public void setCompatibleMode(String compatibleMode) {
         this.compatibleMode = compatibleMode;
-    }
-
-    public String getPartitionName() {
-        return partitionName;
-    }
-
-    public void setPartitionName(String partitionName) {
-        this.partitionName = partitionName;
     }
 }

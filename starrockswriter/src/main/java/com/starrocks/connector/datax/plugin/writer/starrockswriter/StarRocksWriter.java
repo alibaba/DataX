@@ -13,6 +13,7 @@ import com.starrocks.connector.datax.plugin.writer.starrockswriter.row.StarRocks
 import com.starrocks.connector.datax.plugin.writer.starrockswriter.row.StarRocksSerializerFactory;
 import com.starrocks.connector.datax.plugin.writer.starrockswriter.util.StarRocksWriterUtil;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +32,10 @@ public class StarRocksWriter extends Writer {
         @Override
         public void init() {
             this.originalConfig = super.getPluginJobConf();
+            String selectedDatabase = super.getPluginJobConf().getString(StarRocksWriterOptions.KEY_SELECTED_DATABASE);
+            if(StringUtils.isBlank(this.originalConfig.getString(StarRocksWriterOptions.KEY_DATABASE)) && StringUtils.isNotBlank(selectedDatabase)){
+                this.originalConfig.set(StarRocksWriterOptions.KEY_DATABASE, selectedDatabase);
+            }
             options = new StarRocksWriterOptions(super.getPluginJobConf());
             options.doPretreatment();
         }
@@ -115,7 +120,7 @@ public class StarRocksWriter extends Writer {
                                 .asDataXException(
                                         DBUtilErrorCode.CONF_ERROR,
                                         String.format(
-                                                "列配置信息有错误. 因为您配置的任务中，源头读取字段数:%s 与 目的表要写入的字段数:%s 不相等. 请检查您的配置并作出修改.",
+                                                "Column configuration error. The number of reader columns %d and the number of writer columns %d are not equal.",
                                                 record.getColumnNumber(),
                                                 options.getColumns().size()));
                     }

@@ -61,12 +61,16 @@ StarRocksWriter 插件实现了写入数据到 StarRocks 主库的目的表的�
                     "parameter": {
                         "username": "xxxx",
                         "password": "xxxx",
-                        "database": "xxxx",
-                        "table": "xxxx",
                         "column": ["k1", "k2", "v1", "v2"],
                         "preSql": [],
                         "postSql": [], 
-                        "jdbcUrl": "jdbc:mysql://172.28.17.100:9030/",
+						"connection": [
+							{
+								"table": ["xxx"],
+								"jdbcUrl": "jdbc:mysql://172.28.17.100:9030/",
+								"selectedDatabase": "xxxx"
+							}
+						],
                         "loadUrl": ["172.28.17.100:8030", "172.28.17.100:8030"],
                         "loadProps": {}
                     }
@@ -97,7 +101,7 @@ StarRocksWriter 插件实现了写入数据到 StarRocks 主库的目的表的�
 
 	* 默认值：无 <br />
 
-* **database**
+* **selectedDatabase**
 
 	* 描述：StarRocks表的数据库名称。
 

@@ -3,6 +3,8 @@ package com.alibaba.datax.common.util;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -80,6 +82,22 @@ public class StrUtil {
             return s;
         }
         return s.substring(0, headLength) + "..." + s.substring(s.length() - tailLength);
+    }
+
+    public static String getMd5(String plainText) {
+        try {
+            StringBuilder builder = new StringBuilder();
+            for (byte b : MessageDigest.getInstance("MD5").digest(plainText.getBytes())) {
+                int i = b & 0xff;
+                if (i < 0x10) {
+                    builder.append('0');
+                }
+                builder.append(Integer.toHexString(i));
+            }
+            return builder.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

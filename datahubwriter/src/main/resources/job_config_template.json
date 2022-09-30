@@ -1,0 +1,14 @@
+{
+    "name": "datahubwriter",
+    "parameter": {
+        "endpoint":"",
+        "accessId": "",
+        "accessKey": "",
+        "project": "",
+        "topic": "",
+        "mode": "random",
+        "shardId": "",
+        "maxCommitSize": 524288,
+        "maxRetryCount": 500
+    }
+}

@@ -5,6 +5,7 @@ import java.io.Serializable;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.plugin.rdbms.util.DBUtilErrorCode;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -15,9 +16,9 @@ public class StarRocksWriterOptions implements Serializable {
     private static final long serialVersionUID = 1l;
     private static final long KILO_BYTES_SCALE = 1024l;
     private static final long MEGA_BYTES_SCALE = KILO_BYTES_SCALE * KILO_BYTES_SCALE;
-    private static final int MAX_RETRIES = 3;
+    private static final int MAX_RETRIES = 1;
     private static final int BATCH_ROWS = 500000;
-    private static final long BATCH_BYTES = 90 * MEGA_BYTES_SCALE;
+    private static final long BATCH_BYTES = 5 * MEGA_BYTES_SCALE;
     private static final long FLUSH_INTERVAL = 300000;
 
     private static final String KEY_LOAD_PROPS_FORMAT = "format";
@@ -25,21 +26,25 @@ public class StarRocksWriterOptions implements Serializable {
         CSV, JSON;
     }
 
-    private static final String KEY_USERNAME = "username";
-    private static final String KEY_PASSWORD = "password";
-    private static final String KEY_DATABASE = "database";
-    private static final String KEY_TABLE = "table";
-    private static final String KEY_COLUMN = "column";
-    private static final String KEY_PRE_SQL = "preSql";
-    private static final String KEY_POST_SQL = "postSql";
-    private static final String KEY_JDBC_URL = "jdbcUrl";
-    private static final String KEY_LABEL_PREFIX = "labelPrefix";
-    private static final String KEY_MAX_BATCH_ROWS = "maxBatchRows";
-    private static final String KEY_MAX_BATCH_SIZE = "maxBatchSize";
-    private static final String KEY_FLUSH_INTERVAL = "flushInterval";
-    private static final String KEY_LOAD_URL = "loadUrl";
-    private static final String KEY_FLUSH_QUEUE_LENGTH = "flushQueueLength";
-    private static final String KEY_LOAD_PROPS = "loadProps";
+    public static final String KEY_USERNAME = "username";
+    public static final String KEY_PASSWORD = "password";
+    public static final String KEY_DATABASE = "database";
+    public static final String KEY_SELECTED_DATABASE = "selectedDatabase";
+    public static final String KEY_TABLE = "table";
+    public static final String KEY_COLUMN = "column";
+    public static final String KEY_PRE_SQL = "preSql";
+    public static final String KEY_POST_SQL = "postSql";
+    public static final String KEY_JDBC_URL = "jdbcUrl";
+    public static final String KEY_LABEL_PREFIX = "labelPrefix";
+	public static final String KEY_MAX_BATCH_ROWS = "maxBatchRows";
+    public static final String KEY_MAX_BATCH_SIZE = "maxBatchSize";
+    public static final String KEY_FLUSH_INTERVAL = "flushInterval";
+    public static final String KEY_LOAD_URL = "loadUrl";
+    public static final String KEY_FLUSH_QUEUE_LENGTH = "flushQueueLength";
+    public static final String KEY_LOAD_PROPS = "loadProps";
+    public static final String CONNECTION_JDBC_URL = "connection[0].jdbcUrl";
+    public static final String CONNECTION_TABLE_NAME = "connection[0].table[0]";
+    public static final String CONNECTION_SELECTED_DATABASE = "connection[0].selectedDatabase";
 
     private final Configuration options;
     private List<String> infoCchemaColumns;
@@ -48,6 +53,25 @@ public class StarRocksWriterOptions implements Serializable {
 
     public StarRocksWriterOptions(Configuration options) {
         this.options = options;
+        // database
+        String database = this.options.getString(CONNECTION_SELECTED_DATABASE);
+        if (StringUtils.isBlank(database)) {
+            database = this.options.getString(KEY_SELECTED_DATABASE);
+        }
+        if (StringUtils.isNotBlank(database)) {
+            this.options.set(KEY_DATABASE, database);
+        }
+        // jdbcUrl
+        String jdbcUrl = this.options.getString(CONNECTION_JDBC_URL);
+        if (StringUtils.isNotBlank(jdbcUrl)) {
+            this.options.set(KEY_JDBC_URL, jdbcUrl);
+        }
+        // table
+        String table = this.options.getString(CONNECTION_TABLE_NAME);
+        if (StringUtils.isNotBlank(table)) {
+            this.options.set(KEY_TABLE, table);
+        }
+        // column
         this.userSetColumns = options.getList(KEY_COLUMN, String.class).stream().map(str -> str.replace("`", "")).collect(Collectors.toList());
         if (1 == options.getList(KEY_COLUMN, String.class).size() && "*".trim().equals(options.getList(KEY_COLUMN, String.class).get(0))) {
             this.isWildcardColumn = true;
@@ -155,7 +179,7 @@ public class StarRocksWriterOptions implements Serializable {
         for (String host : urlList) {
             if (host.split(":").length < 2) {
                 throw DataXException.asDataXException(DBUtilErrorCode.CONF_ERROR,
-                    "loadUrl的格式不正确，请输入 `fe_ip:fe_http_ip;fe_ip:fe_http_ip`。");
+                    "The format of loadUrl is illegal, please input `fe_ip:fe_http_ip;fe_ip:fe_http_ip`.");
             }
         }
     }

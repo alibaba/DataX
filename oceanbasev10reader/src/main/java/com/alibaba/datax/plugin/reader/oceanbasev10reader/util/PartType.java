@@ -5,8 +5,13 @@ package com.alibaba.datax.plugin.reader.oceanbasev10reader.util;
  */
 
 public enum PartType {
+    // Non partitioned table
     NONPARTITION("NONPARTITION"),
+
+    // Partitioned table
     PARTITION("PARTITION"),
+
+    // Subpartitioned table
     SUBPARTITION("SUBPARTITION");
 
     private String typeString;
