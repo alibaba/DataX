@@ -20,17 +20,19 @@
                 "writer": {
                     "name": "doriswriter",
                     "parameter": {
-                        "feLoadUrl": ["192.168.1.1:8030"],
-                        "jdbcUrl": "jdbc:mysql://192.168.1.1:9030/",
-                        "loadProps": {
-                        },
+                        "loadUrl": ["192.168.1.1:8030"],
+                        "loadProps": {},
                         "database": "db1",
-                        "table": "t3",
                         "column": ["k1", "k2", "k3"],
                         "username": "root",
                         "password": "",
                         "postSql": [],
-                        "preSql": []
+                        "preSql": [],
+                        "connection": [
+                            "jdbcUrl":"jdbc:mysql://192.168.1.1:9030/",
+                            "table":["xxx"],
+                            "selectedDatabase":"xxxx"
+                        ]
                     }
                 }
             }

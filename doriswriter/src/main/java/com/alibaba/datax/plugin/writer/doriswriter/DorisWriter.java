@@ -95,11 +95,11 @@ public class DorisWriter extends Writer {
                 // trigger buffer
                 if (batchCount >= this.keys.getBatchRows() || batchByteSize >= this.keys.getBatchByteSize()) {
                     // generate doris stream load label
-                    flush(flushBatch);
+                    flush (flushBatch);
                     // clear buffer
                     batchCount = 0;
                     batchByteSize = 0L;
-                    flushBatch = new DorisFlushBatch(lineDelimiter, this.keys.getFormat());
+                    flushBatch = new DorisFlushBatch (lineDelimiter, this.keys.getFormat());
                 }
             } // end of while
 

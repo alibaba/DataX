@@ -31,12 +31,11 @@ import java.util.Map;
 public class Key implements Serializable {
     public static final String FE_LOAD_URL = "feLoadUrl";
     public static final String BE_LOAD_URL = "beLoadUrl";
-    public static final String JDBC_URL = "jdbcUrl";
+    public static final String JDBC_URL = "connection[0].jdbcUrl";
 
-    public static final String DATABASE = "database";
-    public static final String TABLE = "table";
+    public static final String DATABASE = "connection[0].selectedDatabase";
+    public static final String TABLE = "connection[0].table[0]";
     public static final String COLUMN = "column";
-    public static final String TIME_ZONE = "timeZone";
 
     public static final String USERNAME = "username";
     public static final String PASSWORD = "password";
@@ -48,8 +47,8 @@ public class Key implements Serializable {
     public static final String LOAD_PROPS_LINE_DELIMITER = "line_delimiter";
     public static final String LOAD_PROPS_COLUMN_SEPARATOR = "column_separator";
 
-    public static final String MAX_BATCH_ROWS = "batchSizeRows";
-    public static final String BATCH_BYTE_SIZE = "batchByteSize";
+    public static final String MAX_BATCH_ROWS = "maxBatchRows";
+    public static final String BATCH_BYTE_SIZE = "maxBatchSize";
     public static final String MAX_RETRIES = "maxRetries";
     public static final String LABEL_PREFIX = "labelPrefix";
     public static final String FORMAT = "format";
@@ -57,6 +56,7 @@ public class Key implements Serializable {
     private final Configuration options;
 
     private static final long DEFAULT_MAX_BATCH_ROWS = 500000;
+
     private static final long DEFAULT_BATCH_BYTE_SIZE = 90 * 1024 * 1024;
     private static final int DEFAULT_MAX_RETRIES = 0;
 
@@ -109,10 +109,6 @@ public class Key implements Serializable {
         return this.options.getList(COLUMN, String.class);
     }
 
-    public String getTimeZone() {
-        return this.options.getString(TIME_ZONE, DEFAULT_TIME_ZONE);
-    }
-
     public List<String> getPreSqlList() {
         return this.options.getList(PRE_SQL, String.class);
     }
@@ -156,6 +152,7 @@ public class Key implements Serializable {
     public int getConnectTimeout() {
         return this.options.getInt(CONNECT_TIMEOUT, DEFAULT_CONNECT_TIMEOUT);
     }
+
 
     private void validateStreamLoadUrl() {
         List<String> urlList = this.getBeLoadUrlList();

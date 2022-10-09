@@ -3,14 +3,17 @@
   "parameter": {
     "username": "",
     "password": "",
-    "database": "",
-    "table": "",
     "column": [],
-    "timeZone": "",
     "preSql": [],
     "postSql": [],
-    "jdbcUrl": "",
     "beLoadUrl": [],
-    "loadProps": {}
+    "loadProps": {},
+    "connection": [
+      {
+        "jdbcUrl": "",
+        "selectedDatabase": "",
+        "table": []
+      }
+    ]
   }
 }

@@ -62,7 +62,7 @@ public class TestDorisWriterLoad {
         Key key = new Key(configuration);
 
         DorisWriterEmitter emitter = new DorisWriterEmitter(key);
-        DorisFlushBatch flushBatch = new DorisFlushBatch("\n");
+        DorisFlushBatch flushBatch = new DorisFlushBatch("\n","csv");
         flushBatch.setLabel("test4");
         Map<String, String> row1 = Maps.newHashMap();
         row1.put("k1", "2021-02-02");
@@ -83,6 +83,6 @@ public class TestDorisWriterLoad {
         for (int i = 0; i < 50000; ++i) {
             flushBatch.putData(rowStr2);
         }
-        emitter.doStreamLoad(flushBatch);
+        emitter.emit (flushBatch);
     }
 }
