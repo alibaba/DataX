@@ -48,7 +48,7 @@ public class Key implements Serializable {
     public static final String LOAD_PROPS_LINE_DELIMITER = "line_delimiter";
     public static final String LOAD_PROPS_COLUMN_SEPARATOR = "column_separator";
 
-    public static final String MAX_BATCH_ROWS = "maxBatchRows";
+    public static final String MAX_BATCH_ROWS = "batchSizeRows";
     public static final String BATCH_BYTE_SIZE = "batchByteSize";
     public static final String MAX_RETRIES = "maxRetries";
     public static final String LABEL_PREFIX = "labelPrefix";
@@ -56,7 +56,7 @@ public class Key implements Serializable {
     public static final String CONNECT_TIMEOUT = "connectTimeout";
     private final Configuration options;
 
-    private static final long DEFAULT_MAX_BATCH_ROWS = 50_0000;
+    private static final long DEFAULT_MAX_BATCH_ROWS = 500000;
     private static final long DEFAULT_BATCH_BYTE_SIZE = 90 * 1024 * 1024;
     private static final int DEFAULT_MAX_RETRIES = 0;
 
