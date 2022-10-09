@@ -1,2 +1,33 @@
-package com.alibaba.datax.plugin.writer.doriswriter;public class DorisJsonSerializer {
+package com.alibaba.datax.plugin.writer.doriswriter;
+
+import com.alibaba.datax.common.element.Record;
+import com.alibaba.fastjson.JSON;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class DorisJsonSerializer extends DorisBaseSerializer implements DorisSerializer{
+
+    private static final long serialVersionUID = 1L;
+
+    private final List<String> fieldNames;
+
+    public DorisJsonSerializer( List<String> fieldNames) {
+        this.fieldNames = fieldNames;
+    }
+
+    @Override
+    public String serialize( Record row) {
+        if (null == fieldNames) {
+            return "";
+        }
+        Map<String, Object> rowMap = new HashMap<> (fieldNames.size());
+        int idx = 0;
+        for (String fieldName : fieldNames) {
+            rowMap.put(fieldName, fieldConvertion(row.getColumn(idx)));
+            idx++;
+        }
+        return JSON.toJSONString(rowMap);
+    }
 }

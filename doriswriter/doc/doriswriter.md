@@ -20,34 +20,40 @@ DorisWriter 通过Doris原生支持Stream load方式导入数据， DorisWriter�
                 "reader": {
                     "name": "mysqlreader",
                     "parameter": {
-                        "column": ["k1", "k2", "k3"],
+                        "column": ["emp_no", "birth_date", "first_name","last_name","gender","hire_date"],
                         "connection": [
                             {
-                                "jdbcUrl": ["jdbc:mysql://127.0.0.1:3306/db1"],
-                                "table": ["t1"]
+                                "jdbcUrl": ["jdbc:mysql://localhost:3306/demo"],
+                                "table": ["employees_1"]
                             }
                         ],
                         "username": "root",
-                        "password": "",
+                        "password": "xxxxx",
                         "where": ""
                     }
                 },
                 "writer": {
                     "name": "doriswriter",
                     "parameter": {
-                        "loadUrl": ["127.0.0.1:8030"],
-                        "loadProps": {},
-                        "database": "db1",
-                        "column": ["k1", "k2", "k3"],
+                        "loadUrl": ["172.16.0.13:8030"],
+                        "loadProps": {
+                        },
+                        "column": ["emp_no", "birth_date", "first_name","last_name","gender","hire_date"],
                         "username": "root",
-                        "password": "",
-                        "postSql": [],
+                        "password": "xxxxxx",
+                        "postSql": ["select count(1) from all_employees_info"],
                         "preSql": [],
                         "connection": [
-                            "jdbcUrl":"jdbc:mysql://127.0.0.1:9030/demo",
-                            "table":["xxx"],
-                            "selectedDatabase":"xxxx"
-                        ]
+                          {
+                            "jdbcUrl": "jdbc:mysql://172.16.0.13:9030/demo",
+                            "database": "demo",
+                            "table": ["all_employees_info"]
+                          }
+                        ],
+                        "loadProps": {
+                            "format": "json",
+                            "strip_outer_array": true
+                        }
                     }
                 }
             }
@@ -159,3 +165,22 @@ DorisWriter 通过Doris原生支持Stream load方式导入数据， DorisWriter�
   - 描述：StreamLoad单次请求的超时时间, 单位毫秒(ms)。
   - 必选：否
   - 默认值：-1
+
+### 类型转换
+
+默认传入的数据均会被转为字符串，并以`\t`作为列分隔符，`\n`作为行分隔符，组成`csv`文件进行StreamLoad导入操作。
+如需更改列分隔符， 则正确配置 `loadProps` 即可：
+```json
+"loadProps": {
+    "column_separator": "\\x01",
+    "row_delimiter": "\\x02"
+}
+```
+
+如需更改导入格式为`json`， 则正确配置 `loadProps` 即可：
+```json
+"loadProps": {
+    "format": "json",
+    "strip_outer_array": true
+}
+```
