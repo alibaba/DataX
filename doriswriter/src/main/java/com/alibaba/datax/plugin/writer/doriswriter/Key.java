@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 public class Key implements Serializable {
-    public static final String FE_LOAD_URL = "feLoadUrl";
+    public static final String FE_LOAD_URL = "loadUrl";
     public static final String BE_LOAD_URL = "beLoadUrl";
     public static final String JDBC_URL = "connection[0].jdbcUrl";
 

@@ -85,7 +85,7 @@ DorisWriter 通过Doris原生支持Stream load方式导入数据， DorisWriter�
     - 必选：是
     - 默认值：无
 
-* **feLoadUrl**
+* **loadUrl**
 
   - 描述：和 **beLoadUrl** 二选一。作为 Stream Load 的连接目标。格式为 "ip:port"。其中 IP 是 FE 节点 IP，port 是 FE 节点的 http_port。可以填写多个，doriswriter 将以轮询的方式访问。
   - 必选：是
