@@ -8,5 +8,5 @@ public class Key {
 
     static final String OUTPUT_DIR = "outputDir";
 
-    static final String TSFILE_SIZE_THRESHOLD_M = "tsfileSizeThresholdM";
+    static final String TSFILE_SIZE_THRESHOLD_MB = "tsfileSizeThresholdMB";
 }

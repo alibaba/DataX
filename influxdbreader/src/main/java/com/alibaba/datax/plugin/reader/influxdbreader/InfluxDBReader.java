@@ -21,6 +21,13 @@ import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.InfluxDBClientFactory;
 import com.influxdb.client.QueryApi;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -34,6 +41,8 @@ public class InfluxDBReader extends Reader {
         private static final Logger LOG = LoggerFactory.getLogger(Job.class);
         private static final String DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
         private Configuration originalConfig;
+        private List<Integer> compeletedTaskIds;
+
 
         @Override
         public void init() {
@@ -56,7 +65,7 @@ public class InfluxDBReader extends Reader {
                 String token = conn.getString(Key.TOKEN);
                 if (StringUtils.isBlank(token)) {
                     throw DataXException.asDataXException(InfluxDBReaderErrorCode.REQUIRED_VALUE,
-                        "The parameter [" + Key.TOKEN + "] is not set.");
+                            "The parameter [" + Key.TOKEN + "] is not set.");
                 }
                 // check org
                 String org = conn.getString(Key.TOKEN);
@@ -111,6 +120,51 @@ public class InfluxDBReader extends Reader {
 
         @Override
         public void prepare() {
+            // 1. 判断 log 文件是否存在
+            File taskIdLog = new File(System.getProperty("datax.home") + Constant.DEFAULT_TASK_ID_LOG_RELATIVE_PATH);
+            if (taskIdLog.exists()) {
+                compeletedTaskIds = new ArrayList<>(1024);
+                RandomAccessFile randomAccessFile = null;
+                try {
+                    randomAccessFile = new RandomAccessFile(System.getProperty("datax.home") + Constant.DEFAULT_TASK_ID_LOG_RELATIVE_PATH, "r");
+                    FileChannel channel = randomAccessFile.getChannel();
+                    ByteBuffer buffer = ByteBuffer.allocate(1024);
+                    int bytesRead = channel.read(buffer);
+                    ByteBuffer stringBuffer = ByteBuffer.allocate(20);
+                    while (bytesRead != -1) {
+                        // 之前是写 buffer，现在要读 buffer
+                        // 切换模式，写 -> 读
+                        buffer.flip();
+                        while (buffer.hasRemaining()) {
+                            byte b = buffer.get();
+                            // 换行或回车
+                            if (b == 10 || b == 13) {
+                                stringBuffer.flip();
+                                // 这里就是一个行
+                                final String num = StandardCharsets.UTF_8.decode(stringBuffer).toString();
+                                if (!"".equals(num)) {
+                                    compeletedTaskIds.add(Integer.valueOf(num));
+                                }
+                                stringBuffer.clear();
+                            } else {
+                                if (stringBuffer.hasRemaining()) {
+                                    stringBuffer.put(b);
+                                }
+                            }
+                        }
+                        // 清空，position 位置为 0，limit = capacity
+                        buffer.clear();
+                        // 继续往 buffer 中写
+                        bytesRead = channel.read(buffer);
+                    }
+                    channel.close();
+                    randomAccessFile.close();
+                } catch (FileNotFoundException e) {
+                    throw new RuntimeException(e);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         }
 
         @Override
@@ -136,13 +190,20 @@ public class InfluxDBReader extends Reader {
                         InfluxDBReaderErrorCode.ILLEGAL_VALUE, "Analysis [" + Key.END_DATETIME + "] failed.", e);
             }
             // split
+            int taskId = 0;
             while (startTime < endTime) {
                 Configuration clone = this.originalConfig.clone();
                 clone.set(Key.BEGIN_DATETIME, startTime);
                 startTime = startTime + splitIntervalHour * Constant.DEFAULT_HOUR_TO_MILLISECOND;
                 // flux range 函数查询范围 [start, stop).
                 clone.set(Key.END_DATETIME, startTime);
-                configurations.add(clone);
+                // 切分时判断，如果已经在上次同步过了，则不加入到 list 中
+                if (compeletedTaskIds == null) {
+                    configurations.add(clone);
+                } else if (!compeletedTaskIds.contains(taskId)) {
+                    configurations.add(clone);
+                }
+                taskId++;
                 LOG.info("Configuration: {}", JSON.toJSONString(clone));
             }
             return configurations;
@@ -161,7 +222,7 @@ public class InfluxDBReader extends Reader {
     public static class Task extends Reader.Task {
         private static final Logger LOG = LoggerFactory.getLogger(Task.class);
         /**
-         *  map: [measurement,tagKeys]
+         * map: [measurement,tagKeys]
          */
         private Map<String, List<String>> measurementTagKeysMap;
         private InfluxDBClient influxDBClient;
@@ -356,6 +417,7 @@ public class InfluxDBReader extends Reader {
 
         /**
          * 判断 value 数据类型，并返回相应 column
+         *
          * @param value columnValue
          * @return column
          * @throws Exception exception
@@ -375,5 +437,68 @@ public class InfluxDBReader extends Reader {
             }
             return valueColumn;
         }
+
+        public static void main(String[] args) throws IOException {
+//            // 1. 判断 log 文件是否存在
+            File file = new File(System.getProperty("datax.home") + "\\log\\taskId.log");
+            if (file.exists()) {
+                System.out.println("文件已存在");
+
+//                String str = System.getProperty("datax.home");
+//                System.out.println(str);
+
+                RandomAccessFile randomAccessFile = new RandomAccessFile( System.getProperty("datax.home") + "\\log\\taskId.log", "r");
+                FileChannel channel = randomAccessFile.getChannel();
+                ByteBuffer buffer = ByteBuffer.allocate(1024);
+                int bytesRead = channel.read(buffer);
+                ByteBuffer stringBuffer = ByteBuffer.allocate(20);
+                List<Integer> list = new ArrayList<>(100);
+                while (bytesRead != -1) {
+                    System.out.println("读取字节数：" + bytesRead);
+                    // 之前是写 buffer，现在要读 buffer
+                    // 切换模式，写 -> 读
+                    buffer.flip();
+                    while (buffer.hasRemaining()) {
+                        byte b = buffer.get();
+                        // 换行或回车
+                        if (b == 10 || b == 13) {
+                            stringBuffer.flip();
+                            // 这里就是一个行
+                            final String num = StandardCharsets.UTF_8.decode(stringBuffer).toString();
+                            if (!"".equals(num)) {
+                                list.add(Integer.valueOf(num));
+                            }
+                            stringBuffer.clear();
+                        } else {
+                            if (stringBuffer.hasRemaining()) {
+                                stringBuffer.put(b);
+                            }
+                        }
+                    }
+                    // 清空，position 位置为 0，limit = capacity
+                    buffer.clear();
+                    // 继续往 buffer 中写
+                    bytesRead = channel.read(buffer);
+                }
+                randomAccessFile.close();
+
+                list.sort((a, b) -> a - b);
+                for (int num : list) {
+                    System.out.print(num + ",");
+                }
+                System.out.println();
+
+                if (list.contains(20)) {
+                    System.out.println("yesyesyes");
+                }
+            }
+
+//            File file = new File("target\\datax\\datax\\log\\taskId.log");
+//            Path path = Paths.get("target\\datax\\datax\\log\\taskId.log");
+//            System.out.println(path.toAbsolutePath());
+//            boolean result = Files.deleteIfExists(path);
+//            System.out.println(result);
+        }
+
     }
 }

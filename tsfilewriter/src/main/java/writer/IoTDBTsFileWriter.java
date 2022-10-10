@@ -28,7 +28,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -40,6 +46,19 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 public class IoTDBTsFileWriter extends Writer {
+
+    public static File file = new File(System.getProperty("datax.home") + "\\log\\taskId.log");
+    public static FileOutputStream fileOutputStream;
+    public static FileChannel channel;
+
+    static {
+        try {
+            fileOutputStream = new FileOutputStream(file, true);
+            channel = fileOutputStream.getChannel();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public static class Job extends Writer.Job {
 
@@ -54,7 +73,28 @@ public class IoTDBTsFileWriter extends Writer {
 
         @Override
         public void destroy() {
+        }
 
+        @Override
+        public void post() {
+            try {
+                fileOutputStream.close();
+                channel.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            // completed Job, then delete the taskId.log
+            try {
+                java.nio.file.Path path = Paths.get("target\\datax\\datax\\log\\taskId.log");
+                boolean result = Files.deleteIfExists(path);
+                if (result) {
+                    LOG.info("delete taskId.log succeed, the taskId.log absolute path: {}", path.toAbsolutePath());
+                } else {
+                    LOG.error("delete taskId.log failed, the taskId.log absolute path: {}", path.toAbsolutePath());
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         @Override
@@ -70,7 +110,6 @@ public class IoTDBTsFileWriter extends Writer {
     public static class Task extends Writer.Task {
 
         private static final Logger LOG = LoggerFactory.getLogger(Task.class);
-
 
         private String storageGroup = "root.ln";
 
@@ -108,7 +147,29 @@ public class IoTDBTsFileWriter extends Writer {
             this.vsgNum = writerSliceConfig.getInt(Key.VSG_NUM, 1);
             this.storageGroup = writerSliceConfig.getString(Key.STORAGE_GROUP, "root.influx");
             this.baseDir = writerSliceConfig.getString(Key.OUTPUT_DIR, "data");
-            this.threshold = writerSliceConfig.getLong(Key.TSFILE_SIZE_THRESHOLD_M, DEFAULT_THRESHOLD) * 1000 * 1000;
+            this.threshold = writerSliceConfig.getLong(Key.TSFILE_SIZE_THRESHOLD_MB, DEFAULT_THRESHOLD) * 1000 * 1000;
+        }
+
+        @Override
+        public void post() {
+            String taskId = String.valueOf(this.getTaskId());
+//            File file = new File(System.getProperty("datax.home") + "\\log\\taskId.log");
+//            FileOutputStream fileOutputStream = null;
+            try {
+//                fileOutputStream = new FileOutputStream(file, true);
+//                FileChannel channel = fileOutputStream.getChannel();
+                ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
+                byteBuffer.put(taskId.getBytes());
+                byteBuffer.put(System.getProperty("line.separator").getBytes());
+                byteBuffer.flip();
+                channel.write(byteBuffer);
+//                channel.close();
+//                fileOutputStream.close();
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         @Override
@@ -246,8 +307,6 @@ public class IoTDBTsFileWriter extends Writer {
                     throw new RuntimeException(e);
                 }
             }
-
-
 
             return writer;
         }
