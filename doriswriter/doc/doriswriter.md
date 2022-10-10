@@ -47,7 +47,7 @@ DorisWriter 通过Doris原生支持Stream load方式导入数据， DorisWriter�
                         "connection": [
                           {
                             "jdbcUrl": "jdbc:mysql://172.16.0.13:9030/demo",
-                            "database": "demo",
+                            "selectedDatabase": "demo",
                             "table": ["all_employees_info"]
                           }
                         ],
