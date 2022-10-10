@@ -4,7 +4,7 @@ import com.google.common.base.Strings;
 
 import java.io.StringWriter;
 
-public class DorisDelimiterParser {
+public class DelimiterParser {
 
     private static final String HEX_STRING = "0123456789ABCDEF";
 

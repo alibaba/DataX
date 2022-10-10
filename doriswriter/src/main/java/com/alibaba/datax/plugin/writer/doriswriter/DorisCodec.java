@@ -4,7 +4,7 @@ import com.alibaba.datax.common.element.Record;
 
 import java.io.Serializable;
 
-public interface DorisSerializer extends Serializable {
+public interface DorisCodec extends Serializable {
 
-    String serialize( Record row);
+    String codec( Record row);
 }

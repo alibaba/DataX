@@ -2,12 +2,12 @@ package com.alibaba.datax.plugin.writer.doriswriter;
 
 import java.util.List;
 
-public class DorisWriterTuple {
+public class WriterTuple {
     private String label;
     private Long bytes;
     private List<byte[]> rows;
 
-    public DorisWriterTuple(String label,Long bytes,List<byte[]> rows){
+    public WriterTuple ( String label, Long bytes, List<byte[]> rows){
         this.label = label;
         this.rows = rows;
         this.bytes = bytes;

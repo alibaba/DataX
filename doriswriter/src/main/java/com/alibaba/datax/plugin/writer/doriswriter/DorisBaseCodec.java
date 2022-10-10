@@ -2,8 +2,8 @@ package com.alibaba.datax.plugin.writer.doriswriter;
 
 import com.alibaba.datax.common.element.Column;
 
-public class DorisBaseSerializer {
-    protected String fieldConvertion( Column col) {
+public class DorisBaseCodec {
+    protected String convertionField( Column col) {
         if (null == col.getRawData() || Column.Type.NULL == col.getType()) {
             return null;
         }
