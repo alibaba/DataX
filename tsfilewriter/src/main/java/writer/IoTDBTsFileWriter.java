@@ -47,7 +47,7 @@ import java.util.concurrent.TimeUnit;
 
 public class IoTDBTsFileWriter extends Writer {
 
-    public static File file = new File(System.getProperty("datax.home") + "\\log\\taskId.log");
+    public static File file = new File(System.getProperty(Constant.DATAX_HOME) + Constant.DEFAULT_TASK_ID_LOG_RELATIVE_PATH);
     public static FileOutputStream fileOutputStream;
     public static FileChannel channel;
 
@@ -77,15 +77,15 @@ public class IoTDBTsFileWriter extends Writer {
 
         @Override
         public void post() {
+            // completed Job, then delete the taskId.log
             try {
-                fileOutputStream.close();
                 channel.close();
+                fileOutputStream.close();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            // completed Job, then delete the taskId.log
             try {
-                java.nio.file.Path path = Paths.get("target\\datax\\datax\\log\\taskId.log");
+                java.nio.file.Path path = Paths.get(System.getProperty(Constant.DATAX_HOME) + Constant.DEFAULT_TASK_ID_LOG_RELATIVE_PATH);
                 boolean result = Files.deleteIfExists(path);
                 if (result) {
                     LOG.info("delete taskId.log succeed, the taskId.log absolute path: {}", path.toAbsolutePath());
@@ -152,19 +152,14 @@ public class IoTDBTsFileWriter extends Writer {
 
         @Override
         public void post() {
+            // record taskId
             String taskId = String.valueOf(this.getTaskId());
-//            File file = new File(System.getProperty("datax.home") + "\\log\\taskId.log");
-//            FileOutputStream fileOutputStream = null;
             try {
-//                fileOutputStream = new FileOutputStream(file, true);
-//                FileChannel channel = fileOutputStream.getChannel();
                 ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
                 byteBuffer.put(taskId.getBytes());
                 byteBuffer.put(System.getProperty("line.separator").getBytes());
                 byteBuffer.flip();
                 channel.write(byteBuffer);
-//                channel.close();
-//                fileOutputStream.close();
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
             } catch (IOException e) {

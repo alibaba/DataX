@@ -43,7 +43,6 @@ public class InfluxDBReader extends Reader {
         private Configuration originalConfig;
         private List<Integer> compeletedTaskIds;
 
-
         @Override
         public void init() {
             this.originalConfig = super.getPluginJobConf();
@@ -121,26 +120,25 @@ public class InfluxDBReader extends Reader {
         @Override
         public void prepare() {
             // 1. 判断 log 文件是否存在
-            File taskIdLog = new File(System.getProperty("datax.home") + Constant.DEFAULT_TASK_ID_LOG_RELATIVE_PATH);
+            File taskIdLog = new File(System.getProperty(Constant.DATAX_HOME) + Constant.DEFAULT_TASK_ID_LOG_RELATIVE_PATH);
             if (taskIdLog.exists()) {
                 compeletedTaskIds = new ArrayList<>(1024);
                 RandomAccessFile randomAccessFile = null;
+                FileChannel channel = null;
                 try {
-                    randomAccessFile = new RandomAccessFile(System.getProperty("datax.home") + Constant.DEFAULT_TASK_ID_LOG_RELATIVE_PATH, "r");
-                    FileChannel channel = randomAccessFile.getChannel();
+                    randomAccessFile = new RandomAccessFile(System.getProperty(Constant.DATAX_HOME) + Constant.DEFAULT_TASK_ID_LOG_RELATIVE_PATH, "r");
+                    channel = randomAccessFile.getChannel();
                     ByteBuffer buffer = ByteBuffer.allocate(1024);
                     int bytesRead = channel.read(buffer);
                     ByteBuffer stringBuffer = ByteBuffer.allocate(20);
                     while (bytesRead != -1) {
-                        // 之前是写 buffer，现在要读 buffer
-                        // 切换模式，写 -> 读
                         buffer.flip();
                         while (buffer.hasRemaining()) {
                             byte b = buffer.get();
                             // 换行或回车
                             if (b == 10 || b == 13) {
                                 stringBuffer.flip();
-                                // 这里就是一个行
+                                // 读取一行
                                 final String num = StandardCharsets.UTF_8.decode(stringBuffer).toString();
                                 if (!"".equals(num)) {
                                     compeletedTaskIds.add(Integer.valueOf(num));
@@ -152,17 +150,21 @@ public class InfluxDBReader extends Reader {
                                 }
                             }
                         }
-                        // 清空，position 位置为 0，limit = capacity
                         buffer.clear();
                         // 继续往 buffer 中写
                         bytesRead = channel.read(buffer);
                     }
-                    channel.close();
-                    randomAccessFile.close();
                 } catch (FileNotFoundException e) {
                     throw new RuntimeException(e);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
+                } finally {
+                    try {
+                        channel.close();
+                        randomAccessFile.close();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             }
         }
@@ -437,68 +439,5 @@ public class InfluxDBReader extends Reader {
             }
             return valueColumn;
         }
-
-        public static void main(String[] args) throws IOException {
-//            // 1. 判断 log 文件是否存在
-            File file = new File(System.getProperty("datax.home") + "\\log\\taskId.log");
-            if (file.exists()) {
-                System.out.println("文件已存在");
-
-//                String str = System.getProperty("datax.home");
-//                System.out.println(str);
-
-                RandomAccessFile randomAccessFile = new RandomAccessFile( System.getProperty("datax.home") + "\\log\\taskId.log", "r");
-                FileChannel channel = randomAccessFile.getChannel();
-                ByteBuffer buffer = ByteBuffer.allocate(1024);
-                int bytesRead = channel.read(buffer);
-                ByteBuffer stringBuffer = ByteBuffer.allocate(20);
-                List<Integer> list = new ArrayList<>(100);
-                while (bytesRead != -1) {
-                    System.out.println("读取字节数：" + bytesRead);
-                    // 之前是写 buffer，现在要读 buffer
-                    // 切换模式，写 -> 读
-                    buffer.flip();
-                    while (buffer.hasRemaining()) {
-                        byte b = buffer.get();
-                        // 换行或回车
-                        if (b == 10 || b == 13) {
-                            stringBuffer.flip();
-                            // 这里就是一个行
-                            final String num = StandardCharsets.UTF_8.decode(stringBuffer).toString();
-                            if (!"".equals(num)) {
-                                list.add(Integer.valueOf(num));
-                            }
-                            stringBuffer.clear();
-                        } else {
-                            if (stringBuffer.hasRemaining()) {
-                                stringBuffer.put(b);
-                            }
-                        }
-                    }
-                    // 清空，position 位置为 0，limit = capacity
-                    buffer.clear();
-                    // 继续往 buffer 中写
-                    bytesRead = channel.read(buffer);
-                }
-                randomAccessFile.close();
-
-                list.sort((a, b) -> a - b);
-                for (int num : list) {
-                    System.out.print(num + ",");
-                }
-                System.out.println();
-
-                if (list.contains(20)) {
-                    System.out.println("yesyesyes");
-                }
-            }
-
-//            File file = new File("target\\datax\\datax\\log\\taskId.log");
-//            Path path = Paths.get("target\\datax\\datax\\log\\taskId.log");
-//            System.out.println(path.toAbsolutePath());
-//            boolean result = Files.deleteIfExists(path);
-//            System.out.println(result);
-        }
-
     }
 }
