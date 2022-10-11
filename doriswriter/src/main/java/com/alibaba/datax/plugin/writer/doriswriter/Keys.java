@@ -31,7 +31,7 @@ public class Keys implements Serializable {
     private static final String JDBC_URL = "connection[0].jdbcUrl";
     private static final String LABEL_PREFIX = "labelPrefix";
     private static final String MAX_BATCH_ROWS = "maxBatchRows";
-    private static final String MAX_BATCH_SIZE = "maxBatchSize";
+    private static final String MAX_BATCH_SIZE = "batchSize";
     private static final String FLUSH_INTERVAL = "flushInterval";
     private static final String LOAD_URL = "loadUrl";
     private static final String FLUSH_QUEUE_LENGTH = "flushQueueLength";

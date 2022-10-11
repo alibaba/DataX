@@ -129,7 +129,7 @@ DorisWriter 通过Doris原生支持Stream load方式导入数据， DorisWriter�
   - 必选：否
   - 默认值：500000
 
-* **maxBatchSize**
+* **batchSize**
 
   - 描述：每批次导入数据的最大数据量。和 **maxBatchRows** 共同控制每批次的导入数量。每批次数据达到两个阈值之一，即开始导入这一批次的数据。
   - 必选：否
