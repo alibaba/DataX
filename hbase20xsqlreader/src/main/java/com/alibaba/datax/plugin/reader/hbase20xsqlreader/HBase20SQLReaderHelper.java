@@ -175,7 +175,7 @@ public class HBase20SQLReaderHelper {
         if (querySql == null || querySql.isEmpty()) {
             // 如果splitPoints为空，则根据splitKey自动切分，不过这种切分方式无法保证数据均分，且只支持整形和字符型列
             if (splitPoints == null || splitPoints.isEmpty()) {
-                LOG.info("Split accoring min and max value of splitColumn...");
+                LOG.info("Split according min and max value of splitColumn...");
                 Pair<Object, Object> minMaxPK = getPkRange(configuration);
                 if (null == minMaxPK) {
                     throw DataXException.asDataXException(HBase20xSQLReaderErrorCode.ILLEGAL_SPLIT_PK,
@@ -208,7 +208,7 @@ public class HBase20SQLReaderHelper {
                 }
 
             } else {
-                LOG.info("Split accoring splitPoints...");
+                LOG.info("Split according splitPoints...");
                 // 根据指定splitPoints进行切分
                 rangeList = buildSplitRange();
             }
