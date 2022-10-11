@@ -1,0 +1,14 @@
+{
+    "name": "datahubreader",
+    "parameter": {
+        "endpoint":"",
+        "accessId": "",
+        "accessKey": "",
+        "project": "",
+        "topic": "",
+        "beginDateTime": "20180913121019",
+        "endDateTime": "20180913121119",
+        "batchSize": 1024,
+        "column": []
+    }
+}

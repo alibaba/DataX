@@ -37,12 +37,15 @@ public class ObReaderUtils {
 
     public static final DataBaseType databaseType = DataBaseType.OceanBase;
 
+    private static final String TABLE_SCHEMA_DELIMITER = ".";
+
+    private static final Pattern JDBC_PATTERN = Pattern.compile("jdbc:(oceanbase|mysql)://([\\w\\.-]+:\\d+)/([\\w\\.-]+)");
 
     private static Set<String> keywordsFromString2HashSet(final String keywords) {
         return new HashSet(Arrays.asList(keywords.split(",")));
     }
 
-    public static String escapeDatabaseKeywords(String keyword) {
+    public static String escapeDatabaseKeyword(String keyword) {
         if (databaseKeywords == null) {
             if (isOracleMode(compatibleMode)) {
                 databaseKeywords = keywordsFromString2HashSet(ORACLE_KEYWORDS);
@@ -57,10 +60,10 @@ public class ObReaderUtils {
         return keyword;
     }
 
-    public static void escapeDatabaseKeywords(List<String> ids) {
+    public static void escapeDatabaseKeyword(List<String> ids) {
         if (ids != null && ids.size() > 0) {
             for (int i = 0; i < ids.size(); i++) {
-                ids.set(i, escapeDatabaseKeywords(ids.get(i)));
+                ids.set(i, escapeDatabaseKeyword(ids.get(i)));
             }
         }
     }
@@ -144,7 +147,7 @@ public class ObReaderUtils {
         if (isOracleMode(context.getCompatibleMode())) {
             tableName = tableName.toUpperCase();
             String schema;
-            if (tableName.contains(".")) {
+            if (tableName.contains(TABLE_SCHEMA_DELIMITER)) {
                 schema = String.format("'%s'", tableName.substring(0, tableName.indexOf(".")));
                 tableName = tableName.substring(tableName.indexOf(".") + 1);
             } else {
@@ -170,7 +173,7 @@ public class ObReaderUtils {
             while (rs.next()) {
                 hasPk = true;
                 String columnName = rs.getString("Column_name");
-                columnName = escapeDatabaseKeywords(columnName);
+                columnName = escapeDatabaseKeyword(columnName);
                 if (!realIndex.contains(columnName)) {
                     realIndex.add(columnName);
                 }
@@ -462,7 +465,7 @@ public class ObReaderUtils {
         if (isOracleMode(compatibleMode)) {
             String schema;
             tableName = tableName.toUpperCase();
-            if (tableName.contains(".")) {
+            if (tableName.contains(TABLE_SCHEMA_DELIMITER)) {
                 schema = String.format("'%s'", tableName.substring(0, tableName.indexOf(".")));
                 tableName = tableName.substring(tableName.indexOf(".") + 1);
             } else {
@@ -513,7 +516,7 @@ public class ObReaderUtils {
                 Iterator<Map.Entry<String, List<String>>> iterator = allIndex.entrySet().iterator();
                 while (iterator.hasNext()) {
                     Map.Entry<String, List<String>> entry = iterator.next();
-                    if (entry.getKey().equals("PRIMARY")) {
+                    if ("PRIMARY".equals(entry.getKey())) {
                         continue;
                     }
 
@@ -770,9 +773,7 @@ public class ObReaderUtils {
     }
 
     public static String getDbNameFromJdbcUrl(String jdbcUrl) {
-        final Pattern pattern = Pattern.compile("jdbc:(oceanbase|mysql)://([\\w\\.-]+:\\d+)/([\\w\\.-]+)");
-
-        Matcher matcher = pattern.matcher(jdbcUrl);
+        Matcher matcher = JDBC_PATTERN.matcher(jdbcUrl);
         if (matcher.find()) {
             return matcher.group(3);
         } else {
@@ -814,18 +815,52 @@ public class ObReaderUtils {
         if (version1 == null || version2 == null) {
             throw new RuntimeException("can not compare null version");
         }
+        ObVersion v1 = new ObVersion(version1);
+        ObVersion v2 = new ObVersion(version2);
+        return v1.compareTo(v2);
+    }
 
-        String[] ver1Part = version1.split("\\.");
-        String[] ver2Part = version2.split("\\.");
-        for (int i = 0; i < ver1Part.length; i++) {
-            int v1 = Integer.parseInt(ver1Part[i]), v2 = Integer.parseInt(ver2Part[i]);
-            if (v1 > v2) {
-                return 1;
-            } else if (v1 < v2) {
-                return -1;
+    /**
+     *
+     * @param conn
+     * @param sql
+     * @return
+     */
+    public static List<String> getResultsFromSql(Connection conn, String sql) {
+        List<String> list = new ArrayList();
+        Statement stmt = null;
+        ResultSet rs = null;
+
+        LOG.info("executing sql: " + sql);
+
+        try {
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery(sql);
+            while (rs.next()) {
+                list.add(rs.getString(1));
             }
+        } catch (Exception e) {
+            LOG.error("error when executing sql: " + e.getMessage());
+        } finally {
+            DBUtil.closeDBResources(rs, stmt, null);
         }
 
-        return 0;
+        return list;
+    }
+
+    /**
+     * get obversion, try ob_version first, and then try version if failed
+     * @param conn
+     * @return
+     */
+    public static ObVersion getObVersion(Connection conn) {
+        List<String> results = getResultsFromSql(conn, "select ob_version()");
+        if (results.size() == 0) {
+            results = getResultsFromSql(conn, "select version()");
+        }
+        ObVersion obVersion = new ObVersion(results.get(0));
+
+        LOG.info("obVersion: " + obVersion);
+        return obVersion;
     }
 }
