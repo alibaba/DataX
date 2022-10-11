@@ -101,7 +101,6 @@
         <module>hbase11xwriter</module>
         <module>hbase094xwriter</module>
         <module>hbase11xsqlwriter</module>
-        <module>hbase20xsqlwriter</module>
         <module>kuduwriter</module>
         <module>ftpwriter</module>
         <module>hdfswriter</module>
@@ -123,6 +122,10 @@
         <!-- common support module -->
         <module>plugin-rdbms-util</module>
         <module>plugin-unstructured-storage-util</module>
+        <module>hbase20xsqlreader</module>
+        <module>hbase20xsqlwriter</module>
+        <module>kuduwriter</module>
+        <module>doriswriter</module>
     </modules>
 
     <dependencyManagement>
