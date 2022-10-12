@@ -36,6 +36,7 @@ public class TransformerRegistry {
         registTransformer(new ReplaceTransformer());
         registTransformer(new FilterTransformer());
         registTransformer(new GroovyTransformer());
+        registTransformer(new DigestTransformer());
     }
 
     public static void loadTransformerFromLocalStorage() {
