@@ -29,7 +29,7 @@ public class SubCommonRdbmsWriter extends CommonRdbmsWriter {
         @Override
         protected PreparedStatement fillPreparedStatementColumnType(
                 PreparedStatement preparedStatement, int columnIndex,
-                int columnSqltype, Column column) throws SQLException {
+                int columnSqltype, String typeName, Column column) throws SQLException {
             java.util.Date utilDate;
             try {
                 switch (columnSqltype) {
