@@ -410,11 +410,6 @@ public class CommonRdbmsWriter {
         }
 
         protected PreparedStatement fillPreparedStatementColumnType(PreparedStatement preparedStatement, int columnIndex,
-                                                                    int columnSqltype, Column column) throws SQLException {
-            return fillPreparedStatementColumnType(preparedStatement, columnIndex, columnSqltype, null, column);
-        }
-
-        protected PreparedStatement fillPreparedStatementColumnType(PreparedStatement preparedStatement, int columnIndex,
                                                                     int columnSqltype, String typeName, Column column) throws SQLException {
             java.util.Date utilDate;
             switch (columnSqltype) {
