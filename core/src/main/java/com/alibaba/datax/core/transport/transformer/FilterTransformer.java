@@ -61,7 +61,7 @@ public class FilterTransformer extends Transformer {
             } else if (code.equalsIgnoreCase("<=")) {
                 return doLess(record, value, column, true);
             } else {
-                throw new RuntimeException("dx_filter can't suport code:" + code);
+                throw new RuntimeException("dx_filter can't support code:" + code);
             }
         } catch (Exception e) {
             throw DataXException.asDataXException(TransformerErrorCode.TRANSFORMER_RUN_EXCEPTION, e.getMessage(), e);

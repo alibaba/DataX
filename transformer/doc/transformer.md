@@ -59,7 +59,17 @@ dx_replace(1,"5","10","****")  column 1的value为“dataxTest”=>"data****"
 dx_filter(1,"like","dataTest")  
 dx_filter(1,">=","10")  
 ```
-5. dx_groovy
+5. dx_digest
+* 参数：3个
+    * 第一个参数：字段编号，对应record中第几个字段。
+    * 第二个参数：hash类型，md5、sha1
+    * 第三个参数：hash值大小写 toUpperCase（大写）、toLowerCase（小写）
+* 返回： 返回指定类型的hashHex,如果字段为空，则转为空字符串，再返回对应hashHex
+* 举例：
+```
+dx_digest(1,"md5","toUpperCase"), column 1的值为 xyzzzzz => 9CDFFC4FA4E45A99DB8BBCD762ACFFA2
+```
+6. dx_groovy
   * 参数。
       * 第一个参数： groovy code
       * 第二个参数（列表或者为空）：extraPackage 
@@ -67,7 +77,9 @@ dx_filter(1,">=","10")
       * dx_groovy只能调用一次。不能多次调用。
       * groovy code中支持java.lang, java.util的包，可直接引用的对象有record，以及element下的各种column（BoolColumn.class,BytesColumn.class,DateColumn.class,DoubleColumn.class,LongColumn.class,StringColumn.class）。不支持其他包，如果用户有需要用到其他包，可设置extraPackage，注意extraPackage不支持第三方jar包。
       * groovy code中，返回更新过的Record（比如record.setColumn(columnIndex, new StringColumn(newValue));），或者null。返回null表示过滤此行。
-      * 用户可以直接调用静态的Util方式（GroovyTransformerStaticUtil），目前GroovyTransformerStaticUtil的方法列表 (按需补充)：
+      * 用户可以直接调用静态的Util方式（GroovyTransformerStaticUtil），目前GroovyTransformerStaticUtil的方法列表：
+        * md5(String):String
+        * sha1(String):String
   * 举例:
 ```
 groovy 实现的subStr:
@@ -109,7 +121,7 @@ String code3 = "Column column = record.getColumn(1);\n" +
 ```
 
 ## Job定义
-* 本例中，配置3个UDF。
+* 本例中，配置4个UDF。
 
 ```
 {
@@ -174,6 +186,14 @@ String code3 = "Column column = record.getColumn(1);\n" +
                             {
                             "columnIndex":4,
                             "paras":["3","4","****"]
+                            }  
+                    },
+                    {
+                        "name": "dx_digest",
+                        "parameter": 
+                            {
+                            "columnIndex":3,
+                            "paras":["md5", "toLowerCase"]
                             }  
                     },
                     {
