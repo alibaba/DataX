@@ -10,14 +10,14 @@
                 "url": "http://172.20.48.111:8086",
                 "token": "ty1lVsJUYYfSO-Da0IMXWig2Tpuhzr-uqv7PEFwB71WcPo5NVLFyK3AYAG8QbTskUN62-37rU7-C9Pw9JNAKEA==",
                 "org": "tsdb",
-                "bucket": "shen"
+                "bucket": "yonyou"
               }
             ],
             "column": [],
-            "beginDateTime": "2022-09-25 00:00:00",
-            "endDateTime": "2022-09-29 00:00:00",
+            "beginDateTime": "2022-09-15 00:00:00",
+            "endDateTime": "2022-10-12 00:00:00",
             "splitIntervalHour": 2,
-            "miniTaskIntervalSecond": 3600,
+            "miniTaskIntervalSecond": 60,
             "measurements":[]
           }
         },
