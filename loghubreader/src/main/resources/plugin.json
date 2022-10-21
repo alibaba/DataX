@@ -1,0 +1,6 @@
+{
+    "name": "loghubreader",
+    "class": "com.alibaba.datax.plugin.reader.loghubreader.LogHubReader",
+    "description": "适用于: 从SLS LogHub中读取数据",
+    "developer": "alibaba"
+}

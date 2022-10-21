@@ -68,7 +68,7 @@ public class ClickhouseWriter extends Writer {
 
 			this.commonRdbmsWriterSlave = new CommonRdbmsWriter.Task(DATABASE_TYPE) {
 				@Override
-				protected PreparedStatement fillPreparedStatementColumnType(PreparedStatement preparedStatement, int columnIndex, int columnSqltype, Column column) throws SQLException {
+				protected PreparedStatement fillPreparedStatementColumnType(PreparedStatement preparedStatement, int columnIndex, int columnSqltype, String typeName, Column column) throws SQLException {
 					try {
 						if (column.getRawData() == null) {
 							preparedStatement.setNull(columnIndex + 1, columnSqltype);

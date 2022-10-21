@@ -18,5 +18,7 @@ public class ObReaderUtilsTest {
         assert ObReaderUtils.compareObVersion("2.2.70", "2.2.50") == 1;
         assert ObReaderUtils.compareObVersion("2.2.70", "3.1.2") == -1;
         assert ObReaderUtils.compareObVersion("3.1.2", "3.1.2") == 0;
+        assert ObReaderUtils.compareObVersion("3.2.3.0", "3.2.3.0") == 0;
+        assert ObReaderUtils.compareObVersion("3.2.3.0-CE", "3.2.3.0") == 0;
     }
 }

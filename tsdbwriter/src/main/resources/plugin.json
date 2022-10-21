@@ -6,5 +6,5 @@
     "mechanism": "调用 TSDB 的 /api/put 接口，实现数据点的写入",
     "warn": ""
   },
-  "developer": "Benedict Jin"
+  "developer": "alibaba"
 }

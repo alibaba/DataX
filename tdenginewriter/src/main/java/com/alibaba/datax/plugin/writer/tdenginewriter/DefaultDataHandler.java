@@ -276,7 +276,7 @@ public class DefaultDataHandler implements DataHandler {
             case DOUBLE:
             case INT:
             case LONG:
-                column.asString();
+                return column.asString();
             default:
                 throw new Exception("invalid column type: " + type);
         }

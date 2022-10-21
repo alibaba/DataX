@@ -15,8 +15,6 @@ import com.aliyun.odps.TableSchema;
 import com.aliyun.odps.tunnel.TableTunnel.DownloadSession;
 import com.aliyun.odps.type.TypeInfo;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.MutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -311,7 +309,7 @@ public class OdpsReader extends Reader {
              */
             List<String> allPartitionColumns = this.originalConfig.getList(
                 Constant.PARTITION_COLUMNS, String.class);
-            List<Pair<String, ColumnType>> parsedColumns = OdpsUtil
+            List<InternalColumnInfo> parsedColumns = OdpsUtil
                 .parseColumns(allNormalColumns, allPartitionColumns,
                     userConfiguredColumns);
 
@@ -320,13 +318,15 @@ public class OdpsReader extends Reader {
             StringBuilder sb = new StringBuilder();
             sb.append("[ ");
             for (int i = 0, len = parsedColumns.size(); i < len; i++) {
-                Pair<String, ColumnType> pair = parsedColumns.get(i);
-                sb.append(String.format(" %s : %s", pair.getLeft(),
-                    pair.getRight()));
+            	InternalColumnInfo pair = parsedColumns.get(i);
+                sb.append(String.format(" %s : %s", pair.getColumnName(),
+                    pair.getColumnType()));
                 if (i != len - 1) {
                     sb.append(",");
                 }
             }
+            
+            
             sb.append(" ]");
             LOG.info("parsed column details: {} .", sb.toString());
         }
@@ -500,22 +500,11 @@ public class OdpsReader extends Reader {
             }
 
             try {
-                List<Configuration> parsedColumnsTmp = this.readerSliceConf
-                    .getListConfiguration(Constant.PARSED_COLUMNS);
-                List<Pair<String, ColumnType>> parsedColumns = new ArrayList<Pair<String, ColumnType>>();
-                for (int i = 0; i < parsedColumnsTmp.size(); i++) {
-                    Configuration eachColumnConfig = parsedColumnsTmp.get(i);
-                    String columnName = eachColumnConfig.getString("left");
-                    ColumnType columnType = ColumnType
-                        .asColumnType(eachColumnConfig.getString("right"));
-                    parsedColumns.add(new MutablePair<String, ColumnType>(
-                        columnName, columnType));
-
-                }
+				List<InternalColumnInfo> parsedColumns = this.readerSliceConf.getListWithJson(Constant.PARSED_COLUMNS,
+						InternalColumnInfo.class);
                 ReaderProxy readerProxy = new ReaderProxy(recordSender, downloadSession,
                         columnTypeMap, parsedColumns, partition, this.isPartitionedTable,
                         start, count, this.isCompress, this.readerSliceConf);
-
                 readerProxy.doRead();
             } catch (Exception e) {
                 throw DataXException.asDataXException(OdpsReaderErrorCode.READ_DATA_FAIL,

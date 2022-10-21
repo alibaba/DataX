@@ -1,0 +1,20 @@
+{
+  "name": "doriswriter",
+  "parameter": {
+    "username": "",
+    "password": "",
+    "column": [],
+    "preSql": [],
+    "postSql": [],
+    "beLoadUrl": [],
+    "loadUrl": [],
+    "loadProps": {},
+    "connection": [
+      {
+        "jdbcUrl": "",
+        "selectedDatabase": "",
+        "table": []
+      }
+    ]
+  }
+}

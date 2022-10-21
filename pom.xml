@@ -22,7 +22,7 @@
         <commons-lang3-version>3.3.2</commons-lang3-version>
         <commons-configuration-version>1.10</commons-configuration-version>
         <commons-cli-version>1.2</commons-cli-version>
-        <fastjson-version>1.2.49</fastjson-version>
+        <fastjson-version>1.1.46.sec10</fastjson-version>
         <guava-version>16.0.1</guava-version>
         <diamond.version>3.7.2.1-SNAPSHOT</diamond.version>
 
@@ -76,10 +76,13 @@
         <module>gdbreader</module>
         <module>tsdbreader</module>
         <module>opentsdbreader</module>
-
+        <module>loghubreader</module>
+        <module>datahubreader</module>
+        <module>starrocksreader</module>
 
         <!-- writer -->
         <module>mysqlwriter</module>
+        <module>starrockswriter</module>
         <module>drdswriter</module>
         <module>oraclewriter</module>
         <module>sqlserverwriter</module>
@@ -87,8 +90,6 @@
         <module>kingbaseeswriter</module>
         <module>adswriter</module>
         <module>oceanbasev10writer</module>
-        <module>cassandrawriter</module>
-        <module>clickhousewriter</module>
         <module>adbpgwriter</module>
         <module>hologresjdbcwriter</module>
         <module>rdbmswriter</module>
@@ -114,10 +115,16 @@
         <module>tsdbwriter</module>
         <module>gdbwriter</module>
         <module>oscarwriter</module>
+        <module>loghubwriter</module>
+        <module>datahubwriter</module>
+        <module>cassandrawriter</module>
+        <module>clickhousewriter</module>
+        <module>doriswriter</module>
 
         <!-- common support module -->
         <module>plugin-rdbms-util</module>
         <module>plugin-unstructured-storage-util</module>
+       
     </modules>
 
     <dependencyManagement>
@@ -247,6 +254,14 @@
     </pluginRepositories>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                </includes>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>

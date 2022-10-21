@@ -1,0 +1,12 @@
+{
+    "name": "loghubreader",
+    "parameter": {
+        "endpoint": "",
+        "accessId": "",
+        "accessKey": "",
+        "project": "",
+        "logstore": "",
+        "batchSize":1024,
+        "column": []
+    }
+}
