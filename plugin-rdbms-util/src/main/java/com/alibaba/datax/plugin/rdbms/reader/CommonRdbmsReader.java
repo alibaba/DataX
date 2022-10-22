@@ -27,10 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.Types;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -299,7 +296,17 @@ public class CommonRdbmsReader {
                         break;
 
                     case Types.TIMESTAMP:
-                        record.addColumn(new DateColumn(rs.getTimestamp(i)));
+                        try {
+                            record.addColumn(new DateColumn(rs.getTimestamp(i)));
+                        } catch (SQLException e) {
+                            if ("Zero date value prohibited".equals(e.getMessage())
+                                    || (e.getCause() != null && "Zero date value prohibited".equals(e.getCause().getMessage()))) {
+                                rawData = rs.getString(i);
+                                record.addColumn(new StringColumn(rawData));
+                            } else {
+                                throw e;
+                            }
+                        }
                         break;
 
                     case Types.BINARY:
