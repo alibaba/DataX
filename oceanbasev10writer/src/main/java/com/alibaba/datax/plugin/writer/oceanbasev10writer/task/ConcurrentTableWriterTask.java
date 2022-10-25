@@ -132,12 +132,36 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
 		}
 
 		String version = config.getString(Config.OB_VERSION);
-		int pIdx = version.lastIndexOf('.');
-		if ((Float.valueOf(version.substring(0, pIdx)) >= 2.1f)) {
+		if (CompareVersion(version,"2.1")==1||CompareVersion(version,"2.1")==0) {
 			isOb2 = true;
 		}
 	}
-
+	/**
+	 * 版本号比较方法，适用于"."的作为版本区分的版本号比较。时间复杂度：O（m+n） 空间复杂度：O（m+n）
+	 * @param version1
+	 * @param version2
+	 * @return 1: v1>v2 ;0: v1=v2; -1: v1<v2
+	 */
+	public int CompareVersion(String version1, String version2) {
+		String[] v1 = version1.split("\\.");
+		String[] v2 = version2.split("\\.");
+		for (int i = 0; i < v1.length || i < v2.length; ++i) {
+			int x = 0, y = 0;
+			if (i < v1.length) {
+				x = Integer.parseInt(v1[i]);
+			}
+			if (i < v2.length) {
+				y = Integer.parseInt(v2[i]);
+			}
+			if (x > y) {
+				return 1;
+			}
+			if (x < y) {
+				return -1;
+			}
+		}
+		return 0;
+	}
 	private void initPartCalculator(ServerConnectInfo connectInfo) {
 		int retry = 0;
 		LOG.info(String.format("create tableEntryKey with clusterName %s, tenantName %s, databaseName %s, tableName %s",
