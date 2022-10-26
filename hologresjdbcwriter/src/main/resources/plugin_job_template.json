@@ -1,5 +1,5 @@
 {
-  "name": "hologreswriter",
+  "name": "hologresjdbcwriter",
   "parameter": {
     "url": "",
     "username": "",

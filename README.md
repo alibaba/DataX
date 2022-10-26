@@ -25,7 +25,7 @@ DataX本身作为数据同步框架，将不同数据源的同步抽象为从源
 
 # Quick Start
 
-##### Download [DataX下载地址](https://datax-opensource.oss-cn-hangzhou.aliyuncs.com/20220530/datax.tar.gz)
+##### Download [DataX下载地址](https://datax-opensource.oss-cn-hangzhou.aliyuncs.com/202209/datax.tar.gz)
 
 
 ##### 请点击：[Quick Start](https://github.com/alibaba/DataX/blob/master/userGuid.md)
@@ -44,6 +44,8 @@ DataX目前已经有了比较全面的插件体系，主流的RDBMS数据库、N
 |              | SQLServer  |     √     |     √     |[读](https://github.com/alibaba/DataX/blob/master/sqlserverreader/doc/sqlserverreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/sqlserverwriter/doc/sqlserverwriter.md)|
 |              | PostgreSQL |     √     |     √     |[读](https://github.com/alibaba/DataX/blob/master/postgresqlreader/doc/postgresqlreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/postgresqlwriter/doc/postgresqlwriter.md)|
 |              | DRDS |     √     |     √     |[读](https://github.com/alibaba/DataX/blob/master/drdsreader/doc/drdsreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/drdswriter/doc/drdswriter.md)|
+|              | Apache Doris |          |     √     |[写](https://github.com/alibaba/DataX/blob/master/doriswriter/doc/doriswriter.md)|
+|              | StarRocks |          |     √     |[写](https://github.com/alibaba/DataX/blob/master/starrockswriter/doc/starrockswriter.md)|
 |              | 通用RDBMS(支持所有关系型数据库)         |     √     |     √     |[读](https://github.com/alibaba/DataX/blob/master/rdbmsreader/doc/rdbmsreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/rdbmswriter/doc/rdbmswriter.md)|
 | 阿里云数仓数据存储    | ODPS       |     √     |     √     |[读](https://github.com/alibaba/DataX/blob/master/odpsreader/doc/odpsreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/odpswriter/doc/odpswriter.md)|
 |              | ADS        |           |     √     |[写](https://github.com/alibaba/DataX/blob/master/adswriter/doc/adswriter.md)|
@@ -94,6 +96,9 @@ DataX目前已经有了比较全面的插件体系，主流的RDBMS数据库、N
 # 重要版本更新说明
 
 DataX 后续计划月度迭代更新，也欢迎感兴趣的同学提交 Pull requests，月度更新内容会介绍介绍如下。
+
+- [datax_v202209]（https://github.com/alibaba/DataX/releases/tag/datax_v202209)
+    - 涉及通道能力更新（MaxCompute、Datahub、SLS等）、安全漏洞更新、通用打包更新等
 
 - [datax_v202205]（https://github.com/alibaba/DataX/releases/tag/datax_v202205)
     - 涉及通道能力更新（MaxCompute、Hologres、OSS、Tdengine等）、安全漏洞更新、通用打包更新等

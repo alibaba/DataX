@@ -119,7 +119,7 @@ public class Common {
                     case BOOLEAN: line.addColumn(new BoolColumn(v.asBoolean()));  break;
                     case BINARY:  line.addColumn(new BytesColumn(v.asBinary()));  break;
                     default:
-                        throw new IllegalArgumentException("Unsuporrt tranform the type: " + col.getValue().getType() + ".");
+                        throw new IllegalArgumentException("Unsupported transform the type: " + col.getValue().getType() + ".");
                     }
                 }
             }

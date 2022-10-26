@@ -61,7 +61,7 @@ public class OceanBaseV10Writer extends Writer {
 			checkCompatibleMode(originalConfig);
 			//将config中的column和table中的关键字进行转义
 			List<String> columns = originalConfig.getList(Key.COLUMN, String.class);
-			ObWriterUtils.escapeDatabaseKeywords(columns);
+			ObWriterUtils.escapeDatabaseKeyword(columns);
 			originalConfig.set(Key.COLUMN, columns);
 
 			List<JSONObject> conns = originalConfig.getList(Constant.CONN_MARK, JSONObject.class);
@@ -69,7 +69,7 @@ public class OceanBaseV10Writer extends Writer {
 				JSONObject conn = conns.get(i);
 				Configuration connConfig = Configuration.from(conn.toString());
 				List<String> tables = connConfig.getList(Key.TABLE, String.class);
-				ObWriterUtils.escapeDatabaseKeywords(tables);
+				ObWriterUtils.escapeDatabaseKeyword(tables);
 				originalConfig.set(String.format("%s[%d].%s", Constant.CONN_MARK, i, Key.TABLE), tables);
 			}
 			this.commonJob = new CommonRdbmsWriter.Job(DATABASE_TYPE);
