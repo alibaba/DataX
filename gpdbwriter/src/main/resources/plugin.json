@@ -1,0 +1,6 @@
+{
+    "name": "gpdbwriter",
+    "class": "cn.hashdata.datax.plugin.writer.gpdbwriter.GpdbWriter",
+    "description": "useScene: prod. mechanism: Jdbc connection using the database, execute copy sql. warn: The more you know about the database, the less problems you encounter.",
+    "developer": "hashdata"
+}

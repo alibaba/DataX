@@ -1,0 +1,19 @@
+{
+    "name": "gpdbwriter",
+    "parameter": {
+        "username": "",
+        "password": "",
+        "segment_reject_limit": 0,
+        "column": [],
+        "preSql": [],
+        "connection": [
+            {
+                "jdbcUrl": "",
+                "table": []
+            }
+        ],
+        "preSql": [],
+        "postSql": []
+    }
+}
+

@@ -112,6 +112,7 @@
         <module>ocswriter</module>
         <module>tsdbwriter</module>
         <module>gdbwriter</module>
+        <module>gpdbwriter</module>
         <module>oscarwriter</module>
         <module>cassandrawriter</module>
         <module>clickhousewriter</module>
