@@ -157,7 +157,8 @@ public class PartitionSplitUtil {
 
             conn = DBUtil.getConnection(DataBaseType.OceanBase, jdbcUrl, username, password);
             ObVersion obVersion = ObReaderUtils.getObVersion(conn);
-            if (obVersion.compareTo(ObVersion.V2276) >= 0) {
+            if (obVersion.compareTo(ObVersion.V2276) >= 0 &&
+                obVersion.compareTo(ObVersion.V4000) < 0) {
                 allTable = "__all_table_v2";
             }
 
