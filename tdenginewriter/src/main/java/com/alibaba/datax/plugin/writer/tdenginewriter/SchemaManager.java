@@ -5,18 +5,18 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class SchemaManager {
     private static final Logger LOG = LoggerFactory.getLogger(SchemaManager.class);
+//    private static final String TAG_TABLE_NAME_MAP_KEY_SPLITTER = "_";
+    private static final String TAG_TABLE_NAME_MAP_KEY_SPLITTER = "";
 
     private final Connection conn;
     private TimestampPrecision precision;
+    private Map<String, Map<String, String>> tags2tbnameMaps = new HashMap<>();
 
     public SchemaManager(Connection conn) {
         this.conn = conn;
@@ -124,14 +124,12 @@ public class SchemaManager {
                         }
                     }
                 } catch (SQLException e) {
-                    LOG.error(e.getMessage(), e);
+                    e.printStackTrace();
                 }
                 colMeta.value = value;
             });
 
-            LOG.debug("load column metadata of " + table + ": " +
-                    columnMetaList.stream().map(ColumnMeta::toString).collect(Collectors.joining(",", "[", "]"))
-            );
+            LOG.debug("load column metadata of " + table + ": " + Arrays.toString(columnMetaList.toArray()));
             ret.put(table, columnMetaList);
         }
         return ret;
@@ -145,9 +143,7 @@ public class SchemaManager {
         tableMeta.tags = rs.getInt("tags");
         tableMeta.tables = rs.getInt("tables");
 
-        if (LOG.isDebugEnabled()){
-            LOG.debug("load table metadata of " + tableMeta.tbname + ": " + tableMeta);
-        }
+        LOG.debug("load table metadata of " + tableMeta.tbname + ": " + tableMeta);
         return tableMeta;
     }
 
@@ -174,4 +170,37 @@ public class SchemaManager {
         return columnMeta;
     }
 
+    public Map<String, String> loadTagTableNameMap(String table) throws SQLException {
+        if (tags2tbnameMaps.containsKey(table))
+            return tags2tbnameMaps.get(table);
+        Map<String, String> tags2tbname = new HashMap<>();
+        try (Statement stmt = conn.createStatement()) {
+            // describe table
+            List<String> tags = new ArrayList<>();
+            ResultSet rs = stmt.executeQuery("describe " + table);
+            while (rs.next()) {
+                String note = rs.getString("Note");
+                if ("TAG".equals(note)) {
+                    tags.add(rs.getString("Field"));
+                }
+            }
+            // select distinct tbname, t1, t2 from stb
+            rs = stmt.executeQuery("select distinct " + String.join(",", tags) + ",tbname from " + table);
+            while (rs.next()) {
+                ResultSet finalRs = rs;
+                String tagStr = tags.stream().map(t -> {
+                    try {
+                        return finalRs.getString(t);
+                    } catch (SQLException e) {
+                        LOG.error(e.getMessage(), e);
+                    }
+                    return "NULL";
+                }).collect(Collectors.joining(TAG_TABLE_NAME_MAP_KEY_SPLITTER));
+                String tbname = rs.getString("tbname");
+                tags2tbname.put(tagStr, tbname);
+            }
+        }
+        tags2tbnameMaps.put(table, tags2tbname);
+        return tags2tbname;
+    }
 }

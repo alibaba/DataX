@@ -1,6 +1,9 @@
 package com.alibaba.datax.plugin.writer.tdenginewriter;
 
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -10,7 +13,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-@Ignore
 public class SchemaManagerTest {
 
     private static Connection conn;
@@ -59,6 +61,23 @@ public class SchemaManagerTest {
         Assert.assertEquals(4, stb1.size());
     }
 
+    @Test
+    public void loadTagTableNameMap() throws SQLException {
+        // given
+        SchemaManager schemaManager = new SchemaManager(conn);
+        String table = "stb3";
+
+        // when
+        Map<String, String> tagTableMap = schemaManager.loadTagTableNameMap(table);
+
+        // then
+        Assert.assertEquals(2, tagTableMap.keySet().size());
+        Assert.assertTrue(tagTableMap.containsKey("11.1abc"));
+        Assert.assertTrue(tagTableMap.containsKey("22.2defg"));
+        Assert.assertEquals("tb5", tagTableMap.get("11.1abc"));
+        Assert.assertEquals("tb6", tagTableMap.get("22.2defg"));
+    }
+
     @BeforeClass
     public static void beforeClass() throws SQLException {
         conn = DriverManager.getConnection("jdbc:TAOS-RS://192.168.56.105:6041", "root", "taosdata");
@@ -73,6 +92,9 @@ public class SchemaManagerTest {
             stmt.execute("insert into tb3 using stb2 tags(1,1) values(now, 1, 2, 3)");
             stmt.execute("insert into tb4 using stb2 tags(2,2) values(now, 1, 2, 3)");
             stmt.execute("create table weather(ts timestamp, f1 int, f2 int, f3 int, t1 int, t2 int)");
+            stmt.execute("create table stb3(ts timestamp, f1 int) tags(t1 int, t2 float, t3 nchar(32))");
+            stmt.execute("insert into tb5 using stb3 tags(1,1.1,'abc') values(now, 1)");
+            stmt.execute("insert into tb6 using stb3 tags(2,2.2,'defg') values(now, 2)");
         }
     }
 
