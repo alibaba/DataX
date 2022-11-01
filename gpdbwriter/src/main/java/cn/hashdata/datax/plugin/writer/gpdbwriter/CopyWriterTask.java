@@ -78,6 +78,7 @@ public class CopyWriterTask extends CommonRdbmsWriter.Task {
 		}
 
 		String sql = sb.toString();
+		LOG.info("gpdbwriter sql:{}",sql);
 		return sql;
 	}
 
