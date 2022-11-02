@@ -23,7 +23,8 @@ public enum DataBaseType {
     KingbaseES("kingbasees", "com.kingbase8.Driver"),
     Oscar("oscar", "com.oscar.Driver"),
     OceanBase("oceanbase", "com.alipay.oceanbase.jdbc.Driver"),
-    StarRocks("starrocks", "com.mysql.jdbc.Driver");
+    StarRocks("starrocks", "com.mysql.jdbc.Driver"),
+    Xugu("xugu","com.xugu.cloudjdbc.Driver");
 
 
     private String typeName;

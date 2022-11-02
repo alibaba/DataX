@@ -123,6 +123,8 @@
         <!-- common support module -->
         <module>plugin-rdbms-util</module>
         <module>plugin-unstructured-storage-util</module>
+        <module>xugureader</module>
+        <module>xuguwriter</module>
     </modules>
 
     <dependencyManagement>
