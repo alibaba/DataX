@@ -69,6 +69,8 @@ public enum DataBaseType {
                 break;
             case Oscar:
                 break;
+            case Xugu:
+                break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type.");
         }
@@ -120,6 +122,8 @@ public enum DataBaseType {
                     result = jdbc + "?" + suffix;
                 }
                 break;
+            case Xugu:
+                break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type.");
         }
@@ -147,6 +151,11 @@ public enum DataBaseType {
             case KingbaseES:
             case Oscar:
                 break;
+            case Xugu:
+                if (splitPk.length() >= 2 && splitPk.startsWith("`") && splitPk.endsWith("`")) {
+                    result = splitPk.substring(1, splitPk.length() - 1).toLowerCase();
+                }
+                break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type.");
         }
@@ -171,6 +180,8 @@ public enum DataBaseType {
             case PostgreSQL:
             case KingbaseES:
             case Oscar:
+                break;
+            case Xugu:
                 break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type");
@@ -198,6 +209,8 @@ public enum DataBaseType {
                 break;
             case Oscar:
                 break;
+            case Xugu:
+                break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type");
         }
@@ -207,6 +220,8 @@ public enum DataBaseType {
 
     private static Pattern mysqlPattern = Pattern.compile("jdbc:mysql://(.+):\\d+/.+");
     private static Pattern oraclePattern = Pattern.compile("jdbc:oracle:thin:@(.+):\\d+:.+");
+
+    private static Pattern xuguPattern = Pattern.compile("jdbc:mysql://(.+):\\d+/.+");
 
     /**
      * 注意：目前只实现了从 mysql/oracle 中识别出ip 信息.未识别到则返回 null.
@@ -219,6 +234,10 @@ public enum DataBaseType {
         Matcher oracle = oraclePattern.matcher(jdbcUrl);
         if (oracle.matches()) {
             return oracle.group(1);
+        }
+        Matcher xugu = xuguPattern.matcher(jdbcUrl);
+        if (xugu.matches()) {
+            return xugu.group(1);
         }
         return null;
     }

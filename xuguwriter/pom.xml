@@ -38,9 +38,9 @@
         </dependency>
 
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>${mysql.driver.version}</version>
+            <groupId>com.xugu</groupId>
+            <artifactId>xugu-jdbc</artifactId>
+            <version>12.0.0</version>
         </dependency>
     </dependencies>
 
