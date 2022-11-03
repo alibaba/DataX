@@ -37,11 +37,15 @@
             <version>${datax-project-version}</version>
         </dependency>
 
+        <!-- xugu driver -->
         <dependency>
             <groupId>com.xugu</groupId>
             <artifactId>xugu-jdbc</artifactId>
             <version>12.0.0</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/src/main/libs/xugu-jdbc-12.0.0.jar</systemPath>
         </dependency>
+
     </dependencies>
 
     <build>
@@ -76,11 +80,4 @@
             </plugin>
         </plugins>
     </build>
-
-    <repositories>
-        <repository>
-            <id>maven-public</id>
-            <url>http://192.168.2.144/repository/maven-public</url>
-        </repository>
-    </repositories>
 </project>

@@ -79,6 +79,7 @@
         <module>loghubreader</module>
         <module>datahubreader</module>
         <module>starrocksreader</module>
+        <module>xugureader</module>
 
         <!-- writer -->
         <module>mysqlwriter</module>
@@ -119,12 +120,12 @@
         <module>datahubwriter</module>
         <module>cassandrawriter</module>
         <module>clickhousewriter</module>
+        <module>xuguwriter</module>
 
         <!-- common support module -->
         <module>plugin-rdbms-util</module>
         <module>plugin-unstructured-storage-util</module>
-        <module>xugureader</module>
-        <module>xuguwriter</module>
+
     </modules>
 
     <dependencyManagement>
