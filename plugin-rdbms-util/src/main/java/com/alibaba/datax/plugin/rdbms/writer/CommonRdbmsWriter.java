@@ -546,6 +546,33 @@ public class CommonRdbmsWriter {
                         preparedStatement.setString(columnIndex + 1, column.asString());
                     }
                     break;
+                case Types.OTHER:
+                    preparedStatement.setString(columnIndex + 1, column.asString());
+                    break;
+                case Types.ARRAY:
+                    Object rawData = column.getRawData();
+                    if (rawData == null)  {
+                        preparedStatement.setArray(columnIndex + 1,null);
+                        break;
+                    }
+                    String wType = this.resultSetMetaData.getRight()
+                            .get(columnIndex);
+                    Array data;
+                    switch (wType) {
+                        case "_varchar":
+                            data = preparedStatement.getConnection().createArrayOf("VARCHAR", (String[])rawData);
+                            break;
+                        case "_int8":
+                            data = preparedStatement.getConnection().createArrayOf("LONG", (Long[])rawData);
+                            break;
+                        case "_int4":
+                            data = preparedStatement.getConnection().createArrayOf("INTEGER", (Integer[])rawData);
+                            break;
+                        default:
+                            data = preparedStatement.getConnection().createArrayOf("VARCHAR", (String[])rawData);
+                    }
+                    preparedStatement.setArray(columnIndex + 1,data);
+                    break;
                 default:
                     throw DataXException
                             .asDataXException(
