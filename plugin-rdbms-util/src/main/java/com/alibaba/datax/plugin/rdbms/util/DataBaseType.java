@@ -221,7 +221,7 @@ public enum DataBaseType {
     private static Pattern mysqlPattern = Pattern.compile("jdbc:mysql://(.+):\\d+/.+");
     private static Pattern oraclePattern = Pattern.compile("jdbc:oracle:thin:@(.+):\\d+:.+");
 
-    private static Pattern xuguPattern = Pattern.compile("jdbc:mysql://(.+):\\d+/.+");
+    private static Pattern xuguPattern = Pattern.compile("jdbc:xugu://(.+):\\d+/.+");
 
     /**
      * 注意：目前只实现了从 mysql/oracle 中识别出ip 信息.未识别到则返回 null.
