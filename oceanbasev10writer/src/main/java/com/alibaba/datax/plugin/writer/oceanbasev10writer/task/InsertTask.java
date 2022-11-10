@@ -1,4 +1,5 @@
 package com.alibaba.datax.plugin.writer.oceanbasev10writer.task;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -92,7 +93,7 @@ public class InsertTask implements Runnable {
 					doMultiInsert(records, this.printCost, this.costBound);
 
 				} else if (writerTask.isFinished()) {
-					writerTask.singalTaskFinish();
+					writerTask.signalTaskFinish();
 					LOG.debug("not more task, thread exist ...");
 					break;
 				} else {
@@ -101,7 +102,7 @@ public class InsertTask implements Runnable {
 			} catch (InterruptedException e) {
 				LOG.debug("TableWriter is interrupt");
 			} catch (Exception e) {
-				LOG.warn("ERROR UNEXPECTED {}", e);
+				LOG.warn("ERROR UNEXPECTED", e);
 			}
 		}
 		LOG.debug("Thread exist...");
@@ -109,7 +110,7 @@ public class InsertTask implements Runnable {
 	
 	public void destroy() {
 	    connHolder.destroy();
-	};
+	}
 	
 	public void calStatistic(final long cost) {
 		writer.increFinishCount();
@@ -139,7 +140,7 @@ public class InsertTask implements Runnable {
 					}
 					ps.addBatch();
 				}
-				LOG.debug("delete values: " + builder.toString());
+				LOG.debug("delete values: " + builder);
 				ps.executeBatch();
 			} catch (SQLException ex) {
 				LOG.error("SQL Exception when delete records with {}", deleteSql, ex);
@@ -212,7 +213,7 @@ public class InsertTask implements Runnable {
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
-					LOG.warn("Insert error unexpected {}", e);
+					LOG.warn("Insert error unexpected", e);
 				} finally {
 					DBUtil.closeDBResources(ps, null);
 				}
@@ -222,26 +223,23 @@ public class InsertTask implements Runnable {
 		}
 
 		if (!success) {
-			try {
-				LOG.info("do one insert");
-				conn = connHolder.reconnect();
-				doOneInsert(conn, buffer);
-				cost = System.currentTimeMillis() - startTime;
-				calStatistic(cost);
-			} finally {
-			}
+			LOG.info("do one insert");
+			conn = connHolder.reconnect();
+			doOneInsert(conn, buffer);
+			cost = System.currentTimeMillis() - startTime;
+			calStatistic(cost);
 		}
 	}
 
 	// process one row, delete before insert
 	private void doOneInsert(Connection connection, List<Record> buffer) {
-		List<PreparedStatement> deletePstmtList = new ArrayList();
+		List<PreparedStatement> deletePstmtList = new ArrayList<>();
 		PreparedStatement preparedStatement = null;
 		try {
 			connection.setAutoCommit(false);
 			if (deleteMeta != null && deleteMeta.size() > 0) {
-				for (int i = 0; i < deleteMeta.size(); i++) {
-					String deleteSql = deleteMeta.get(i).getKey();
+				for (Pair<String, int[]> stringPair : deleteMeta) {
+					String deleteSql = stringPair.getKey();
 					deletePstmtList.add(connection.prepareStatement(deleteSql));
 				}
 			}
@@ -263,8 +261,6 @@ public class InsertTask implements Runnable {
 					connection.commit();
 				} catch (SQLException e) {
 					writerTask.collectDirtyRecord(record, e);
-				} finally {
-					// 此处不应该关闭statement，后续的数据还需要用到
 				}
 			}
 		} catch (Exception e) {
