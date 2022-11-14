@@ -12,7 +12,7 @@ import com.alibaba.datax.plugin.rdbms.writer.util.WriterUtil;
 import com.alibaba.datax.plugin.writer.oceanbasev10writer.task.ConcurrentTableWriterTask;
 import com.alibaba.datax.plugin.writer.oceanbasev10writer.util.DbUtils;
 import com.alibaba.datax.plugin.writer.oceanbasev10writer.util.ObWriterUtils;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -45,10 +45,6 @@
                     <groupId>org.slf4j</groupId>
                 </exclusion>
                 <exclusion>
-                    <artifactId>fastjson</artifactId>
-                    <groupId>com.alibaba</groupId>
-                </exclusion>
-                <exclusion>
                     <artifactId>commons-math3</artifactId>
                     <groupId>org.apache.commons</groupId>
                 </exclusion>
@@ -89,8 +85,8 @@
 
         <!-- json -->
         <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>fastjson</artifactId>
+            <groupId>com.alibaba.fastjson2</groupId>
+            <artifactId>fastjson2</artifactId>
         </dependency>
 
         <!-- opentsdb -->

@@ -2,7 +2,7 @@ package com.alibaba.datax.plugin.reader.tsdbreader.conn;
 
 import com.alibaba.datax.common.plugin.RecordSender;
 import com.alibaba.datax.plugin.reader.tsdbreader.util.TSDBUtils;
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;

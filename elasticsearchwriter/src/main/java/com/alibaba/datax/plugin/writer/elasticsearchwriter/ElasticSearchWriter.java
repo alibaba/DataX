@@ -9,11 +9,11 @@ import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.common.util.DataXCaseEnvUtil;
 import com.alibaba.datax.common.util.RetryUtil;
 import com.alibaba.datax.plugin.writer.elasticsearchwriter.Key.ActionType;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.TypeReference;
-import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
+import com.alibaba.fastjson2.TypeReference;
+import com.alibaba.fastjson2.JSONWriter;
 import com.google.common.base.Joiner;
 import io.searchbox.client.JestResult;
 import io.searchbox.core.*;
@@ -927,9 +927,8 @@ public class ElasticSearchWriter extends Writer {
                             Index.Builder builder = null;
                             if (this.enableWriteNull) {
                                 builder = new Index.Builder(
-                                        JSONObject.toJSONString(data, SerializerFeature.WriteMapNullValue,
-                                                SerializerFeature.QuoteFieldNames, SerializerFeature.SkipTransientField,
-                                                SerializerFeature.WriteEnumUsingToString, SerializerFeature.SortField));
+                                        JSONObject.toJSONString(data, JSONWriter.Feature.WriteMapNullValue,
+                                                JSONWriter.Feature.WriteEnumUsingToString));
                             } else {
                                 builder = new Index.Builder(JSONObject.toJSONString(data));
                             }
@@ -958,9 +957,8 @@ public class ElasticSearchWriter extends Writer {
                             if (this.enableWriteNull) {
                                 // write: {a:"1",b:null}
                             update = new Update.Builder(
-                                    JSONObject.toJSONString(updateDoc, SerializerFeature.WriteMapNullValue,
-                                            SerializerFeature.QuoteFieldNames, SerializerFeature.SkipTransientField,
-                                            SerializerFeature.WriteEnumUsingToString, SerializerFeature.SortField));
+                                    JSONObject.toJSONString(updateDoc, JSONWriter.Feature.WriteMapNullValue,
+                                            JSONWriter.Feature.WriteEnumUsingToString));
                             // 在DEFAULT_GENERATE_FEATURE基础上，只增加了SerializerFeature.WRITE_MAP_NULL_FEATURES
                             } else {
                                 // write: {"a":"1"}

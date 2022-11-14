@@ -3,8 +3,8 @@ package com.alibaba.datax.common.util;
 import com.alibaba.datax.common.exception.CommonErrorCode;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.spi.ErrorCode;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONWriter;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -586,7 +586,7 @@ public class Configuration {
 	 */
 	public String beautify() {
 		return JSON.toJSONString(this.getInternal(),
-				SerializerFeature.PrettyFormat);
+				JSONWriter.Feature.PrettyFormat);
 	}
 
 	/**
