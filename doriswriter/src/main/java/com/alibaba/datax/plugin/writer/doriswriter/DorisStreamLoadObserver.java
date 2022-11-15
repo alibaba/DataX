@@ -125,7 +125,7 @@ public class DorisStreamLoadObserver {
     private byte[] addRows(List<byte[]> rows, int totalBytes) {
         if (Keys.StreamLoadFormat.CSV.equals(options.getStreamLoadFormat())) {
             Map<String, Object> props = (options.getLoadProps() == null ? new HashMap<> () : options.getLoadProps());
-            byte[] lineDelimiter = DelimiterParser.parse((String)props.get("row_delimiter"), "\n").getBytes(StandardCharsets.UTF_8);
+            byte[] lineDelimiter = DelimiterParser.parse((String)props.get("line_delimiter"), "\n").getBytes(StandardCharsets.UTF_8);
             ByteBuffer bos = ByteBuffer.allocate(totalBytes + rows.size() * lineDelimiter.length);
             for (byte[] row : rows) {
                 bos.put(row);
