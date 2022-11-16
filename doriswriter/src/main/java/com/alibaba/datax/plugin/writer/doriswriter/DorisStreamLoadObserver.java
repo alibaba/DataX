@@ -22,6 +22,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +34,7 @@ public class DorisStreamLoadObserver {
 
     private Keys options;
 
-    private long pos;
+    private int pos;
     private static final String RESULT_FAILED = "Fail";
     private static final String RESULT_LABEL_EXISTED = "Label Already Exists";
     private static final String LAEBL_STATE_VISIBLE = "VISIBLE";
@@ -210,9 +211,10 @@ public class DorisStreamLoadObserver {
 
     private String getLoadHost() {
         List<String> hostList = options.getLoadUrlList();
+        Collections.shuffle(hostList);
         long tmp = pos + hostList.size();
         for (; pos < tmp; pos++) {
-            String host = new StringBuilder("http://").append(hostList.get((int) (pos % hostList.size()))).toString();
+            String host = new StringBuilder("http://").append(hostList.get(pos)).toString();
             if (checkConnection(host)) {
                 return host;
             }
