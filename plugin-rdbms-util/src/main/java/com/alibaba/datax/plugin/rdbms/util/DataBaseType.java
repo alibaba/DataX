@@ -68,6 +68,8 @@ public enum DataBaseType {
                 break;
             case Oscar:
                 break;
+            case StarRocks:
+                break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type.");
         }
