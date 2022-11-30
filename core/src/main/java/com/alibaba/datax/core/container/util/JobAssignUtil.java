@@ -114,7 +114,7 @@ public final class JobAssignUtil {
      * 需要实现的效果通过例子来说是：
      * <pre>
      * a 库上有表：0, 1, 2
-     * a 库上有表：3, 4
+     * b 库上有表：3, 4
      * c 库上有表：5, 6, 7
      *
      * 如果有 4个 taskGroup
