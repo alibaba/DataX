@@ -124,7 +124,9 @@
         <!-- common support module -->
         <module>plugin-rdbms-util</module>
         <module>plugin-unstructured-storage-util</module>
-       
+        <module>gaussdbreader</module>
+        <module>gaussdbwriter</module>
+
     </modules>
 
     <dependencyManagement>
