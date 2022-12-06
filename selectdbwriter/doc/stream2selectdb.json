@@ -75,7 +75,7 @@
                             }
                         ],
                         "maxBatchRows":200000,
-                        "maxBatchByteSize":53687091200
+                        "batchSize":53687091200
                     }
                 }
             }

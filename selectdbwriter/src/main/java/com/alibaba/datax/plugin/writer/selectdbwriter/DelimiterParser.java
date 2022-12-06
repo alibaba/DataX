@@ -18,14 +18,14 @@ public class DelimiterParser {
         String hexStr = sp.substring(2);
         // check hex str
         if (hexStr.isEmpty()) {
-            throw new RuntimeException("Failed to parse delimiter: `Hex str is empty`");
+            throw new RuntimeException("Failed to parse delimiter: Hex str is empty");
         }
         if (hexStr.length() % 2 != 0) {
-            throw new RuntimeException("Failed to parse delimiter: `Hex str length error`");
+            throw new RuntimeException("Failed to parse delimiter: Hex str length error");
         }
         for (char hexChar : hexStr.toUpperCase().toCharArray()) {
             if (HEX_STRING.indexOf(hexChar) == -1) {
-                throw new RuntimeException("Failed to parse delimiter: `Hex str format error`");
+                throw new RuntimeException("Failed to parse delimiter: Hex str format error");
             }
         }
         // transform to separator

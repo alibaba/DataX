@@ -76,11 +76,13 @@ public class SelectdbWriterManager {
             batchSize += bts.length;
             if (batchCount >= options.getBatchRows() || batchSize >= options.getBatchSize()) {
                 String label = createBatchLabel();
-                LOG.debug(String.format("buffer Sinking triggered: rows[%d] label [%s].", batchCount, label));
+                if(LOG.isDebugEnabled()){
+                    LOG.debug(String.format("buffer Sinking triggered: rows[%d] label [%s].", batchCount, label));
+                }
                 flush(label, false);
             }
         } catch (Exception e) {
-            throw new SelectdbWriterException("Writing records to Doris failed.", e);
+            throw new SelectdbWriterException("Writing records to selectdb failed.", e);
         }
     }
 
@@ -107,13 +109,14 @@ public class SelectdbWriterManager {
             closed = true;
             try {
                 String label = createBatchLabel();
-                if (batchCount > 0)
-                    LOG.debug(String.format("Selectdb Sink is about to close: label[%s].", label));
+                if (batchCount > 0) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(String.format("Selectdb Sink is about to close: label[%s].", label));
+                    }
+                }
                 flush(label, true);
             } catch (Exception e) {
                 throw new RuntimeException("Writing records to Selectdb failed.", e);
-            } finally {
-                this.visitor.close();
             }
         }
         checkFlushException();
