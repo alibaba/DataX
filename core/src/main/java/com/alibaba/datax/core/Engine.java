@@ -8,6 +8,7 @@ import com.alibaba.datax.common.statistics.VMInfo;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.common.util.MessageSource;
 import com.alibaba.datax.core.job.JobContainer;
+import com.alibaba.datax.core.statistics.communication.DataxResult;
 import com.alibaba.datax.core.taskgroup.TaskGroupContainer;
 import com.alibaba.datax.core.util.ConfigParser;
 import com.alibaba.datax.core.util.ConfigurationValidate;
@@ -37,7 +38,7 @@ public class Engine {
     private static String RUNTIME_MODE;
 
     /* check job model (job/task) first */
-    public void start(Configuration allConf) {
+    public DataxResult start(Configuration allConf) {
 
         // 绑定column转换信息
         ColumnCast.bind(allConf);
@@ -90,7 +91,7 @@ public class Engine {
         //初始化PerfTrace
         PerfTrace perfTrace = PerfTrace.getInstance(isJob, instanceId, taskGroupId, priority, traceEnable);
         perfTrace.setJobInfo(jobInfoConfig,perfReportEnable,channelNumber);
-        container.start();
+        return container.start();
 
     }
 
@@ -120,7 +121,7 @@ public class Engine {
         return configuration;
     }
 
-    public static void entry(final String[] args) throws Throwable {
+    public static DataxResult entry(final String[] args) throws Throwable {
         Options options = new Options();
         options.addOption("job", true, "Job config.");
         options.addOption("jobid", true, "Job unique id.");
@@ -172,7 +173,8 @@ public class Engine {
 
         ConfigurationValidate.doValidate(configuration);
         Engine engine = new Engine();
-        engine.start(configuration);
+        DataxResult dataxResult = engine.start(configuration);
+        return dataxResult;
     }
 
 

@@ -18,6 +18,7 @@ import com.alibaba.datax.core.job.scheduler.AbstractScheduler;
 import com.alibaba.datax.core.job.scheduler.processinner.StandAloneScheduler;
 import com.alibaba.datax.core.statistics.communication.Communication;
 import com.alibaba.datax.core.statistics.communication.CommunicationTool;
+import com.alibaba.datax.core.statistics.communication.DataxResult;
 import com.alibaba.datax.core.statistics.container.communicator.AbstractContainerCommunicator;
 import com.alibaba.datax.core.statistics.container.communicator.job.StandAloneJobContainerCommunicator;
 import com.alibaba.datax.core.statistics.plugin.DefaultJobPluginCollector;
@@ -93,7 +94,7 @@ public class JobContainer extends AbstractContainer {
      * post以及destroy和statistics
      */
     @Override
-    public void start() {
+    public DataxResult start() {
         LOG.info("DataX jobContainer starts job.");
 
         boolean hasException = false;
@@ -175,10 +176,11 @@ public class JobContainer extends AbstractContainer {
                     }
 
                     LOG.info(PerfTrace.getInstance().summarizeNoException());
-                    this.logStatistics();
+                    return this.logStatistics();
                 }
             }
         }
+        return null;
     }
 
     private void preCheck() {
@@ -572,7 +574,7 @@ public class JobContainer extends AbstractContainer {
         }
     }
 
-    private void logStatistics() {
+    private DataxResult logStatistics() {
         long totalCosts = (this.endTimeStamp - this.startTimeStamp) / 1000;
         long transferCosts = (this.endTransferTimeStamp - this.startTransferTimeStamp) / 1000;
         if (0L == transferCosts) {
@@ -580,7 +582,7 @@ public class JobContainer extends AbstractContainer {
         }
 
         if (super.getContainerCommunicator() == null) {
-            return;
+            return null;
         }
 
         Communication communication = super.getContainerCommunicator().collect();
@@ -643,6 +645,20 @@ public class JobContainer extends AbstractContainer {
             ));
         }
 
+        return new DataxResult(startTimeStamp,
+                endTimeStamp,
+                totalCosts,
+                byteSpeedPerSecond,
+                recordSpeedPerSecond,
+                CommunicationTool.getTotalReadRecords(communication),
+                CommunicationTool.getTotalErrorRecords(communication),
+                communication.getLongCounter(CommunicationTool.TRANSFORMER_SUCCEED_RECORDS),
+                communication.getLongCounter(CommunicationTool.TRANSFORMER_FAILED_RECORDS),
+                communication.getLongCounter(CommunicationTool.TRANSFORMER_FILTER_RECORDS),
+                communication.getLongCounter(CommunicationTool.READ_SUCCEED_BYTES),
+                this.endTransferTimeStamp,
+                this.startTransferTimeStamp,
+                transferCosts);
 
     }
 

@@ -12,6 +12,7 @@ import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.core.AbstractContainer;
 import com.alibaba.datax.core.statistics.communication.Communication;
 import com.alibaba.datax.core.statistics.communication.CommunicationTool;
+import com.alibaba.datax.core.statistics.communication.DataxResult;
 import com.alibaba.datax.core.statistics.container.communicator.taskgroup.StandaloneTGContainerCommunicator;
 import com.alibaba.datax.core.statistics.plugin.task.AbstractTaskPluginCollector;
 import com.alibaba.datax.core.taskgroup.runner.AbstractRunner;
@@ -90,7 +91,7 @@ public class TaskGroupContainer extends AbstractContainer {
     }
 
     @Override
-    public void start() {
+    public DataxResult start() {
         try {
             /**
              * 状态check时间间隔，较短，可以把任务及时分发到对应channel中
@@ -295,6 +296,7 @@ public class TaskGroupContainer extends AbstractContainer {
                 LOG.info(PerfTrace.getInstance().summarizeNoException());
             }
         }
+        return null;
     }
     
     private Map<Integer, Configuration> buildTaskConfigMap(List<Configuration> configurations){

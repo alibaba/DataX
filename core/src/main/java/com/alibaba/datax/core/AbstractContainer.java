@@ -1,6 +1,7 @@
 package com.alibaba.datax.core;
 
 import com.alibaba.datax.common.util.Configuration;
+import com.alibaba.datax.core.statistics.communication.DataxResult;
 import com.alibaba.datax.core.statistics.container.communicator.AbstractContainerCommunicator;
 import org.apache.commons.lang.Validate;
 
@@ -30,6 +31,6 @@ public abstract class AbstractContainer {
         this.containerCommunicator = containerCommunicator;
     }
 
-    public abstract void start();
+    public abstract DataxResult start();
 
 }
