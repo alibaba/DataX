@@ -22,7 +22,7 @@ TDengineReader 通过 TDengine 的 JDBC driver 查询获取数据。
         "reader": {
           "name": "tdenginereader",
           "parameter": {
-            "user": "root",
+            "username": "root",
             "password": "taosdata",
             "connection": [
               {
@@ -165,23 +165,7 @@ TDengineReader 通过 TDengine 的 JDBC driver 查询获取数据。
 
 #### 4.1.1 数据特征
 
-建表语句：
-
-单行记录类似于：
-
 #### 4.1.2 机器参数
-
-* 执行DataX的机器参数为:
-    1. cpu:
-    2. mem:
-    3. net: 千兆双网卡
-    4. disc: DataX 数据不落磁盘，不统计此项
-
-* TDengine数据库机器参数为:
-    1. cpu:
-    2. mem:
-    3. net: 千兆双网卡
-    4. disc:
 
 #### 4.1.3 DataX jvm 参数
 
@@ -200,9 +184,6 @@ TDengineReader 通过 TDengine 的 JDBC driver 查询获取数据。
 |32|                  |                 |                             |                   |                      |            |        |
 
 说明：
-
-1. 这里的单表，主键类型为 bigint(20),自增。
-2. batchSize 和 通道个数，对性能影响较大。
 
 #### 4.2.4 性能测试小结
 

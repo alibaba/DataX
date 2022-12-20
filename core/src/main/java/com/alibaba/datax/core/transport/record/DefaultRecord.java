@@ -27,6 +27,8 @@ public class DefaultRecord implements Record {
 	// 首先是Record本身需要的内存
 	private int memorySize = ClassSize.DefaultRecordHead;
 
+	private Map<String, String> meta;
+
 	public DefaultRecord() {
 		this.columns = new ArrayList<Column>(RECORD_AVERGAE_COLUMN_NUMBER);
 	}
@@ -81,6 +83,16 @@ public class DefaultRecord implements Record {
 
 	public int getMemorySize(){
 		return memorySize;
+	}
+
+	@Override
+	public void setMeta(Map<String, String> meta) {
+		this.meta = meta;
+	}
+
+	@Override
+	public Map<String, String> getMeta() {
+		return this.meta;
 	}
 
 	private void decrByteSize(final Column column) {
