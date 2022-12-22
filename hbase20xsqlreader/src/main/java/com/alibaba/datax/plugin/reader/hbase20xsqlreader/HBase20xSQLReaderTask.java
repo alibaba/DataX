@@ -1,6 +1,7 @@
 package com.alibaba.datax.plugin.reader.hbase20xsqlreader;
 
 import com.alibaba.datax.common.element.*;
+import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordSender;
 import com.alibaba.datax.common.statistics.PerfRecord;

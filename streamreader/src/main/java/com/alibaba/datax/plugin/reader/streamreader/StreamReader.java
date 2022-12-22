@@ -1,6 +1,7 @@
 package com.alibaba.datax.plugin.reader.streamreader;
 
 import com.alibaba.datax.common.element.*;
+import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordSender;
 import com.alibaba.datax.common.spi.Reader;
@@ -307,7 +308,7 @@ public class StreamReader extends Reader {
 		}
 
 		private Record buildOneRecord(RecordSender recordSender,
-				List<String> columns) {
+                                      List<String> columns) {
 			if (null == recordSender) {
 				throw new IllegalArgumentException(
 						"参数[recordSender]不能为空.");

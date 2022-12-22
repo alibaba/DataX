@@ -1,0 +1,134 @@
+plugins {
+    id 'java'
+    id 'distribution'
+}
+
+
+allprojects {
+
+    apply plugin:'java'
+    apply plugin:'distribution'
+
+    distributions {
+
+        main {
+
+            contents {
+
+                var pathPrefix = project.getName()
+                if(project.getName().toString().endsWith('writer')){
+                    pathPrefix = 'plugin/writer/' + project.getName()
+                }else if(
+                        project.getName().toString().endsWith('reader')
+                ){
+                    pathPrefix = 'plugin/reader/' + project.getName()
+                }
+
+                from("$buildDir/libs"){
+                    into pathPrefix
+                }
+                from(layout.projectDirectory.dir('src/main/resources')) {
+                    into pathPrefix
+
+                }
+
+                from(configurations.runtimeClasspath)
+                        {
+                            into pathPrefix + "/libs"
+                        }
+
+
+            }
+        }
+    }
+
+    assembleDist {
+        dependsOn jar
+    }
+
+
+
+    tasks.register('unpackFiles', Copy) {
+
+        dependsOn distZip
+        from{
+                    zipTree(project.layout.buildDirectory.file('distributions/' + 'datax.zip'))
+                }{
+
+        }
+
+        into layout.buildDirectory.dir("distributions")
+
+    }
+
+
+
+
+    distTar {
+        dependsOn jar
+
+    }
+    distZip {
+        dependsOn jar
+        archiveFileName = "datax.zip"
+    }
+
+    test {
+        useJUnitPlatform()
+    }
+
+    dependencies {
+        implementation 'com.google.guava:guava:16.0.1'
+        implementation 'org.apache.commons:commons-lang3:3.3.2'
+        implementation 'com.alibaba:fastjson:1.2.75'
+        implementation 'org.slf4j:slf4j-api:1.7.10'
+        implementation 'commons-io:commons-io:2.4'
+        implementation 'com.alibaba:druid:1.1.17'
+    }
+}
+
+ tasks.register("collectDatax", Copy) {
+     project.getSubprojects().forEach {itx ->
+         dependsOn itx.tasks.named('unpackFiles')
+     }
+    project.getSubprojects().forEach {itx ->
+
+        from(itx.layout.buildDirectory.dir('distributions/datax')){
+            eachFile {
+                fcd -> {
+                    fcd.relativePath = new RelativePath(true, ['datax', *fcd.relativePath.segments] as String[])
+                }
+            }
+            exclude 'datax-core'
+            exclude 'datax-common'
+            exclude 'datax-transformer'
+            exclude 'plugin-rdbms-util'
+            exclude 'plugin-unstructured-storage-util'
+            includeEmptyDirs = false
+
+
+        }
+
+        into project.layout.buildDirectory.dir('datax')
+    }
+}
+
+tasks.register("collectDataxTar", Tar) {
+    compression = Compression.GZIP
+    archiveFileName = "datax.tar.gz"
+    destinationDirectory = layout.buildDirectory.get()
+    from(collectDatax)
+}
+
+distributions {
+
+    custom {
+        customDistZip {
+        }
+    }
+}
+
+customDistZip {
+    dependsOn collectDataxTar
+
+}

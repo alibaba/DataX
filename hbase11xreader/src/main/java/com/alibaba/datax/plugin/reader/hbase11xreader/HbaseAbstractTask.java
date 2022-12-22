@@ -1,6 +1,7 @@
 package com.alibaba.datax.plugin.reader.hbase11xreader;
 
 import com.alibaba.datax.common.element.*;
+import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.exception.DataXException;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.time.DateUtils;
