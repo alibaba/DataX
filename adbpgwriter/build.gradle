@@ -18,38 +18,5 @@ dependencies {
     implementation 'commons-configuration:commons-configuration:1.10'
     implementation 'com.alibaba.cloud.analyticdb:adb4pgclient:1.0.0'
 }
-tasks.register('copyNeed', Zip) {
-    destinationDirectory = layout.buildDirectory.dir('dist')
-
-    var pathPrefix
-    if(project.getName().toString().endsWith('writer')){
-        pathPrefix = 'plugin/writer/' + project.getName()
-    }else if(
-            project.getName().toString().endsWith('reader')
-    ){
-        pathPrefix = 'plugin/reader/' + project.getName()
-    }
-
-    from("$buildDir/libs"){
-        into pathPrefix
-    }
-    from(layout.projectDirectory.dir('src/main/resources')) {
-        into pathPrefix
-
-    }
-
-    from(configurations.runtimeClasspath)
-    {
-        into pathPrefix + "/libs"
-    }
-
-
-}
-
-jar {
-
-    dependsOn(copyNeed)
-
-}
 
 description = 'adbpgwriter'
