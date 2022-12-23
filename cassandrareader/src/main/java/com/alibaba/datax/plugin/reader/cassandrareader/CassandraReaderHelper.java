@@ -469,12 +469,19 @@ public class CassandraReaderHelper {
     String keyspace = taskConfig.getString(Key.KEYSPACE);
     String table = taskConfig.getString(Key.TABLE);
 
+    TableMetadata tableMetadata = cluster.getMetadata().getKeyspace(keyspace).getTable(table);
     StringBuilder columns = new StringBuilder();
     for( String column : columnMeta ) {
       if(columns.length() > 0 ) {
         columns.append(",");
       }
-      columns.append(column);
+      ColumnMetadata col = tableMetadata.getColumn(column);
+      if( col == null ) {
+        // 如果该列在C*中不存在，则作为字符串常量进行透出
+        columns.append("blobAsText(textAsBlob('" + column + "'))");
+      } else {
+        columns.append(column);
+      }
     }
 
     StringBuilder where = new StringBuilder();
@@ -557,26 +564,6 @@ public class CassandraReaderHelper {
                 CassandraReaderErrorCode.CONF_ERROR,
                 String.format(
                     "配置信息有错误.列信息中需要包含'%s'字段 .",Key.COLUMN_NAME));
-      }
-      if( name.startsWith(Key.WRITE_TIME) ) {
-        String colName = name.substring(Key.WRITE_TIME.length(),name.length() - 1 );
-        ColumnMetadata col = tableMetadata.getColumn(colName);
-        if( col == null ) {
-          throw DataXException
-              .asDataXException(
-                  CassandraReaderErrorCode.CONF_ERROR,
-                  String.format(
-                      "配置信息有错误.列'%s'不存在 .",colName));
-        }
-      } else {
-        ColumnMetadata col = tableMetadata.getColumn(name);
-        if( col == null ) {
-          throw DataXException
-              .asDataXException(
-                  CassandraReaderErrorCode.CONF_ERROR,
-                  String.format(
-                      "配置信息有错误.列'%s'不存在 .",name));
-        }
       }
     }
   }
