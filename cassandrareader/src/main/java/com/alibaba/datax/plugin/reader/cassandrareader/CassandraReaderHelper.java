@@ -558,26 +558,6 @@ public class CassandraReaderHelper {
                 String.format(
                     "配置信息有错误.列信息中需要包含'%s'字段 .",Key.COLUMN_NAME));
       }
-      if( name.startsWith(Key.WRITE_TIME) ) {
-        String colName = name.substring(Key.WRITE_TIME.length(),name.length() - 1 );
-        ColumnMetadata col = tableMetadata.getColumn(colName);
-        if( col == null ) {
-          throw DataXException
-              .asDataXException(
-                  CassandraReaderErrorCode.CONF_ERROR,
-                  String.format(
-                      "配置信息有错误.列'%s'不存在 .",colName));
-        }
-      } else {
-        ColumnMetadata col = tableMetadata.getColumn(name);
-        if( col == null ) {
-          throw DataXException
-              .asDataXException(
-                  CassandraReaderErrorCode.CONF_ERROR,
-                  String.format(
-                      "配置信息有错误.列'%s'不存在 .",name));
-        }
-      }
     }
   }
 
