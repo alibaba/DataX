@@ -1,6 +1,7 @@
 package com.alibaba.datax.plugin.reader;
 
 import com.alibaba.datax.common.element.*;
+import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordSender;
 import com.alibaba.datax.common.spi.Reader;
@@ -15,8 +16,6 @@ import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class TDengineReader extends Reader {
@@ -240,6 +239,7 @@ public class TDengineReader extends Reader {
                             record.addColumn(new DateColumn(rs.getTimestamp(i)));
                             break;
                         case Types.BINARY:
+                        case Types.VARCHAR:
                             record.addColumn(new BytesColumn(rs.getBytes(i)));
                             break;
                         case Types.NCHAR:
