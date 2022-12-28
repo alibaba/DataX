@@ -9,6 +9,7 @@ import com.alibaba.datax.common.util.Configuration;
 import com.taosdata.jdbc.SchemalessWriter;
 import com.taosdata.jdbc.enums.SchemalessProtocolType;
 import com.taosdata.jdbc.enums.SchemalessTimestampType;
+import com.taosdata.jdbc.utils.StringUtils;
 import com.taosdata.jdbc.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,12 +77,26 @@ public class DefaultDataHandler implements DataHandler {
 
         try (Connection conn = DriverManager.getConnection(jdbcUrl, username, password)) {
             LOG.info("connection[ jdbcUrl: " + jdbcUrl + ", username: " + username + "] established.");
+            String dbname = getDbnameFromJdbcUrl(jdbcUrl);
+            Statement statement = conn.createStatement();
+            ResultSet resultSet = statement.executeQuery("select " + Constants.SERVER_VERSION);
+            // 光标移动一行
+            resultSet.next();
+            String serverVersion = resultSet.getString(Constants.SERVER_VERSION);
+            if (StringUtils.isEmpty(dbname)) {
+                throw DataXException.asDataXException(TDengineWriterErrorCode.RUNTIME_EXCEPTION, "error dbname parsed from jdbcUrl");
+            }
+            LOG.info("tdengine server version[{}] dbname[{}]", serverVersion, dbname);
+            // 版本判断确定使用 SchemaManager 的示例
+            if (serverVersion.startsWith(Constants.SERVER_VERSION_2)) {
+                this.schemaManager = new SchemaManager(conn);
+            } else {
+                this.schemaManager = new Schema3_0Manager(conn, dbname);
+            }
             // prepare table_name -> table_meta
-            this.schemaManager = new SchemaManager(conn);
             this.tableMetas = schemaManager.loadTableMeta(tables);
             // prepare table_name -> column_meta
             this.tbnameColumnMetasMap = schemaManager.loadColumnMetas(tables);
-
             // filter column
             for (String tableName : tbnameColumnMetasMap.keySet()) {
                 List<ColumnMeta> columnMetaList = tbnameColumnMetasMap.get(tableName);
@@ -130,6 +145,20 @@ public class DefaultDataHandler implements DataHandler {
         }
 
         return affectedRows;
+    }
+
+    /**
+     * 从 jdbcUrl 中解析出数据库名称
+     * @param jdbcUrl 格式是 jdbc:<protocol>://<host>:<port>/<dbname>[?可选参数]
+     * @return 数据库名称
+     */
+    private static String getDbnameFromJdbcUrl(String jdbcUrl) {
+        int questionMarkIndex = -1;
+        if (jdbcUrl.contains("?")) {
+             questionMarkIndex = jdbcUrl.indexOf("?");
+        }
+        return questionMarkIndex == -1 ? jdbcUrl.substring(jdbcUrl.lastIndexOf("/") + 1) :
+                jdbcUrl.substring(jdbcUrl.lastIndexOf("/") + 1, questionMarkIndex);
     }
 
     private int writeEachRow(Connection conn, List<Record> recordBatch) {
@@ -465,7 +494,7 @@ public class DefaultDataHandler implements DataHandler {
                     return column.asString() + "i64";
                 String value = column.asString();
                 value = value.replace("\"", "\\\"");
-                if (colMeta.type.startsWith("BINARY"))
+                if (colMeta.type.startsWith("BINARY") || colMeta.type.startsWith("VARCHAR"))
                     return "\"" + value + "\"";
                 if (colMeta.type.startsWith("NCHAR"))
                     return "L\"" + value + "\"";

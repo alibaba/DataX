@@ -12,11 +12,11 @@ import java.util.stream.Collectors;
 public class SchemaManager {
     private static final Logger LOG = LoggerFactory.getLogger(SchemaManager.class);
 //    private static final String TAG_TABLE_NAME_MAP_KEY_SPLITTER = "_";
-    private static final String TAG_TABLE_NAME_MAP_KEY_SPLITTER = "";
+    protected static final String TAG_TABLE_NAME_MAP_KEY_SPLITTER = "";
 
-    private final Connection conn;
-    private TimestampPrecision precision;
-    private Map<String, Map<String, String>> tags2tbnameMaps = new HashMap<>();
+    protected final Connection conn;
+    protected TimestampPrecision precision;
+    protected Map<String, Map<String, String>> tags2tbnameMaps = new HashMap<>();
 
     public SchemaManager(Connection conn) {
         this.conn = conn;
@@ -135,7 +135,7 @@ public class SchemaManager {
         return ret;
     }
 
-    private TableMeta buildSupTableMeta(ResultSet rs) throws SQLException {
+    protected TableMeta buildSupTableMeta(ResultSet rs) throws SQLException {
         TableMeta tableMeta = new TableMeta();
         tableMeta.tableType = TableType.SUP_TABLE;
         tableMeta.tbname = rs.getString("name");
@@ -147,7 +147,7 @@ public class SchemaManager {
         return tableMeta;
     }
 
-    private TableMeta buildSubTableMeta(ResultSet rs) throws SQLException {
+    protected TableMeta buildSubTableMeta(ResultSet rs) throws SQLException {
         TableMeta tableMeta = new TableMeta();
         String stable_name = rs.getString("stable_name");
         tableMeta.tableType = StringUtils.isBlank(stable_name) ? TableType.NML_TABLE : TableType.SUB_TABLE;
@@ -159,7 +159,7 @@ public class SchemaManager {
         return tableMeta;
     }
 
-    private ColumnMeta buildColumnMeta(ResultSet rs, boolean isPrimaryKey) throws SQLException {
+    protected ColumnMeta buildColumnMeta(ResultSet rs, boolean isPrimaryKey) throws SQLException {
         ColumnMeta columnMeta = new ColumnMeta();
         columnMeta.field = rs.getString("Field");
         columnMeta.type = rs.getString("Type");
