@@ -47,6 +47,7 @@ DataX目前已经有了比较全面的插件体系，主流的RDBMS数据库、N
 | | Kingbase  |√|√| [读](https://github.com/alibaba/DataX/blob/master/drdsreader/doc/drdsreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/drdswriter/doc/drdswriter.md) |
 | | 通用RDBMS(支持所有关系型数据库)  |√|√| [读](https://github.com/alibaba/DataX/blob/master/rdbmsreader/doc/rdbmsreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/rdbmswriter/doc/rdbmswriter.md) |
 | 阿里云数仓数据存储 | ODPS  |√|√| [读](https://github.com/alibaba/DataX/blob/master/odpsreader/doc/odpsreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/odpswriter/doc/odpswriter.md) |
+| | ADB | |√| [写](https://github.com/alibaba/DataX/blob/master/adbmysqlwriter/doc/adbmysqlwriter.md) |
 | | ADS | |√| [写](https://github.com/alibaba/DataX/blob/master/adswriter/doc/adswriter.md) |
 | | OSS  |√|√| [读](https://github.com/alibaba/DataX/blob/master/ossreader/doc/ossreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/osswriter/doc/osswriter.md) |
 | | OCS | |√| [写](https://github.com/alibaba/DataX/blob/master/ocswriter/doc/ocswriter.md) |
