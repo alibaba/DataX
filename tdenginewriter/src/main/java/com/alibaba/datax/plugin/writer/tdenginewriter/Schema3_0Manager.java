@@ -106,6 +106,8 @@ public class Schema3_0Manager extends SchemaManager {
 
     @Override
     public TimestampPrecision loadDatabasePrecision() throws DataXException {
+        if (this.precision != null)
+            return this.precision;
         try (Statement stmt = conn.createStatement()) {
             ResultSet rs = stmt.executeQuery("select * from " + Constants.INFORMATION_SCHEMA + Constants.INFORMATION_SCHEMA_COMMA
                     + Constants.INFORMATION_SCHEMA_TABLE_INS_DATABASES + " where name = " + getDbnameForSqlQuery());
