@@ -169,7 +169,7 @@ public class SelectdbWriterManager {
                 startScheduler();
                 break;
             } catch (Exception e) {
-                LOG.warn("Failed to flush batch data to Doris, retry times = {}", i, e);
+                LOG.warn("Failed to flush batch data to selectdb, retry times = {}", i, e);
                 if (i >= options.getMaxRetries()) {
                     throw new RuntimeException(e);
                 }
