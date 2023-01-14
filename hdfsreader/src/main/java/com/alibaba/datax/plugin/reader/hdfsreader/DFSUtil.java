@@ -37,6 +37,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * Created by mingya.wmy on 2015/8/12.
@@ -121,18 +122,13 @@ public class DFSUtil {
 
         try {
             FileSystem hdfs = FileSystem.get(hadoopConf);
-            //判断hdfsPath是否包含正则符号
-            if (hdfsPath.contains("*") || hdfsPath.contains("?")) {
+            //判断hdfsPath是否包含正则符号：*、?、[abc]、[a-b]、[^a]、{ab,cd}、{ab,c{de,fh}}
+            if (Pattern.compile("\\*|\\?|\\[\\^?\\w+\\]|\\[\\^?\\w-\\w\\]|\\{[\\w\\{\\}\\,]+\\}").matcher(hdfsPath).find()) {
                 Path path = new Path(hdfsPath);
                 FileStatus stats[] = hdfs.globStatus(path);
                 for (FileStatus f : stats) {
                     if (f.isFile()) {
-                        if (f.getLen() == 0) {
-                            String message = String.format("文件[%s]长度为0，将会跳过不作处理！", hdfsPath);
-                            LOG.warn(message);
-                        } else {
-                            addSourceFileByType(f.getPath().toString());
-                        }
+                        addSourceFileByType(f);
                     } else if (f.isDirectory()) {
                         getHDFSAllFilesNORegex(f.getPath().toString(), hdfs);
                     }
@@ -167,8 +163,7 @@ public class DFSUtil {
                 LOG.info(String.format("[%s] 是目录, 递归获取该目录下的文件", f.getPath().toString()));
                 getHDFSAllFilesNORegex(f.getPath().toString(), hdfs);
             } else if (f.isFile()) {
-
-                addSourceFileByType(f.getPath().toString());
+                addSourceFileByType(f);
             } else {
                 String message = String.format("该路径[%s]文件类型既不是目录也不是文件，插件自动忽略。",
                         f.getPath().toString());
@@ -179,20 +174,26 @@ public class DFSUtil {
     }
 
     // 根据用户指定的文件类型，将指定的文件类型的路径加入sourceHDFSAllFilesList
-    private void addSourceFileByType(String filePath) {
-        // 检查file的类型和用户配置的fileType类型是否一致
-        boolean isMatchedFileType = checkHdfsFileType(filePath, this.specifiedFileType);
+    private void addSourceFileByType(FileStatus fileStatus) {
+        String filePath = fileStatus.getPath().toString();
+        // 当为文件时会调用，判断文件的长度是否为 0
+        if(fileStatus.getLen()==0){
+            LOG.warn("文件[{}]长度为0，将会跳过不作处理！", filePath);
+        }else{
+            // 检查file的类型和用户配置的fileType类型是否一致
+            boolean isMatchedFileType = checkHdfsFileType(filePath, this.specifiedFileType);
 
-        if (isMatchedFileType) {
-            LOG.info(String.format("[%s]是[%s]类型的文件, 将该文件加入source files列表", filePath, this.specifiedFileType));
-            sourceHDFSAllFilesList.add(filePath);
-        } else {
-            String message = String.format("文件[%s]的类型与用户配置的fileType类型不一致，" +
-                            "请确认您配置的目录下面所有文件的类型均为[%s]"
-                    , filePath, this.specifiedFileType);
-            LOG.error(message);
-            throw DataXException.asDataXException(
-                    HdfsReaderErrorCode.FILE_TYPE_UNSUPPORT, message);
+            if (isMatchedFileType) {
+                LOG.info(String.format("[%s]是[%s]类型的文件, 将该文件加入source files列表", filePath, this.specifiedFileType));
+                sourceHDFSAllFilesList.add(filePath);
+            } else {
+                String message = String.format("文件[%s]的类型与用户配置的fileType类型不一致，" +
+                                "请确认您配置的目录下面所有文件的类型均为[%s]"
+                        , filePath, this.specifiedFileType);
+                LOG.error(message);
+                throw DataXException.asDataXException(
+                        HdfsReaderErrorCode.FILE_TYPE_UNSUPPORT, message);
+            }
         }
     }
 
@@ -600,7 +601,7 @@ public class DFSUtil {
                 }
             }
         } catch (IOException e) {
-            LOG.info(String.format("检查文件类型: [%s] 不是ORC File.", file.toString()));
+            LOG.info("检查文件类型: [{}] 不是ORC File.", file);
         }
         return false;
     }
@@ -666,7 +667,7 @@ public class DFSUtil {
             }
             return true;
         } catch (IOException e) {
-            LOG.info(String.format("检查文件类型: [%s] 不是RC File.", filepath));
+            LOG.info("检查文件类型: [{}] 不是RC File.", filepath);
         }
         return false;
     }
@@ -684,7 +685,7 @@ public class DFSUtil {
                 return false;
             }
         } catch (IOException e) {
-            LOG.info(String.format("检查文件类型: [%s] 不是Sequence File.", filepath));
+            LOG.info("检查文件类型: [{}] 不是Sequence File.", filepath);
         }
         return false;
     }
