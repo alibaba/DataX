@@ -1,5 +1,5 @@
 {
-    "name": "tdenginewriter",
+    "name": "tdengine30writer",
     "class": "com.alibaba.datax.plugin.writer.tdenginewriter.TDengineWriter",
     "description": {
         "useScene": "data migration to tdengine",

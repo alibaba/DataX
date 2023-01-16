@@ -1,5 +1,5 @@
 {
-  "name": "tdenginereader",
+  "name": "tdengin20ereader",
   "class": "com.alibaba.datax.plugin.reader.TDengineReader",
   "description": {
     "useScene": "data migration from tdengine",
