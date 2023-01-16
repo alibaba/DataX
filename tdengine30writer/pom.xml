@@ -9,8 +9,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.alibaba.datax.tdenginewriter</groupId>
-    <artifactId>tdenginewriter</artifactId>
+    <groupId>com.alibaba.datax.tdengine30writer</groupId>
+    <artifactId>tdengine30writer</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
     <properties>

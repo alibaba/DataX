@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>tdenginereader</artifactId>
+    <artifactId>tdengine20reader</artifactId>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -30,8 +30,8 @@
         </dependency>
 
         <dependency>
-            <groupId>com.alibaba.datax.tdenginewriter</groupId>
-            <artifactId>tdenginewriter</artifactId>
+            <groupId>com.alibaba.datax.tdengine20writer</groupId>
+            <artifactId>tdengine20writer</artifactId>
             <version>0.0.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
