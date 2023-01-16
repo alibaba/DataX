@@ -1,0 +1,50 @@
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "name": "tdenginereader",
+          "parameter": {
+            "username": "root",
+            "password": "taosdata",
+            "column": [
+              "*"
+            ],
+            "connection": [
+              {
+                "table": [
+                  "stb1"
+                ],
+                "jdbcUrl": "jdbc:TAOS://192.168.56.105:6030/db1"
+              }
+            ]
+          }
+        },
+        "writer": {
+          "name": "rdbmswriter",
+          "parameter": {
+            "connection": [
+              {
+                "table": [
+                  "stb2"
+                ],
+                "jdbcUrl": "jdbc:dm://192.168.0.72:5236"
+              }
+            ],
+            "username": "TESTUSER",
+            "password": "test123456",
+            "table": "stb2",
+            "column": [
+              "*"
+            ]
+          }
+        }
+      }
+    ],
+    "setting": {
+      "speed": {
+        "channel": 1
+      }
+    }
+  }
+}
