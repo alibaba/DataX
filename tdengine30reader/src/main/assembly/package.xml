@@ -13,21 +13,21 @@
                 <include>plugin.json</include>
                 <include>plugin_job_template.json</include>
             </includes>
-            <outputDirectory>plugin/reader/tdenginereader</outputDirectory>
+            <outputDirectory>plugin/reader/tdengine30reader</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>target/</directory>
             <includes>
-                <include>tdenginereader-0.0.1-SNAPSHOT.jar</include>
+                <include>tdengine30reader-0.0.1-SNAPSHOT.jar</include>
             </includes>
-            <outputDirectory>plugin/reader/tdenginereader</outputDirectory>
+            <outputDirectory>plugin/reader/tdengine30reader</outputDirectory>
         </fileSet>
     </fileSets>
 
     <dependencySets>
         <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
-            <outputDirectory>plugin/reader/tdenginereader/libs</outputDirectory>
+            <outputDirectory>plugin/reader/tdengine30reader/libs</outputDirectory>
             <scope>runtime</scope>
         </dependencySet>
     </dependencySets>

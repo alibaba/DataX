@@ -13,21 +13,21 @@
                 <include>plugin.json</include>
                 <include>plugin_job_template.json</include>
             </includes>
-            <outputDirectory>plugin/writer/tdenginewriter</outputDirectory>
+            <outputDirectory>plugin/writer/tdengine20writer</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>target/</directory>
             <includes>
-                <include>tdenginewriter-0.0.1-SNAPSHOT.jar</include>
+                <include>tdengine20writer-0.0.1-SNAPSHOT.jar</include>
             </includes>
-            <outputDirectory>plugin/writer/tdenginewriter</outputDirectory>
+            <outputDirectory>plugin/writer/tdengine20writer</outputDirectory>
         </fileSet>
     </fileSets>
 
     <dependencySets>
         <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
-            <outputDirectory>plugin/writer/tdenginewriter/libs</outputDirectory>
+            <outputDirectory>plugin/writer/tdengine20writer/libs</outputDirectory>
             <scope>runtime</scope>
         </dependencySet>
     </dependencySets>
