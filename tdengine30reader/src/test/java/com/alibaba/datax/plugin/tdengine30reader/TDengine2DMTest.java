@@ -1,4 +1,4 @@
-package com.alibaba.datax.plugin.tdengine20reader;
+package com.alibaba.datax.plugin.tdengine30reader;
 
 import com.alibaba.datax.core.Engine;
 import org.junit.Ignore;
