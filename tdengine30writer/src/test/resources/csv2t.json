@@ -6,7 +6,7 @@
           "name": "txtfilereader",
           "parameter": {
             "path": [
-              "/Users/yangzy/IdeaProjects/DataX/tdenginewriter/src/test/resources/weather.csv"
+              "/Users/yangzy/IdeaProjects/DataX/tdengine30writer/src/test/resources/weather.csv"
             ],
             "encoding": "UTF-8",
             "column": [
@@ -44,7 +44,7 @@
           }
         },
         "writer": {
-          "name": "tdenginewriter",
+          "name": "tdengine30writer",
           "parameter": {
             "username": "root",
             "password": "taosdata",

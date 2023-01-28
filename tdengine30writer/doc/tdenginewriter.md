@@ -1,6 +1,6 @@
 # DataX TDengineWriter
 
-[简体中文](./tdenginewriter-CN.md) | English
+[简体中文](./tdengine30writer-CN.md) | English
 
 ## 1 Quick Introduction
 
@@ -82,7 +82,7 @@ Write data to TDengine using the following Job configuration:
           }
         },
         "writer": {
-          "name": "tdenginewriter",
+          "name": "tdengine30writer",
           "parameter": {
             "username": "root",
             "password": "taosdata",

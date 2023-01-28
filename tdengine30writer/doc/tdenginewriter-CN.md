@@ -1,6 +1,6 @@
 # DataX TDengineWriter
 
-简体中文| [English](./tdenginewriter.md)
+简体中文| [English](./tdengine30writer.md)
 
 ## 1 快速介绍
 
@@ -80,7 +80,7 @@ create table test.weather (ts timestamp, temperature int, humidity double) tags(
           }
         },
         "writer": {
-          "name": "tdenginewriter",
+          "name": "tdengine30writer",
           "parameter": {
             "username": "root",
             "password": "taosdata",

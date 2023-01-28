@@ -11,7 +11,7 @@
         }
       },
       "writer": {
-        "name": "tdenginewriter",
+        "name": "tdengine30writer",
         "parameter": {
           "username": "root",
           "password": "taosdata",
