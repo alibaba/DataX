@@ -20,7 +20,7 @@ TDengineReader 通过 TDengine 的 JDBC driver 查询获取数据。
     "content": [
       {
         "reader": {
-          "name": "tdenginereader",
+          "name": "tdengine30reader",
           "parameter": {
             "username": "root",
             "password": "taosdata",
@@ -71,7 +71,7 @@ TDengineReader 通过 TDengine 的 JDBC driver 查询获取数据。
     "content": [
       {
         "reader": {
-          "name": "tdenginereader",
+          "name": "tdengine30reader",
           "parameter": {
             "user": "root",
             "password": "taosdata",
