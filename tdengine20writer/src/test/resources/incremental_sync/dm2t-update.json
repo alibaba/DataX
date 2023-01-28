@@ -22,7 +22,7 @@
           }
         },
         "writer": {
-          "name": "tdenginewriter",
+          "name": "tdengine20writer",
           "parameter": {
             "username": "root",
             "password": "taosdata",

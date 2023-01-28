@@ -17,11 +17,11 @@
                 ]
               }
             ],
-            "fetchSize": 1024,
+            "fetchSize": 1024
           }
         },
         "writer": {
-          "name": "tdenginewriter",
+          "name": "tdengine20writer",
           "parameter": {
             "username": "root",
             "password": "taosdata",

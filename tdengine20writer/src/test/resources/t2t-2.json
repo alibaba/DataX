@@ -3,7 +3,7 @@
     "content": [
       {
         "reader": {
-          "name": "tdenginereader",
+          "name": "tdengine20reader",
           "parameter": {
             "username": "root",
             "password": "taosdata",
@@ -43,7 +43,7 @@
           }
         },
         "writer": {
-          "name": "tdenginewriter",
+          "name": "tdengine20writer",
           "parameter": {
             "username": "root",
             "password": "taosdata",
