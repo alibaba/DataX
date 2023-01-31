@@ -72,9 +72,9 @@ DorisWriter 通过Doris原生支持Stream load方式导入数据， DorisWriter�
 
 * **jdbcUrl**
 
-    - 描述：Doris 的 JDBC 连接串，用户执行 preSql 或 postSQL。
-    - 必选：是
-    - 默认值：无
+  - 描述：Doris 的 JDBC 连接串，用户执行 preSql 或 postSQL。
+  - 必选：是
+  - 默认值：无
 
 * **loadUrl**
 
@@ -84,31 +84,31 @@ DorisWriter 通过Doris原生支持Stream load方式导入数据， DorisWriter�
 
 * **username**
 
-    - 描述：访问Doris数据库的用户名
-    - 必选：是
-    - 默认值：无
-    
+  - 描述：访问Doris数据库的用户名
+  - 必选：是
+  - 默认值：无
+
 * **password**
-  
-    - 描述：访问Doris数据库的密码
-    - 必选：否
-    - 默认值：空
+
+  - 描述：访问Doris数据库的密码
+  - 必选：否
+  - 默认值：空
 
 * **connection.selectedDatabase**
-    - 描述：需要写入的Doris数据库名称。
-    - 必选：是
-    - 默认值：无
-    
+  - 描述：需要写入的Doris数据库名称。
+  - 必选：是
+  - 默认值：无
+
 * **connection.table**
   - 描述：需要写入的Doris表名称。
     - 必选：是
     - 默认值：无
-    
+
 * **column**
 
-    - 描述：目的表**需要写入数据**的字段，这些字段将作为生成的 Json 数据的字段名。字段之间用英文逗号分隔。例如: "column": ["id","name","age"]。
-    - 必选：是
-    - 默认值：否
+  - 描述：目的表**需要写入数据**的字段，这些字段将作为生成的 Json 数据的字段名。字段之间用英文逗号分隔。例如: "column": ["id","name","age"]。
+  - 必选：是
+  - 默认值：否
 
 * **preSql**
 
@@ -125,7 +125,7 @@ DorisWriter 通过Doris原生支持Stream load方式导入数据， DorisWriter�
 
 * **maxBatchRows**
 
-  - 描述：每批次导入数据的最大行数。和 **maxBatchSize** 共同控制每批次的导入数量。每批次数据达到两个阈值之一，即开始导入这一批次的数据。
+  - 描述：每批次导入数据的最大行数。和 **batchSize** 共同控制每批次的导入数量。每批次数据达到两个阈值之一，即开始导入这一批次的数据。
   - 必选：否
   - 默认值：500000
 
@@ -165,16 +165,16 @@ DorisWriter 通过Doris原生支持Stream load方式导入数据， DorisWriter�
 
 ```json
 "loadProps": {
-    "column_separator": "\\x01",
-    "row_delimiter": "\\x02"
+  "column_separator": "\\x01",
+  "line_delimiter": "\\x02"
 }
 ```
 
 如需更改导入格式为`json`， 则正确配置 `loadProps` 即可：
 ```json
 "loadProps": {
-    "format": "json",
-    "strip_outer_array": true
+  "format": "json",
+  "strip_outer_array": true
 }
 ```
 

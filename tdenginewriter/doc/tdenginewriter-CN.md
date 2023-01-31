@@ -175,8 +175,8 @@ datax中的数据类型，可以映射到TDengine的数据类型
 | TDengine到TDengine | [超级表到子表](../src/test/resources/t2t-3.json)             |
 | TDengine到TDengine | [普通表到普通表](../src/test/resources/t2t-4.json)           |
 | RDBMS到TDengine    | [普通表到超级表，指定tbname](../src/test/resources/dm2t-1.json) |
-| RDBMS到TDengine    | [普通表到超级表，不指定tbname](../src/test/resources/dm2t-2.json) |
-| RDBMS到TDengine    | [普通表到子表](../src/test/resources/dm2t-3.json)            |
+| RDBMS到TDengine    | [普通表到超级表，不指定tbname](../src/test/resources/dm2t-3.json) |
+| RDBMS到TDengine    | [普通表到子表](../src/test/resources/dm2t-2.json)            |
 | RDBMS到TDengine    | [普通表到普通表](../src/test/resources/dm2t-4.json)          |
 | OpenTSDB到TDengine | [metric到普通表](../src/test/resources/o2t-1.json)           |
 
