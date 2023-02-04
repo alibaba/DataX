@@ -720,6 +720,11 @@ public final class DBUtil {
                         new ArrayList<String>(), String.class);
                 DBUtil.doDealWithSessionConfig(conn, sessionConfig, message);
                 break;
+            case SQLServer:
+                sessionConfig = config.getList(Key.SESSION,
+                        new ArrayList<String>(), String.class);
+                DBUtil.doDealWithSessionConfig(conn, sessionConfig, message);
+                break;
             default:
                 break;
         }
