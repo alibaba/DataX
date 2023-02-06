@@ -1,10 +1,11 @@
 package com.alibaba.datax.plugin.writer.clickhousewriter;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Types;
+import java.sql.*;
+import java.util.List;
 import java.util.Map;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,20 +19,24 @@ import com.alibaba.fastjson.JSONObject;
 /**
  * @author : donghao
  * @version : 1.0
- * @className : ClickhouseWriterTask
- * @description: 实现与Clickhouse匹配的WriterTask
+ * @className : ClickHouseWriterTask
+ * @description: 实现与ClickHouse匹配的WriterTask
  * @date : 2022-08-11 16:22
  */
-public class ClickhouseWriterTask extends CommonRdbmsWriter.Task{
-    protected static final Logger LOG = LoggerFactory.getLogger(ClickhouseWriterTask.class);
+public class ClickHouseWriterTask extends CommonRdbmsWriter.Task{
+    protected static final Logger LOG = LoggerFactory.getLogger(ClickHouseWriterTask.class);
 
-    public ClickhouseWriterTask(DataBaseType dataBaseType) {
+    public ClickHouseWriterTask(DataBaseType dataBaseType) {
         super(dataBaseType);
     }
 
     @Override
     protected PreparedStatement fillPreparedStatementColumnType(PreparedStatement preparedStatement, int columnIndex,
                                                                 int columnSqltype, String typeName, Column column) throws SQLException {
+        if (column.getRawData() == null) {
+            preparedStatement.setNull(columnIndex + 1, columnSqltype);
+            return preparedStatement;
+        }
         java.util.Date utilDate;
         switch (columnSqltype) {
             case Types.CHAR:
@@ -45,7 +50,7 @@ public class ClickhouseWriterTask extends CommonRdbmsWriter.Task{
                 preparedStatement.setString(columnIndex + 1, column
                         .asString());
                 break;
-
+            case Types.TINYINT:
             case Types.SMALLINT:
             case Types.INTEGER:
             case Types.BIGINT:
@@ -59,16 +64,6 @@ public class ClickhouseWriterTask extends CommonRdbmsWriter.Task{
                     preparedStatement.setString(columnIndex + 1, null);
                 } else {
                     preparedStatement.setString(columnIndex + 1, strValue);
-                }
-                break;
-
-            //tinyint is a little special in some database like mysql {boolean->tinyint(1)}
-            case Types.TINYINT:
-                Long longValue = column.asLong();
-                if (null == longValue) {
-                    preparedStatement.setString(columnIndex + 1, null);
-                } else {
-                    preparedStatement.setString(columnIndex + 1, longValue.toString());
                 }
                 break;
 
@@ -140,7 +135,7 @@ public class ClickhouseWriterTask extends CommonRdbmsWriter.Task{
                 break;
 
             case Types.BOOLEAN:
-                preparedStatement.setString(columnIndex + 1, column.asString());
+                preparedStatement.setBoolean(columnIndex + 1, column.asBoolean());
                 break;
 
             // warn: bit(1) -> Types.BIT 可使用setBoolean
@@ -151,6 +146,16 @@ public class ClickhouseWriterTask extends CommonRdbmsWriter.Task{
                 } else {
                     preparedStatement.setString(columnIndex + 1, column.asString());
                 }
+                break;
+
+            case Types.ARRAY:
+                Connection conn = preparedStatement.getConnection();
+                List<Object> values = JSON.parseArray(column.asString(), Object.class);
+                for (int i = 0; i < values.size(); i++) {
+                    values.set(i, this.toJavaArray(values.get(i)));
+                }
+                Array array = conn.createArrayOf("String", values.toArray());
+                preparedStatement.setArray(columnIndex + 1, array);
                 break;
             case Types.OTHER:
                 // 处理ck其他类型
@@ -166,7 +171,10 @@ public class ClickhouseWriterTask extends CommonRdbmsWriter.Task{
                         Map newMap = JSONObject.parseObject(columnStr, Map.class);
                         preparedStatement.setObject(columnIndex + 1, newMap);
                     }
-
+                    // 其他情况按照字符串处理
+                    else {
+                        preparedStatement.setObject(columnIndex + 1, columnStr);
+                    }
                 }
                 break;
             default:
@@ -183,6 +191,20 @@ public class ClickhouseWriterTask extends CommonRdbmsWriter.Task{
                                                 .get(columnIndex)));
         }
         return preparedStatement;
+    }
+
+    private Object toJavaArray(Object val) {
+        if (null == val) {
+            return null;
+        } else if (val instanceof JSONArray) {
+            Object[] valArray = ((JSONArray) val).toArray();
+            for (int i = 0; i < valArray.length; i++) {
+                valArray[i] = this.toJavaArray(valArray[i]);
+            }
+            return valArray;
+        } else {
+            return val;
+        }
     }
 
 }

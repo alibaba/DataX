@@ -1,13 +1,9 @@
 ![Datax-logo](https://github.com/alibaba/DataX/blob/master/images/DataX-logo.jpg)
 
-# 新功能点
-1. 新增了clickhousereader实现——2022.8.4
-2. CommonRdbmsReader增加连接异常重试逻辑——2022.8.17
 
 # DataX
 
 DataX 是阿里云 [DataWorks数据集成](https://www.aliyun.com/product/bigdata/ide) 的开源版本，在阿里巴巴集团内被广泛使用的离线数据同步工具/平台。DataX 实现了包括 MySQL、Oracle、OceanBase、SqlServer、Postgre、HDFS、Hive、ADS、HBase、TableStore(OTS)、MaxCompute(ODPS)、Hologres、DRDS, databend 等各种异构数据源之间高效的数据同步功能。
-
 
 # DataX 商业版本
 阿里云DataWorks数据集成是DataX团队在阿里云上的商业化产品，致力于提供复杂网络环境下、丰富的异构数据源之间高速稳定的数据移动能力，以及繁杂业务背景下的数据同步解决方案。目前已经支持云上近3000家客户，单日同步数据超过3万亿条。DataWorks数据集成目前支持离线50+种数据源，可以进行整库迁移、批量上云、增量同步、分库分表等各类同步解决方案。2020年更新实时同步能力，支持10+种数据源的读写任意组合。提供MySQL，Oracle等多种数据源到阿里云MaxCompute，Hologres等大数据引擎的一键全增量同步解决方案。
@@ -36,7 +32,7 @@ DataX本身作为数据同步框架，将不同数据源的同步抽象为从源
 
 
 
-# Support Data Channels 
+# Support Data Channels
 
 DataX目前已经有了比较全面的插件体系，主流的RDBMS数据库、NOSQL、大数据计算系统都已经接入，目前支持数据如下图，详情请点击：[DataX数据源参考指南](https://github.com/alibaba/DataX/wiki/DataX-all-data-channels)
 
@@ -96,11 +92,11 @@ DataX目前已经有了比较全面的插件体系，主流的RDBMS数据库、N
 - 新增比如：DB2、Kafka、Hologres、MetaQ、SAPHANA、达梦等等，持续扩充中
 - 离线同步支持的数据源：https://help.aliyun.com/document_detail/137670.html
 - 具备同步解决方案：
-    - 解决方案系统：https://help.aliyun.com/document_detail/171765.html
-    - 一键全增量：https://help.aliyun.com/document_detail/175676.html
-    - 整库迁移：https://help.aliyun.com/document_detail/137809.html
-    - 批量上云：https://help.aliyun.com/document_detail/146671.html
-    - 更新更多能力请访问：https://help.aliyun.com/document_detail/137663.html
+  - 解决方案系统：https://help.aliyun.com/document_detail/171765.html
+  - 一键全增量：https://help.aliyun.com/document_detail/175676.html
+  - 整库迁移：https://help.aliyun.com/document_detail/137809.html
+  - 批量上云：https://help.aliyun.com/document_detail/146671.html
+  - 更新更多能力请访问：https://help.aliyun.com/document_detail/137663.html
 
 
 # 我要开发新的插件
@@ -115,10 +111,10 @@ DataX 后续计划月度迭代更新，也欢迎感兴趣的同学提交 Pull re
   - 涉及通道能力更新（OceanBase、Tdengine、Doris等）
 
 - [datax_v202209]（https://github.com/alibaba/DataX/releases/tag/datax_v202209)
-    - 涉及通道能力更新（MaxCompute、Datahub、SLS等）、安全漏洞更新、通用打包更新等
+  - 涉及通道能力更新（MaxCompute、Datahub、SLS等）、安全漏洞更新、通用打包更新等
 
 - [datax_v202205]（https://github.com/alibaba/DataX/releases/tag/datax_v202205)
-    - 涉及通道能力更新（MaxCompute、Hologres、OSS、Tdengine等）、安全漏洞更新、通用打包更新等
+  - 涉及通道能力更新（MaxCompute、Hologres、OSS、Tdengine等）、安全漏洞更新、通用打包更新等
 
 
 # 项目成员
@@ -137,5 +133,39 @@ This software is free to use under the Apache License [Apache license](https://g
 # 开源版DataX企业用户
 
 ![Datax-logo](https://github.com/alibaba/DataX/blob/master/images/datax-enterprise-users.jpg)
+
+```
+长期招聘 联系邮箱：datax@alibabacloud.com
+【JAVA开发职位】
+职位名称：JAVA资深开发工程师/专家/高级专家
+工作年限 : 2年以上
+学历要求 : 本科（如果能力靠谱，这些都不是条件）
+期望层级 : P6/P7/P8
+
+岗位描述：
+    1. 负责阿里云大数据平台（数加）的开发设计。 
+    2. 负责面向政企客户的大数据相关产品开发；
+    3. 利用大规模机器学习算法挖掘数据之间的联系，探索数据挖掘技术在实际场景中的产品应用 ；
+    4. 一站式大数据开发平台
+    5. 大数据任务调度引擎
+    6. 任务执行引擎
+    7. 任务监控告警
+    8. 海量异构数据同步
+
+岗位要求：
+    1. 拥有3年以上JAVA Web开发经验；
+    2. 熟悉Java的基础技术体系。包括JVM、类装载、线程、并发、IO资源管理、网络；
+    3. 熟练使用常用Java技术框架、对新技术框架有敏锐感知能力；深刻理解面向对象、设计原则、封装抽象；
+    4. 熟悉HTML/HTML5和JavaScript；熟悉SQL语言；
+    5. 执行力强，具有优秀的团队合作精神、敬业精神；
+    6. 深刻理解设计模式及应用场景者加分；
+    7. 具有较强的问题分析和处理能力、比较强的动手能力，对技术有强烈追求者优先考虑；
+    8. 对高并发、高稳定可用性、高性能、大数据处理有过实际项目及产品经验者优先考虑；
+    9. 有大数据产品、云产品、中间件技术解决方案者优先考虑。
+````
+
+用户咨询支持：
+
+钉钉群目前暂时受到了一些管控策略影响，建议大家有问题优先在这里提交问题 Issue，DataX研发和社区会定期回答Issue中的问题，知识库丰富后也能帮助到后来的使用者。
 
 

@@ -11,17 +11,17 @@ import org.junit.Test;
 /**
  * @author : donghao
  * @version : 1.0
- * @className : com.alibaba.datax.plugin.reader.clickhousereader.ClickhouseReaderTest
+ * @className : com.alibaba.datax.plugin.reader.clickhousereader.ClickHouseReaderTest
  * @description: 测试类
  * @date : 2022-07-27 11:18
  */
-public class ClickhouseReaderTest {
+public class ClickHouseReaderTest {
 
-    ClickhouseReader.Job job;
+    ClickHouseReader.Job job;
 
     @Before
     public void before() {
-        job = new ClickhouseReader.Job();
+        job = new ClickHouseReader.Job();
         File file = new File(
             "C:\\Users\\Mobvista\\IdeaProjects\\DataX\\clickhousereader\\src\\test\\resources\\test_ck_reader.json");
 

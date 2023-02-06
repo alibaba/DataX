@@ -17,12 +17,12 @@ import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
 /**
  * @author : donghao
  * @version : 1.0
- * @className : ClickhouseReader
+ * @className : ClickHouseReader
  * @date : 2022-07-20 16:14
  */
-public class ClickhouseReader extends Reader {
+public class ClickHouseReader extends Reader {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ClickhouseReader.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ClickHouseReader.class);
     private static final DataBaseType DATABASE_TYPE = DataBaseType.ClickHouse;
 
     public static class Job extends Reader.Job {
@@ -34,7 +34,7 @@ public class ClickhouseReader extends Reader {
             this.originalConfig = super.getPluginJobConf();
             this.commonRdbmsReaderMaster = new CommonRdbmsReader.Job(DATABASE_TYPE);
             this.commonRdbmsReaderMaster.init(this.originalConfig);
-            LOG.info("ClickhouseReader Job初始化成功");
+            LOG.info("ClickHouseReader Job初始化成功");
         }
 
         @Override
@@ -73,7 +73,7 @@ public class ClickhouseReader extends Reader {
             }
             commonRdbmsReaderMaster = new CommonRdbmsReader.Task(DATABASE_TYPE, super.getTaskGroupId(), super.getTaskId());
             commonRdbmsReaderMaster.init(taskConfig);
-            LOG.info("ClickhouseReader Task初始化成功");
+            LOG.info("ClickHouseReader Task初始化成功");
         }
 
         @Override

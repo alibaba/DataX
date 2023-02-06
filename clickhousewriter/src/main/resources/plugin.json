@@ -1,6 +1,6 @@
 {
     "name": "clickhousewriter",
-    "class": "com.alibaba.datax.plugin.writer.clickhousewriter.ClickhouseWriter",
+    "class": "com.alibaba.datax.plugin.writer.clickhousewriter.ClickHouseWriter",
     "description": "useScene: prod. mechanism: Jdbc connection using the database, execute insert sql.",
     "developer": "alibaba"
 }

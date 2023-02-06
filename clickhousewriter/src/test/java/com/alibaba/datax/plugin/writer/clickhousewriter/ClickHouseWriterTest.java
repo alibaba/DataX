@@ -10,16 +10,16 @@ import java.io.File;
 /**
  * @author : donghao
  * @version : 1.0
- * @className : ClickhouseWriterTest
+ * @className : ClickHouseWriterTest
  * @description: TODO
  * @date : 2022-07-27 19:27
  */
-public class ClickhouseWriterTest {
-    ClickhouseWriter.Job job;
+public class ClickHouseWriterTest {
+    ClickHouseWriter.Job job;
 
     @Before
     public void before() {
-        job = new ClickhouseWriter.Job();
+        job = new ClickHouseWriter.Job();
         File file = new File(
                 "C:\\Users\\Mobvista\\IdeaProjects\\DataX\\clickhousewriter\\src\\test\\resources\\test_ck_writer.json");
 

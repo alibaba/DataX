@@ -12,10 +12,6 @@
         ],
         "preSql": [],
         "postSql": [],
-
-        "batchSize": 65536,
-        "batchByteSize": 134217728,
-        "dryRun": false,
         "writeMode": "insert"
     }
 }

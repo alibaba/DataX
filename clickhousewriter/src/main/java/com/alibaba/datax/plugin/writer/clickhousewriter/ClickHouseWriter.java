@@ -1,28 +1,14 @@
 package com.alibaba.datax.plugin.writer.clickhousewriter;
 
-import com.alibaba.datax.common.element.Column;
-import com.alibaba.datax.common.element.StringColumn;
-import com.alibaba.datax.common.exception.CommonErrorCode;
-import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordReceiver;
 import com.alibaba.datax.common.spi.Writer;
 import com.alibaba.datax.common.util.Configuration;
-import com.alibaba.datax.plugin.rdbms.util.DBUtilErrorCode;
 import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
 import com.alibaba.datax.plugin.rdbms.writer.CommonRdbmsWriter;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 
-import java.sql.Array;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.sql.Types;
 import java.util.List;
-import java.util.regex.Pattern;
 
-public class ClickhouseWriter extends Writer {
+public class ClickHouseWriter extends Writer {
 	private static final DataBaseType DATABASE_TYPE = DataBaseType.ClickHouse;
 
 	public static class Job extends Writer.Job {
@@ -60,13 +46,13 @@ public class ClickhouseWriter extends Writer {
 	public static class Task extends Writer.Task {
 		private Configuration writerSliceConfig;
 
-		private ClickhouseWriterTask clickhouseWriterTask;
+		private ClickHouseWriterTask clickhouseWriterTask;
 
 		@Override
 		public void init() {
 			this.writerSliceConfig = super.getPluginJobConf();
 
-			this.clickhouseWriterTask = new ClickhouseWriterTask(DataBaseType.ClickHouse);
+			this.clickhouseWriterTask = new ClickHouseWriterTask(DataBaseType.ClickHouse);
 			this.clickhouseWriterTask.init(this.writerSliceConfig);
 		}
 
