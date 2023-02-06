@@ -32,7 +32,7 @@ DataX本身作为数据同步框架，将不同数据源的同步抽象为从源
 
 
 
-# Support Data Channels
+# Support Data Channels 
 
 DataX目前已经有了比较全面的插件体系，主流的RDBMS数据库、NOSQL、大数据计算系统都已经接入，目前支持数据如下图，详情请点击：[DataX数据源参考指南](https://github.com/alibaba/DataX/wiki/DataX-all-data-channels)
 
@@ -92,11 +92,11 @@ DataX目前已经有了比较全面的插件体系，主流的RDBMS数据库、N
 - 新增比如：DB2、Kafka、Hologres、MetaQ、SAPHANA、达梦等等，持续扩充中
 - 离线同步支持的数据源：https://help.aliyun.com/document_detail/137670.html
 - 具备同步解决方案：
-  - 解决方案系统：https://help.aliyun.com/document_detail/171765.html
-  - 一键全增量：https://help.aliyun.com/document_detail/175676.html
-  - 整库迁移：https://help.aliyun.com/document_detail/137809.html
-  - 批量上云：https://help.aliyun.com/document_detail/146671.html
-  - 更新更多能力请访问：https://help.aliyun.com/document_detail/137663.html
+    - 解决方案系统：https://help.aliyun.com/document_detail/171765.html
+    - 一键全增量：https://help.aliyun.com/document_detail/175676.html
+    - 整库迁移：https://help.aliyun.com/document_detail/137809.html
+    - 批量上云：https://help.aliyun.com/document_detail/146671.html
+    - 更新更多能力请访问：https://help.aliyun.com/document_detail/137663.html
 
 
 # 我要开发新的插件
@@ -111,10 +111,10 @@ DataX 后续计划月度迭代更新，也欢迎感兴趣的同学提交 Pull re
   - 涉及通道能力更新（OceanBase、Tdengine、Doris等）
 
 - [datax_v202209]（https://github.com/alibaba/DataX/releases/tag/datax_v202209)
-  - 涉及通道能力更新（MaxCompute、Datahub、SLS等）、安全漏洞更新、通用打包更新等
+    - 涉及通道能力更新（MaxCompute、Datahub、SLS等）、安全漏洞更新、通用打包更新等
 
 - [datax_v202205]（https://github.com/alibaba/DataX/releases/tag/datax_v202205)
-  - 涉及通道能力更新（MaxCompute、Hologres、OSS、Tdengine等）、安全漏洞更新、通用打包更新等
+    - 涉及通道能力更新（MaxCompute、Hologres、OSS、Tdengine等）、安全漏洞更新、通用打包更新等
 
 
 # 项目成员
@@ -167,5 +167,6 @@ This software is free to use under the Apache License [Apache license](https://g
 用户咨询支持：
 
 钉钉群目前暂时受到了一些管控策略影响，建议大家有问题优先在这里提交问题 Issue，DataX研发和社区会定期回答Issue中的问题，知识库丰富后也能帮助到后来的使用者。
+
 
 

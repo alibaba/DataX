@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.SQLFeatureNotSupportedException;
 import java.util.List;
 import java.util.concurrent.Callable;
 

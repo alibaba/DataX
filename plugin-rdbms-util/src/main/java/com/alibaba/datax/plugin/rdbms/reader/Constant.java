@@ -27,10 +27,7 @@ public final class Constant {
 
     public static Integer SPLIT_FACTOR = 5;
 
-    /**
-     * 最小FETCH_SIZE
-     */
-    public static final Integer DEFAULT_FETCH_SIZE = 1;
+    public static final int DEFAULT_FETCH_SIZE = 1000;
 
     public static final String PASSWORD = "password";
 }

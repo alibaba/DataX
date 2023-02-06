@@ -32,6 +32,12 @@ public class ClickHouseReader extends Reader {
         @Override
         public void init() {
             this.originalConfig = super.getPluginJobConf();
+            int fetchSize = this.originalConfig.getInt(Constant.FETCH_SIZE, Constant.DEFAULT_FETCH_SIZE);
+            if (fetchSize < 1) {
+                throw DataXException.asDataXException(DBUtilErrorCode.REQUIRED_VALUE,
+                        String.format("您配置的fetchSize有误，根据DataX的设计，fetchSize : [%d] 设置值不能小于 1.", fetchSize));
+            }
+            this.originalConfig.set(Constant.FETCH_SIZE, fetchSize);
             this.commonRdbmsReaderMaster = new CommonRdbmsReader.Job(DATABASE_TYPE);
             this.commonRdbmsReaderMaster.init(this.originalConfig);
             LOG.info("ClickHouseReader Job初始化成功");
@@ -57,20 +63,12 @@ public class ClickHouseReader extends Reader {
 
         private Configuration taskConfig;
 
-        private int fetchSize;
-
         private CommonRdbmsReader.Task commonRdbmsReaderMaster;
 
 
         @Override
         public void init() {
             this.taskConfig = super.getPluginJobConf();
-            int fetchSize = this.taskConfig.getInt(com.alibaba.datax.plugin.rdbms.reader.Constant.FETCH_SIZE,
-                    Constant.DEFAULT_FETCH_SIZE);
-            if (fetchSize < 1) {
-                throw DataXException.asDataXException(DBUtilErrorCode.REQUIRED_VALUE,
-                        String.format("您配置的fetchSize有误，根据DataX的设计，fetchSize : [%d] 设置值不能小于 1.", fetchSize));
-            }
             commonRdbmsReaderMaster = new CommonRdbmsReader.Task(DATABASE_TYPE, super.getTaskGroupId(), super.getTaskId());
             commonRdbmsReaderMaster.init(taskConfig);
             LOG.info("ClickHouseReader Task初始化成功");
@@ -83,6 +81,7 @@ public class ClickHouseReader extends Reader {
 
         @Override
         public void startRead(RecordSender recordSender) {
+            int fetchSize = this.taskConfig.getInt(Constant.FETCH_SIZE);
             commonRdbmsReaderMaster.startRead(taskConfig, recordSender, super.getTaskPluginCollector(), fetchSize);
         }
 
