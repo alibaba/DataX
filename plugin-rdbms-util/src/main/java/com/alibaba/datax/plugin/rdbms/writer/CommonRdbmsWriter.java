@@ -294,7 +294,6 @@ public class CommonRdbmsWriter {
                         bufferBytes = 0;
                     }
                 }
-                LOG.info("get transport records, contain records:{}.", writeBuffer.size());
                 if (!writeBuffer.isEmpty()) {
                     doBatchInsert(connection, writeBuffer);
                     writeBuffer.clear();
