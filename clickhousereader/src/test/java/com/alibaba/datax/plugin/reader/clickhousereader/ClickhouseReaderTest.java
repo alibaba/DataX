@@ -23,7 +23,7 @@ public class ClickhouseReaderTest {
     public void before() {
         job = new ClickhouseReader.Job();
         File file = new File(
-            "C:\\Users\\Mobvista\\IdeaProjects\\DataX\\src\\main\\resources\\conf\\test_ck_reader.json");
+            "C:\\Users\\Mobvista\\IdeaProjects\\DataX\\clickhousereader\\src\\test\\resources\\test_ck_reader.json");
 
         Configuration configuration = Configuration.from(file);
         job.setPluginJobConf(configuration);
@@ -39,7 +39,7 @@ public class ClickhouseReaderTest {
 
         Assert.assertEquals("solar_reader", conf.getString("username"));
         Assert.assertEquals("Solar123", conf.getString("password"));
-        Assert.assertEquals(new Integer(10), conf.getInt("fetchSize"));
+        Assert.assertEquals(new Integer(2000), conf.getInt("fetchSize"));
 
         job.destroy();
     }
