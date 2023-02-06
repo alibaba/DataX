@@ -86,6 +86,7 @@
         <module>mysqlwriter</module>
         <module>starrockswriter</module>
         <module>drdswriter</module>
+        <module>databendwriter</module>
         <module>oraclewriter</module>
         <module>sqlserverwriter</module>
         <module>postgresqlwriter</module>
