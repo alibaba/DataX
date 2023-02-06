@@ -15,10 +15,9 @@
 
     <dependencies>
         <dependency>
-            <!-- please stop using ru.yandex.clickhouse as it's been deprecated -->
             <groupId>com.clickhouse</groupId>
             <artifactId>clickhouse-jdbc</artifactId>
-            <version>0.3.2-patch11</version>
+            <version>0.4.0</version>
             <!-- use uber jar with all dependencies included, change classifier to http for smaller jar -->
             <classifier>all</classifier>
             <exclusions>

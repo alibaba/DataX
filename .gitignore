@@ -155,4 +155,7 @@ local.properties
 .cache-main
 .scala_dependencies
 .worksheet
-/src/main/resources/conf/
+src/test/resources/test_ck_writer.json
+src/test/resources/test_ck_reader.json
+src/test/java/com/alibaba/datax/plugin/reader/clickhousereader/ClickhouseReaderTest.java
+src/test/java/com/alibaba/datax/plugin/writer/clickhousewriter/ClickhouseWriterTest.java

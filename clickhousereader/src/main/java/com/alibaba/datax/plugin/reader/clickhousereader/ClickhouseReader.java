@@ -32,13 +32,6 @@ public class ClickhouseReader extends Reader {
         @Override
         public void init() {
             this.originalConfig = super.getPluginJobConf();
-
-            int fetchSize = this.originalConfig.getInt(com.alibaba.datax.plugin.rdbms.reader.Constant.FETCH_SIZE,
-                    Constant.DEFAULT_FETCH_SIZE);
-            if (fetchSize < 1) {
-                throw DataXException.asDataXException(DBUtilErrorCode.REQUIRED_VALUE,
-                        String.format("您配置的fetchSize有误，根据DataX的设计，fetchSize : [%d] 设置值不能小于 1.", fetchSize));
-            }
             this.commonRdbmsReaderMaster = new CommonRdbmsReader.Job(DATABASE_TYPE);
             this.commonRdbmsReaderMaster.init(this.originalConfig);
             LOG.info("ClickhouseReader Job初始化成功");
@@ -72,8 +65,12 @@ public class ClickhouseReader extends Reader {
         @Override
         public void init() {
             this.taskConfig = super.getPluginJobConf();
-            // 初始化fetchSize
-            fetchSize = this.taskConfig.getInt(Constant.FETCH_SIZE);
+            int fetchSize = this.taskConfig.getInt(com.alibaba.datax.plugin.rdbms.reader.Constant.FETCH_SIZE,
+                    Constant.DEFAULT_FETCH_SIZE);
+            if (fetchSize < 1) {
+                throw DataXException.asDataXException(DBUtilErrorCode.REQUIRED_VALUE,
+                        String.format("您配置的fetchSize有误，根据DataX的设计，fetchSize : [%d] 设置值不能小于 1.", fetchSize));
+            }
             commonRdbmsReaderMaster = new CommonRdbmsReader.Task(DATABASE_TYPE, super.getTaskGroupId(), super.getTaskId());
             commonRdbmsReaderMaster.init(taskConfig);
             LOG.info("ClickhouseReader Task初始化成功");
