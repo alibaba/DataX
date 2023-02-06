@@ -37,8 +37,8 @@ public class ClickHouseReaderTest {
         // assert
         Configuration conf = job.getPluginJobConf();
 
-        Assert.assertEquals("solar_reader", conf.getString("username"));
-        Assert.assertEquals("Solar123", conf.getString("password"));
+        Assert.assertEquals("xxx", conf.getString("username"));
+        Assert.assertEquals("xxx", conf.getString("password"));
         Assert.assertEquals(new Integer(2000), conf.getInt("fetchSize"));
 
         job.destroy();
