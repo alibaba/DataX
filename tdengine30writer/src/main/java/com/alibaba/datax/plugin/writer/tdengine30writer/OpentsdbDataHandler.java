@@ -71,7 +71,6 @@ public class OpentsdbDataHandler implements DataHandler {
             }
             if (sb.length() != 0 && sb.charAt(0) == '[') {
                 String jsonData = sb.deleteCharAt(sb.length() - 1).append("]").toString();
-                System.err.println(jsonData);
                 LOG.debug(">>> " + jsonData);
                 writer.write(jsonData, SchemalessProtocolType.JSON, SchemalessTimestampType.NOT_CONFIGURED);
             }
