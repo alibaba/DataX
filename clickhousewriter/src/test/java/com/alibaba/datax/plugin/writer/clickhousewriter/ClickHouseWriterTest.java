@@ -21,7 +21,7 @@ public class ClickHouseWriterTest {
     public void before() {
         job = new ClickHouseWriter.Job();
         File file = new File(
-                "C:\\Users\\Mobvista\\IdeaProjects\\DataX\\clickhousewriter\\src\\test\\resources\\test_ck_writer.json");
+                "C:\\Users\\Mobvista\\Documents\\其他\\test_ck_writer.json");
 
         Configuration configuration = Configuration.from(file);
         job.setPluginJobConf(configuration);

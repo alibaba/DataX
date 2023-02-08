@@ -23,7 +23,7 @@ public class ClickHouseReaderTest {
     public void before() {
         job = new ClickHouseReader.Job();
         File file = new File(
-            "C:\\Users\\Mobvista\\IdeaProjects\\DataX\\clickhousereader\\src\\test\\resources\\test_ck_reader.json");
+            "C:\\Users\\Mobvista\\Documents\\其他\\test_ck_reader.json");
 
         Configuration configuration = Configuration.from(file);
         job.setPluginJobConf(configuration);
