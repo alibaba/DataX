@@ -33,7 +33,6 @@ public class ClickHouseReaderTest {
     public void jobInit() {
         // when
         job.init();
-
         // assert
         Configuration conf = job.getPluginJobConf();
 
