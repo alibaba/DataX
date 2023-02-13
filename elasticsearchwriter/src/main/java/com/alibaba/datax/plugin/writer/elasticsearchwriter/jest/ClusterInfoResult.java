@@ -35,7 +35,7 @@ public class ClusterInfoResult extends JestResult {
 			throw new Exception(getJsonString());
 		}
 		try {
-			String version = jsonObject.getAsJsonObject("version").get("number").toString();
+			String version = jsonObject.getAsJsonObject("version").get("number").toString();	//该点可以从es读取version
 			Matcher matcher = FIRST_NUMBER.matcher(version);
 			matcher.find();
 			String number = matcher.group();
@@ -43,7 +43,7 @@ public class ClusterInfoResult extends JestResult {
 			return versionNum >= SEVEN;
 		} catch (Exception e) {
 			//5.x 以下版本不做兼容测试，如果返回json格式解析失败，有可能是以下版本，所以认为不大于7.x
-			return false;
+			return false;	//使用
 		}
 	}
 }

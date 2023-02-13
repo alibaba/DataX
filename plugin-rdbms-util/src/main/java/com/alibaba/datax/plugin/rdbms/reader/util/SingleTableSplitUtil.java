@@ -39,7 +39,7 @@ public class SingleTableSplitUtil {
         String table = configuration.getString(Key.TABLE);
         String where = configuration.getString(Key.WHERE, null);
         boolean hasWhere = StringUtils.isNotBlank(where);
-        
+
         //String splitMode = configuration.getString(Key.SPLIT_MODE, "");
         //if (Constant.SPLIT_MODE_RANDOMSAMPLE.equals(splitMode) && DATABASE_TYPE == DataBaseType.Oracle) {
         if (DATABASE_TYPE == DataBaseType.Oracle) {
@@ -65,7 +65,8 @@ public class SingleTableSplitUtil {
             boolean isLongType = Constant.PK_TYPE_LONG.equals(configuration
                     .getString(Constant.PK_TYPE));
 
-            
+
+            // 如果是uuid功能
             if (isStringType) {
                 rangeList = RdbmsRangeSplitWrap.splitAndWrap(
                         String.valueOf(minMaxPK.getLeft()),

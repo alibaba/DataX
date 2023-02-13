@@ -1,19 +1,50 @@
 package com.alibaba.datax.common.util;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.math.BigInteger;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 提供通用的根据数字范围、字符串范围等进行切分的通用功能.
  */
 public final class RangeSplitUtil {
 
+    public static String[] doUUIDStringSplit(String left, String right, int expectSliceNumber) {
+        BigInteger leftInteger = new BigInteger(left.replace("-", ""), 16);
+        BigInteger rightInteger = new BigInteger(right.replace("-", ""), 16);
+        BigInteger[] tempResult = doBigIntegerSplit(leftInteger, rightInteger, expectSliceNumber);
+        String[] result = new String[tempResult.length];
+        //使用
+        result[0] = left;
+        result[tempResult.length - 1] = right;
+
+        for (int i = 1, len = tempResult.length - 1; i < len; i++) {
+            result[i] = bigIntegerToString(tempResult[i]);
+        }
+
+        return result;
+    }
+
+    private static String bigIntegerToString(BigInteger bigInteger) {
+        String hex = bigInteger.toString(16);
+        List<String> list = new ArrayList<>();
+        Pattern pattern = Pattern.compile("([a-z0-9]{8})([a-z0-9]{4})([a-z0-9]{4})([a-z0-9]{4})([a-z0-9]{12})");
+        Matcher matcher = pattern.matcher(hex);
+        if (matcher.matches()){
+            for (int i = 1; i <=matcher.groupCount(); i++){
+                list.add(matcher.group(i));
+            }
+        }
+        return StringUtils.join(list, "-");
+    }
+
     public static String[] doAsciiStringSplit(String left, String right, int expectSliceNumber) {
         int radix = 128;
-
         BigInteger[] tempResult = doBigIntegerSplit(stringToBigInteger(left, radix),
                 stringToBigInteger(right, radix), expectSliceNumber);
         String[] result = new String[tempResult.length];

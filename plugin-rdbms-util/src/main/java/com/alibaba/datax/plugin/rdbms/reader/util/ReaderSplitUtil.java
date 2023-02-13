@@ -62,7 +62,7 @@ public final class ReaderSplitUtil {
                 boolean needSplitTable = eachTableShouldSplittedNumber > 1
                         && StringUtils.isNotBlank(splitPk);
                 if (needSplitTable) {
-                    if (tables.size() == 1) {
+                    if (tables.size() == 1) {       //如果只有一个表
                         //原来:如果是单表的，主键切分num=num*2+1
                         // splitPk is null这类的情况的数据量本身就比真实数据量少很多, 和channel大小比率关系时，不建议考虑
                         //eachTableShouldSplittedNumber = eachTableShouldSplittedNumber * 2 + 1;// 不应该加1导致长尾
@@ -114,7 +114,6 @@ public final class ReaderSplitUtil {
     public static Configuration doPreCheckSplit(Configuration originalSliceConfig) {
         Configuration queryConfig = originalSliceConfig.clone();
         boolean isTableMode = originalSliceConfig.getBool(Constant.IS_TABLE_MODE).booleanValue();
-
         String splitPK = originalSliceConfig.getString(Key.SPLIT_PK);
         String column = originalSliceConfig.getString(Key.COLUMN);
         String where = originalSliceConfig.getString(Key.WHERE, null);
@@ -156,7 +155,7 @@ public final class ReaderSplitUtil {
         return queryConfig;
     }
 
-    private static int calculateEachTableShouldSplittedNumber(int adviceNumber,
+    private static int calculateEachTableShouldSplittedNumber(int adviceNumber,     //计算每个table应该用的个数
                                                               int tableNumber) {
         double tempNum = 1.0 * adviceNumber / tableNumber;
 

@@ -6,13 +6,29 @@ import org.apache.commons.lang3.StringUtils;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public final class RdbmsRangeSplitWrap {
 
     public static List<String> splitAndWrap(String left, String right, int expectSliceNumber,
                                             String columnName, String quote, DataBaseType dataBaseType) {
-        String[] tempResult = RangeSplitUtil.doAsciiStringSplit(left, right, expectSliceNumber);
+        String[] tempResult;
+        //如果key为UUID类型
+        if (keyIsUUID(left, right)) {
+            tempResult = RangeSplitUtil.doUUIDStringSplit(left, right, expectSliceNumber);
+        } else {
+            tempResult = RangeSplitUtil.doAsciiStringSplit(left, right, expectSliceNumber);
+        }
         return RdbmsRangeSplitWrap.wrapRange(tempResult, columnName, quote, dataBaseType);
+    }
+
+    private static Boolean keyIsUUID(String left, String right) {
+        String UUID_regex = "[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}";
+        Pattern leftPattern = Pattern.compile(UUID_regex);
+        boolean UUID_Underline = leftPattern.matcher(left).matches() && leftPattern.matcher(right).matches();
+        Pattern rightPattern = Pattern.compile("[0-9a-f]{32}$", Pattern.CASE_INSENSITIVE);
+        boolean UUID = rightPattern.matcher(left).matches() && rightPattern.matcher(right).matches();
+        return UUID || UUID_Underline;
     }
 
     // warn: do not use this method long->BigInteger
