@@ -1,17 +1,6 @@
 package com.alibaba.datax.plugin.reader.mongodbreader;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-
-import com.alibaba.datax.common.element.BoolColumn;
-import com.alibaba.datax.common.element.DateColumn;
-import com.alibaba.datax.common.element.DoubleColumn;
-import com.alibaba.datax.common.element.LongColumn;
-import com.alibaba.datax.common.element.Record;
-import com.alibaba.datax.common.element.StringColumn;
+import com.alibaba.datax.common.element.*;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordSender;
 import com.alibaba.datax.common.spi.Reader;
@@ -21,8 +10,6 @@ import com.alibaba.datax.plugin.reader.mongodbreader.util.MongoUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-
-import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
@@ -30,6 +17,12 @@ import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import org.bson.types.ObjectId;
+
+import java.math.BigDecimal;
+import java.util.*;
+import  com.alibaba.fastjson.parser.Feature;
+
+
 
 /**
  * Created by jianying.wcj on 2015/3/19 0019.
@@ -170,11 +163,18 @@ public class MongoDBReader extends Reader {
                                     MongoDBReaderErrorCode.ILLEGAL_VALUE.getDescription());
                             } else {
                                 ArrayList array = (ArrayList)tempCol;
-                                String tempArrayStr = Joiner.on(splitter).join(array);
+//                                String tempArrayStr = Joiner.on(splitter).join(array);
+                                //fix Nested document
+                                String tempArrayStr = fixedNestedDocument(tempCol);
                                 record.addColumn(new StringColumn(tempArrayStr));
                             }
                         } else {
-                            record.addColumn(new StringColumn(tempCol.toString()));
+//                            record.addColumn(new StringColumn(tempCol.toString()));
+                            //fix Nested document
+                            String column_value = fixedNestedDocument(tempCol);
+
+
+                            record.addColumn(new StringColumn(column_value));
                         }
                     }
                 }
@@ -208,5 +208,67 @@ public class MongoDBReader extends Reader {
 
         }
 
+    }
+
+    /**
+     *修复当mongodb数据是嵌套结构时将数据转换为json字符串,如果数据是个嵌套级对象直接转为json格式的string
+     * @param column_value 源数据列的值
+     * @return
+     */
+    private static String fixedNestedDocument(Object column_value) {
+        System.out.println("[INFO] ------------------------------------------------------------------------"+"fixedNestedDocument is run");
+        System.out.println("[INFO] ------------------------------------------------------------------------"+column_value.getClass().getName());
+        String ret_column_value = "";
+        if(column_value!=null){
+            if(column_value instanceof Document){
+                ret_column_value = ((Document) column_value).toJson();
+            }else if(column_value instanceof ArrayList){
+                System.out.println("[INFO] ------------------------------------------------------------------------"+"array");
+                ArrayList array = (ArrayList) column_value;
+
+                JSONArray jsonArray = new JSONArray();
+                for(int i=0;i<array.size();i++){
+                    Object element = array.get(i);
+                    System.out.println("[INFO] ------------------------------------------------------------------------"+""+element.getClass());
+                    String unbox_json_str = "";
+                    if(element instanceof Document){
+                        unbox_json_str=((Document)element).toJson();
+                        JSONObject json = JSONObject.parseObject(unbox_json_str);
+                        jsonArray.add(json);
+                    }else if(element instanceof Double){
+                        unbox_json_str=String.valueOf(((Double) element).doubleValue());
+                        jsonArray.add(unbox_json_str);
+                    }else if(element instanceof Integer){
+                        unbox_json_str=((Integer)element).toString();
+                        jsonArray.add(unbox_json_str);
+                    }else if(element instanceof Float){
+                        unbox_json_str=((Float)element).toString();
+                        jsonArray.add(unbox_json_str);
+                    }else if(element instanceof String){
+                        unbox_json_str=(String)element;
+                        jsonArray.add(unbox_json_str);
+                    }else if(element instanceof Boolean){
+                        unbox_json_str=((Boolean)element).toString();
+                        jsonArray.add(unbox_json_str);
+                    }else if(element instanceof Long){
+                        unbox_json_str=((Long)element).toString();
+                        jsonArray.add(unbox_json_str);
+                    }else if(element instanceof Date){
+                        unbox_json_str=((Date)element).toString();
+                        jsonArray.add(unbox_json_str);
+                    }else if(element instanceof BigDecimal){
+                        unbox_json_str=new BigDecimal(String.valueOf(element)).toPlainString();
+                        jsonArray.add(unbox_json_str);
+                    }
+
+                }
+                ret_column_value = jsonArray.toJSONString();
+            }else{
+                ret_column_value = column_value.toString();
+            }
+        }
+
+        System.out.println("[INFO] ------------------------------------------------------------------------"+"fixedNestedDocument end ");
+        return ret_column_value;
     }
 }
