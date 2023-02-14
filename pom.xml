@@ -121,6 +121,7 @@
         <module>cassandrawriter</module>
         <module>clickhousewriter</module>
         <module>doriswriter</module>
+        <module>selectdbwriter</module>
         <module>adbmysqlwriter</module>
 
         <!-- common support module -->
