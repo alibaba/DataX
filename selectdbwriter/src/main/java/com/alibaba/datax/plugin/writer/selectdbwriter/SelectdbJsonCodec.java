@@ -1,7 +1,7 @@
 package com.alibaba.datax.plugin.writer.selectdbwriter;
 
 import com.alibaba.datax.common.element.Record;
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 
 import java.util.HashMap;
 import java.util.List;
