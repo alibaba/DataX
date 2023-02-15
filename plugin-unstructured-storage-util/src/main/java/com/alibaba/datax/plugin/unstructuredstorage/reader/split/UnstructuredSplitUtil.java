@@ -5,7 +5,7 @@ import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.common.util.RangeSplitUtil;
 import com.alibaba.datax.plugin.unstructuredstorage.reader.Key;
 import com.alibaba.datax.plugin.unstructuredstorage.reader.UnstructuredStorageReaderErrorCode;
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;

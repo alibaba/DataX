@@ -14,8 +14,8 @@ import org.slf4j.LoggerFactory;
 
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.plugin.writer.ftpwriter.FtpWriterErrorCode;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONWriter;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
@@ -251,7 +251,7 @@ public class SftpHelperImpl implements IFtpHelper {
             @SuppressWarnings("rawtypes")
             Vector allFiles = this.channelSftp.ls(dir);
             LOG.debug(String.format("ls: %s", JSON.toJSONString(allFiles,
-                    SerializerFeature.UseSingleQuotes)));
+                    JSONWriter.Feature.UseSingleQuotes)));
             for (int i = 0; i < allFiles.size(); i++) {
                 LsEntry le = (LsEntry) allFiles.get(i);
                 String strName = le.getFilename();

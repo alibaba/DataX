@@ -10,7 +10,7 @@ import com.alibaba.datax.plugin.rdbms.reader.Constant;
 import com.alibaba.datax.plugin.reader.oceanbasev10reader.OceanBaseReader;
 import com.alibaba.datax.plugin.reader.oceanbasev10reader.util.ObReaderUtils;
 import com.alibaba.datax.plugin.reader.oceanbasev10reader.util.PartitionSplitUtil;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

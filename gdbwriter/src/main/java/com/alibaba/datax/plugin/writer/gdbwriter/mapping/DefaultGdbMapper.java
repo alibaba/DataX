@@ -19,8 +19,8 @@ import com.alibaba.datax.plugin.writer.gdbwriter.Key;
 import com.alibaba.datax.plugin.writer.gdbwriter.model.GdbEdge;
 import com.alibaba.datax.plugin.writer.gdbwriter.model.GdbElement;
 import com.alibaba.datax.plugin.writer.gdbwriter.model.GdbVertex;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
 
 import lombok.extern.slf4j.Slf4j;
 

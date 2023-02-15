@@ -4,8 +4,10 @@ import com.alibaba.datax.common.element.*;
 import com.alibaba.datax.common.plugin.RecordSender;
 import com.alibaba.datax.plugin.reader.tsdbreader.Constant;
 import com.alibaba.datax.plugin.reader.tsdbreader.util.HttpUtils;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.parser.Feature;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONReader;
+import com.alibaba.fastjson2.JSONReader.Feature;
+import com.alibaba.fastjson2.JSONWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +31,7 @@ final class TSDBDump {
     private static final String QUERY_MULTI_FIELD = "/api/mquery";
 
     static {
-        JSON.DEFAULT_PARSER_FEATURE &= ~Feature.UseBigDecimal.getMask();
+        JSON.config(Feature.UseBigDecimalForDoubles);
     }
 
     private TSDBDump() {

@@ -1,8 +1,8 @@
 package com.alibaba.datax.plugin.reader.datahubreader;
 
 import com.alibaba.datax.common.util.Configuration;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.TypeReference;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.TypeReference;
 import com.aliyun.datahub.client.DatahubClient;
 import com.aliyun.datahub.client.DatahubClientBuilder;
 import com.aliyun.datahub.client.auth.Account;
