@@ -82,6 +82,18 @@ public class DefaultDataHandler implements DataHandler {
             // prepare table_name -> column_meta
             this.tbnameColumnMetasMap = schemaManager.loadColumnMetas(tables);
 
+            // filter column
+            for (String tableName : tbnameColumnMetasMap.keySet()) {
+                List<ColumnMeta> columnMetaList = tbnameColumnMetasMap.get(tableName);
+                Iterator<ColumnMeta> iterator = columnMetaList.iterator();
+                while (iterator.hasNext()) {
+                    ColumnMeta columnMeta = iterator.next();
+                    if (!this.columns.contains(columnMeta.field)) {
+                        iterator.remove();
+                    }
+                }
+            }
+
             List<Record> recordBatch = new ArrayList<>();
             Record record;
             for (int i = 1; (record = lineReceiver.getFromReader()) != null; i++) {
@@ -226,14 +238,18 @@ public class DefaultDataHandler implements DataHandler {
             ColumnMeta columnMeta = columnMetas.get(colIndex);
             if (columnMeta.isTag) {
                 Column column = record.getColumn(colIndex);
-                switch (columnMeta.type) {
-                    case "TINYINT":
-                    case "SMALLINT":
-                    case "INT":
-                    case "BIGINT":
-                        return column.asLong().toString();
-                    default:
-                        return column.asString();
+                try {
+                    switch (columnMeta.type) {
+                        case "TINYINT":
+                        case "SMALLINT":
+                        case "INT":
+                        case "BIGINT":
+                            return column.asLong().toString();
+                        default:
+                            return column.asString();
+                    }
+                } catch (Exception e) {
+                    LOG.error("failed to get Tag, colIndex:  " + colIndex + ", ColumnMeta: " + columnMeta + ", record: " + record, e);
                 }
             }
             return "";
@@ -250,8 +266,8 @@ public class DefaultDataHandler implements DataHandler {
 
         StringBuilder sb = new StringBuilder("insert into");
         for (Record record : recordBatch) {
-            sb.append(" ").append(record.getColumn(indexOf("tbname")).asString())
-                    .append(" using ").append(table)
+            sb.append(" `").append(record.getColumn(indexOf("tbname")).asString())
+                    .append("` using ").append(table)
                     .append(" tags")
                     .append(columnMetas.stream().filter(colMeta -> columns.contains(colMeta.field)).filter(colMeta -> {
                         return colMeta.isTag;
@@ -470,7 +486,7 @@ public class DefaultDataHandler implements DataHandler {
         List<ColumnMeta> columnMetas = this.tbnameColumnMetasMap.get(table);
 
         StringBuilder sb = new StringBuilder();
-        sb.append("insert into ").append(table).append(" ")
+        sb.append("insert into `").append(table).append("` ")
                 .append(columnMetas.stream().filter(colMeta -> columns.contains(colMeta.field)).filter(colMeta -> {
                     return !colMeta.isTag;
                 }).map(colMeta -> {
@@ -540,8 +556,8 @@ public class DefaultDataHandler implements DataHandler {
         List<ColumnMeta> columnMetas = this.tbnameColumnMetasMap.get(table);
 
         StringBuilder sb = new StringBuilder();
-        sb.append("insert into ").append(table)
-                .append(" ")
+        sb.append("insert into `").append(table)
+                .append("` ")
                 .append(columnMetas.stream().filter(colMeta -> !colMeta.isTag).filter(colMeta -> columns.contains(colMeta.field)).map(colMeta -> {
                     return colMeta.field;
                 }).collect(Collectors.joining(",", "(", ")")))

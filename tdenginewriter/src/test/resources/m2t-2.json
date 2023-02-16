@@ -3,36 +3,21 @@
     "content": [
       {
         "reader": {
-          "name": "rdbmsreader",
+          "name": "mysqlreader",
           "parameter": {
-            "username": "TESTUSER",
-            "password": "test123456",
-            "column": [
-              "ts",
-              "f1",
-              "f2",
-              "f3",
-              "f4",
-              "f5",
-              "f6",
-              "f7",
-              "f8",
-              "f9",
-              "f10"
-            ],
-            "splitPk": "f1",
+            "username": "root",
+            "password": "123456",
+            "splitPk": "id",
             "connection": [
               {
-                "table": [
-                  "stb1"
+                "querySql": [
+                  "select t1 as tbname, ts, f1,f2,f3,f4,t1 from stb1"
                 ],
                 "jdbcUrl": [
-                  "jdbc:dm://192.168.0.72:5236"
+                  "jdbc:mysql://192.168.56.105:3306/db1?useSSL=false&useUnicode=true&characterEncoding=utf8"
                 ]
               }
-            ],
-            "fetchSize": 1024,
-            "where": "1 = 1"
+            ]
           }
         },
         "writer": {
@@ -41,24 +26,20 @@
             "username": "root",
             "password": "taosdata",
             "column": [
+              "tbname",
               "ts",
               "f1",
               "f2",
               "f3",
               "f4",
-              "f5",
-              "f6",
-              "f7",
-              "f8",
-              "f9",
-              "f10"
+              "t1"
             ],
             "connection": [
               {
                 "table": [
                   "stb2"
                 ],
-                "jdbcUrl": "jdbc:TAOS://192.168.1.93:6030/db2"
+                "jdbcUrl": "jdbc:TAOS://192.168.56.105:6030/db2"
               }
             ],
             "batchSize": 1000,
