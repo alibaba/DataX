@@ -1,0 +1,23 @@
+{
+  "name": "tdengine20reader",
+  "parameter": {
+    "user": "",
+    "password": "",
+    "connection": [
+      {
+        "table": [
+          ""
+        ],
+        "jdbcUrl": [
+          ""
+        ]
+      }
+    ],
+    "column": [
+      ""
+    ],
+    "beginDateTime": "",
+    "endDateTime": "",
+    "where": ""
+  }
+}
