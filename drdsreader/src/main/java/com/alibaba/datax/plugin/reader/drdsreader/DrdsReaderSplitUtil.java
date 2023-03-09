@@ -5,6 +5,7 @@ import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.plugin.rdbms.reader.Constant;
 import com.alibaba.datax.plugin.rdbms.reader.Key;
 import com.alibaba.datax.plugin.rdbms.reader.util.SingleTableSplitUtil;
+import com.alibaba.datax.plugin.rdbms.util.ConfigUtil;
 import com.alibaba.datax.plugin.rdbms.util.DBUtil;
 import com.alibaba.datax.plugin.rdbms.util.DBUtilErrorCode;
 import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
@@ -90,12 +91,13 @@ public class DrdsReaderSplitUtil {
         String jdbcURL = configuration.getString(Key.JDBC_URL);
         String username = configuration.getString(Key.USERNAME);
         String password = configuration.getString(Key.PASSWORD);
+		Properties prop = ConfigUtil.getJdbcProperties(configuration);
         String logicTable = configuration.getString(Key.TABLE).trim();
 
         Connection conn = null;
         ResultSet rs = null;
         try {
-            conn = DBUtil.getConnection(DataBaseType.DRDS, jdbcURL, username, password);
+            conn = DBUtil.getConnection(DataBaseType.DRDS, jdbcURL, username, password, prop);
             rs = DBUtil.query(conn, "SHOW TOPOLOGY " + logicTable);
             while (DBUtil.asyncResultSetNext(rs)) {
                 String groupName = rs.getString("GROUP_NAME");

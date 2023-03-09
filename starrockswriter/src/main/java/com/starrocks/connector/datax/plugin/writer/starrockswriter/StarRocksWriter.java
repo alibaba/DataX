@@ -5,6 +5,7 @@ import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordReceiver;
 import com.alibaba.datax.common.spi.Writer;
 import com.alibaba.datax.common.util.Configuration;
+import com.alibaba.datax.plugin.rdbms.util.ConfigUtil;
 import com.alibaba.datax.plugin.rdbms.util.DBUtil;
 import com.alibaba.datax.plugin.rdbms.util.DBUtilErrorCode;
 import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
@@ -20,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 public class StarRocksWriter extends Writer {
     
@@ -50,11 +52,12 @@ public class StarRocksWriter extends Writer {
         @Override
         public void prepare() {
             String username = options.getUsername();
-            String password = options.getPassword();
+			String password = options.getPassword();
+			Properties prop = ConfigUtil.getJdbcProperties(originalConfig);
             String jdbcUrl = options.getJdbcUrl();
             List<String> renderedPreSqls = StarRocksWriterUtil.renderPreOrPostSqls(options.getPreSqlList(), options.getTable());
             if (null != renderedPreSqls && !renderedPreSqls.isEmpty()) {
-                Connection conn = DBUtil.getConnection(DataBaseType.MySql, jdbcUrl, username, password);
+                Connection conn = DBUtil.getConnection(DataBaseType.MySql, jdbcUrl, username, password, prop);
                 LOG.info("Begin to execute preSqls:[{}]. context info:{}.", String.join(";", renderedPreSqls), jdbcUrl);
                 StarRocksWriterUtil.executeSqls(conn, renderedPreSqls);
                 DBUtil.closeDBResources(null, null, conn);
@@ -74,10 +77,11 @@ public class StarRocksWriter extends Writer {
         public void post() {
             String username = options.getUsername();
             String password = options.getPassword();
+			Properties prop = ConfigUtil.getJdbcProperties(originalConfig);
             String jdbcUrl = options.getJdbcUrl();
             List<String> renderedPostSqls = StarRocksWriterUtil.renderPreOrPostSqls(options.getPostSqlList(), options.getTable());
             if (null != renderedPostSqls && !renderedPostSqls.isEmpty()) {
-                Connection conn = DBUtil.getConnection(DataBaseType.MySql, jdbcUrl, username, password);
+                Connection conn = DBUtil.getConnection(DataBaseType.MySql, jdbcUrl, username, password, prop);
                 LOG.info("Begin to execute preSqls:[{}]. context info:{}.", String.join(";", renderedPostSqls), jdbcUrl);
                 StarRocksWriterUtil.executeSqls(conn, renderedPostSqls);
                 DBUtil.closeDBResources(null, null, conn);
@@ -99,7 +103,7 @@ public class StarRocksWriter extends Writer {
         public void init() {
             options = new StarRocksWriterOptions(super.getPluginJobConf());
             if (options.isWildcardColumn()) {
-                Connection conn = DBUtil.getConnection(DataBaseType.MySql, options.getJdbcUrl(), options.getUsername(), options.getPassword());
+                Connection conn = DBUtil.getConnection(DataBaseType.MySql, options.getJdbcUrl(), options.getUsername(), options.getPassword(), null);
                 List<String> columns = StarRocksWriterUtil.getStarRocksColumns(conn, options.getDatabase(), options.getTable());
                 options.setInfoCchemaColumns(columns);
             }

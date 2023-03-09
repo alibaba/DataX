@@ -1,9 +1,9 @@
 package com.alibaba.datax.plugin.writer.oceanbasev10writer.util;
 
 import com.alibaba.datax.common.util.Configuration;
+import com.alibaba.datax.plugin.rdbms.util.ConfigUtil;
 import com.alibaba.datax.plugin.rdbms.util.DBUtil;
 import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
-import com.alibaba.datax.plugin.rdbms.writer.CommonRdbmsWriter;
 import com.alibaba.datax.plugin.rdbms.writer.Constant;
 import com.alibaba.datax.plugin.rdbms.writer.Key;
 import org.slf4j.Logger;
@@ -14,6 +14,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 public class DbUtils {
@@ -23,6 +24,7 @@ public class DbUtils {
     public static String fetchSingleValueWithRetry(Configuration config, String query) {
         final String username = config.getString(Key.USERNAME);
         final String password = config.getString(Key.PASSWORD);
+		final Properties prop = ConfigUtil.getJdbcProperties(config);
         String jdbcUrl = config.getString(Key.JDBC_URL);
 
         if(jdbcUrl == null) {
@@ -47,7 +49,7 @@ public class DbUtils {
                     }
                     LOG.warn("retry fetch value for {} the {} times", query, retry);
                 }
-                conn = DBUtil.getConnection(DataBaseType.OceanBase, jdbcUrl, username, password);
+                conn = DBUtil.getConnection(DataBaseType.OceanBase, jdbcUrl, username, password, prop);
                 stmt = conn.prepareStatement(query);
                 result = stmt.executeQuery();
                 if (result.next()) {

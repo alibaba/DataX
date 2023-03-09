@@ -5,6 +5,7 @@ import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.common.util.ListUtil;
 import com.alibaba.datax.plugin.rdbms.reader.Constant;
 import com.alibaba.datax.plugin.rdbms.reader.Key;
+import com.alibaba.datax.plugin.rdbms.util.ConfigUtil;
 import com.alibaba.datax.plugin.rdbms.util.DBUtil;
 import com.alibaba.datax.plugin.rdbms.util.DBUtilErrorCode;
 import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 public final class OriginalConfPretreatmentUtil {
     private static final Logger LOG = LoggerFactory
@@ -64,7 +66,8 @@ public final class OriginalConfPretreatmentUtil {
     private static void dealJdbcAndTable(Configuration originalConfig) {
         String username = originalConfig.getString(Key.USERNAME);
         String password = originalConfig.getString(Key.PASSWORD);
-        boolean checkSlave = originalConfig.getBool(Key.CHECK_SLAVE, false);
+		Properties prop = ConfigUtil.getJdbcProperties(originalConfig);
+		boolean checkSlave = originalConfig.getBool(Key.CHECK_SLAVE, false);
         boolean isTableMode = originalConfig.getBool(Constant.IS_TABLE_MODE);
         boolean isPreCheck = originalConfig.getBool(Key.DRYRUN,false);
 
@@ -87,10 +90,10 @@ public final class OriginalConfPretreatmentUtil {
             String jdbcUrl;
             if (isPreCheck) {
                 jdbcUrl = DBUtil.chooseJdbcUrlWithoutRetry(DATABASE_TYPE, jdbcUrls,
-                        username, password, preSql, checkSlave);
+                        username, password, prop, preSql, checkSlave);
             } else {
                 jdbcUrl = DBUtil.chooseJdbcUrl(DATABASE_TYPE, jdbcUrls,
-                        username, password, preSql, checkSlave);
+                        username, password, prop, preSql, checkSlave);
             }
 
             jdbcUrl = DATABASE_TYPE.appendJDBCSuffixForReader(jdbcUrl);
@@ -152,12 +155,13 @@ public final class OriginalConfPretreatmentUtil {
 
                     String username = originalConfig.getString(Key.USERNAME);
                     String password = originalConfig.getString(Key.PASSWORD);
+					Properties prop = ConfigUtil.getJdbcProperties(originalConfig);
 
                     String tableName = originalConfig.getString(String.format(
                             "%s[0].%s[0]", Constant.CONN_MARK, Key.TABLE));
 
                     List<String> allColumns = DBUtil.getTableColumns(
-                            DATABASE_TYPE, jdbcUrl, username, password,
+                            DATABASE_TYPE, jdbcUrl, username, password, prop,
                             tableName);
                     LOG.info("table:[{}] has columns:[{}].",
                             tableName, StringUtils.join(allColumns, ","));

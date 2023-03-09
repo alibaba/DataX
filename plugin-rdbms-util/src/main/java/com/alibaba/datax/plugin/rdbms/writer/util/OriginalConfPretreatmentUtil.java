@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 public final class OriginalConfPretreatmentUtil {
     private static final Logger LOG = LoggerFactory
@@ -133,10 +134,11 @@ public final class OriginalConfPretreatmentUtil {
 
         String username = originalConfig.getString(Key.USERNAME);
         String password = originalConfig.getString(Key.PASSWORD);
+		Properties prop = ConfigUtil.getJdbcProperties(originalConfig);
         String oneTable = originalConfig.getString(String.format(
                 "%s[0].%s[0]", Constant.CONN_MARK, Key.TABLE));
 
-        JdbcConnectionFactory jdbcConnectionFactory = new JdbcConnectionFactory(DATABASE_TYPE, jdbcUrl, username, password);
+        JdbcConnectionFactory jdbcConnectionFactory = new JdbcConnectionFactory(DATABASE_TYPE, jdbcUrl, username, password, prop);
         dealColumnConf(originalConfig, jdbcConnectionFactory, oneTable);
     }
 

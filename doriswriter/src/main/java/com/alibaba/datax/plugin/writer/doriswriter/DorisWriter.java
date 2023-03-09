@@ -22,6 +22,7 @@ import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordReceiver;
 import com.alibaba.datax.common.spi.Writer;
 import com.alibaba.datax.common.util.Configuration;
+import com.alibaba.datax.plugin.rdbms.util.ConfigUtil;
 import com.alibaba.datax.plugin.rdbms.util.DBUtil;
 import com.alibaba.datax.plugin.rdbms.util.DBUtilErrorCode;
 import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
@@ -31,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * doris data writer
@@ -61,10 +63,11 @@ public class DorisWriter extends Writer {
         public void prepare() {
             String username = options.getUsername();
             String password = options.getPassword();
+			Properties prop = ConfigUtil.getJdbcProperties(originalConfig);
             String jdbcUrl = options.getJdbcUrl();
             List<String> renderedPreSqls = DorisUtil.renderPreOrPostSqls(options.getPreSqlList(), options.getTable());
             if (null != renderedPreSqls && !renderedPreSqls.isEmpty()) {
-                Connection conn = DBUtil.getConnection(DataBaseType.MySql, jdbcUrl, username, password);
+                Connection conn = DBUtil.getConnection(DataBaseType.MySql, jdbcUrl, username, password, prop);
                 LOG.info("Begin to execute preSqls:[{}]. context info:{}.", String.join(";", renderedPreSqls), jdbcUrl);
                 DorisUtil.executeSqls(conn, renderedPreSqls);
                 DBUtil.closeDBResources(null, null, conn);
@@ -84,10 +87,11 @@ public class DorisWriter extends Writer {
         public void post() {
             String username = options.getUsername();
             String password = options.getPassword();
+			Properties prop = ConfigUtil.getJdbcProperties(originalConfig);
             String jdbcUrl = options.getJdbcUrl();
             List<String> renderedPostSqls = DorisUtil.renderPreOrPostSqls(options.getPostSqlList(), options.getTable());
             if (null != renderedPostSqls && !renderedPostSqls.isEmpty()) {
-                Connection conn = DBUtil.getConnection(DataBaseType.MySql, jdbcUrl, username, password);
+                Connection conn = DBUtil.getConnection(DataBaseType.MySql, jdbcUrl, username, password, prop);
                 LOG.info("Start to execute preSqls:[{}]. context info:{}.", String.join(";", renderedPostSqls), jdbcUrl);
                 DorisUtil.executeSqls(conn, renderedPostSqls);
                 DBUtil.closeDBResources(null, null, conn);
@@ -108,8 +112,9 @@ public class DorisWriter extends Writer {
         @Override
         public void init() {
             options = new Keys (super.getPluginJobConf());
+			Properties prop = ConfigUtil.getJdbcProperties(super.getPluginJobConf());
             if (options.isWildcardColumn()) {
-                Connection conn = DBUtil.getConnection(DataBaseType.MySql, options.getJdbcUrl(), options.getUsername(), options.getPassword());
+                Connection conn = DBUtil.getConnection(DataBaseType.MySql, options.getJdbcUrl(), options.getUsername(), options.getPassword(), prop);
                 List<String> columns = DorisUtil.getDorisTableColumns(conn, options.getDatabase(), options.getTable());
                 options.setInfoCchemaColumns(columns);
             }

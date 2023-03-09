@@ -74,6 +74,9 @@ OracleWriter 通过 DataX 框架获取 Reader 生成的协议数据，根据你�
                     "parameter": {
                         "username": "root",
                         "password": "root",
+                        "jdbcConfig": {
+                          "XXX": "XXX"
+                        },
                         "column": [
                             "id",
                             "name"

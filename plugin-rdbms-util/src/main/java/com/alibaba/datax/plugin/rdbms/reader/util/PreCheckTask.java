@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 
 /**
@@ -22,17 +23,20 @@ public class PreCheckTask implements Callable<Boolean>{
     private static final Logger LOG = LoggerFactory.getLogger(PreCheckTask.class);
     private String userName;
     private String password;
+	private Properties prop;
     private String splitPkId;
     private Configuration connection;
     private DataBaseType dataBaseType;
 
     public PreCheckTask(String userName,
                         String password,
+						Properties prop,
                         Configuration connection,
                         DataBaseType dataBaseType,
                         String splitPkId){
         this.connection = connection;
         this.userName=userName;
+		this.prop = prop;
         this.password=password;
         this.dataBaseType = dataBaseType;
         this.splitPkId = splitPkId;
@@ -45,7 +49,7 @@ public class PreCheckTask implements Callable<Boolean>{
         List<Object> splitPkSqls = this.connection.getList(Key.SPLIT_PK_SQL, Object.class);
         List<Object> tables = this.connection.getList(Key.TABLE,Object.class);
         Connection conn = DBUtil.getConnectionWithoutRetry(this.dataBaseType, jdbcUrl,
-                this.userName, password);
+                this.userName, password, prop);
         int fetchSize = 1;
         if(DataBaseType.MySql.equals(dataBaseType) || DataBaseType.DRDS.equals(dataBaseType)) {
             fetchSize = Integer.MIN_VALUE;

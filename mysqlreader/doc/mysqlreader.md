@@ -44,6 +44,9 @@ MysqlReader插件实现了从Mysql读取数据。在底层实现上，MysqlReade
                     "parameter": {
                         "username": "root",
                         "password": "root",
+                        "jdbcConfig": {
+                          "XXX": "XXX"
+                        },
                         "column": [
                             "id",
                             "name"
@@ -91,6 +94,9 @@ MysqlReader插件实现了从Mysql读取数据。在底层实现上，MysqlReade
                     "parameter": {
                         "username": "root",
                         "password": "root",
+                        "jdbcConfig": {
+                          "XXX": "XXX"
+                        },
                         "connection": [
                             {
                                 "querySql": [
@@ -147,6 +153,14 @@ MysqlReader插件实现了从Mysql读取数据。在底层实现上，MysqlReade
 
 	* 默认值：无 <br />
 
+* **jdbcConfig**
+
+    * 描述：jdbc连接属性 <br />
+
+    * 必选：否 <br />
+
+    * 默认值：无 <br />
+  
 * **table**
 
 	* 描述：所选取的需要同步的表。使用JSON的数组描述，因此支持多张表同时抽取。当配置为多张表时，用户自己需保证多张表是同一schema结构，MysqlReader不予检查表是否同一逻辑表。注意，table必须包含在connection配置单元中。<br />

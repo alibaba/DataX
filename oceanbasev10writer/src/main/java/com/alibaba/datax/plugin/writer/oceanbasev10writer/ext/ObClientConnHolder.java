@@ -3,9 +3,11 @@ package com.alibaba.datax.plugin.writer.oceanbasev10writer.ext;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.plugin.rdbms.reader.Key;
+import com.alibaba.datax.plugin.rdbms.util.ConfigUtil;
 import com.alibaba.datax.plugin.rdbms.util.DBUtil;
 import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
 import com.alibaba.datax.plugin.writer.oceanbasev10writer.util.ObWriterUtils;
@@ -20,12 +22,14 @@ public class ObClientConnHolder extends ConnHolder {
 	private final String jdbcUrl;
 	private final String userName;
 	private final String password;
+	private final Properties prop;
 
 	public ObClientConnHolder(Configuration config, String jdbcUrl, String userName, String password) {
 		super(config);
 		this.jdbcUrl = jdbcUrl;
 		this.userName = userName;
 		this.password = password;
+		this.prop = ConfigUtil.getJdbcProperties(config);
 	}
 
 	// Connect to ob with obclient and obproxy
@@ -41,7 +45,7 @@ public class ObClientConnHolder extends ConnHolder {
 			sessionConfig.add("ALTER SESSION SET NLS_TIMESTAMP_TZ_FORMAT='YYYY-MM-DD HH24:MI:SS.FF TZR TZD'");
 		    config.set(Key.SESSION, sessionConfig);
 		}
-		conn = DBUtil.getConnection(dbType, jdbcUrl, userName, password);
+		conn = DBUtil.getConnection(dbType, jdbcUrl, userName, password, prop);
 		DBUtil.dealWithSessionConfig(conn, config, dbType, BASIC_MESSAGE);
 		return conn;
 	}
