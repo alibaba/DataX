@@ -69,6 +69,7 @@ SqlServerWriter 通过 DataX 框架获取 Reader 生成的协议数据，根据�
                                 "jdbcUrl": "jdbc:sqlserver://[HOST_NAME]:PORT;DatabaseName=[DATABASE_NAME]"
                             }
                         ],
+			"session": ["SET IDENTITY_INSERT TABLE_NAME ON"],
                         "preSql": [
                             "delete from @table where db_id = -1;"
                         ],
@@ -138,6 +139,14 @@ SqlServerWriter 通过 DataX 框架获取 Reader 生成的协议数据，根据�
   * 必选：是 <br />
 
   * 默认值：否 <br />
+
+* **session**
+
+  * 描述：DataX在获取 seqlserver 连接时，执行session指定的SQL语句，修改当前connection session属性<br />
+
+  * 必选：否 <br />
+
+  * 默认值：无 <br />
 
 * **preSql**
 

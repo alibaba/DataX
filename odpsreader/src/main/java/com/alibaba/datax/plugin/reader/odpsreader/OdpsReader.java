@@ -7,7 +7,7 @@ import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.common.util.FilterUtil;
 import com.alibaba.datax.common.util.MessageSource;
 import com.alibaba.datax.plugin.reader.odpsreader.util.*;
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 import com.aliyun.odps.Column;
 import com.aliyun.odps.Odps;
 import com.aliyun.odps.Table;

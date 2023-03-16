@@ -18,10 +18,10 @@ import java.util.UUID;
 
 import com.alibaba.datax.common.element.Column;
 import com.alibaba.datax.common.exception.DataXException;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONException;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONException;
+import com.alibaba.fastjson2.JSONObject;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.CodecRegistry;
@@ -204,7 +204,7 @@ public class CassandraWriterHelper {
 
     case MAP: {
       Map m = new HashMap();
-      for (JSONObject.Entry e : ((JSONObject)jsonObject).entrySet()) {
+      for (Map.Entry e : ((JSONObject)jsonObject).entrySet()) {
         Object k = parseFromString((String) e.getKey(), type.getTypeArguments().get(0));
         Object v = parseFromJson(e.getValue(), type.getTypeArguments().get(1));
         m.put(k,v);
@@ -233,7 +233,7 @@ public class CassandraWriterHelper {
     case UDT: {
       UDTValue t = ((UserType) type).newValue();
       UserType userType = t.getType();
-      for (JSONObject.Entry e : ((JSONObject)jsonObject).entrySet()) {
+      for (Map.Entry e : ((JSONObject)jsonObject).entrySet()) {
         DataType eleType = userType.getFieldType((String)e.getKey());
         t.set((String)e.getKey(), parseFromJson(e.getValue(), eleType), registry.codecFor(eleType).getJavaType());
       }

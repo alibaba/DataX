@@ -4,7 +4,7 @@ import com.alibaba.datax.common.element.Column;
 import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.core.util.FrameworkErrorCode;
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;

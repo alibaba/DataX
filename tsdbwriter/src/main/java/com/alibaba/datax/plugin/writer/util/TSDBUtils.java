@@ -1,7 +1,7 @@
 package com.alibaba.datax.plugin.writer.util;
 
 import com.alibaba.datax.plugin.writer.conn.DataPoint4TSDB;
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
