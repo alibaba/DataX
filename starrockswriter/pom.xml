@@ -98,10 +98,6 @@
                             <createDependencyReducedPom>true</createDependencyReducedPom>
                             <relocations>
                                 <relocation>
-                                    <pattern>com.alibaba.fastjson</pattern>
-                                    <shadedPattern>com.starrocks.shade.com.alibaba.fastjson</shadedPattern>
-                                </relocation>
-                                <relocation>
                                     <pattern>org.apache.http</pattern>
                                     <shadedPattern>com.starrocks.shade.org.apache.http</shadedPattern>
                                 </relocation>
@@ -117,7 +113,6 @@
                                     <include>commons-logging:*</include>
                                     <include>org.apache.httpcomponents:httpclient</include>
                                     <include>org.apache.httpcomponents:httpcore</include>
-                                    <include>com.alibaba:fastjson</include>
                                 </includes>
                             </artifactSet>
                             <filters>
