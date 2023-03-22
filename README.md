@@ -26,7 +26,7 @@ DataX本身作为数据同步框架，将不同数据源的同步抽象为从源
 
 # Quick Start
 
-##### Download [DataX下载地址](https://datax-opensource.oss-cn-hangzhou.aliyuncs.com/202210/datax.tar.gz)
+##### Download [DataX下载地址](https://datax-opensource.oss-cn-hangzhou.aliyuncs.com/202303/datax.tar.gz)
 
 
 ##### 请点击：[Quick Start](https://github.com/alibaba/DataX/blob/master/userGuid.md)
@@ -70,6 +70,7 @@ DataX目前已经有了比较全面的插件体系，主流的RDBMS数据库、N
 |              | Databend                  |           |     √     |                                                                             [写](https://github.com/alibaba/DataX/blob/master/databendwriter/doc/databendwriter.md)                                                                             |
 |              | Hive                      |     √     |     √     |                                         [读](https://github.com/alibaba/DataX/blob/master/hdfsreader/doc/hdfsreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/hdfswriter/doc/hdfswriter.md)                                         |
 |              | kudu                      |           |     √     |                                                                                 [写](https://github.com/alibaba/DataX/blob/master/hdfswriter/doc/hdfswriter.md)                                                                                 |
+|              | selectdb                  |           |     √     |                                                                               [写](https://github.com/alibaba/DataX/blob/master/selectdbwriter/doc/selectdbwriter.md)                                                                                |
 | 无结构化数据存储     | TxtFile                   |     √     |     √     |                                   [读](https://github.com/alibaba/DataX/blob/master/txtfilereader/doc/txtfilereader.md) 、[写](https://github.com/alibaba/DataX/blob/master/txtfilewriter/doc/txtfilewriter.md)                                   |
 |              | FTP                       |     √     |     √     |                                           [读](https://github.com/alibaba/DataX/blob/master/ftpreader/doc/ftpreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/ftpwriter/doc/ftpwriter.md)                                           |
 |              | HDFS                      |     √     |     √     |                                         [读](https://github.com/alibaba/DataX/blob/master/hdfsreader/doc/hdfsreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/hdfswriter/doc/hdfswriter.md)                                         |
@@ -107,6 +108,12 @@ DataX目前已经有了比较全面的插件体系，主流的RDBMS数据库、N
 # 重要版本更新说明
 
 DataX 后续计划月度迭代更新，也欢迎感兴趣的同学提交 Pull requests，月度更新内容会介绍介绍如下。
+
+- [datax_v202303]（https://github.com/alibaba/DataX/releases/tag/datax_v202303)
+  - 精简代码
+  - 新增插件（adbmysqlwriter、databendwriter、selectdbwriter）
+  - 优化插件、修复问题（sqlserver、hdfs、cassandra、kudu、oss）
+  - fastjson 升级到 fastjson2
 
 - [datax_v202210]（https://github.com/alibaba/DataX/releases/tag/datax_v202210)
   - 涉及通道能力更新（OceanBase、Tdengine、Doris等）

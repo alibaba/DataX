@@ -42,12 +42,6 @@ public class OdpsReader extends Reader {
             this.originalConfig = super.getPluginJobConf();
             this.successOnNoPartition = this.originalConfig.getBool(Key.SUCCESS_ON_NO_PATITION, false);
 
-            //如果用户没有配置accessId/accessKey,尝试从环境变量获取
-            String accountType = originalConfig.getString(Key.ACCOUNT_TYPE, Constant.DEFAULT_ACCOUNT_TYPE);
-            if (Constant.DEFAULT_ACCOUNT_TYPE.equalsIgnoreCase(accountType)) {
-                this.originalConfig = IdAndKeyUtil.parseAccessIdAndKey(this.originalConfig);
-            }
-
             //检查必要的参数配置
             OdpsUtil.checkNecessaryConfig(this.originalConfig);
             //重试次数的配置检查
