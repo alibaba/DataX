@@ -1,0 +1,55 @@
+{
+    "job": {
+        "content": [
+            {
+                "reader": {
+                    "name": "mysqlreader",
+                    "parameter": {
+                        "column": [
+                            "1 AS inout_type","i.enter_time AS report_date","i.create_time as create_time","i.park_code AS park_code","i.inout_id as inout_id","i.enter_time as enter_time","i.depart_time as depart_time","CAST( YEAR ( i.enter_time ) AS SIGNED ) AS report_year","CAST( MONTH ( i.enter_time ) AS SIGNED ) AS report_month","CAST( HOUR ( i.enter_time ) AS SIGNED ) AS report_hour","(CASE WHEN CHAR_LENGTH(i.client_no) = 0 OR i.client_no IS NULL THEN '0' ELSE i.client_no END) AS client_no","IFNULL(i.in_gateway, '0') AS gateway_no","1 AS total_num","( CASE WHEN i.vehicle_category = 1 THEN 1 ELSE 0 END ) AS big_car_num","( CASE WHEN i.vehicle_category <> 1 THEN 1 ELSE 0 END ) AS small_car_num","( CASE WHEN  (i.vehicle_no REGEXP '[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼使领A-Z]{1}[A-Z]{1}(([0-9]{5}[DABCEFGHJK])|([DABCEFGHJK][A-HJ-NP-Z0-9][0-9]{4}))$' ) THEN 1 ELSE 0 END ) AS new_power_car_num","( CASE WHEN i.in_label = 2 OR i.in_label = 3 THEN 1 ELSE 0 END ) AS reserve_num","( CASE WHEN i.in_label = 1 THEN 1 ELSE 0 END ) AS white_list_num","( CASE WHEN i.vehicle_category = 1 AND ( i.in_label = 2 OR i.in_label = 3 ) THEN 1 ELSE 0 END ) AS big_car_reserve_num","( CASE WHEN i.vehicle_category = 1 AND i.in_label = 1 THEN 1 ELSE 0 END ) AS big_car_white_list_num","( CASE WHEN i.vehicle_category <> 1 AND ( i.in_label = 2 OR i.in_label = 3 ) THEN 1 ELSE 0 END ) AS small_car_reserve_num","( CASE WHEN i.vehicle_category <> 1 AND i.in_label = 1 THEN 1 ELSE 0 END ) AS small_car_white_list_num","( CASE WHEN ( i.in_label = 2 OR i.in_label = 3 ) AND ( i.vehicle_no REGEXP '[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼使领A-Z]{1}[A-Z]{1}(([0-9]{5}[DABCEFGHJK])|([DABCEFGHJK][A-HJ-NP-Z0-9][0-9]{4}))$' ) THEN 1 ELSE 0 END ) AS new_power_reserve_num","( CASE WHEN i.in_label = 1 AND ( i.vehicle_no REGEXP '[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼使领A-Z]{1}[A-Z]{1}(([0-9]{5}[DABCEFGHJK])|([DABCEFGHJK][A-HJ-NP-Z0-9][0-9]{4}))$' ) THEN 1 ELSE 0 END ) AS new_power_white_list_num"," i.deleted","CURRENT_TIMESTAMP AS update_time" 
+                        ],
+            		    "splitPk": "inout_id",
+                        "connection": [
+                            {
+                                "jdbcUrl": ["jdbc:mysql://127.0.0.1:3306/test_db?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&rewriteBatchedStatements=true&useSSL=false&autoReconnect=true&serverTimezone=Asia/Shanghai&zeroDateTimeBehavior=convertToNull&characterEncoding=utf-8&allowMultiQueries=true"],
+                                "table": ["g2park_inout_record i"]
+                            }
+                        ],
+                        "password": "ZnOZROJwLiMeI3FQluEhHg==",
+                        "username": "root",
+                        "where": "i.enter_time is not null and update_time > '${updateTime}'  "
+                    }
+                },
+                "writer": {
+                    "name": "mysqlwriter",
+                    "parameter": {
+                       "writeMode": "replace",
+                        "column": [
+                            "inout_type","report_date","create_time","park_code","inout_id","enter_time","depart_time","report_year","report_month","report_hour","client_no","gateway_no","total_num","big_car_num","small_car_num","new_power_car_num","reserve_num","white_list_num","big_car_reserve_num","big_car_white_list_num","small_car_reserve_num","small_car_white_list_num","new_power_reserve_num","new_power_white_list_num","deleted","update_time" 
+                        ],
+                        "connection": [
+                            {
+                              "jdbcUrl": "jdbc:mysql://127.0.0.1:3306/test_db?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&rewriteBatchedStatements=true&useSSL=false&autoReconnect=true&serverTimezone=Asia/Shanghai&zeroDateTimeBehavior=convertToNull&characterEncoding=utf-8&allowMultiQueries=true",
+                               "table": ["dwd_g2park_inout_report_s"]
+                            }
+                        ],
+                        "password": "ZnOZROJwLiMeI3FQluEhHg==",
+                        "username": "root",
+                        "preSql": [],
+                        "session": [
+                          "set session sql_mode='ANSI'"
+                        ]
+
+                    }
+                }
+            }
+        ],
+        "setting": {
+            "speed": {
+                "channel": "2"
+            },
+            "passwdEncrypt":true
+
+        }
+    }
+}

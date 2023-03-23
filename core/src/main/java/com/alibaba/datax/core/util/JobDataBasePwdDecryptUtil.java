@@ -23,7 +23,7 @@ public class JobDataBasePwdDecryptUtil {
             //加密key
             String key = SecretUtil.getSecurityProperties().getProperty(CoreConstant.DB_ENCRYPT_KEY);
             if (StringUtils.isEmpty(key)) {
-                LOG.warn("{} is empty，use original password,", CoreConstant.DB_ENCRYPT_KEY);
+                LOG.warn("{} is empty，use original password", CoreConstant.DB_ENCRYPT_KEY);
                 return;
             }
             if (StringUtils.isNotEmpty(readerPwd)) {
