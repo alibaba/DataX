@@ -8,7 +8,7 @@ import com.alibaba.datax.common.spi.Writer;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.common.util.DataXCaseEnvUtil;
 import com.alibaba.datax.common.util.RetryUtil;
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 import com.aliyun.datahub.client.DatahubClient;
 import com.aliyun.datahub.client.model.FieldType;
 import com.aliyun.datahub.client.model.GetTopicResult;

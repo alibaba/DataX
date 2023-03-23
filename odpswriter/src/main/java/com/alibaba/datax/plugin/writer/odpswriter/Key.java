@@ -30,8 +30,6 @@ public final class Key {
     //boolean 类型，default:false
     public final static String EMPTY_AS_NULL = "emptyAsNull";
 
-    public final static String ACCOUNT_TYPE = "accountType";
-
     public final static String IS_COMPRESS = "isCompress";
 
     // preSql

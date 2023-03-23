@@ -23,7 +23,7 @@ import com.alibaba.datax.common.element.StringColumn;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.TaskPluginCollector;
 import com.alibaba.datax.common.util.Configuration;
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.CodecRegistry;
@@ -298,6 +298,7 @@ public class CassandraReaderHelper {
           record.addColumn(new LongColumn(rs.getInt(i)));
           break;
 
+        case COUNTER:
         case BIGINT:
           record.addColumn(new LongColumn(rs.getLong(i)));
           break;
@@ -557,26 +558,6 @@ public class CassandraReaderHelper {
                 CassandraReaderErrorCode.CONF_ERROR,
                 String.format(
                     "配置信息有错误.列信息中需要包含'%s'字段 .",Key.COLUMN_NAME));
-      }
-      if( name.startsWith(Key.WRITE_TIME) ) {
-        String colName = name.substring(Key.WRITE_TIME.length(),name.length() - 1 );
-        ColumnMetadata col = tableMetadata.getColumn(colName);
-        if( col == null ) {
-          throw DataXException
-              .asDataXException(
-                  CassandraReaderErrorCode.CONF_ERROR,
-                  String.format(
-                      "配置信息有错误.列'%s'不存在 .",colName));
-        }
-      } else {
-        ColumnMetadata col = tableMetadata.getColumn(name);
-        if( col == null ) {
-          throw DataXException
-              .asDataXException(
-                  CassandraReaderErrorCode.CONF_ERROR,
-                  String.format(
-                      "配置信息有错误.列'%s'不存在 .",name));
-        }
       }
     }
   }

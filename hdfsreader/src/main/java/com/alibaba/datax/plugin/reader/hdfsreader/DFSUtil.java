@@ -8,8 +8,8 @@ import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.plugin.unstructuredstorage.reader.ColumnEntry;
 import com.alibaba.datax.plugin.unstructuredstorage.reader.UnstructuredStorageReaderErrorCode;
 import com.alibaba.datax.plugin.unstructuredstorage.reader.UnstructuredStorageReaderUtil;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
@@ -331,26 +331,30 @@ public class DFSUtil {
                 //If the network disconnected, will retry 45 times, each time the retry interval for 20 seconds
                 //Each file as a split
                 //TODO multy threads
-                InputSplit[] splits = in.getSplits(conf, 1);
+                // OrcInputFormat getSplits params numSplits not used, splits size = block numbers
+                InputSplit[] splits = in.getSplits(conf, -1);
+                for (InputSplit split : splits) {
+                    {
+                        RecordReader reader = in.getRecordReader(split, conf, Reporter.NULL);
+                        Object key = reader.createKey();
+                        Object value = reader.createValue();
+                        // 获取列信息
+                        List<? extends StructField> fields = inspector.getAllStructFieldRefs();
 
-                RecordReader reader = in.getRecordReader(splits[0], conf, Reporter.NULL);
-                Object key = reader.createKey();
-                Object value = reader.createValue();
-                // 获取列信息
-                List<? extends StructField> fields = inspector.getAllStructFieldRefs();
+                        List<Object> recordFields;
+                        while (reader.next(key, value)) {
+                            recordFields = new ArrayList<Object>();
 
-                List<Object> recordFields;
-                while (reader.next(key, value)) {
-                    recordFields = new ArrayList<Object>();
-
-                    for (int i = 0; i <= columnIndexMax; i++) {
-                        Object field = inspector.getStructFieldData(value, fields.get(i));
-                        recordFields.add(field);
+                            for (int i = 0; i <= columnIndexMax; i++) {
+                                Object field = inspector.getStructFieldData(value, fields.get(i));
+                                recordFields.add(field);
+                            }
+                            transportOneRecord(column, recordFields, recordSender,
+                                    taskPluginCollector, isReadAllColumns, nullFormat);
+                        }
+                        reader.close();
                     }
-                    transportOneRecord(column, recordFields, recordSender,
-                            taskPluginCollector, isReadAllColumns, nullFormat);
                 }
-                reader.close();
             } catch (Exception e) {
                 String message = String.format("从orcfile文件路径[%s]中读取数据发生异常，请联系系统管理员。"
                         , sourceOrcFilePath);
