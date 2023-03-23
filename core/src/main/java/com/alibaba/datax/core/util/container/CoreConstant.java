@@ -157,8 +157,8 @@ public class CoreConstant {
 	public static final String CURRENT_SERVICE_USERNAME = "current.service.username";
     
 	public static final String CURRENT_SERVICE_PASSWORD = "current.service.password";
-	public static final String PASSWD_KEY="dp.public.k";
-	public static final String PASSWD_KEY_DEFAULT="dwz1qaz2wsx";
+
+    public static final String DB_ENCRYPT_KEY = "db.encrypt.key";
 
 	// ----------------------------- 环境变量 ---------------------------------
 

@@ -52,7 +52,7 @@ public class Engine {
         long instanceId;
         int taskGroupId = -1;
         if (isJob) {
-            JobPwdDescryptUtil.decrypt(allConf);
+            JobDataBasePwdDecryptUtil.decrypt(allConf);
             allConf.set(CoreConstant.DATAX_CORE_CONTAINER_JOB_MODE, RUNTIME_MODE);
             container = new JobContainer(allConf);
             instanceId = allConf.getLong(
