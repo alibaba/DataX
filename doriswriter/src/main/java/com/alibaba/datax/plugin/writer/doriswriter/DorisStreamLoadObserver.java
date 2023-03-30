@@ -34,7 +34,7 @@ public class DorisStreamLoadObserver {
 
     private Keys options;
 
-    private int pos;
+    private long pos;
     private static final String RESULT_FAILED = "Fail";
     private static final String RESULT_LABEL_EXISTED = "Label Already Exists";
     private static final String LAEBL_STATE_VISIBLE = "VISIBLE";
@@ -214,7 +214,7 @@ public class DorisStreamLoadObserver {
         Collections.shuffle(hostList);
         long tmp = pos + hostList.size();
         for (; pos < tmp; pos++) {
-            String host = new StringBuilder("http://").append(hostList.get(pos)).toString();
+            String host = new StringBuilder("http://").append(hostList.get((int) (pos % hostList.size()))).toString();
             if (checkConnection(host)) {
                 return host;
             }
