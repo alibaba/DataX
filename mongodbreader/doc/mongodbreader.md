@@ -114,8 +114,7 @@ MongoDBReader通过Datax框架从MongoDB并行的读取数据，通过主控的J
 	                        "accessKey": "********************",
 	                        "truncate": true,
 	                        "odpsServer": "xxx/api",
-	                        "tunnelServer": "xxx",
-	                        "accountType": "aliyun"
+	                        "tunnelServer": "xxx"
 	                    }
 	                }
 	            }
