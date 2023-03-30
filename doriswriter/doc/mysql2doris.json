@@ -29,9 +29,11 @@
                         "postSql": [],
                         "preSql": [],
                         "connection": [
-                            "jdbcUrl":"jdbc:mysql://192.168.1.1:9030/",
+                            {
+                            "jdbcUrl":["jdbc:mysql://192.168.1.1:9030/"],
                             "table":["xxx"],
                             "selectedDatabase":"xxxx"
+                            }
                         ]
                     }
                 }
