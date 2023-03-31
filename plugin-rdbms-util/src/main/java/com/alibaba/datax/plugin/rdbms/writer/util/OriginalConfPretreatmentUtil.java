@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -120,9 +121,15 @@ public final class OriginalConfPretreatmentUtil {
             } else {
                 // 确保用户配置的 column 不重复
                 ListUtil.makeSureNoValueDuplicate(userConfiguredColumns, false);
+                Connection connection = null;
+                try {
+                    connection = connectionFactory.getConnecttion();
+                    // 检查列是否都为数据库表中正确的列（通过执行一次 select column from table 进行判断）
+                    DBUtil.getColumnMetaData(connection, oneTable,StringUtils.join(userConfiguredColumns, ","));
+                } finally {
+                    DBUtil.closeDBResources(null, connection);
+                }
 
-                // 检查列是否都为数据库表中正确的列（通过执行一次 select column from table 进行判断）
-                DBUtil.getColumnMetaData(connectionFactory.getConnecttion(), oneTable,StringUtils.join(userConfiguredColumns, ","));
             }
         }
     }
