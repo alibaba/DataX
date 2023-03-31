@@ -56,7 +56,7 @@ public class Adb4pgClientProxy implements AdbProxy {
         int retryIntervalTime = configuration.getInt(Key.RETRY_INTERVAL_TIME, 1000);
         databaseConfig.setRetryIntervalTime(retryIntervalTime);
 
-        // 设置自动提交的SQL长度（单位Byte），默认为32KB，一般不建议设置
+        // 设置自动提交的SQL长度（单位Byte），默认为10MB，一般不建议设置
         int commitSize = configuration.getInt("commitSize", 10 * 1024 * 1024);
         databaseConfig.setCommitSize(commitSize);
 
