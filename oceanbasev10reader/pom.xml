@@ -39,7 +39,7 @@
 		<dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.40</version>
+            <version>${mysql.driver.version}</version>
         </dependency>
         <dependency>
             <groupId>log4j</groupId>

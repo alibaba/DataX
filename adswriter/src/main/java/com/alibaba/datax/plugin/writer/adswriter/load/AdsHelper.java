@@ -112,7 +112,7 @@ public class AdsHelper {
         Statement statement = null;
         ResultSet rs = null;
         try {
-            Class.forName("com.mysql.jdbc.Driver");
+            Class.forName("com.mysql.cj.jdbc.Driver");
             String url = AdsUtil.prepareJdbcUrl(this.adsURL, this.schema, this.socketTimeout, this.suffix);
 
             Properties connectionProps = new Properties();
@@ -265,7 +265,7 @@ public class AdsHelper {
         Statement statement = null;
         ResultSet rs = null;
         try {
-            Class.forName("com.mysql.jdbc.Driver");
+            Class.forName("com.mysql.cj.jdbc.Driver");
             String url = AdsUtil.prepareJdbcUrl(this.adsURL, this.schema, this.socketTimeout, this.suffix);
             Properties connectionProps = new Properties();
             connectionProps.put("user", userName);
@@ -368,7 +368,7 @@ public class AdsHelper {
     private String checkLoadDataJobStatusWithRetry(final String jobId)
             throws AdsException {
         try {
-            Class.forName("com.mysql.jdbc.Driver");
+            Class.forName("com.mysql.cj.jdbc.Driver");
             final String finalAdsUrl = this.adsURL;
             final String finalSchema = this.schema;
             final Long finalSocketTimeout = this.socketTimeout;

@@ -10,21 +10,21 @@ import java.util.regex.Pattern;
  * <p/>
  */
 public enum DataBaseType {
-    MySql("mysql", "com.mysql.jdbc.Driver"),
-    Tddl("mysql", "com.mysql.jdbc.Driver"),
-    DRDS("drds", "com.mysql.jdbc.Driver"),
+    MySql("mysql", "com.mysql.cj.jdbc.Driver"),
+    Tddl("mysql", "com.mysql.cj.jdbc.Driver"),
+    DRDS("drds", "com.mysql.cj.jdbc.Driver"),
     Oracle("oracle", "oracle.jdbc.OracleDriver"),
     SQLServer("sqlserver", "com.microsoft.sqlserver.jdbc.SQLServerDriver"),
     PostgreSQL("postgresql", "org.postgresql.Driver"),
     RDBMS("rdbms", "com.alibaba.datax.plugin.rdbms.util.DataBaseType"),
     DB2("db2", "com.ibm.db2.jcc.DB2Driver"),
-    ADB("adb","com.mysql.jdbc.Driver"),
-    ADS("ads","com.mysql.jdbc.Driver"),
+    ADB("adb","com.mysql.cj.jdbc.Driver"),
+    ADS("ads","com.mysql.cj.jdbc.Driver"),
     ClickHouse("clickhouse", "ru.yandex.clickhouse.ClickHouseDriver"),
     KingbaseES("kingbasees", "com.kingbase8.Driver"),
     Oscar("oscar", "com.oscar.Driver"),
     OceanBase("oceanbase", "com.alipay.oceanbase.jdbc.Driver"),
-    StarRocks("starrocks", "com.mysql.jdbc.Driver"),
+    StarRocks("starrocks", "com.mysql.cj.jdbc.Driver"),
     Databend("databend", "com.databend.jdbc.DatabendDriver");
 
     private String typeName;

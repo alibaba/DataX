@@ -13,22 +13,16 @@ import com.alibaba.datax.plugin.writer.adswriter.ads.TableInfo;
 import com.alibaba.datax.plugin.writer.adswriter.util.AdsUtil;
 import com.alibaba.datax.plugin.writer.adswriter.util.Constant;
 import com.alibaba.datax.plugin.writer.adswriter.util.Key;
-import com.mysql.jdbc.JDBC4PreparedStatement;
-
+import com.mysql.cj.jdbc.ClientPreparedStatement;
+import com.mysql.cj.jdbc.exceptions.CommunicationsException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
@@ -251,7 +245,7 @@ public class AdsInsertProxy implements AdsProxy {
 
     private void doBatchRecord(final List<Record> buffer, final String mode) throws SQLException {
         List<Class<?>> retryExceptionClasss = new ArrayList<Class<?>>();
-        retryExceptionClasss.add(com.mysql.jdbc.exceptions.jdbc4.CommunicationsException.class);
+        retryExceptionClasss.add(CommunicationsException.class);
         retryExceptionClasss.add(java.net.SocketException.class);
         try {
             RetryUtil.executeWithRetry(new Callable<Boolean>() {
@@ -333,7 +327,7 @@ public class AdsInsertProxy implements AdsProxy {
 
     private void doOneRecord(List<Record> buffer, final String mode) {
         List<Class<?>> retryExceptionClasss = new ArrayList<Class<?>>();
-        retryExceptionClasss.add(com.mysql.jdbc.exceptions.jdbc4.CommunicationsException.class);
+        retryExceptionClasss.add(CommunicationsException.class);
         retryExceptionClasss.add(java.net.SocketException.class);
         for (final Record record : buffer) {
             try {
@@ -400,7 +394,7 @@ public class AdsInsertProxy implements AdsProxy {
 
     private boolean isRetryable(Throwable e) {
         Class<?> meetExceptionClass = e.getClass();
-        if (meetExceptionClass == com.mysql.jdbc.exceptions.jdbc4.CommunicationsException.class) {
+        if (meetExceptionClass == CommunicationsException.class) {
             return true;
         }
         if (meetExceptionClass == java.net.SocketException.class) {
@@ -437,7 +431,7 @@ public class AdsInsertProxy implements AdsProxy {
                 int columnSqltype = this.userConfigColumnsMetaData.get(columnName).getLeft();
                 prepareColumnTypeValue(statement, columnSqltype, record.getColumn(preparedParamsIndex), i, columnName);
             }
-            sql = ((JDBC4PreparedStatement) statement).asSql();
+            sql = asSql((ClientPreparedStatement) statement);
             DBUtil.closeDBResources(statement, null);
         } else {
             sqlSb.append(this.deleteSqlPrefix);
@@ -468,8 +462,19 @@ public class AdsInsertProxy implements AdsProxy {
                 prepareColumnTypeValue(statement, columnSqlType, record.getColumn(primaryKeyInUserConfigIndex), i, columnName);
                 i++;
             }
-            sql = ((JDBC4PreparedStatement) statement).asSql();
+            sql = asSql((ClientPreparedStatement) statement);
             DBUtil.closeDBResources(statement, null);
+        }
+        return sql;
+    }
+
+    // the asSql method be removed from ClientPreparedStatement,
+    // and the toString contain asSql, but has `class name + colon` prefix
+    private String asSql(ClientPreparedStatement statement) {
+        String sql = statement.toString();
+        int colon = StringUtils.indexOf(sql, ":");
+        if (colon > 0) {
+            sql = sql.substring(colon + 1).trim();
         }
         return sql;
     }
