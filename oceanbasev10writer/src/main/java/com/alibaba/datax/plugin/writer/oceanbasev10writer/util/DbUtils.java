@@ -62,7 +62,7 @@ public class DbUtils {
                 ++retry;
                 LOG.warn("fetch value with {} error {}", query, e);
             } finally {
-                DBUtil.closeDBResources(result, stmt, null);
+                DBUtil.closeDBResources(result, stmt, conn);
             }
         } while (need_retry);
 
