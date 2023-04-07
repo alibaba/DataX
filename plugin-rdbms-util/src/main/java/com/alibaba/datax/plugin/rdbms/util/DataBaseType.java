@@ -18,12 +18,14 @@ public enum DataBaseType {
     PostgreSQL("postgresql", "org.postgresql.Driver"),
     RDBMS("rdbms", "com.alibaba.datax.plugin.rdbms.util.DataBaseType"),
     DB2("db2", "com.ibm.db2.jcc.DB2Driver"),
+    ADB("adb","com.mysql.jdbc.Driver"),
     ADS("ads","com.mysql.jdbc.Driver"),
     ClickHouse("clickhouse", "ru.yandex.clickhouse.ClickHouseDriver"),
     KingbaseES("kingbasees", "com.kingbase8.Driver"),
     Oscar("oscar", "com.oscar.Driver"),
-    OceanBase("oceanbase", "com.alipay.oceanbase.jdbc.Driver");
-
+    OceanBase("oceanbase", "com.alipay.oceanbase.jdbc.Driver"),
+    StarRocks("starrocks", "com.mysql.jdbc.Driver"),
+    Databend("databend", "com.databend.jdbc.DatabendDriver");
 
     private String typeName;
     private String driverClassName;
@@ -67,6 +69,8 @@ public enum DataBaseType {
                 break;
             case Oscar:
                 break;
+            case StarRocks:
+                break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type.");
         }
@@ -79,6 +83,14 @@ public enum DataBaseType {
         String suffix = null;
         switch (this) {
             case MySql:
+                suffix = "yearIsDateType=false&zeroDateTimeBehavior=convertToNull&rewriteBatchedStatements=true&tinyInt1isBit=false";
+                if (jdbc.contains("?")) {
+                    result = jdbc + "&" + suffix;
+                } else {
+                    result = jdbc + "?" + suffix;
+                }
+                break;
+            case ADB:
                 suffix = "yearIsDateType=false&zeroDateTimeBehavior=convertToNull&rewriteBatchedStatements=true&tinyInt1isBit=false";
                 if (jdbc.contains("?")) {
                     result = jdbc + "&" + suffix;
@@ -105,6 +117,8 @@ public enum DataBaseType {
             case ClickHouse:
                 break;
             case RDBMS:
+                break;
+            case Databend:
                 break;
             case KingbaseES:
                 break;

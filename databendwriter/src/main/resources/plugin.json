@@ -1,0 +1,6 @@
+{
+  "name": "databendwriter",
+  "class": "com.alibaba.datax.plugin.writer.databendwriter.DatabendWriter",
+  "description": "execute batch insert sql to write dataX data into databend",
+  "developer": "databend"
+}

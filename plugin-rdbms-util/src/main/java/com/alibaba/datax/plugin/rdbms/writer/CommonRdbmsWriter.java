@@ -410,11 +410,6 @@ public class CommonRdbmsWriter {
         }
 
         protected PreparedStatement fillPreparedStatementColumnType(PreparedStatement preparedStatement, int columnIndex,
-                                                                    int columnSqltype, Column column) throws SQLException {
-            return fillPreparedStatementColumnType(preparedStatement, columnIndex, columnSqltype, null, column);
-        }
-
-        protected PreparedStatement fillPreparedStatementColumnType(PreparedStatement preparedStatement, int columnIndex,
                                                                     int columnSqltype, String typeName, Column column) throws SQLException {
             java.util.Date utilDate;
             switch (columnSqltype) {
@@ -524,7 +519,7 @@ public class CommonRdbmsWriter {
                     break;
 
                 case Types.BOOLEAN:
-                    preparedStatement.setString(columnIndex + 1, column.asString());
+                    preparedStatement.setBoolean(columnIndex + 1, column.asBoolean());
                     break;
 
                 // warn: bit(1) -> Types.BIT 可使用setBoolean

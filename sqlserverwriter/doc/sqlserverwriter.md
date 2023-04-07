@@ -69,6 +69,7 @@ SqlServerWriter 通过 DataX 框架获取 Reader 生成的协议数据，根据�
                                 "jdbcUrl": "jdbc:sqlserver://[HOST_NAME]:PORT;DatabaseName=[DATABASE_NAME]"
                             }
                         ],
+			"session": ["SET IDENTITY_INSERT TABLE_NAME ON"],
                         "preSql": [
                             "delete from @table where db_id = -1;"
                         ],
@@ -127,7 +128,7 @@ SqlServerWriter 通过 DataX 框架获取 Reader 生成的协议数据，根据�
 
 * **column**
 
-  * 描述：目的表需要写入数据的字段,字段之间用英文逗号分隔。例如: "column": ["id","name","age"]。如果要依次写入全部列，使用*表示, 例如: "column": ["*"]
+  * 描述：目的表需要写入数据的字段,字段之间用英文逗号分隔。例如: "column": ["id","name","age"]。如果要依次写入全部列，使用*表示, 例如: "column": ["\*"]
 
     		**column配置项必须指定，不能留空！**
 
@@ -138,6 +139,14 @@ SqlServerWriter 通过 DataX 框架获取 Reader 生成的协议数据，根据�
   * 必选：是 <br />
 
   * 默认值：否 <br />
+
+* **session**
+
+  * 描述：DataX在获取 seqlserver 连接时，执行session指定的SQL语句，修改当前connection session属性<br />
+
+  * 必选：否 <br />
+
+  * 默认值：无 <br />
 
 * **preSql**
 

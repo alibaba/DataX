@@ -5,7 +5,7 @@ import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.core.util.ClassSize;
 import com.alibaba.datax.core.util.FrameworkErrorCode;
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,6 +26,8 @@ public class DefaultRecord implements Record {
 
 	// 首先是Record本身需要的内存
 	private int memorySize = ClassSize.DefaultRecordHead;
+
+	private Map<String, String> meta;
 
 	public DefaultRecord() {
 		this.columns = new ArrayList<Column>(RECORD_AVERGAE_COLUMN_NUMBER);
@@ -81,6 +83,16 @@ public class DefaultRecord implements Record {
 
 	public int getMemorySize(){
 		return memorySize;
+	}
+
+	@Override
+	public void setMeta(Map<String, String> meta) {
+		this.meta = meta;
+	}
+
+	@Override
+	public Map<String, String> getMeta() {
+		return this.meta;
 	}
 
 	private void decrByteSize(final Column column) {

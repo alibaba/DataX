@@ -3,6 +3,8 @@ package com.alibaba.datax.common.plugin;
 import com.alibaba.datax.common.base.BaseObject;
 import com.alibaba.datax.common.util.Configuration;
 
+import java.util.List;
+
 public abstract class AbstractPlugin extends BaseObject implements Pluginable {
 	//作业的config
     private Configuration pluginJobConf;
@@ -14,6 +16,8 @@ public abstract class AbstractPlugin extends BaseObject implements Pluginable {
     private Configuration peerPluginJobConf;
 
     private String peerPluginName;
+
+    private List<Configuration> readerPluginSplitConf;
 
     @Override
 	public String getPluginName() {
@@ -83,5 +87,13 @@ public abstract class AbstractPlugin extends BaseObject implements Pluginable {
 
     public void postHandler(Configuration jobConfiguration){
 
+    }
+
+    public List<Configuration> getReaderPluginSplitConf(){
+        return this.readerPluginSplitConf;
+    }
+
+    public void setReaderPluginSplitConf(List<Configuration> readerPluginSplitConf){
+        this.readerPluginSplitConf = readerPluginSplitConf;
     }
 }

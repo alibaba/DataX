@@ -3,6 +3,7 @@ package com.alibaba.datax.plugin.reader.oceanbasev10reader;
 import java.sql.Connection;
 import java.util.List;
 
+import com.alibaba.datax.plugin.reader.oceanbasev10reader.ext.ObReaderKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,24 +33,41 @@ public class OceanBaseReader extends Reader {
             if (userConfigedFetchSize != null) {
                 LOG.warn("The [fetchSize] is not recognized, please use readBatchSize instead.");
             }
-
             this.originalConfig.set(Constant.FETCH_SIZE, Integer.MIN_VALUE);
-
             setDatabaseType(originalConfig);
-
             this.readerJob = new ReaderJob();
             this.readerJob.init(this.originalConfig);
         }
 
         @Override
+        public void prepare() {
+            //ObReaderUtils.DATABASE_TYPE获取当前数据库的语法模式
+        }
+
+        @Override
         public void preCheck() {
             init();
-            this.readerJob.preCheck(this.originalConfig, ObReaderUtils.DATABASE_TYPE);
+            this.readerJob.preCheck(this.originalConfig, ObReaderUtils.databaseType);
 
         }
 
         @Override
         public List<Configuration> split(int adviceNumber) {
+            String splitPk = originalConfig.getString(Key.SPLIT_PK);
+            List<String> quotedColumns = originalConfig.getList(Key.COLUMN_LIST, String.class);
+            if (splitPk != null && splitPk.length() > 0 && quotedColumns != null) {
+                String escapeChar = ObReaderUtils.isOracleMode(originalConfig.getString(ObReaderKey.OB_COMPATIBILITY_MODE))
+                    ? "\"" : "`";
+                if (!splitPk.startsWith(escapeChar) && !splitPk.endsWith(escapeChar)) {
+                    splitPk = escapeChar + splitPk + escapeChar;
+                }
+                for (String column : quotedColumns) {
+                    if (column.equals(splitPk)) {
+                        LOG.info("splitPk is an ob reserved keyword, set to {}", splitPk);
+                        originalConfig.set(Key.SPLIT_PK, splitPk);
+                    }
+                }
+            }
             return this.readerJob.split(this.originalConfig, adviceNumber);
         }
 
@@ -70,7 +88,7 @@ public class OceanBaseReader extends Reader {
             Configuration connConf = Configuration.from(conns.get(0).toString());
             List<String> jdbcUrls = connConf.getList(Key.JDBC_URL, String.class);
             String jdbcUrl = jdbcUrls.get(0);
-            if(jdbcUrl.startsWith(com.alibaba.datax.plugin.rdbms.writer.Constant.OB10_SPLIT_STRING)) {
+            if (jdbcUrl.startsWith(com.alibaba.datax.plugin.rdbms.writer.Constant.OB10_SPLIT_STRING)) {
                 String[] ss = jdbcUrl.split(com.alibaba.datax.plugin.rdbms.writer.Constant.OB10_SPLIT_STRING_PATTERN);
                 if (ss.length != 3) {
                     LOG.warn("unrecognized jdbc url: " + jdbcUrl);
@@ -84,10 +102,12 @@ public class OceanBaseReader extends Reader {
                 String obJdbcUrl = jdbcUrl.replace("jdbc:mysql:", "jdbc:oceanbase:");
                 Connection conn = DBUtil.getConnection(DataBaseType.OceanBase, obJdbcUrl, username, password);
                 String compatibleMode = ObReaderUtils.getCompatibleMode(conn);
+                config.set(ObReaderKey.OB_COMPATIBILITY_MODE, compatibleMode);
                 if (ObReaderUtils.isOracleMode(compatibleMode)) {
-                    ObReaderUtils.DATABASE_TYPE = DataBaseType.OceanBase;
+                    ObReaderUtils.compatibleMode = ObReaderUtils.OB_COMPATIBLE_MODE_ORACLE;
                 }
-            } catch (Exception e){
+
+            } catch (Exception e) {
                 LOG.warn("error in get compatible mode, using mysql as default: " + e.getMessage());
             }
         }

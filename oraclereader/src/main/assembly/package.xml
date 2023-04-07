@@ -16,13 +16,6 @@
             </includes>
             <outputDirectory>plugin/reader/oraclereader</outputDirectory>
         </fileSet>
-         <fileSet>
-            <directory>src/main/lib</directory>
-            <includes>
-                <include>ojdbc6-11.2.0.3.jar</include>
-            </includes>
-            <outputDirectory>plugin/reader/oraclereader/libs</outputDirectory>
-        </fileSet>
         <fileSet>
             <directory>target/</directory>
             <includes>

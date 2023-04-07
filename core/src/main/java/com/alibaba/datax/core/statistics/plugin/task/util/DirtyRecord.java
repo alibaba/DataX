@@ -4,22 +4,25 @@ import com.alibaba.datax.common.element.Column;
 import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.core.util.FrameworkErrorCode;
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public class DirtyRecord implements Record {
 	private List<Column> columns = new ArrayList<Column>();
+	private Map<String, String> meta;
 
 	public static DirtyRecord asDirtyRecord(final Record record) {
 		DirtyRecord result = new DirtyRecord();
 		for (int i = 0; i < record.getColumnNumber(); i++) {
 			result.addColumn(record.getColumn(i));
 		}
+		result.setMeta(record.getMeta());
 
 		return result;
 	}
@@ -63,6 +66,16 @@ public class DirtyRecord implements Record {
 	public int getMemorySize() {
 		throw DataXException.asDataXException(FrameworkErrorCode.RUNTIME_ERROR,
 				"该方法不支持!");
+	}
+
+	@Override
+	public void setMeta(Map<String, String> meta) {
+		this.meta = meta;
+	}
+
+	@Override
+	public Map<String, String> getMeta() {
+		return this.meta;
 	}
 
 	public List<Column> getColumns() {
@@ -116,6 +129,12 @@ class DirtyColumn extends Column {
 
 	@Override
 	public Date asDate() {
+		throw DataXException.asDataXException(FrameworkErrorCode.RUNTIME_ERROR,
+				"该方法不支持!");
+	}
+	
+	@Override
+	public Date asDate(String dateFormat) {
 		throw DataXException.asDataXException(FrameworkErrorCode.RUNTIME_ERROR,
 				"该方法不支持!");
 	}

@@ -110,7 +110,6 @@ DataX 将数据直连ADS接口，利用ADS暴露的INSERT接口直写到ADS。�
               "account": "xxx@aliyun.com",
               "odpsServer": "xxx",
               "tunnelServer": "xxx",
-              "accountType": "aliyun",
               "project": "transfer_project"
             },
             "writeMode": "load",

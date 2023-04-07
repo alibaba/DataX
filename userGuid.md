@@ -10,14 +10,14 @@ DataX本身作为数据同步框架，将不同数据源的同步抽象为从源
 
 - Linux
 - [JDK(1.8以上，推荐1.8) ](http://www.oracle.com/technetwork/cn/java/javase/downloads/index.html) 
-- [Python(推荐Python2.6.X) ](https://www.python.org/downloads/)
+- [Python(2或3都可以) ](https://www.python.org/downloads/)
 - [Apache Maven 3.x](https://maven.apache.org/download.cgi) (Compile DataX)
 
 # Quick Start
 
 * 工具部署
   
-  * 方法一、直接下载DataX工具包：[DataX下载地址](http://datax-opensource.oss-cn-hangzhou.aliyuncs.com/datax.tar.gz)
+  * 方法一、直接下载DataX工具包：[DataX下载地址](https://datax-opensource.oss-cn-hangzhou.aliyuncs.com/202210/datax.tar.gz)
     
     下载后解压至本地某个目录，进入bin目录，即可运行同步作业：
     

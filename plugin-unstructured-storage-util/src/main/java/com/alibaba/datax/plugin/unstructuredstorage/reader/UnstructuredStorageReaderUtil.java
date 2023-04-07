@@ -5,9 +5,9 @@ import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordSender;
 import com.alibaba.datax.common.plugin.TaskPluginCollector;
 import com.alibaba.datax.common.util.Configuration;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.TypeReference;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
+import com.alibaba.fastjson2.TypeReference;
 import com.csvreader.CsvReader;
 import org.apache.commons.beanutils.BeanUtils;
 import io.airlift.compress.snappy.SnappyCodec;
@@ -26,10 +26,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.nio.charset.UnsupportedCharsetException;
 import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class UnstructuredStorageReaderUtil {
 	private static final Logger LOG = LoggerFactory
@@ -694,5 +691,28 @@ public class UnstructuredStorageReaderUtil {
 			csvReader.setSafetySwitch(false);
 			LOG.info(String.format("CsvReader使用默认值[%s],csvReaderConfig值为[%s]",JSON.toJSONString(csvReader),JSON.toJSONString(UnstructuredStorageReaderUtil.csvReaderConfigMap)));
 		}
+	}
+
+	public static Map<String, String> buildRecordMeta(String filePath) {
+		Map<String, String> meta = new HashMap<String, String>();
+		// 上下文filePath元数据注入, 目前传递的是纯文件名
+		// File file = new File(filePath);
+		// meta.put(Key.META_KEY_FILE_PATH, file.getName());
+		meta.put(Key.META_KEY_FILE_PATH, filePath);
+		return meta;
+	}
+
+	public static void setSourceFileName(Configuration configuration, List<String> sourceFiles){
+		List<String> sourceFilesName = new ArrayList<String>();
+		File file;
+		for (String sourceFile: sourceFiles){
+			file = new File(sourceFile);
+			sourceFilesName.add(file.getName());
+		}
+		configuration.set(Constant.SOURCE_FILE_NAME, sourceFilesName);
+	}
+
+	public static void setSourceFile(Configuration configuration, List<String> sourceFiles){
+		configuration.set(Constant.SOURCE_FILE, sourceFiles);
 	}
 }

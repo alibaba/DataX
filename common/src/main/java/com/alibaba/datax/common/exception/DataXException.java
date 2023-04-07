@@ -16,6 +16,10 @@ public class DataXException extends RuntimeException {
         this.errorCode = errorCode;
     }
 
+    public DataXException(String errorMessage) {
+        super(errorMessage);
+    }
+
     private DataXException(ErrorCode errorCode, String errorMessage, Throwable cause) {
         super(errorCode.toString() + " - " + getMessage(errorMessage) + " - " + getMessage(cause), cause);
 
@@ -24,6 +28,10 @@ public class DataXException extends RuntimeException {
 
     public static DataXException asDataXException(ErrorCode errorCode, String message) {
         return new DataXException(errorCode, message);
+    }
+
+    public static DataXException asDataXException(String message) {
+        return new DataXException(message);
     }
 
     public static DataXException asDataXException(ErrorCode errorCode, String message, Throwable cause) {
