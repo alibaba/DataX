@@ -39,7 +39,7 @@ public class SingleTableSplitUtil {
         String table = configuration.getString(Key.TABLE);
         String where = configuration.getString(Key.WHERE, null);
         boolean hasWhere = StringUtils.isNotBlank(where);
-        
+
         //String splitMode = configuration.getString(Key.SPLIT_MODE, "");
         //if (Constant.SPLIT_MODE_RANDOMSAMPLE.equals(splitMode) && DATABASE_TYPE == DataBaseType.Oracle) {
         if (DATABASE_TYPE == DataBaseType.Oracle) {
@@ -72,6 +72,10 @@ public class SingleTableSplitUtil {
                         String.valueOf(minMaxPK.getRight()), adviceNum,
                         splitPkName, "'", DATABASE_TYPE);
             } else if (isLongType) {
+                boolean isAutoSplit = configuration.getBool(Constant.IS_AUTO_SPILT);
+                if (isAutoSplit && configuration.getInt(Constant.FETCH_SIZE) > 10000) {
+                    adviceNum = new BigInteger(minMaxPK.getRight().toString()).divide(new BigInteger(configuration.getInt(Constant.FETCH_SIZE).toString())).intValue() + 1;
+                }
                 rangeList = RdbmsRangeSplitWrap.splitAndWrap(
                         new BigInteger(minMaxPK.getLeft().toString()),
                         new BigInteger(minMaxPK.getRight().toString()),
@@ -122,12 +126,12 @@ public class SingleTableSplitUtil {
         tempConfig.set(Key.QUERY_SQL, tempQuerySql);
         tempConfig.set(Key.WHERE, (hasWhere ? "(" + where + ") and" : "") + String.format(" %s IS NULL", splitPkName));
         pluginParams.add(tempConfig);
-        
+
         return pluginParams;
     }
 
     public static String buildQuerySql(String column, String table,
-                                          String where) {
+                                       String where) {
         String querySql;
 
         if (StringUtils.isBlank(where)) {
@@ -158,7 +162,7 @@ public class SingleTableSplitUtil {
     }
 
     public static void precheckSplitPk(Connection conn, String pkRangeSQL, int fetchSize,
-                                                       String table, String username) {
+                                       String table, String username) {
         Pair<Object, Object> minMaxPK = checkSplitPk(conn, pkRangeSQL, fetchSize, table, username, null);
         if (null == minMaxPK) {
             throw DataXException.asDataXException(DBUtilErrorCode.ILLEGAL_SPLIT_PK,
@@ -169,9 +173,8 @@ public class SingleTableSplitUtil {
     /**
      * 检测splitPk的配置是否正确。
      * configuration为null, 是precheck的逻辑，不需要回写PK_TYPE到configuration中
-     *
      */
-    private static Pair<Object, Object> checkSplitPk(Connection conn, String pkRangeSQL, int fetchSize,  String table,
+    private static Pair<Object, Object> checkSplitPk(Connection conn, String pkRangeSQL, int fetchSize, String table,
                                                      String username, Configuration configuration) {
         LOG.info("split pk [sql={}] is running... ", pkRangeSQL);
         ResultSet rs = null;
@@ -179,13 +182,13 @@ public class SingleTableSplitUtil {
         try {
             try {
                 rs = DBUtil.query(conn, pkRangeSQL, fetchSize);
-            }catch (Exception e) {
-                throw RdbmsException.asQueryException(DATABASE_TYPE, e, pkRangeSQL,table,username);
+            } catch (Exception e) {
+                throw RdbmsException.asQueryException(DATABASE_TYPE, e, pkRangeSQL, table, username);
             }
             ResultSetMetaData rsMetaData = rs.getMetaData();
             if (isPKTypeValid(rsMetaData)) {
                 if (isStringType(rsMetaData.getColumnType(1))) {
-                    if(configuration != null) {
+                    if (configuration != null) {
                         configuration
                                 .set(Constant.PK_TYPE, Constant.PK_TYPE_STRING);
                     }
@@ -194,7 +197,7 @@ public class SingleTableSplitUtil {
                                 rs.getString(1), rs.getString(2));
                     }
                 } else if (isLongType(rsMetaData.getColumnType(1))) {
-                    if(configuration != null) {
+                    if (configuration != null) {
                         configuration.set(Constant.PK_TYPE, Constant.PK_TYPE_LONG);
                     }
 
@@ -217,7 +220,7 @@ public class SingleTableSplitUtil {
                 throw DataXException.asDataXException(DBUtilErrorCode.ILLEGAL_SPLIT_PK,
                         "您配置的DataX切分主键(splitPk)有误. 因为您配置的切分主键(splitPk) 类型 DataX 不支持. DataX 仅支持切分主键为一个,并且类型为整数或者字符串类型. 请尝试使用其他的切分主键或者联系 DBA 进行处理.");
             }
-        } catch(DataXException e) {
+        } catch (DataXException e) {
             throw e;
         } catch (Exception e) {
             throw DataXException.asDataXException(DBUtilErrorCode.ILLEGAL_SPLIT_PK, "DataX尝试切分表发生错误. 请检查您的配置并作出修改.", e);
@@ -265,7 +268,7 @@ public class SingleTableSplitUtil {
         }
         return isValidLongType;
     }
-    
+
     private static boolean isStringType(int type) {
         return type == Types.CHAR || type == Types.NCHAR
                 || type == Types.VARCHAR || type == Types.LONGVARCHAR
@@ -277,10 +280,10 @@ public class SingleTableSplitUtil {
         String splitPK = configuration.getString(Key.SPLIT_PK).trim();
         String table = configuration.getString(Key.TABLE).trim();
         String where = configuration.getString(Key.WHERE, null);
-        return genPKSql(splitPK,table,where);
+        return genPKSql(splitPK, table, where);
     }
 
-    public static String genPKSql(String splitPK, String table, String where){
+    public static String genPKSql(String splitPK, String table, String where) {
 
         String minMaxTemplate = "SELECT MIN(%s),MAX(%s) FROM %s";
         String pkRangeSQL = String.format(minMaxTemplate, splitPK, splitPK,
@@ -291,13 +294,13 @@ public class SingleTableSplitUtil {
         }
         return pkRangeSQL;
     }
-    
+
     /**
      * support Number and String split
-     * */
+     */
     public static List<String> genSplitSqlForOracle(String splitPK,
-            String table, String where, Configuration configuration,
-            int adviceNum) {
+                                                    String table, String where, Configuration configuration,
+                                                    int adviceNum) {
         if (adviceNum < 1) {
             throw new IllegalArgumentException(String.format(
                     "切分份数不能小于1. 此处:adviceNum=[%s].", adviceNum));

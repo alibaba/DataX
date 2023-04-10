@@ -17,6 +17,8 @@ public final class Constant {
 
     public static String IS_TABLE_MODE = "isTableMode";
 
+    public static String IS_AUTO_SPILT = "isAutoSplit";
+
     public final static String FETCH_SIZE = "fetchSize";
 
     public static String QUERY_SQL_TEMPLATE_WITHOUT_WHERE = "select %s from %s ";

@@ -11,6 +11,8 @@ public final class Key {
     public final static String PASSWORD = "password";
 
     public final static String TABLE = "table";
+
+    public final static String AUTOSPLIT = "autoSplit";
     
     public final static String MANDATORY_ENCODING = "mandatoryEncoding";
 
