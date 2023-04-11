@@ -19,6 +19,10 @@ public final class Constant {
 
     public static String IS_AUTO_SPILT = "isAutoSplit";
 
+    public static String SPLIT_SIZE = "splitSize";
+
+    public static Integer SPLIT_SIZE_DEFAULT = 512*1024;
+
     public final static String FETCH_SIZE = "fetchSize";
 
     public static String QUERY_SQL_TEMPLATE_WITHOUT_WHERE = "select %s from %s ";

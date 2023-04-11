@@ -58,6 +58,7 @@ public final class OriginalConfPretreatmentUtil {
         //添加自动切分task
         boolean isAutoSplit = recognizeAutoSplit(originalConfig);
         originalConfig.set(Constant.IS_AUTO_SPILT,isAutoSplit);
+
         dealJdbcAndTable(originalConfig);
 
         dealColumnConf(originalConfig);
