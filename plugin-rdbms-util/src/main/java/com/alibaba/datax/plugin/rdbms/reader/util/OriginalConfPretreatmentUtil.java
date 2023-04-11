@@ -273,24 +273,11 @@ public final class OriginalConfPretreatmentUtil {
 
     private static boolean recognizeAutoSplit(
             Configuration originalConfig) {
-        List<Object> conns = originalConfig.getList(Constant.CONN_MARK,
-                Object.class);
-
-        List<Boolean> autoSplitFlags = new ArrayList<Boolean>();
-
-        String autoSplit = null;
-
+        String autoSplit = originalConfig.getString(Key.AUTOSPLIT, null);
         boolean isAutoSplitMode = false;
-        for (int i = 0, len = conns.size(); i < len; i++) {
-            Configuration connConf = Configuration
-                    .from(conns.get(i).toString());
-            autoSplit = connConf.getString(Key.AUTOSPLIT, null);
-
-            isAutoSplitMode = StringUtils.isNotBlank(autoSplit);
-            autoSplitFlags.add(isAutoSplitMode);
-
+        if (StringUtils.isNotBlank(autoSplit) && "true".equals(autoSplit)){
+            isAutoSplitMode = true;
         }
-
-        return autoSplitFlags.get(0);
+        return isAutoSplitMode;
     }
 }

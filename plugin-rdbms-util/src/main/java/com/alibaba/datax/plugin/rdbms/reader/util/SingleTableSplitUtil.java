@@ -73,7 +73,9 @@ public class SingleTableSplitUtil {
                         splitPkName, "'", DATABASE_TYPE);
             } else if (isLongType) {
                 boolean isAutoSplit = configuration.getBool(Constant.IS_AUTO_SPILT);
-                if (isAutoSplit && configuration.getInt(Constant.FETCH_SIZE) > 10000) {
+                LOG.info("You have set autoSplit={} and fetchSize={}",isAutoSplit,configuration.getInt(Constant.FETCH_SIZE));
+                if (isAutoSplit && configuration.getInt(Constant.FETCH_SIZE) > 20000) {
+                    LOG.info("You have set autoSplit and FetchSize also biger than 20000,AutoSplit is enable.");
                     adviceNum = new BigInteger(minMaxPK.getRight().toString()).divide(new BigInteger(configuration.getInt(Constant.FETCH_SIZE).toString())).intValue() + 1;
                 }
                 rangeList = RdbmsRangeSplitWrap.splitAndWrap(
