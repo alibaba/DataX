@@ -79,7 +79,6 @@ public class OdpsUtil {
 
 
     public static Odps initOdpsProject(Configuration originalConfig) {
-        String accountType = originalConfig.getString(Key.ACCOUNT_TYPE);
         String accessId = originalConfig.getString(Key.ACCESS_ID);
         String accessKey = originalConfig.getString(Key.ACCESS_KEY);
 
@@ -88,15 +87,10 @@ public class OdpsUtil {
         String securityToken = originalConfig.getString(Key.SECURITY_TOKEN);
 
         Account account;
-        if (accountType.equalsIgnoreCase(Constant.DEFAULT_ACCOUNT_TYPE)) {
-            if (StringUtils.isNotBlank(securityToken)) {
-                account = new com.aliyun.odps.account.StsAccount(accessId, accessKey, securityToken);
-            } else {
-                account = new AliyunAccount(accessId, accessKey);
-            }
+        if (StringUtils.isNotBlank(securityToken)) {
+            account = new com.aliyun.odps.account.StsAccount(accessId, accessKey, securityToken);
         } else {
-            throw DataXException.asDataXException(OdpsWriterErrorCode.ACCOUNT_TYPE_ERROR,
-                    MESSAGE_SOURCE.message("odpsutil.4", accountType));
+            account = new AliyunAccount(accessId, accessKey);
         }
 
         Odps odps = new Odps(account);

@@ -134,7 +134,7 @@ public class KuduWriterTask {
                                         break;
                                     case BOOLEAN:
                                         synchronized (lock) {
-                                            row.addBoolean(name, Boolean.getBoolean(rawData));
+                                            row.addBoolean(name, Boolean.parseBoolean(rawData));
                                         }
                                         break;
                                     case STRING:

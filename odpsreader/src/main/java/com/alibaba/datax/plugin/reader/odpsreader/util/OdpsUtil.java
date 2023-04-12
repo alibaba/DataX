@@ -76,19 +76,12 @@ public final class OdpsUtil {
             defaultProject = packageAuthorizedProject;
         }
 
-        String accountType = originalConfig.getString(Key.ACCOUNT_TYPE,
-                Constant.DEFAULT_ACCOUNT_TYPE);
 
         Account account = null;
-        if (accountType.equalsIgnoreCase(Constant.DEFAULT_ACCOUNT_TYPE)) {
-            if (StringUtils.isNotBlank(securityToken)) {
-                account = new StsAccount(accessId, accessKey, securityToken);
-            } else {
-                account = new AliyunAccount(accessId, accessKey);
-            }
+        if (StringUtils.isNotBlank(securityToken)) {
+            account = new StsAccount(accessId, accessKey, securityToken);
         } else {
-            throw DataXException.asDataXException(OdpsReaderErrorCode.ACCOUNT_TYPE_ERROR,
-                    MESSAGE_SOURCE.message("odpsutil.3", accountType));
+            account = new AliyunAccount(accessId, accessKey);
         }
 
         Odps odps = new Odps(account);
