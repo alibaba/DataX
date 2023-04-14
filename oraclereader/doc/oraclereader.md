@@ -48,6 +48,10 @@ OracleReader插件实现了从Oracle读取数据。在底层实现上，OracleRe
                         "username": "root",
                         // 数据库连接密码
                         "password": "root",
+                        // 拓展jdbc连接属性
+                        "jdbcConfig": {
+                            // "javax.net.ssl.trustStoreType": "JKS"
+                        },
                         "column": [
                             "id","name"
                         ],

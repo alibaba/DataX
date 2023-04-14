@@ -10,6 +10,7 @@ import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.plugin.rdbms.reader.CommonRdbmsReader;
 import com.alibaba.datax.plugin.rdbms.reader.Constant;
 import com.alibaba.datax.plugin.rdbms.reader.Key;
+import com.alibaba.datax.plugin.rdbms.util.ConfigUtil;
 import com.alibaba.datax.plugin.rdbms.util.DBUtil;
 import com.alibaba.datax.plugin.rdbms.util.RdbmsException;
 import com.alibaba.datax.plugin.reader.oceanbasev10reader.Config;
@@ -22,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 public class ReaderTask extends CommonRdbmsReader.Task {
     private static final Logger LOG = LoggerFactory.getLogger(ReaderTask.class);
@@ -30,6 +32,7 @@ public class ReaderTask extends CommonRdbmsReader.Task {
 
     private String username;
     private String password;
+	private Properties prop;
     private String jdbcUrl;
     private String mandatoryEncoding;
     private int queryTimeoutSeconds;// 查询超时 默认48小时
@@ -49,6 +52,7 @@ public class ReaderTask extends CommonRdbmsReader.Task {
         /* for database connection */
         username = readerSliceConfig.getString(Key.USERNAME);
         password = readerSliceConfig.getString(Key.PASSWORD);
+		prop = ConfigUtil.getJdbcProperties(readerSliceConfig);
         jdbcUrl = readerSliceConfig.getString(Key.JDBC_URL);
         queryTimeoutSeconds = readerSliceConfig.getInt(Config.QUERY_TIMEOUT_SECOND,
                 Config.DEFAULT_QUERY_TIMEOUT_SECOND);
@@ -134,7 +138,7 @@ public class ReaderTask extends CommonRdbmsReader.Task {
             return;
         }
         // check primary key index
-        Connection conn = DBUtil.getConnection(ObReaderUtils.databaseType, jdbcUrl, username, password);
+        Connection conn = DBUtil.getConnection(ObReaderUtils.databaseType, jdbcUrl, username, password, prop);
         ObReaderUtils.initConn4Reader(conn, queryTimeoutSeconds);
         context.setConn(conn);
         try {
@@ -223,7 +227,7 @@ public class ReaderTask extends CommonRdbmsReader.Task {
             LOG.info("connection is alive, will reuse this connection.");
         } else {
             LOG.info("Create new connection for reader.");
-            conn = DBUtil.getConnection(ObReaderUtils.databaseType, jdbcUrl, username, password);
+            conn = DBUtil.getConnection(ObReaderUtils.databaseType, jdbcUrl, username, password, prop);
             ObReaderUtils.initConn4Reader(conn, queryTimeoutSeconds);
             context.setConn(conn);
         }

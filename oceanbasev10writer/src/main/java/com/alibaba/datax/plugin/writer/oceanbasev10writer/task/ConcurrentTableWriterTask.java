@@ -180,6 +180,7 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
 		LOG.info("writeRecordSql :{}", this.writeRecordSql);
 	}
 	
+	@Override
 	public void prepare(Configuration writerSliceConfig) {
 		super.prepare(writerSliceConfig);
 		calPartitionKeyIndex(partitionKeyIndexes);
@@ -222,7 +223,7 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
         		if (retryTimes > 0) {
         			TimeUnit.SECONDS.sleep((1 << retryTimes));
     				DBUtil.closeDBResources(null, connection);
-        			connection = DBUtil.getConnection(dataBaseType, jdbcUrl, username, password);
+        			connection = DBUtil.getConnection(dataBaseType, jdbcUrl, username, password, prop);
         			LOG.warn("getColumnMetaData of table {} failed, retry the {} times ...", this.table, retryTimes);
         		}
         		ColumnMetaCache.init(connection, this.table, this.columns);

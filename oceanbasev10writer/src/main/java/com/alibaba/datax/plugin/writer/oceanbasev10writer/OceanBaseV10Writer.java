@@ -3,6 +3,7 @@ package com.alibaba.datax.plugin.writer.oceanbasev10writer;
 import com.alibaba.datax.common.plugin.RecordReceiver;
 import com.alibaba.datax.common.spi.Writer;
 import com.alibaba.datax.common.util.Configuration;
+import com.alibaba.datax.plugin.rdbms.util.ConfigUtil;
 import com.alibaba.datax.plugin.rdbms.util.DBUtil;
 import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
 import com.alibaba.datax.plugin.rdbms.writer.CommonRdbmsWriter;
@@ -20,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * 2016-04-07
@@ -91,6 +93,7 @@ public class OceanBaseV10Writer extends Writer {
 
 			String username = originalConfig.getString(Key.USERNAME);
 			String password = originalConfig.getString(Key.PASSWORD);
+			Properties prop = ConfigUtil.getJdbcProperties(originalConfig);
 
 			// 获取presql配置，并执行
 			List<String> preSqls = originalConfig.getList(Key.PRE_SQL, String.class);
@@ -108,7 +111,7 @@ public class OceanBaseV10Writer extends Writer {
 				for (String table : tableList) {
 					List<String> renderedPreSqls = WriterUtil.renderPreOrPostSqls(preSqls, table);
 					if (null != renderedPreSqls && !renderedPreSqls.isEmpty()) {
-						Connection conn = DBUtil.getConnection(DATABASE_TYPE, jdbcUrl, username, password);
+						Connection conn = DBUtil.getConnection(DATABASE_TYPE, jdbcUrl, username, password, prop);
 						LOG.info("Begin to execute preSqls:[{}]. context info:{}.",
 								StringUtils.join(renderedPreSqls, ";"), jdbcUrl);
 						WriterUtil.executeSqls(conn, renderedPreSqls, jdbcUrl, DATABASE_TYPE);
@@ -152,6 +155,7 @@ public class OceanBaseV10Writer extends Writer {
 			}
 			String username = originalConfig.getString(Key.USERNAME);
 			String password = originalConfig.getString(Key.PASSWORD);
+			Properties prop = ConfigUtil.getJdbcProperties(originalConfig);
 			List<Object> conns = originalConfig.getList(Constant.CONN_MARK, Object.class);
 			List<String> postSqls = originalConfig.getList(Key.POST_SQL, String.class);
 			if (postSqls == null || postSqls.size() == 0) {
@@ -167,7 +171,7 @@ public class OceanBaseV10Writer extends Writer {
 					List<String> renderedPostSqls = WriterUtil.renderPreOrPostSqls(postSqls, table);
 					if (null != renderedPostSqls && !renderedPostSqls.isEmpty()) {
 						// 说明有 postSql 配置，则此处删除掉
-						Connection conn = DBUtil.getConnection(DATABASE_TYPE, jdbcUrl, username, password);
+						Connection conn = DBUtil.getConnection(DATABASE_TYPE, jdbcUrl, username, password, prop);
 						LOG.info("Begin to execute postSqls:[{}]. context info:{}.",
 								StringUtils.join(renderedPostSqls, ";"), jdbcUrl);
 						WriterUtil.executeSqls(conn, renderedPostSqls, jdbcUrl, DATABASE_TYPE);

@@ -2,7 +2,9 @@ package com.alibaba.datax.plugin.reader.oceanbasev10reader;
 
 import java.sql.Connection;
 import java.util.List;
+import java.util.Properties;
 
+import com.alibaba.datax.plugin.rdbms.util.ConfigUtil;
 import com.alibaba.datax.plugin.reader.oceanbasev10reader.ext.ObReaderKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,6 +86,7 @@ public class OceanBaseReader extends Reader {
         private void setDatabaseType(Configuration config) {
             String username = config.getString(Key.USERNAME);
             String password = config.getString(Key.PASSWORD);
+			Properties prop = ConfigUtil.getJdbcProperties(config);
             List<Object> conns = originalConfig.getList(Constant.CONN_MARK, Object.class);
             Configuration connConf = Configuration.from(conns.get(0).toString());
             List<String> jdbcUrls = connConf.getList(Key.JDBC_URL, String.class);
@@ -100,7 +103,7 @@ public class OceanBaseReader extends Reader {
             // Use ob-client to get compatible mode.
             try {
                 String obJdbcUrl = jdbcUrl.replace("jdbc:mysql:", "jdbc:oceanbase:");
-                Connection conn = DBUtil.getConnection(DataBaseType.OceanBase, obJdbcUrl, username, password);
+                Connection conn = DBUtil.getConnection(DataBaseType.OceanBase, obJdbcUrl, username, password, prop);
                 String compatibleMode = ObReaderUtils.getCompatibleMode(conn);
                 config.set(ObReaderKey.OB_COMPATIBILITY_MODE, compatibleMode);
                 if (ObReaderUtils.isOracleMode(compatibleMode)) {

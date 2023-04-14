@@ -3,17 +3,12 @@ package com.alibaba.datax.plugin.writer.adbpgwriter.util;
 import com.alibaba.cloud.analyticdb.adb4pgclient.Adb4pgClient;
 import com.alibaba.cloud.analyticdb.adb4pgclient.Adb4pgClientException;
 import com.alibaba.cloud.analyticdb.adb4pgclient.DatabaseConfig;
-import com.alibaba.datax.common.element.Column;
-import com.alibaba.datax.common.exception.DataXException;
-import com.alibaba.datax.common.spi.ErrorCode;
 import com.alibaba.datax.common.util.Configuration;
+import com.alibaba.datax.plugin.rdbms.util.ConfigUtil;
 import com.alibaba.datax.plugin.rdbms.util.DBUtil;
-import com.alibaba.datax.plugin.rdbms.util.DBUtilErrorCode;
 import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
-import com.alibaba.datax.plugin.rdbms.writer.Constant;
 import com.alibaba.datax.plugin.rdbms.writer.Key;
 import com.alibaba.datax.plugin.rdbms.writer.util.WriterUtil;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,8 +84,9 @@ public class Adb4pgUtil {
     public static Connection getAdbpgConnect(Configuration conf) {
         String userName = conf.getString(Key.USERNAME);
         String passWord = conf.getString(Key.PASSWORD);
+		Properties prop = ConfigUtil.getJdbcProperties(conf);
 
-        return DBUtil.getConnection(DataBaseType.PostgreSQL, generateJdbcUrl(conf), userName, passWord);
+        return DBUtil.getConnection(DataBaseType.PostgreSQL, generateJdbcUrl(conf), userName, passWord, prop);
 
     }
 

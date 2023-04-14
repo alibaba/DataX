@@ -3,6 +3,7 @@ package com.alibaba.datax.plugin.reader.oceanbasev10reader.util;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.plugin.rdbms.reader.Constant;
 import com.alibaba.datax.plugin.rdbms.reader.Key;
+import com.alibaba.datax.plugin.rdbms.util.ConfigUtil;
 import com.alibaba.datax.plugin.rdbms.util.DBUtil;
 import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
 import com.alibaba.datax.plugin.reader.oceanbasev10reader.ext.ObReaderKey;
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * @author johnrobbet
@@ -57,8 +59,9 @@ public class PartitionSplitUtil {
         String jdbcUrl = config.getString(Key.JDBC_URL);
         String username = config.getString(Key.USERNAME);
         String password = config.getString(Key.PASSWORD);
+		Properties prop = ConfigUtil.getJdbcProperties(config);
         String dbname = ObReaderUtils.getDbNameFromJdbcUrl(jdbcUrl).toUpperCase();
-        Connection conn = DBUtil.getConnection(dbType, jdbcUrl, username, password);
+        Connection conn = DBUtil.getConnection(dbType, jdbcUrl, username, password, prop);
         tableName = tableName.toUpperCase();
 
         // check if the table has subpartitions or not
@@ -152,10 +155,11 @@ public class PartitionSplitUtil {
             String jdbcUrl = config.getString(Key.JDBC_URL);
             String username = config.getString(Key.USERNAME);
             String password = config.getString(Key.PASSWORD);
+			Properties prop = ConfigUtil.getJdbcProperties(config);
             String dbname = ObReaderUtils.getDbNameFromJdbcUrl(jdbcUrl);
             String allTable = "__all_table";
 
-            conn = DBUtil.getConnection(DataBaseType.OceanBase, jdbcUrl, username, password);
+            conn = DBUtil.getConnection(DataBaseType.OceanBase, jdbcUrl, username, password, prop);
             ObVersion obVersion = ObReaderUtils.getObVersion(conn);
             if (obVersion.compareTo(ObVersion.V2276) >= 0 &&
                 obVersion.compareTo(ObVersion.V4000) < 0) {

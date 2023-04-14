@@ -2,6 +2,7 @@ package com.alibaba.datax.plugin.writer.adswriter.util;
 
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.util.Configuration;
+import com.alibaba.datax.plugin.rdbms.util.ConfigUtil;
 import com.alibaba.datax.plugin.rdbms.util.DBUtil;
 import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
 import com.alibaba.datax.plugin.writer.adswriter.load.AdsHelper;
@@ -17,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 public class AdsUtil {
     private static final Logger LOG = LoggerFactory.getLogger(AdsUtil.class);
@@ -168,8 +170,9 @@ public class AdsUtil {
     public static Connection getAdsConnect(Configuration conf) {
         String userName = conf.getString(Key.USERNAME);
         String passWord = conf.getString(Key.PASSWORD);
+		Properties prop = ConfigUtil.getJdbcProperties(conf);
         String jdbcUrl = AdsUtil.prepareJdbcUrl(conf);
-        Connection connection = DBUtil.getConnection(DataBaseType.ADS, jdbcUrl, userName, passWord);
+        Connection connection = DBUtil.getConnection(DataBaseType.ADS, jdbcUrl, userName, passWord, prop);
         return connection;
     }
 }

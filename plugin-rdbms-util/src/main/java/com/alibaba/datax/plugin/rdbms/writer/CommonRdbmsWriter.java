@@ -6,6 +6,7 @@ import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordReceiver;
 import com.alibaba.datax.common.plugin.TaskPluginCollector;
 import com.alibaba.datax.common.util.Configuration;
+import com.alibaba.datax.plugin.rdbms.util.ConfigUtil;
 import com.alibaba.datax.plugin.rdbms.util.DBUtil;
 import com.alibaba.datax.plugin.rdbms.util.DBUtilErrorCode;
 import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
@@ -23,6 +24,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 public class CommonRdbmsWriter {
 
@@ -62,6 +64,7 @@ public class CommonRdbmsWriter {
             /*检查insert 跟delete权限*/
             String username = originalConfig.getString(Key.USERNAME);
             String password = originalConfig.getString(Key.PASSWORD);
+			Properties prop = ConfigUtil.getJdbcProperties(originalConfig);
             List<Object> connections = originalConfig.getList(Constant.CONN_MARK,
                     Object.class);
 
@@ -69,14 +72,14 @@ public class CommonRdbmsWriter {
                 Configuration connConf = Configuration.from(connections.get(i).toString());
                 String jdbcUrl = connConf.getString(Key.JDBC_URL);
                 List<String> expandedTables = connConf.getList(Key.TABLE, String.class);
-                boolean hasInsertPri = DBUtil.checkInsertPrivilege(dataBaseType, jdbcUrl, username, password, expandedTables);
+                boolean hasInsertPri = DBUtil.checkInsertPrivilege(dataBaseType, jdbcUrl, username, password, prop, expandedTables);
 
                 if (!hasInsertPri) {
                     throw RdbmsException.asInsertPriException(dataBaseType, originalConfig.getString(Key.USERNAME), jdbcUrl);
                 }
 
                 if (DBUtil.needCheckDeletePrivilege(originalConfig)) {
-                    boolean hasDeletePri = DBUtil.checkDeletePrivilege(dataBaseType, jdbcUrl, username, password, expandedTables);
+                    boolean hasDeletePri = DBUtil.checkDeletePrivilege(dataBaseType, jdbcUrl, username, password, prop, expandedTables);
                     if (!hasDeletePri) {
                         throw RdbmsException.asDeletePriException(dataBaseType, originalConfig.getString(Key.USERNAME), jdbcUrl);
                     }
@@ -90,6 +93,7 @@ public class CommonRdbmsWriter {
             if (tableNumber == 1) {
                 String username = originalConfig.getString(Key.USERNAME);
                 String password = originalConfig.getString(Key.PASSWORD);
+				Properties prop = ConfigUtil.getJdbcProperties(originalConfig);
 
                 List<Object> conns = originalConfig.getList(Constant.CONN_MARK,
                         Object.class);
@@ -114,7 +118,7 @@ public class CommonRdbmsWriter {
                     originalConfig.remove(Key.PRE_SQL);
 
                     Connection conn = DBUtil.getConnection(dataBaseType,
-                            jdbcUrl, username, password);
+                            jdbcUrl, username, password, prop);
                     LOG.info("Begin to execute preSqls:[{}]. context info:{}.",
                             StringUtils.join(renderedPreSqls, ";"), jdbcUrl);
 
@@ -138,6 +142,7 @@ public class CommonRdbmsWriter {
             if (tableNumber == 1) {
                 String username = originalConfig.getString(Key.USERNAME);
                 String password = originalConfig.getString(Key.PASSWORD);
+				Properties prop = ConfigUtil.getJdbcProperties(originalConfig);
 
                 // 已经由 prepare 进行了appendJDBCSuffix处理
                 String jdbcUrl = originalConfig.getString(Key.JDBC_URL);
@@ -154,7 +159,7 @@ public class CommonRdbmsWriter {
                     originalConfig.remove(Key.POST_SQL);
 
                     Connection conn = DBUtil.getConnection(this.dataBaseType,
-                            jdbcUrl, username, password);
+                            jdbcUrl, username, password, prop);
 
                     LOG.info(
                             "Begin to execute postSqls:[{}]. context info:{}.",
@@ -179,6 +184,7 @@ public class CommonRdbmsWriter {
 
         protected String username;
         protected String password;
+		protected Properties prop;
         protected String jdbcUrl;
         protected String table;
         protected List<String> columns;
@@ -206,6 +212,7 @@ public class CommonRdbmsWriter {
         public void init(Configuration writerSliceConfig) {
             this.username = writerSliceConfig.getString(Key.USERNAME);
             this.password = writerSliceConfig.getString(Key.PASSWORD);
+			this.prop = ConfigUtil.getJdbcProperties(writerSliceConfig);
             this.jdbcUrl = writerSliceConfig.getString(Key.JDBC_URL);
 
             //ob10的处理
@@ -243,7 +250,7 @@ public class CommonRdbmsWriter {
 
         public void prepare(Configuration writerSliceConfig) {
             Connection connection = DBUtil.getConnection(this.dataBaseType,
-                    this.jdbcUrl, username, password);
+                    this.jdbcUrl, username, password, prop);
 
             DBUtil.dealWithSessionConfig(connection, writerSliceConfig,
                     this.dataBaseType, BASIC_MESSAGE);
@@ -313,7 +320,7 @@ public class CommonRdbmsWriter {
                                Configuration writerSliceConfig,
                                TaskPluginCollector taskPluginCollector) {
             Connection connection = DBUtil.getConnection(this.dataBaseType,
-                    this.jdbcUrl, username, password);
+                    this.jdbcUrl, username, password ,prop);
             DBUtil.dealWithSessionConfig(connection, writerSliceConfig,
                     this.dataBaseType, BASIC_MESSAGE);
             startWriteWithConnection(recordReceiver, taskPluginCollector, connection);
@@ -330,7 +337,7 @@ public class CommonRdbmsWriter {
             }
 
             Connection connection = DBUtil.getConnection(this.dataBaseType,
-                    this.jdbcUrl, username, password);
+                    this.jdbcUrl, username, password, prop);
 
             LOG.info("Begin to execute postSqls:[{}]. context info:{}.",
                     StringUtils.join(this.postSqls, ";"), BASIC_MESSAGE);

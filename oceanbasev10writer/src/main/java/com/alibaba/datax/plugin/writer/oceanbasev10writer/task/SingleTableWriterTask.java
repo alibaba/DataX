@@ -71,6 +71,7 @@ public class SingleTableWriterTask extends CommonRdbmsWriter.Task {
 		this.writeRecordSql = ObWriterUtils.buildWriteSql(table, columns, conn, obWriteMode, obUpdateColumns);
 	}
 
+	@Override
 	protected void doBatchInsert(Connection conn, List<Record> buffer) throws SQLException {
 		doBatchInsert(buffer);
 	}

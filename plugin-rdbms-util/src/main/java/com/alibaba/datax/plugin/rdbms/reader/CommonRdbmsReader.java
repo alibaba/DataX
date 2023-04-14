@@ -17,6 +17,7 @@ import com.alibaba.datax.plugin.rdbms.reader.util.OriginalConfPretreatmentUtil;
 import com.alibaba.datax.plugin.rdbms.reader.util.PreCheckTask;
 import com.alibaba.datax.plugin.rdbms.reader.util.ReaderSplitUtil;
 import com.alibaba.datax.plugin.rdbms.reader.util.SingleTableSplitUtil;
+import com.alibaba.datax.plugin.rdbms.util.ConfigUtil;
 import com.alibaba.datax.plugin.rdbms.util.DBUtil;
 import com.alibaba.datax.plugin.rdbms.util.DBUtilErrorCode;
 import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
@@ -34,6 +35,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -65,6 +67,7 @@ public class CommonRdbmsReader {
             List<Object> connList = queryConf.getList(Constant.CONN_MARK, Object.class);
             String username = queryConf.getString(Key.USERNAME);
             String password = queryConf.getString(Key.PASSWORD);
+			Properties prop = ConfigUtil.getJdbcProperties(queryConf);
             ExecutorService exec;
             if (connList.size() < 10){
                 exec = Executors.newFixedThreadPool(connList.size());
@@ -74,7 +77,7 @@ public class CommonRdbmsReader {
             Collection<PreCheckTask> taskList = new ArrayList<PreCheckTask>();
             for (int i = 0, len = connList.size(); i < len; i++){
                 Configuration connConf = Configuration.from(connList.get(i).toString());
-                PreCheckTask t = new PreCheckTask(username,password,connConf,dataBaseType,splitPK);
+                PreCheckTask t = new PreCheckTask(username,password,prop,connConf,dataBaseType,splitPK);
                 taskList.add(t);
             }
             List<Future<Boolean>> results = Lists.newArrayList();
@@ -125,6 +128,7 @@ public class CommonRdbmsReader {
 
         private String username;
         private String password;
+		private Properties prop;
         private String jdbcUrl;
         private String mandatoryEncoding;
 
@@ -148,6 +152,7 @@ public class CommonRdbmsReader {
             this.username = readerSliceConfig.getString(Key.USERNAME);
             this.password = readerSliceConfig.getString(Key.PASSWORD);
             this.jdbcUrl = readerSliceConfig.getString(Key.JDBC_URL);
+			this.prop = ConfigUtil.getJdbcProperties(readerSliceConfig);
 
             //ob10的处理
             if (this.jdbcUrl.startsWith(com.alibaba.datax.plugin.rdbms.writer.Constant.OB10_SPLIT_STRING) && this.dataBaseType == DataBaseType.MySql) {
@@ -183,7 +188,7 @@ public class CommonRdbmsReader {
             queryPerfRecord.start();
 
             Connection conn = DBUtil.getConnection(this.dataBaseType, jdbcUrl,
-                    username, password);
+                    username, password, prop);
 
             // session config .etc related
             DBUtil.dealWithSessionConfig(conn, readerSliceConfig,

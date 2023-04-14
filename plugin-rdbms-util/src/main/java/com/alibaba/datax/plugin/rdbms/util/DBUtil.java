@@ -37,7 +37,7 @@ public final class DBUtil {
 
     public static String chooseJdbcUrl(final DataBaseType dataBaseType,
                                        final List<String> jdbcUrls, final String username,
-                                       final String password, final List<String> preSql,
+                                       final String password, final Properties prop, final List<String> preSql,
                                        final boolean checkSlave) {
 
         if (null == jdbcUrls || jdbcUrls.isEmpty()) {
@@ -58,10 +58,10 @@ public final class DBUtil {
                             url = url.trim();
                             if (null != preSql && !preSql.isEmpty()) {
                                 connOK = testConnWithoutRetry(dataBaseType,
-                                        url, username, password, preSql);
+                                        url, username, password, prop, preSql);
                             } else {
                                 connOK = testConnWithoutRetry(dataBaseType,
-                                        url, username, password, checkSlave);
+                                        url, username, password, prop, checkSlave);
                             }
                             if (connOK) {
                                 return url;
@@ -83,7 +83,7 @@ public final class DBUtil {
 
     public static String chooseJdbcUrlWithoutRetry(final DataBaseType dataBaseType,
                                        final List<String> jdbcUrls, final String username,
-                                       final String password, final List<String> preSql,
+                                       final String password, final Properties prop, final List<String> preSql,
                                        final boolean checkSlave) throws DataXException {
 
         if (null == jdbcUrls || jdbcUrls.isEmpty()) {
@@ -99,11 +99,11 @@ public final class DBUtil {
                 url = url.trim();
                 if (null != preSql && !preSql.isEmpty()) {
                     connOK = testConnWithoutRetry(dataBaseType,
-                            url, username, password, preSql);
+                            url, username, password, prop, preSql);
                 } else {
                     try {
                         connOK = testConnWithoutRetry(dataBaseType,
-                                url, username, password, checkSlave);
+                                url, username, password, prop, checkSlave);
                     } catch (Exception e) {
                         throw DataXException.asDataXException(
                                 DBUtilErrorCode.CONN_DB_ERROR,
@@ -171,7 +171,7 @@ public final class DBUtil {
      * @author ZiChi
      * @version 1.0 2015-01-28
      */
-    public static boolean hasInsertPrivilege(DataBaseType dataBaseType, String jdbcURL, String userName, String password, List<String> tableList) {
+    public static boolean hasInsertPrivilege(DataBaseType dataBaseType, String jdbcURL, String userName, String password, Properties prop, List<String> tableList) {
         /*准备参数*/
 
         String[] urls = jdbcURL.split("/");
@@ -186,7 +186,7 @@ public final class DBUtil {
         Collection<String> tableNames = new HashSet<String>(tableList.size());
         tableNames.addAll(tableList);
 
-        Connection connection = connect(dataBaseType, jdbcURL, userName, password);
+        Connection connection = connect(dataBaseType, jdbcURL, userName, password, prop);
         try {
             ResultSet rs = query(connection, "SHOW GRANTS FOR " + userName);
             while (DBUtil.asyncResultSetNext(rs)) {
@@ -194,13 +194,14 @@ public final class DBUtil {
                 String[] params = grantRecord.split("\\`");
                 if (params != null && params.length >= 3) {
                     String tableName = params[3];
-                    if (params[0].contains("INSERT") && !tableName.equals("*") && tableNames.contains(tableName))
+                    if (params[0].contains("INSERT") && !"*".equals(tableName) && tableNames.contains(tableName)) {
                         tableNames.remove(tableName);
+                    }
                 } else {
                     if (grantRecord.contains("INSERT") ||grantRecord.contains("ALL PRIVILEGES")) {
-                        if (grantRecord.contains("*.*"))
+                        if (grantRecord.contains("*.*")) {
                             return true;
-                        else if (grantRecord.contains(dbPattern)) {
+                        } else if (grantRecord.contains(dbPattern)) {
                             return true;
                         }
                     }
@@ -209,14 +210,15 @@ public final class DBUtil {
         } catch (Exception e) {
             LOG.warn("Check the database has the Insert Privilege failed, errorMessage:[{}]", e.getMessage());
         }
-        if (tableNames.isEmpty())
+        if (tableNames.isEmpty()) {
             return true;
+        }
         return false;
     }
 
 
-    public static boolean checkInsertPrivilege(DataBaseType dataBaseType, String jdbcURL, String userName, String password, List<String> tableList) {
-        Connection connection = connect(dataBaseType, jdbcURL, userName, password);
+    public static boolean checkInsertPrivilege(DataBaseType dataBaseType, String jdbcURL, String userName, String password, Properties prop, List<String> tableList) {
+        Connection connection = connect(dataBaseType, jdbcURL, userName, password, prop);
         String insertTemplate = "insert into %s(select * from %s where 1 = 2)";
 
         boolean hasInsertPrivilege = true;
@@ -246,8 +248,8 @@ public final class DBUtil {
         return hasInsertPrivilege;
     }
 
-    public static boolean checkDeletePrivilege(DataBaseType dataBaseType,String jdbcURL, String userName, String password, List<String> tableList) {
-        Connection connection = connect(dataBaseType, jdbcURL, userName, password);
+    public static boolean checkDeletePrivilege(DataBaseType dataBaseType,String jdbcURL, String userName, String password, Properties prop, List<String> tableList) {
+        Connection connection = connect(dataBaseType, jdbcURL, userName, password, prop);
         String deleteTemplate = "delete from %s WHERE 1 = 2";
 
         boolean hasInsertPrivilege = true;
@@ -298,9 +300,9 @@ public final class DBUtil {
      * NOTE: In DataX, we don't need connection pool in fact
      */
     public static Connection getConnection(final DataBaseType dataBaseType,
-                                           final String jdbcUrl, final String username, final String password) {
+                                           final String jdbcUrl, final String username, final String password, final Properties prop) {
 
-        return getConnection(dataBaseType, jdbcUrl, username, password, String.valueOf(Constant.SOCKET_TIMEOUT_INSECOND * 1000));
+        return getConnection(dataBaseType, jdbcUrl, username, password, prop, String.valueOf(Constant.SOCKET_TIMEOUT_INSECOND * 1000));
     }
 
     /**
@@ -313,14 +315,14 @@ public final class DBUtil {
      * @return
      */
     public static Connection getConnection(final DataBaseType dataBaseType,
-                                           final String jdbcUrl, final String username, final String password, final String socketTimeout) {
+                                           final String jdbcUrl, final String username, final String password, final Properties prop, final String socketTimeout) {
 
         try {
             return RetryUtil.executeWithRetry(new Callable<Connection>() {
                 @Override
                 public Connection call() throws Exception {
                     return DBUtil.connect(dataBaseType, jdbcUrl, username,
-                            password, socketTimeout);
+                            password, prop, socketTimeout);
                 }
             }, 9, 1000L, true);
         } catch (Exception e) {
@@ -338,24 +340,24 @@ public final class DBUtil {
      * NOTE: In DataX, we don't need connection pool in fact
      */
     public static Connection getConnectionWithoutRetry(final DataBaseType dataBaseType,
-                                                       final String jdbcUrl, final String username, final String password) {
+                                                       final String jdbcUrl, final String username, final String password, final Properties prop) {
         return getConnectionWithoutRetry(dataBaseType, jdbcUrl, username,
-                password, String.valueOf(Constant.SOCKET_TIMEOUT_INSECOND * 1000));
+                password, prop, String.valueOf(Constant.SOCKET_TIMEOUT_INSECOND * 1000));
     }
 
     public static Connection getConnectionWithoutRetry(final DataBaseType dataBaseType,
-                                                       final String jdbcUrl, final String username, final String password, String socketTimeout) {
+                                                       final String jdbcUrl, final String username, final String password, final Properties prop, String socketTimeout) {
         return DBUtil.connect(dataBaseType, jdbcUrl, username,
-                password, socketTimeout);
+                password, prop, socketTimeout);
     }
 
     private static synchronized Connection connect(DataBaseType dataBaseType,
-                                                   String url, String user, String pass) {
-        return connect(dataBaseType, url, user, pass, String.valueOf(Constant.SOCKET_TIMEOUT_INSECOND * 1000));
+                                                   String url, String user, String pass, Properties prop) {
+        return connect(dataBaseType, url, user, pass, prop, String.valueOf(Constant.SOCKET_TIMEOUT_INSECOND * 1000));
     }
 
     private static synchronized Connection connect(DataBaseType dataBaseType,
-                                                   String url, String user, String pass, String socketTimeout) {
+                                                   String url, String user, String pass, Properties prop, String socketTimeout) {
 
         //ob10的处理
         if (url.startsWith(com.alibaba.datax.plugin.rdbms.writer.Constant.OB10_SPLIT_STRING)) {
@@ -371,7 +373,6 @@ public final class DBUtil {
             LOG.info("this is ob1_0 jdbc url. user="+user+" :url="+url);
         }
 
-        Properties prop = new Properties();
         prop.put("user", user);
         prop.put("password", pass);
 
@@ -503,13 +504,13 @@ public final class DBUtil {
     }
 
     public static List<String> getTableColumns(DataBaseType dataBaseType,
-                                               String jdbcUrl, String user, String pass, String tableName) {
-        Connection conn = getConnection(dataBaseType, jdbcUrl, user, pass);
+                                               String jdbcUrl, String user, String pass, Properties prop, String tableName) {
+        Connection conn = getConnection(dataBaseType, jdbcUrl, user, pass, prop);
         return getTableColumnsByConn(dataBaseType, conn, tableName, "jdbcUrl:"+jdbcUrl);
     }
 
     public static List<String> getTableColumnsByConn(DataBaseType dataBaseType, Connection conn, String tableName, String basicMsg) {
-        List<String> columns = new ArrayList<String>();
+        List<String> columns = new ArrayList<>();
         Statement statement = null;
         ResultSet rs = null;
         String queryColumnSql = null;
@@ -537,10 +538,10 @@ public final class DBUtil {
      */
     public static Triple<List<String>, List<Integer>, List<String>> getColumnMetaData(
             DataBaseType dataBaseType, String jdbcUrl, String user,
-            String pass, String tableName, String column) {
+            String pass, Properties prop, String tableName, String column) {
         Connection conn = null;
         try {
-            conn = getConnection(dataBaseType, jdbcUrl, user, pass);
+            conn = getConnection(dataBaseType, jdbcUrl, user, pass, prop);
             return getColumnMetaData(conn, tableName, column);
         } finally {
             DBUtil.closeDBResources(null, null, conn);
@@ -584,11 +585,11 @@ public final class DBUtil {
     }
 
     public static boolean testConnWithoutRetry(DataBaseType dataBaseType,
-                                               String url, String user, String pass, boolean checkSlave){
+                                               String url, String user, String pass, Properties prop, boolean checkSlave){
         Connection connection = null;
 
         try {
-            connection = connect(dataBaseType, url, user, pass);
+            connection = connect(dataBaseType, url, user, pass, prop);
             if (connection != null) {
                 if (dataBaseType.equals(dataBaseType.MySql) && checkSlave) {
                     //dataBaseType.MySql
@@ -608,10 +609,10 @@ public final class DBUtil {
     }
 
     public static boolean testConnWithoutRetry(DataBaseType dataBaseType,
-                                               String url, String user, String pass, List<String> preSql) {
+                                               String url, String user, String pass, Properties prop, List<String> preSql) {
         Connection connection = null;
         try {
-            connection = connect(dataBaseType, url, user, pass);
+            connection = connect(dataBaseType, url, user, pass, prop);
             if (null != connection) {
                 for (String pre : preSql) {
                     if (doPreCheck(connection, pre) == false) {
@@ -631,14 +632,14 @@ public final class DBUtil {
         return false;
     }
 
-    public static boolean isOracleMaster(final String url, final String user, final String pass) {
+    public static boolean isOracleMaster(final String url, final String user, final String pass, final Properties prop) {
         try {
             return RetryUtil.executeWithRetry(new Callable<Boolean>() {
                 @Override
                 public Boolean call() throws Exception {
                     Connection conn = null;
                     try {
-                        conn = connect(DataBaseType.Oracle, url, user, pass);
+                        conn = connect(DataBaseType.Oracle, url, user, pass, prop);
                         ResultSet rs = query(conn, "select DATABASE_ROLE from V$DATABASE");
                         if (DBUtil.asyncResultSetNext(rs, 5)) {
                             String role = rs.getString("DATABASE_ROLE");

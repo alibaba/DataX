@@ -9,6 +9,7 @@ import com.alibaba.datax.common.plugin.RecordReceiver;
 import com.alibaba.datax.common.plugin.TaskPluginCollector;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.common.util.RetryUtil;
+import com.alibaba.datax.plugin.rdbms.util.ConfigUtil;
 import com.alibaba.datax.plugin.rdbms.util.DBUtil;
 import com.alibaba.datax.plugin.rdbms.util.DBUtilErrorCode;
 import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
@@ -35,6 +36,7 @@ import java.sql.Types;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 public class BaseWriter {
@@ -193,6 +195,7 @@ public class BaseWriter {
 
 			String username = originalConfig.getString(Key.USERNAME);
 			String password = originalConfig.getString(Key.PASSWORD);
+			Properties prop = ConfigUtil.getJdbcProperties(originalConfig);
 
 			String jdbcUrl = originalConfig.getString(Key.JDBC_URL);
 
@@ -208,7 +211,7 @@ public class BaseWriter {
 				originalConfig.remove(Key.POST_SQL);
 				String tempJdbcUrl = jdbcUrl.replace("postgresql", "hologres");
 				Connection conn = DBUtil.getConnection(this.dataBaseType,
-						tempJdbcUrl, username, password);
+						tempJdbcUrl, username, password, prop);
 
 				LOG.info(
 						"Begin to execute postSqls:[{}]. context info:{}.",

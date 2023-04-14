@@ -20,6 +20,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 public class SingleTableSplitUtil {
     private static final Logger LOG = LoggerFactory
@@ -149,9 +150,10 @@ public class SingleTableSplitUtil {
         String jdbcURL = configuration.getString(Key.JDBC_URL);
         String username = configuration.getString(Key.USERNAME);
         String password = configuration.getString(Key.PASSWORD);
+		Properties prop = ConfigUtil.getJdbcProperties(configuration);
         String table = configuration.getString(Key.TABLE);
 
-        Connection conn = DBUtil.getConnection(DATABASE_TYPE, jdbcURL, username, password);
+        Connection conn = DBUtil.getConnection(DATABASE_TYPE, jdbcURL, username, password, prop);
         Pair<Object, Object> minMaxPK = checkSplitPk(conn, pkRangeSQL, fetchSize, table, username, configuration);
         DBUtil.closeDBResources(null, null, conn);
         return minMaxPK;
@@ -319,8 +321,9 @@ public class SingleTableSplitUtil {
         String jdbcURL = configuration.getString(Key.JDBC_URL);
         String username = configuration.getString(Key.USERNAME);
         String password = configuration.getString(Key.PASSWORD);
+		Properties prop = ConfigUtil.getJdbcProperties(configuration);
         Connection conn = DBUtil.getConnection(DATABASE_TYPE, jdbcURL,
-                username, password);
+                username, password, prop);
         LOG.info("split pk [sql={}] is running... ", splitSql);
         ResultSet rs = null;
         List<Pair<Object, Integer>> splitedRange = new ArrayList<Pair<Object, Integer>>();
