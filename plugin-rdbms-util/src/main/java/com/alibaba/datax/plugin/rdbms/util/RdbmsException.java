@@ -69,32 +69,32 @@ public class RdbmsException extends DataXException{
     }
 
     public static DataXException asQueryException(DataBaseType dataBaseType, Exception e,String querySql,String table,String userName){
-        if (dataBaseType.equals(DataBaseType.MySql)){
+        if (dataBaseType.equals(DataBaseType.MySql)) {
             DBUtilErrorCode dbUtilErrorCode = mySqlQueryErrorAna(e.getMessage());
-            if (dbUtilErrorCode == DBUtilErrorCode.MYSQL_QUERY_TABLE_NAME_ERROR && table != null){
-                return DataXException.asDataXException(dbUtilErrorCode,"表名为："+table+" 执行的SQL为:"+querySql+" 具体错误信息为："+e);
+            if (dbUtilErrorCode == DBUtilErrorCode.MYSQL_QUERY_TABLE_NAME_ERROR && table != null) {
+                return DataXException.asDataXException(dbUtilErrorCode, "表名为：" + table + " 执行的SQL为:" + querySql + " 具体错误信息为：" + e, e);
             }
-            if (dbUtilErrorCode == DBUtilErrorCode.MYSQL_QUERY_SELECT_PRI_ERROR && userName != null){
-                return DataXException.asDataXException(dbUtilErrorCode,"用户名为："+userName+" 具体错误信息为："+e);
+            if (dbUtilErrorCode == DBUtilErrorCode.MYSQL_QUERY_SELECT_PRI_ERROR && userName != null) {
+                return DataXException.asDataXException(dbUtilErrorCode, "用户名为：" + userName + " 具体错误信息为：" + e, e);
             }
 
-            return DataXException.asDataXException(dbUtilErrorCode,"执行的SQL为: "+querySql+" 具体错误信息为："+e);
+            return DataXException.asDataXException(dbUtilErrorCode, "执行的SQL为: " + querySql + " 具体错误信息为：" + e, e);
         }
 
-        if (dataBaseType.equals(DataBaseType.Oracle)){
+        if (dataBaseType.equals(DataBaseType.Oracle)) {
             DBUtilErrorCode dbUtilErrorCode = oracleQueryErrorAna(e.getMessage());
-            if (dbUtilErrorCode == DBUtilErrorCode.ORACLE_QUERY_TABLE_NAME_ERROR && table != null){
-                return DataXException.asDataXException(dbUtilErrorCode,"表名为："+table+" 执行的SQL为:"+querySql+" 具体错误信息为："+e);
+            if (dbUtilErrorCode == DBUtilErrorCode.ORACLE_QUERY_TABLE_NAME_ERROR && table != null) {
+                return DataXException.asDataXException(dbUtilErrorCode, "表名为：" + table + " 执行的SQL为:" + querySql + " 具体错误信息为：" + e, e);
             }
-            if (dbUtilErrorCode == DBUtilErrorCode.ORACLE_QUERY_SELECT_PRI_ERROR){
-                return DataXException.asDataXException(dbUtilErrorCode,"用户名为："+userName+" 具体错误信息为："+e);
+            if (dbUtilErrorCode == DBUtilErrorCode.ORACLE_QUERY_SELECT_PRI_ERROR) {
+                return DataXException.asDataXException(dbUtilErrorCode, "用户名为：" + userName + " 具体错误信息为：" + e, e);
             }
 
-            return DataXException.asDataXException(dbUtilErrorCode,"执行的SQL为: "+querySql+" 具体错误信息为："+e);
+            return DataXException.asDataXException(dbUtilErrorCode, "执行的SQL为: " + querySql + " 具体错误信息为：" + e, e);
 
         }
 
-        return DataXException.asDataXException(DBUtilErrorCode.SQL_EXECUTE_FAIL, "执行的SQL为: "+querySql+" 具体错误信息为："+e);
+        return DataXException.asDataXException(DBUtilErrorCode.SQL_EXECUTE_FAIL, "执行的SQL为: " + querySql + " 具体错误信息为：" + e, e);
     }
 
     public static DBUtilErrorCode mySqlQueryErrorAna(String e){
