@@ -443,11 +443,11 @@ public class CommonRdbmsWriter {
 
                 //tinyint is a little special in some database like mysql {boolean->tinyint(1)}
                 case Types.TINYINT:
-                    Long longValue = column.asLong();
-                    if (null == longValue) {
-                        preparedStatement.setString(columnIndex + 1, null);
+                    String strLongValue = column.asString();
+                    if ((column.getRawData() == null) || (emptyAsNull && "".equals(strLongValue))) {
+                        preparedStatement.setObject(columnIndex + 1, null);
                     } else {
-                        preparedStatement.setString(columnIndex + 1, longValue.toString());
+                        preparedStatement.setLong(columnIndex + 1, column.asLong());
                     }
                     break;
 
