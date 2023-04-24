@@ -6,6 +6,10 @@ import java.util.StringJoiner;
 
 public class CopySQLBuilder {
     private final static String COPY_SYNC = "copy.async";
+    private final static String FIELD_DELIMITER_KEY = "file.column_separator";
+    private final static String FIELD_DELIMITER_DEFAULT = "\t";
+    public static final String LINE_DELIMITER_KEY = "file.line_delimiter";
+    public static final String LINE_DELIMITER_DEFAULT = "\n";
     private final String fileName;
     private final Keys options;
     private Map<String, Object> properties;
@@ -30,7 +34,18 @@ public class CopySQLBuilder {
         StringJoiner props = new StringJoiner(",");
         for(Map.Entry<String,Object> entry : properties.entrySet()){
             String key = String.valueOf(entry.getKey());
-            String value = String.valueOf(entry.getValue());
+            String value = "";
+            switch (key){
+                case FIELD_DELIMITER_KEY:
+                    value = DelimiterParser.parse(String.valueOf(entry.getValue()),FIELD_DELIMITER_DEFAULT);
+                    break;
+                case LINE_DELIMITER_KEY:
+                    value = DelimiterParser.parse(String.valueOf(entry.getValue()),LINE_DELIMITER_DEFAULT);
+                    break;
+                default:
+                    value = String.valueOf(entry.getValue());
+                    break;
+            }
             String prop = String.format("'%s'='%s'",key,value);
             props.add(prop);
         }
