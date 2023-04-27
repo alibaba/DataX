@@ -8,8 +8,8 @@ public class CopySQLBuilder {
     private final static String COPY_SYNC = "copy.async";
     private final static String FIELD_DELIMITER_KEY = "file.column_separator";
     private final static String FIELD_DELIMITER_DEFAULT = "\t";
-    public static final String LINE_DELIMITER_KEY = "file.line_delimiter";
-    public static final String LINE_DELIMITER_DEFAULT = "\n";
+    private final static String LINE_DELIMITER_KEY = "file.line_delimiter";
+    public  final static String LINE_DELIMITER_DEFAULT = "\n";
     private final String fileName;
     private final Keys options;
     private Map<String, Object> properties;
