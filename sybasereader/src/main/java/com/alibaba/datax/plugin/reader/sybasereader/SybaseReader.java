@@ -15,7 +15,7 @@ import com.alibaba.datax.plugin.rdbms.reader.Constant;
 
 public class SybaseReader extends Reader {
 
-	private static final DataBaseType DATABASE_TYPE = DataBaseType.Oracle;
+	private static final DataBaseType DATABASE_TYPE = DataBaseType.Sybase;
 
 	public static class Job extends Reader.Job {
 		private static final Logger LOG = LoggerFactory
@@ -63,6 +63,7 @@ public class SybaseReader extends Reader {
 					com.alibaba.datax.plugin.rdbms.reader.Constant.FETCH_SIZE,
 					Constants.DEFAULT_FETCH_SIZE);
 			if (fetchSize < 1) {
+				LOG.warn("对 sybasereader 需要配置 fetchSize, 对性能提升有较大影响 请配置fetchSize.");
 			}
 			originalConfig.set(
 					com.alibaba.datax.plugin.rdbms.reader.Constant.FETCH_SIZE,
