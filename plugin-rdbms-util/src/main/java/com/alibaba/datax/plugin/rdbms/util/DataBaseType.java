@@ -25,7 +25,9 @@ public enum DataBaseType {
     Oscar("oscar", "com.oscar.Driver"),
     OceanBase("oceanbase", "com.alipay.oceanbase.jdbc.Driver"),
     StarRocks("starrocks", "com.mysql.jdbc.Driver"),
-    Databend("databend", "com.databend.jdbc.DatabendDriver");
+    Databend("databend", "com.databend.jdbc.DatabendDriver"),
+    Sybase("sybase", "com.sybase.jdbc4.jdbc.SybDriver");
+
 
     private String typeName;
     private String driverClassName;

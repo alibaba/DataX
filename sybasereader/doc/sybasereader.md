@@ -233,12 +233,12 @@ SybaseReader插件实现了从Sybase读取数据。在底层实现上，SybaseRe
 
 | DataX 内部类型| Sybase 数据类型    |
 | -------- | -----  |
-| Long     |NUMBER,INTEGER,INT,SMALLINT|
-| Double   |NUMERIC,DECIMAL,FLOAT,DOUBLE PRECISION,REAL|
-| String   |LONG,CHAR,NCHAR,VARCHAR,VARCHAR2,NVARCHAR2,CLOB,NCLOB,CHARACTER,CHARACTER VARYING,CHAR VARYING,NATIONAL CHARACTER,NATIONAL CHAR,NATIONAL CHARACTER VARYING,NATIONAL CHAR VARYING,NCHAR VARYING    |
-| Date     |TIMESTAMP,DATE    |
-| Boolean  |bit, bool   |
-| Bytes    |BLOB,BFILE,RAW,LONG RAW    |
+| Long     |Tinyint,Smallint,Int,Money,Smallmoney|
+| Double   |Float,Real,Numeric,Decimal|
+| String   |Char,Varchar,Nchar,Nvarchar,Text|
+| Date     |Timestamp,Datetime,Smalldatetime|
+| Boolean  |bit, bool|
+| Bytes    |Binary,Varbinary,Image|
 
 
 
