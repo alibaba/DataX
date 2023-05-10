@@ -32,4 +32,5 @@
             <scope>runtime</scope>
         </dependencySet>
     </dependencySets>
+
 </assembly>
