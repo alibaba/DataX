@@ -59,7 +59,7 @@ SybaseReader插件实现了从Sybase读取数据。在底层实现上，SybaseRe
                                     "table"
                                 ],
                                 "jdbcUrl": [
-     "jdbc:Sybase:thin:@[HOST_NAME]:PORT:[DATABASE_NAME]"
+     "jdbc:sybase:Tds:192.168.1.92:5000/tempdb?charset=cp936"
                                 ]
                             }
                         ]
@@ -104,7 +104,7 @@ SybaseReader插件实现了从Sybase读取数据。在底层实现上，SybaseRe
                                     "select db_id,on_line_flag from db_info where db_id < 10"
                                 ],
                                 "jdbcUrl": [
-                                    "jdbc:Sybase:thin:@[HOST_NAME]:PORT:[DATABASE_NAME]"
+                                    "jdbc:sybase:Tds:192.168.1.92:5000/tempdb?charset=cp936"
                                 ]
                             }
                         ]
