@@ -1,4 +1,4 @@
-package com.alibaba.datax.plugin.reader.sybasewriter;
+package com.alibaba.datax.plugin.writer.sybasewriter;
 
 import com.alibaba.datax.common.plugin.RecordReceiver;
 import com.alibaba.datax.common.spi.Writer;
@@ -6,13 +6,14 @@ import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
 import com.alibaba.datax.plugin.rdbms.writer.CommonRdbmsWriter;
 import com.alibaba.datax.plugin.rdbms.writer.Key;
+import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
+
 
 import java.util.List;
 
 
 public class SybaseWriter extends Writer {
-	private static final DataBaseType DATABASE_TYPE = DataBaseType.SYBASE;
-
+	private static final DataBaseType DATABASE_TYPE = DataBaseType.Sybase;
 	public static class Job extends Writer.Job {
 		private Configuration originalConfig = null;
 		private CommonRdbmsWriter.Job commonRdbmsWriterJob;
@@ -72,7 +73,6 @@ public class SybaseWriter extends Writer {
 			this.commonRdbmsWriterTask.prepare(this.writerSliceConfig);
 		}
 
-		//TODO 改用连接池，确保每次获取的连接都是可用的（注意：连接可能需要每次都初始化其 session）
 		public void startWrite(RecordReceiver recordReceiver) {
 			this.commonRdbmsWriterTask.startWrite(recordReceiver, this.writerSliceConfig,
 					super.getTaskPluginCollector());
