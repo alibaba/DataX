@@ -134,6 +134,8 @@ public enum DataBaseType {
                     result = jdbc + "?" + suffix;
                 }
                 break;
+            case Sybase:
+                break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type.");
         }
