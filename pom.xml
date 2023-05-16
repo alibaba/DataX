@@ -123,11 +123,12 @@
         <module>doriswriter</module>
         <module>selectdbwriter</module>
         <module>adbmysqlwriter</module>
+        <module>iotdbwriter</module>
 
         <!-- common support module -->
         <module>plugin-rdbms-util</module>
         <module>plugin-unstructured-storage-util</module>
-       
+
     </modules>
 
     <dependencyManagement>
