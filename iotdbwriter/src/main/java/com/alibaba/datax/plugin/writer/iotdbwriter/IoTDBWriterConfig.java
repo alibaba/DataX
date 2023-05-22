@@ -10,8 +10,6 @@ public class IoTDBWriterConfig {
   public final static String PASSWORD = "password";
 
   public final static String DATABASES = "databases";
-  public final static String DEVICE_ID = "deviceId";
-  public final static String TIMESTAMP = "timestamp";
   public final static int MEASUREMENT_OFFSET = 2;
   public final static String SENSORS = "sensors";
   public final static String DATA_TYPES = "dataTypes";

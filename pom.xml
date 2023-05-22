@@ -79,6 +79,7 @@
         <module>loghubreader</module>
         <module>datahubreader</module>
         <module>starrocksreader</module>
+        <module>iotdbreader</module>
 
         <!-- writer -->
         <module>mysqlwriter</module>

@@ -1,0 +1,6 @@
+{
+  "name": "iotddbreader",
+  "class": "com.alibaba.datax.plugin.reader.iotdbreader.IoTDBReader",
+  "description": "Read data from IoTDB through IoTDB SessionPool",
+  "developer": "IoTDB Yongzao Dan"
+}
