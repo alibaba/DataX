@@ -32,11 +32,10 @@ public class IoTDBWriter extends Writer {
     @Override
     public void init() {
       JOB_CONF = getPluginJobConf();
-      LOGGER.info("[IoTDBWriter.Job.init] job configuration: {}", JOB_CONF.toJSON());
 
       // Create all Databases if not exist
-      List<String> databases = JOB_CONF.getList(IoTDBWriterConfig.DATABASES, String.class);
-      if (databases == null || databases.isEmpty()) {
+      String[] databases = JOB_CONF.getMap(IoTDBWriterConfig.DATABASES).keySet().toArray(new String[0]);
+      if (databases.length == 0) {
         throw DataXException.asDataXException(
           IoTDBWriterErrorCode.CONF_ERROR, "databases must be specified");
       }
@@ -55,11 +54,42 @@ public class IoTDBWriter extends Writer {
 
     @Override
     public List<Configuration> split(int mandatoryNumber) {
-      List<Configuration> splitResultConfigs = new ArrayList<>();
-      for (int j = 0; j < mandatoryNumber; j++) {
-        splitResultConfigs.add(JOB_CONF.clone());
+      List<Configuration> splitConfigs = new ArrayList<>();
+      for (int i = 0; i < mandatoryNumber; i++) {
+        // Initialize basic configurations
+        Configuration conf = Configuration.newDefault();
+        conf.set(IoTDBWriterConfig.ADDRESSES, JOB_CONF.get(IoTDBWriterConfig.ADDRESSES));
+        conf.set(IoTDBWriterConfig.USERNAME, JOB_CONF.get(IoTDBWriterConfig.USERNAME));
+        conf.set(IoTDBWriterConfig.PASSWORD, JOB_CONF.get(IoTDBWriterConfig.PASSWORD));
+        splitConfigs.add(conf);
       }
-      return splitResultConfigs;
+
+      // Split devices evenly
+      int splitCounter = 0;
+      Map<Integer, Map<String, Map<String, Map<String, List<String>>>>> splitMap = new HashMap<>();
+      Map<String, Object> rawDatabaseMap = JOB_CONF.getMap(IoTDBWriterConfig.DATABASES);
+      for (Map.Entry<String, Object> databaseEntry : rawDatabaseMap.entrySet()) {
+        String database = databaseEntry.getKey();
+        Map<String, Map<String, List<String>>> rawDeviceMap =
+          (Map<String, Map<String, List<String>>>) databaseEntry.getValue();
+        for (Map.Entry<String, Map<String, List<String>>> deviceEntry : rawDeviceMap.entrySet()) {
+          splitMap
+            .computeIfAbsent(splitCounter, k -> new HashMap<>())
+            .computeIfAbsent(database, k -> new HashMap<>())
+            .put(deviceEntry.getKey(), deviceEntry.getValue());
+          splitCounter = (splitCounter + 1) % mandatoryNumber;
+        }
+      }
+      splitMap.forEach((k, v) -> {
+        if (v.size() > 1 || v.values().iterator().next().size() > 1) {
+          throw DataXException.asDataXException(
+            IoTDBWriterErrorCode.CONF_ERROR,
+            "The channel number must be equal to the sum of devices");
+        }
+        LOGGER.info("[IoTDBReader.Job.split] split: {} configuration: {}", k, v);
+        splitConfigs.get(k).set(IoTDBWriterConfig.DATABASES, v);
+      });
+      return splitConfigs;
     }
 
     @Override
@@ -75,8 +105,8 @@ public class IoTDBWriter extends Writer {
     private SessionPool sessionPool;
     private int batchSize;
 
-    // Map<DeviceId, List<MeasurementSchema>>
-    private final Map<String, List<MeasurementSchema>> iotdbSchemaMap = new HashMap<>();
+    private String deviceId;
+    private List<MeasurementSchema> schemas;
 
     @Override
     public void init() {
@@ -85,7 +115,7 @@ public class IoTDBWriter extends Writer {
       sessionPool = generateSessionPool(taskConf);
       batchSize = taskConf.getInt(IoTDBWriterConfig.BATCH_SIZE, IoTDBWriterConfig.DEFAULT_BATCH_SIZE);
 
-      // Analyze all schemas
+      // Analyze schemas
       Map<String, Object> rawDatabaseMap = taskConf.getMap(IoTDBWriterConfig.DATABASES);
       rawDatabaseMap.forEach((database, rawDeviceMap) -> {
         Map<String, Map<String, List<String>>>
@@ -93,6 +123,9 @@ public class IoTDBWriter extends Writer {
         deviceSchemaMap.forEach((deviceId, schema) -> {
           List<String> sensors = schema.get(IoTDBWriterConfig.SENSORS);
           List<String> dataTypes = schema.get(IoTDBWriterConfig.DATA_TYPES);
+          this.deviceId = database + "." + deviceId;
+          this.schemas = new ArrayList<>();
+
           if (sensors == null || sensors.isEmpty()) {
             throw DataXException.asDataXException(
               IoTDBWriterErrorCode.CONF_ERROR,
@@ -109,14 +142,12 @@ public class IoTDBWriter extends Writer {
               String.format("sensors and dataTypes of device: %s must be the same size", deviceId));
           }
 
-          // Store MeasurementSchema for each Device
-          List<MeasurementSchema> iotdbSchema = new ArrayList<>();
-          for (int i = IoTDBWriterConfig.MEASUREMENT_OFFSET; i < sensors.size(); i++) {
+          // Store MeasurementSchema for current Device
+          for (int i = 0; i < sensors.size(); i++) {
             String sensor = sensors.get(i);
             String dataType = dataTypes.get(i);
-            iotdbSchema.add(new MeasurementSchema(sensor, TSDataType.valueOf(dataType)));
+            this.schemas.add(new MeasurementSchema(sensor, TSDataType.valueOf(dataType)));
           }
-          iotdbSchemaMap.put(deviceId, iotdbSchema);
         });
       });
     }
@@ -127,17 +158,11 @@ public class IoTDBWriter extends Writer {
 
       Record record;
       int recordCount = 0;
-      Map<String, Tablet> tablets = new HashMap<>();
+      Tablet tablet = new Tablet(deviceId, schemas, batchSize);
       while ((record = lineReceiver.getFromReader()) != null) {
-        // Read Device and Timestamp by default
-        String deviceId = record.getColumn(0).asString();
-        long timestamp = record.getColumn(1).asLong();
+        // Read timestamp by default(column 0)
+        long timestamp = record.getColumn(0).asLong();
         int columnNumber = record.getColumnNumber();
-        if (!iotdbSchemaMap.containsKey(deviceId)) {
-          throw DataXException.asDataXException(
-            IoTDBWriterErrorCode.WRITE_ERROR,
-            String.format("device: %s doesn't exist", deviceId));
-        }
         if (timestamp <= 0) {
           throw DataXException.asDataXException(
             IoTDBWriterErrorCode.WRITE_ERROR,
@@ -145,40 +170,37 @@ public class IoTDBWriter extends Writer {
         }
 
         // Ensure column number matched
-        List<MeasurementSchema> iotdbSchema = iotdbSchemaMap.get(deviceId);
-        if (iotdbSchema.size() != columnNumber - IoTDBWriterConfig.MEASUREMENT_OFFSET) {
+        if (schemas.size() != columnNumber - 1) {
           throw DataXException.asDataXException(
             IoTDBWriterErrorCode.WRITE_ERROR,
-            String.format("columns of device: %s must be %d", deviceId, iotdbSchema.size() + IoTDBWriterConfig.MEASUREMENT_OFFSET));
+            String.format("columns of device: %s must be %d", deviceId, schemas.size() + 1));
         }
 
         // Maintain Tablet
-        tablets
-          .computeIfAbsent(deviceId, empty -> new Tablet(deviceId, iotdbSchemaMap.get(deviceId), batchSize))
-          .addTimestamp(recordCount, timestamp);
-        for (int i = IoTDBWriterConfig.MEASUREMENT_OFFSET; i < columnNumber; i++) {
+        tablet.addTimestamp(recordCount, timestamp);
+        for (int i = 1; i < columnNumber; i++) {
           Column column = record.getColumn(i);
-          MeasurementSchema measurementSchema = iotdbSchema.get(i - IoTDBWriterConfig.MEASUREMENT_OFFSET);
+          MeasurementSchema measurementSchema = schemas.get(i - 1);
           String measurementId = measurementSchema.getMeasurementId();
           TSDataType dataType = measurementSchema.getType();
           switch (dataType) {
             case INT32:
-              tablets.get(deviceId).addValue(measurementId, recordCount, column.asLong().intValue());
+              tablet.addValue(measurementId, recordCount, column.asLong().intValue());
               break;
             case INT64:
-              tablets.get(deviceId).addValue(measurementId, recordCount, column.asLong());
+              tablet.addValue(measurementId, recordCount, column.asLong());
               break;
             case FLOAT:
-              tablets.get(deviceId).addValue(measurementId, recordCount, column.asDouble().floatValue());
+              tablet.addValue(measurementId, recordCount, column.asDouble().floatValue());
               break;
             case DOUBLE:
-              tablets.get(deviceId).addValue(measurementId, recordCount, column.asDouble());
+              tablet.addValue(measurementId, recordCount, column.asDouble());
               break;
             case BOOLEAN:
-              tablets.get(deviceId).addValue(measurementId, recordCount, column.asBoolean());
+              tablet.addValue(measurementId, recordCount, column.asBoolean());
               break;
             case TEXT:
-              tablets.get(deviceId).addValue(measurementId, recordCount, column.asString());
+              tablet.addValue(measurementId, recordCount, column.asString());
               break;
             default:
               throw DataXException.asDataXException(
@@ -189,9 +211,8 @@ public class IoTDBWriter extends Writer {
 
         recordCount++;
         if (recordCount % batchSize == 0) {
-          LOGGER.info("[IoTDBWriter.Task.startWrite] write {} records", recordCount);
           try {
-            sessionPool.insertTablets(tablets);
+            sessionPool.insertTablet(tablet);
           } catch (IoTDBConnectionException | StatementExecutionException e) {
             throw DataXException.asDataXException(
               IoTDBWriterErrorCode.WRITE_ERROR,
@@ -203,9 +224,8 @@ public class IoTDBWriter extends Writer {
       }
 
       if (recordCount > 0) {
-        LOGGER.info("[IoTDBWriter.Task.startWrite] write {} records", recordCount);
         try {
-          sessionPool.insertTablets(tablets);
+          sessionPool.insertTablet(tablet);
         } catch (IoTDBConnectionException | StatementExecutionException e) {
           throw DataXException.asDataXException(
             IoTDBWriterErrorCode.WRITE_ERROR,

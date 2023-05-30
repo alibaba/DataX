@@ -5,6 +5,7 @@ import com.alibaba.datax.common.element.DoubleColumn;
 import com.alibaba.datax.common.element.LongColumn;
 import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.element.StringColumn;
+import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordSender;
 import com.alibaba.datax.common.spi.Reader;
 import com.alibaba.datax.common.util.Configuration;
@@ -70,6 +71,11 @@ public class IoTDBReader extends Reader {
         }
       }
       splitMap.forEach((k, v) -> {
+        if (v.size() > 1 || v.values().iterator().next().size() > 1) {
+          throw DataXException.asDataXException(
+            IoTDBReaderErrorCode.CONF_ERROR,
+            "The channel number must be equal to the sum of devices");
+        }
         LOGGER.info("[IoTDBReader.Job.split] split: {} configuration: {}", k, v);
         splitConfigs.get(k).set(IoTDBReaderConfig.DATABASES, v);
       });
