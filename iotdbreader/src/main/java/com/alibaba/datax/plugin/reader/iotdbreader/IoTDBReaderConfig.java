@@ -10,6 +10,7 @@ public class IoTDBReaderConfig {
   public final static int DEFAULT_SESSION_POOL_MAX_SIZE = 3;
 
   public final static String DATABASES = "databases";
+  public final static int MEASUREMENT_OFFSET = 1;
   public final static String SENSORS = "sensors";
   public final static String DATA_TYPES = "dataTypes";
 }

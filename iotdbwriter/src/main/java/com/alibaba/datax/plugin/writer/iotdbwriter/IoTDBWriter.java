@@ -45,8 +45,7 @@ public class IoTDBWriter extends Writer {
           sessionPool.createDatabase(database);
           LOGGER.info("[IoTDBWriter.Job.init] create database: {}", database);
         } catch (Exception e) {
-          throw DataXException.asDataXException(
-            IoTDBWriterErrorCode.WRITE_ERROR, e);
+          // Ignore
         }
       }
       sessionPool.close();
@@ -61,6 +60,8 @@ public class IoTDBWriter extends Writer {
         conf.set(IoTDBWriterConfig.ADDRESSES, JOB_CONF.get(IoTDBWriterConfig.ADDRESSES));
         conf.set(IoTDBWriterConfig.USERNAME, JOB_CONF.get(IoTDBWriterConfig.USERNAME));
         conf.set(IoTDBWriterConfig.PASSWORD, JOB_CONF.get(IoTDBWriterConfig.PASSWORD));
+        conf.set(IoTDBWriterConfig.SESSION_POOL_MAX_SIZE, JOB_CONF.get(IoTDBWriterConfig.SESSION_POOL_MAX_SIZE));
+        conf.set(IoTDBWriterConfig.BATCH_SIZE, JOB_CONF.get(IoTDBWriterConfig.BATCH_SIZE));
         splitConfigs.add(conf);
       }
 
@@ -150,6 +151,8 @@ public class IoTDBWriter extends Writer {
           }
         });
       });
+
+      LOGGER.info("[IoTDBWriter.Task.init] device: {} schemas: {}", deviceId, schemas);
     }
 
     @Override
@@ -212,7 +215,9 @@ public class IoTDBWriter extends Writer {
         recordCount++;
         if (recordCount % batchSize == 0) {
           try {
+            tablet.rowSize = recordCount;
             sessionPool.insertTablet(tablet);
+            LOGGER.info("[IoTDBWriter.Task.startWrite] write {} records, {} rowNum, {} occupation", recordCount, tablet.getMaxRowNumber(), tablet.getTotalValueOccupation());
           } catch (IoTDBConnectionException | StatementExecutionException e) {
             throw DataXException.asDataXException(
               IoTDBWriterErrorCode.WRITE_ERROR,
@@ -225,7 +230,9 @@ public class IoTDBWriter extends Writer {
 
       if (recordCount > 0) {
         try {
+          tablet.rowSize = recordCount;
           sessionPool.insertTablet(tablet);
+          LOGGER.info("[IoTDBWriter.Task.startWrite] write {} records, {} rowNum, {} occupation", recordCount, tablet.getMaxRowNumber(), tablet.getTotalValueOccupation());
         } catch (IoTDBConnectionException | StatementExecutionException e) {
           throw DataXException.asDataXException(
             IoTDBWriterErrorCode.WRITE_ERROR,

@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class IoTDBReader extends Reader {
 
@@ -138,7 +139,7 @@ public class IoTDBReader extends Reader {
                 String columnName = columnNames.get(j);
                 String columnType = columnTypes.get(j);
                 if (sensor.equals(columnName) && dataType.equals(columnType)) {
-                  schemaMatchList.add(j - 1);
+                  schemaMatchList.add(j - IoTDBReaderConfig.MEASUREMENT_OFFSET);
                   matched = true;
                   break;
                 }
@@ -148,6 +149,7 @@ public class IoTDBReader extends Reader {
                 return;
               }
             }
+            LOGGER.info("[IoTDBReader.Task.startRead] schemaMatchList: {}", schemaMatchList);
 
             while (dataSetWrapper.hasNext()) {
               RowRecord rowRecord = dataSetWrapper.next();
@@ -166,26 +168,45 @@ public class IoTDBReader extends Reader {
 
     private void convertToDataXRecord(RowRecord rowRecord, Record record, List<String> columnTypes, List<Integer> schemaMatchList) {
       List<Field> fields = rowRecord.getFields();
+      // LOGGER.info("[IoTDBReader.Task.convertToDataXRecord] fields: {}, schema: {}", fields, schemaMatchList);
       for (int index : schemaMatchList) {
         Field field = fields.get(index);
-        String dataType = columnTypes.get(index);
+        String dataType = columnTypes.get(index + IoTDBReaderConfig.MEASUREMENT_OFFSET);
         switch (dataType) {
           case "BOOLEAN":
+            if (!Objects.equals(field.getDataType().toString(), "BOOLEAN")) {
+              LOGGER.error("[IoTDBReader.Task.convertToDataXRecord] data type mismatch: {} {}", dataType, field.getDataType());
+            }
             record.addColumn(new BoolColumn(field.getBoolV()));
             break;
           case "INT32":
+            if (!Objects.equals(field.getDataType().toString(), "INT32")) {
+              LOGGER.error("[IoTDBReader.Task.convertToDataXRecord] data type mismatch: {} {}", dataType, field.getDataType());
+            }
             record.addColumn(new LongColumn(field.getIntV()));
             break;
           case "INT64":
+            if (!Objects.equals(field.getDataType().toString(), "INT64")) {
+              LOGGER.error("[IoTDBReader.Task.convertToDataXRecord] data type mismatch: {} {}", dataType, field.getDataType());
+            }
             record.addColumn(new LongColumn(field.getLongV()));
             break;
           case "FLOAT":
+            if (!Objects.equals(field.getDataType().toString(), "FLOAT")) {
+              LOGGER.error("[IoTDBReader.Task.convertToDataXRecord] data type mismatch: {} {}", dataType, field.getDataType());
+            }
             record.addColumn(new DoubleColumn(field.getFloatV()));
             break;
           case "DOUBLE":
+            if (!Objects.equals(field.getDataType().toString(), "DOUBLE")) {
+              LOGGER.error("[IoTDBReader.Task.convertToDataXRecord] data type mismatch: {} {}", dataType, field.getDataType());
+            }
             record.addColumn(new DoubleColumn(field.getDoubleV()));
             break;
           case "TEXT":
+            if (!Objects.equals(field.getDataType().toString(), "TEXT")) {
+              LOGGER.error("[IoTDBReader.Task.convertToDataXRecord] data type mismatch: {} {}", dataType, field.getDataType());
+            }
             record.addColumn(new StringColumn(field.getStringValue()));
             break;
           default:
@@ -193,6 +214,7 @@ public class IoTDBReader extends Reader {
             break;
         }
       }
+      // LOGGER.info("[IoTDBReader.Task.convertToDataXRecord] record: {}", record);
     }
   }
 }
