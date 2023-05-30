@@ -229,6 +229,13 @@
             </includes>
             <outputDirectory>datax</outputDirectory>
         </fileSet>
+        <fileSet>
+            <directory>iotdbreader/target/datax/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>datax</outputDirectory>
+        </fileSet>
 
         <!-- writer -->
         <fileSet>
@@ -492,6 +499,13 @@
         </fileSet>
         <fileSet>
             <directory>selectdbwriter/target/datax/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>datax</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>iotdbwriter/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
             </includes>

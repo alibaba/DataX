@@ -31,7 +31,7 @@ public class IoTDBReader extends Reader {
 
     @Override
     public void init() {
-      LOGGER.info("[IoTDBReader.Job.init] job configuration: {}", super.getPluginJobConf().toJSON());
+      // Do nothing
     }
 
     @Override
@@ -43,15 +43,14 @@ public class IoTDBReader extends Reader {
     public List<Configuration> split(int adviceNumber) {
 
       Configuration jobConf = super.getPluginJobConf();
-      List<Configuration> splitConfigs = new ArrayList<>(adviceNumber);
+      List<Configuration> splitConfigs = new ArrayList<>();
       for (int i = 0; i < adviceNumber; i++) {
         // Initialize basic configurations
         Configuration conf = Configuration.newDefault();
-        conf.set(IoTDBReaderConfig.NAME, jobConf.get(IoTDBReaderConfig.NAME));
         conf.set(IoTDBReaderConfig.ADDRESSES, jobConf.get(IoTDBReaderConfig.ADDRESSES));
         conf.set(IoTDBReaderConfig.USERNAME, jobConf.get(IoTDBReaderConfig.USERNAME));
         conf.set(IoTDBReaderConfig.PASSWORD, jobConf.get(IoTDBReaderConfig.PASSWORD));
-        splitConfigs.set(i, conf);
+        splitConfigs.add(conf);
       }
 
       // Split devices evenly
@@ -119,10 +118,37 @@ public class IoTDBReader extends Reader {
             database, device, sensors, dataTypes);
 
           try (SessionDataSetWrapper dataSetWrapper = sessionPool.executeQueryStatement(sql)) {
+            List<String> columnNames = dataSetWrapper.getColumnNames();
+            List<String> columnTypes = dataSetWrapper.getColumnTypes();
+            LOGGER.info("[IoTDBReader.Task.startRead] columnNames: {} columnTypes: {}", columnNames, columnTypes);
+
+            List<Integer> schemaMatchList = new ArrayList<>();
+            for (int i = 0; i < sensors.size(); i++) {
+              String sensor = sensors.get(i);
+              String dataType = dataTypes.get(i);
+              boolean matched = false;
+              // j starts from 1 to skip timestamp column
+              for (int j = 1; j < columnNames.size(); j++) {
+                String columnName = columnNames.get(j);
+                String columnType = columnTypes.get(j);
+                if (sensor.equals(columnName) && dataType.equals(columnType)) {
+                  schemaMatchList.add(j - 1);
+                  matched = true;
+                  break;
+                }
+              }
+              if (!matched) {
+                LOGGER.error("[IoTDBReader.Task.startRead] sensor: {} dataType: {} not found in IoTDB, please check your json file.", sensor, dataType);
+                return;
+              }
+            }
+
             while (dataSetWrapper.hasNext()) {
               RowRecord rowRecord = dataSetWrapper.next();
               Record record = recordSender.createRecord();
-              convertToDataXRecord(rowRecord, record, dataTypes);
+              // Always add timestamp first
+              record.addColumn(new LongColumn(rowRecord.getTimestamp()));
+              convertToDataXRecord(rowRecord, record, columnTypes, schemaMatchList);
               recordSender.sendToWriter(record);
             }
           } catch (StatementExecutionException | IoTDBConnectionException e) {
@@ -132,11 +158,11 @@ public class IoTDBReader extends Reader {
       });
     }
 
-    private void convertToDataXRecord(RowRecord rowRecord, Record record, List<String> dataTypes) {
+    private void convertToDataXRecord(RowRecord rowRecord, Record record, List<String> columnTypes, List<Integer> schemaMatchList) {
       List<Field> fields = rowRecord.getFields();
-      for (int i = 0; i < dataTypes.size(); i++) {
-        String dataType = dataTypes.get(i);
-        Field field = fields.get(i);
+      for (int index : schemaMatchList) {
+        Field field = fields.get(index);
+        String dataType = columnTypes.get(index);
         switch (dataType) {
           case "BOOLEAN":
             record.addColumn(new BoolColumn(field.getBoolV()));

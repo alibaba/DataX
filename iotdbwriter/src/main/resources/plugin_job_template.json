@@ -1,25 +1,27 @@
 {
   "name": "iotdbwriter",
-  "addresses": "192.168.130.1:6667, 192.168.130.2:6667, 192.168.130.3:6667",
-  "username": "root",
-  "password": "root",
-  "sessionPoolMaxSize": 3,
-  "batchSize": 1000,
-  "databases": {
-    "root.db1": {
-      "d1": {
-        "sensors": ["deviceId", "timestamp", "s1", "s2"],
-        "dataTypes": ["TEXT", "INT64", "DOUBLE", "FLOAT"]
+  "parameter": {
+    "addresses": "192.168.130.1:6667, 192.168.130.2:6667, 192.168.130.3:6667",
+    "username": "root",
+    "password": "root",
+    "sessionPoolMaxSize": 3,
+    "batchSize": 1000,
+    "databases": {
+      "root.db1": {
+        "d1": {
+          "sensors": ["deviceId", "timestamp", "s1", "s2"],
+          "dataTypes": ["TEXT", "INT64", "DOUBLE", "FLOAT"]
+        },
+        "d2": {
+          "sensors": ["deviceId", "timestamp", "s"],
+          "dataTypes": ["TEXT", "INT64", "BOOLEAN"]
+        }
       },
-      "d2": {
-        "sensors": ["deviceId", "timestamp", "s"],
-        "dataTypes": ["TEXT", "INT64", "BOOLEAN"]
-      }
-    },
-    "root.db2": {
-      "device": {
-        "sensors": ["deviceId", "timestamp", "sensor"],
-        "dataTypes": ["TEXT", "INT64", "INT32"]
+      "root.db2": {
+        "device": {
+          "sensors": ["deviceId", "timestamp", "sensor"],
+          "dataTypes": ["TEXT", "INT64", "INT32"]
+        }
       }
     }
   }
