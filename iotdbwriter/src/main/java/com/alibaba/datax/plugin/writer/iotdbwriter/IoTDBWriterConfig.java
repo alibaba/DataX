@@ -14,5 +14,5 @@ public class IoTDBWriterConfig {
   public final static String DATA_TYPES = "dataTypes";
 
   public final static String BATCH_SIZE = "batchSize";
-  public final static int DEFAULT_BATCH_SIZE = 1000;
+  public final static int DEFAULT_BATCH_SIZE = 32768;
 }
