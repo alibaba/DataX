@@ -1,0 +1,19 @@
+{
+  "uri": "bolt://localhost:7687",
+  "username":"yourUserName",
+  "password":"yourPassword",
+  "database":"yourDataBase",
+  "cypher": "unwind $batch as row CALL apoc.cypher.doIt( 'create (n:`' + row.Label + '`{id:$id})' ,{id: row.id} ) YIELD value RETURN 1 ",
+  "batch_data_variable_name": "batch",
+  "batch_size": "33",
+  "fields": [
+    {
+      "fieldName": "Label",
+      "fieldType": "STRING"
+    },
+    {
+      "fieldName": "id",
+      "fieldType": "STRING"
+    }
+  ]
+}
