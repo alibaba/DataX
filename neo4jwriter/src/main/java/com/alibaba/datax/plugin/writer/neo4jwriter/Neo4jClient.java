@@ -11,7 +11,6 @@ import com.alibaba.datax.plugin.writer.neo4jwriter.adapter.ValueAdapter;
 import com.alibaba.datax.plugin.writer.neo4jwriter.config.Neo4jField;
 import com.alibaba.datax.plugin.writer.neo4jwriter.exception.Neo4jErrorCode;
 import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.neo4j.driver.*;
 import org.neo4j.driver.exceptions.Neo4jException;
@@ -224,11 +223,6 @@ public class Neo4jClient {
             }
         }
         return new MapValue(data);
-    }
-
-    //todo 精细化处理数据库异常
-    private void processNeo4jException(Neo4jException e) {
-        //Neo.ClientError.Statement.SyntaxError cypher语句错误
     }
 
     public List<Neo4jField> getNeo4jFields() {
