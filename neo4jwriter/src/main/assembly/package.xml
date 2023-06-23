@@ -12,11 +12,12 @@
             <directory>src/main/resources</directory>
             <includes>
                 <include>plugin.json</include>
+                <include>plugin_job_template.json</include>
             </includes>
             <outputDirectory>plugin/writer/neo4jwriter</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>target/</directory>
+            <directory>/target</directory>
             <includes>
                 <include>neo4jwriter-0.0.1-SNAPSHOT.jar</include>
             </includes>
