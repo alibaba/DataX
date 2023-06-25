@@ -7,6 +7,7 @@ import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.TaskPluginCollector;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.common.util.RetryUtil;
+import com.alibaba.datax.plugin.writer.neo4jwriter.adapter.DateAdapter;
 import com.alibaba.datax.plugin.writer.neo4jwriter.adapter.ValueAdapter;
 import com.alibaba.datax.plugin.writer.neo4jwriter.config.Neo4jField;
 import com.alibaba.datax.plugin.writer.neo4jwriter.exception.Neo4jErrorCode;
@@ -146,6 +147,7 @@ public class Neo4jClient {
         if (session != null) {
             session.close();
         }
+        DateAdapter.destroy();
     }
 
     private void tryFlushBuffer() {
