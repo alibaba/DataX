@@ -39,7 +39,7 @@ public class Neo4jWriterTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Neo4jWriterTest.class);
     private static final int MOCK_NUM = 100;
-    private static final String CONTAINER_IMAGE = "neo4j:5.6.0";
+    private static final String CONTAINER_IMAGE = "neo4j:5.9.0";
 
     private static final String CONTAINER_HOST = "neo4j-host";
     private static final int HTTP_PORT = 7474;
@@ -65,6 +65,10 @@ public class Neo4jWriterTest {
                         .withEnv(
                                 "NEO4J_AUTH",
                                 CONTAINER_NEO4J_USERNAME + "/" + CONTAINER_NEO4J_PASSWORD)
+                        .withEnv("apoc.export.file.enabled", "true")
+                        .withEnv("apoc.import.file.enabled", "true")
+                        .withEnv("apoc.import.file.use_neo4j_config", "true")
+                        .withEnv("NEO4J_PLUGINS", "[\"apoc\"]")
                         .withLogConsumer(
                                 new Slf4jLogConsumer(
                                         DockerLoggerFactory.getLogger(CONTAINER_IMAGE)));

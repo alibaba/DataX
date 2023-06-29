@@ -1,8 +1,8 @@
 {
   "uri": "bolt://localhost:7687",
-  "username":"yourUserName",
-  "password":"yourPassword",
-  "database":"yourDataBase",
+  "username":"neo4j",
+  "password":"Test@12343",
+  "database":"neo4j",
   "cypher": "unwind $batch as row CALL apoc.cypher.doIt( 'create (n:`' + row.Label + '`{id:$id})' ,{id: row.id} ) YIELD value RETURN 1 ",
   "batch_data_variable_name": "batch",
   "batch_size": "33",

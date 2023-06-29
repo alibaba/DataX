@@ -167,8 +167,8 @@ public class Neo4jClient {
     private void doWrite(List<MapValue> values) {
         Value batchValues = Values.parameters(this.writeConfig.batchVariableName, values);
         Query query = new Query(this.writeConfig.cypher, batchValues);
-        LOGGER.debug("query:{}", query.text());
-        LOGGER.debug("batch:{}", toUnwindStr(values));
+//        LOGGER.debug("query:{}", query.text());
+//        LOGGER.debug("batch:{}", toUnwindStr(values));
         try {
             RetryUtil.executeWithRetry(() -> {
                         session.writeTransaction(tx -> tx.run(query));
@@ -205,7 +205,7 @@ public class Neo4jClient {
             LOGGER.warn("接收到的数据列少于neo4jWriter企图消费的数据列,请注意风险，这可能导致数据不匹配");
             LOGGER.warn("Receive fewer data columns than neo4jWriter attempts to consume, " +
                     "be aware of the risk that this may result in data mismatch");
-            LOGGER.warn("接受到的数据是：" + record);
+            LOGGER.warn("接收到的数据是：" + record);
             LOGGER.warn("received data is：" + record);
         }
 
