@@ -2,14 +2,17 @@ package com.alibaba.datax.plugin.writer.neo4jwriter.adapter;
 
 
 import com.alibaba.datax.common.element.Column;
-import com.alibaba.datax.plugin.writer.neo4jwriter.config.Neo4jField;
-import com.alibaba.datax.plugin.writer.neo4jwriter.element.FieldType;
+import com.alibaba.datax.plugin.writer.neo4jwriter.config.Neo4jProperty;
+import com.alibaba.datax.plugin.writer.neo4jwriter.element.PropertyType;
 import com.alibaba.fastjson2.JSON;
 import org.neo4j.driver.Value;
 import org.neo4j.driver.Values;
 import org.neo4j.driver.internal.value.NullValue;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -18,13 +21,19 @@ import java.util.function.Function;
 public class ValueAdapter {
 
 
-    public static Value column2Value(final Column column, final Neo4jField neo4jField) {
-        FieldType type = neo4jField.getFieldType();
+    public static Value column2Value(final Column column, final Neo4jProperty neo4JProperty) {
+
+        String typeStr = neo4JProperty.getType();
+        PropertyType type = PropertyType.fromStrIgnoreCase(typeStr);
+        if (column.asString() == null) {
+            return NullValue.NULL;
+        }
+
         switch (type) {
             case NULL:
                 return NullValue.NULL;
             case MAP:
-                return Values.value(JSON.parseObject(column.asString(),Map.class));
+                return Values.value(JSON.parseObject(column.asString(), Map.class));
             case BOOLEAN:
                 return Values.value(column.asBoolean());
             case STRING:
@@ -38,30 +47,30 @@ public class ValueAdapter {
             case DOUBLE:
                 return Values.value(column.asDouble());
             case BYTE_ARRAY:
-                return Values.value(parseArrayType(neo4jField, column.asString(), Byte::valueOf));
+                return Values.value(parseArrayType(neo4JProperty, column.asString(), Byte::valueOf));
             case CHAR_ARRAY:
-                return Values.value(parseArrayType(neo4jField, column.asString(), (s) -> s.charAt(0)));
+                return Values.value(parseArrayType(neo4JProperty, column.asString(), (s) -> s.charAt(0)));
             case BOOLEAN_ARRAY:
-                return Values.value(parseArrayType(neo4jField, column.asString(), Boolean::valueOf));
+                return Values.value(parseArrayType(neo4JProperty, column.asString(), Boolean::valueOf));
             case STRING_ARRAY:
             case Object_ARRAY:
             case LIST:
-                return Values.value(parseArrayType(neo4jField, column.asString(), Function.identity()));
+                return Values.value(parseArrayType(neo4JProperty, column.asString(), Function.identity()));
             case LONG_ARRAY:
-                return Values.value(parseArrayType(neo4jField, column.asString(), Long::valueOf));
+                return Values.value(parseArrayType(neo4JProperty, column.asString(), Long::valueOf));
             case INT_ARRAY:
-                return Values.value(parseArrayType(neo4jField, column.asString(), Integer::valueOf));
+                return Values.value(parseArrayType(neo4JProperty, column.asString(), Integer::valueOf));
             case SHORT_ARRAY:
-                return Values.value(parseArrayType(neo4jField, column.asString(), Short::valueOf));
+                return Values.value(parseArrayType(neo4JProperty, column.asString(), Short::valueOf));
             case DOUBLE_ARRAY:
             case FLOAT_ARRAY:
-                return Values.value(parseArrayType(neo4jField, column.asString(), Double::valueOf));
+                return Values.value(parseArrayType(neo4JProperty, column.asString(), Double::valueOf));
             case LOCAL_DATE:
-                return Values.value(DateAdapter.localDate(column.asString(), neo4jField));
+                return Values.value(DateAdapter.localDate(column.asString(), neo4JProperty));
             case LOCAL_TIME:
-                return Values.value(DateAdapter.localTime(column.asString(),neo4jField));
+                return Values.value(DateAdapter.localTime(column.asString(), neo4JProperty));
             case LOCAL_DATE_TIME:
-                return Values.value(DateAdapter.localDateTime(column.asString(),neo4jField));
+                return Values.value(DateAdapter.localDateTime(column.asString(), neo4JProperty));
             default:
                 return Values.value(column.getRawData());
 
@@ -69,46 +78,18 @@ public class ValueAdapter {
     }
 
 
-    private static <R> List<R> parseArrayType(final Neo4jField neo4jField,
+    private static <R> List<R> parseArrayType(final Neo4jProperty neo4JProperty,
                                               final String strValue,
                                               final Function<String, R> convertFunc) {
         if (null == strValue || "".equals(strValue)) {
             return Collections.emptyList();
         }
-        String trimStr = trimString(strValue, neo4jField.getArrayTrimOrDefault());
-        if ("".equals(trimStr)) {
-            return Collections.emptyList();
-        }
-        String[] strArr = trimStr.split(neo4jField.getSplitOrDefault());
+        String split = neo4JProperty.getSplitOrDefault();
+        String[] strArr = strValue.split(split);
         List<R> ans = new ArrayList<>();
         for (String s : strArr) {
             ans.add(convertFunc.apply(s));
         }
         return ans;
-    }
-
-    public static String trimString(String strValue, List<Character> trimChars) {
-
-        Set<Character> characters = new HashSet<>(trimChars);
-        char[] chars = strValue.toCharArray();
-        int i = 0;
-        int j = chars.length - 1;
-
-        while (i <= chars.length - 1 && characters.contains(chars[i])) {
-            i++;
-        }
-        while (j >= i && characters.contains(chars[j])) {
-            j--;
-        }
-
-        if (i > j) {
-            return "";
-        }
-
-        if (i == j) {
-            return String.valueOf(chars[i]);
-        }
-
-        return new String(Arrays.copyOfRange(chars, i, j + 1));
     }
 }
