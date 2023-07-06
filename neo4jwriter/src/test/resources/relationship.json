@@ -4,16 +4,16 @@
   "password":"Test@12343",
   "database":"neo4j",
   "cypher": "unwind $batch as row match(p1:Person) where p1.id = row.startNodeId match(p2:Person) where p2.id = row.endNodeId create (p1)-[:LINK]->(p2)",
-  "batch_data_variable_name": "batch",
-  "batch_size": "33",
-  "fields": [
+  "batchDataVariableName": "batch",
+  "batchSize": "33",
+  "properties": [
     {
-      "fieldName": "startNodeId",
-      "fieldType": "STRING"
+      "name": "startNodeId",
+      "type": "STRING"
     },
     {
-      "fieldName": "endNodeId",
-      "fieldType": "STRING"
+      "name": "endNodeId",
+      "type": "STRING"
     }
   ]
 }

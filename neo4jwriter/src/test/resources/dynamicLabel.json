@@ -4,16 +4,16 @@
   "password":"Test@12343",
   "database":"neo4j",
   "cypher": "unwind $batch as row CALL apoc.cypher.doIt( 'create (n:`' + row.Label + '`{id:$id})' ,{id: row.id} ) YIELD value RETURN 1 ",
-  "batch_data_variable_name": "batch",
-  "batch_size": "33",
-  "fields": [
+  "batchDataVariableName": "batch",
+  "batchSize": "33",
+  "properties": [
     {
-      "fieldName": "Label",
-      "fieldType": "STRING"
+      "name": "Label",
+      "type": "string"
     },
     {
-      "fieldName": "id",
-      "fieldType": "STRING"
+      "name": "id",
+      "type": "STRING"
     }
   ]
 }

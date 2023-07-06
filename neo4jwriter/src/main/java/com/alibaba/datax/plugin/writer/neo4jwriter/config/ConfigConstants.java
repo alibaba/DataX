@@ -16,14 +16,14 @@ public final class ConfigConstants {
 
     public static final Option<Integer> RETRY_TIMES =
             Option.<Integer>builder()
-                    .key("retry_times")
+                    .key("retryTimes")
                     .defaultValue(3)
                     .desc("The number of overwrites when an error occurs")
                     .build();
 
     public static final Option<Long> RETRY_SLEEP_MILLS =
             Option.<Long>builder()
-                    .key("retry_sleep_mills")
+                    .key("retrySleepMills")
                     .defaultValue(3000L)
                     .build();
 
@@ -54,14 +54,14 @@ public final class ConfigConstants {
 
     public static final Option<String> BEARER_TOKEN =
             Option.<String>builder()
-                    .key("bearer_token")
+                    .key("bearerToken")
                     .noDefaultValue()
                     .desc("base64 encoded bearer token of the Neo4j. for Auth.")
                     .build();
 
     public static final Option<String> KERBEROS_TICKET =
             Option.<String>builder()
-                    .key("kerberos_ticket")
+                    .key("kerberosTicket")
                     .noDefaultValue()
                     .desc("base64 encoded kerberos ticket of the Neo4j. for Auth.")
                     .build();
@@ -82,34 +82,34 @@ public final class ConfigConstants {
 
     public static final Option<Long> MAX_TRANSACTION_RETRY_TIME =
             Option.<Long>builder()
-                    .key("max_transaction_retry_time_seconds")
+                    .key("maxTransactionRetryTimeSeconds")
                     .defaultValue(DEFAULT_MAX_TRANSACTION_RETRY_SECONDS)
                     .desc("maximum transaction retry time(seconds). transaction fail if exceeded.")
                     .build();
     public static final Option<Long> MAX_CONNECTION_TIMEOUT_SECONDS =
             Option.<Long>builder()
-                    .key("max_connection_timeout_seconds")
+                    .key("maxConnectionTimeoutSeconds")
                     .defaultValue(DEFAULT_MAX_CONNECTION_SECONDS)
                     .desc("The maximum amount of time to wait for a TCP connection to be established (seconds).")
                     .build();
 
     public static final Option<String> BATCH_DATA_VARIABLE_NAME =
             Option.<String>builder()
-                    .key("batch_data_variable_name")
+                    .key("batchDataVariableName")
                     .defaultValue("batch")
-                    .desc("In a cypher statement, a variable name that represents a batch of data")
+                    .desc("in a cypher statement, a variable name that represents a batch of data")
                     .build();
 
-    public static final Option<List<Neo4jField>> NEO4J_FIELDS =
-            Option.<List<Neo4jField>>builder()
-                    .key("fields")
+    public static final Option<List<Neo4jProperty>> NEO4J_PROPERTIES =
+            Option.<List<Neo4jProperty>>builder()
+                    .key("properties")
                     .noDefaultValue()
-                    .desc("neo4j fields.")
+                    .desc("neo4j node or relation`s props")
                     .build();
 
     public static final Option<Integer> BATCH_SIZE =
             Option.<Integer>builder().
-                    key("batch_size")
+                    key("batchSize")
                     .defaultValue(1000)
                     .desc("max batch size")
                     .build();

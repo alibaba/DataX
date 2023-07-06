@@ -16,25 +16,25 @@
 
 ### 配置项介绍
 
-| 配置                               | 说明                        | 是否必须 | 默认值 | 示例                                                 |
-| :--------------------------------- | --------------------------- | -------- | ------ | ---------------------------------------------------- |
-| database                           | 数据库名字                  | 是       | -      | neo4j                                                |
-| uri                                | 数据库访问链接              | 是       | -      | bolt://localhost:7687                                |
-| username                           | 访问用户名                  | 是       | -      | neo4j                                                |
-| password                           | 访问密码                    | 是       | -      | neo4j                                                |
-| bearer_token                       | 权限相关                    | 否       | -      | -                                                    |
-| kerberos_ticket                    | 权限相关                    | 否       | -      | -                                                    |
-| cypher                             | 同步语句                    | 是       | -      | unwind $batch as row create(p) set p.name = row.name |
-| batch_data_variable_name           | unwind 携带的数据变量名     |          |        | batch                                                |
-| fields                             | 定义datax中数据的名字和类型 | 是       | -      | 见后续案例                                           |
-| batch_size                         | 一批写入数据量              | 否       | 1000   |                                                      |
-| max_transaction_retry_time_seconds | 事务运行最长时间            | 否       | 30秒   | 30                                                   |
-| max_connection_timeout_seconds     | 驱动最长链接时间            | 否       | 30秒   | 30                                                   |
-| retry_times                        | 发生错误的重试次数          | 否       | 3次    | 3                                                    |
-| retry_sleep_mills                  | 重试失败后的等待时间        | 否       | 3秒    | 3                                                    |
+| 配置                             | 说明                 | 是否必须 | 默认值 | 示例                                                 |
+|:-------------------------------|--------------------| -------- | ------ | ---------------------------------------------------- |
+| database                       | 数据库名字              | 是       | -      | neo4j                                                |
+| uri                            | 数据库访问链接            | 是       | -      | bolt://localhost:7687                                |
+| username                       | 访问用户名              | 是       | -      | neo4j                                                |
+| password                       | 访问密码               | 是       | -      | neo4j                                                |
+| bearerToken                    | 权限相关               | 否       | -      | -                                                    |
+| kerberosTicket                 | 权限相关               | 否       | -      | -                                                    |
+| cypher                         | 同步语句               | 是       | -      | unwind $batch as row create(p) set p.name = row.name |
+| batchDataVariableName          | unwind 携带的数据变量名    |          |        | batch                                                |
+| properties                        | 定义neo4j中数据的属性名字和类型 | 是       | -      | 见后续案例                                           |
+| batchSize                      | 一批写入数据量            | 否       | 1000   |                                                      |
+| maxTransactionRetryTimeSeconds | 事务运行最长时间           | 否       | 30秒   | 30                                                   |
+| maxConnectionTimeoutSeconds    | 驱动最长链接时间           | 否       | 30秒   | 30                                                   |
+| retryTimes                     | 发生错误的重试次数          | 否       | 3次    | 3                                                    |
+| retrySleepMills                | 重试失败后的等待时间         | 否       | 3秒    | 3                                                    |
 
 ### 支持的数据类型
-
+> 配置时均忽略大小写
 ```
 BOOLEAN, 
 STRING,
@@ -73,41 +73,37 @@ Object_ARRAY
             "password": "Test@12343",
             "database": "neo4j",
             "cypher": "unwind $batch as row create(p:Person) set p.pbool = row.pbool,p.pstring = row.pstring,p.plong = row.plong,p.pshort = row.pshort,p.pdouble=row.pdouble,p.pstringarr=row.pstringarr,p.plocaldate=row.plocaldate",
-            "batch_data_variable_name": "batch",
-            "batch_size": "33",
-            "fields": [
+            "batchDataVariableName": "batch",
+            "batchSize": "33",
+            "properties": [
                 {
-                    "fieldName": "pbool",
-                    "fieldType": "BOOLEAN"
+                    "name": "pbool",
+                    "type": "BOOLEAN"
                 },
                 {
-                    "fieldName": "pstring",
-                    "fieldType": "STRING"
+                    "name": "pstring",
+                    "type": "STRING"
                 },
                 {
-                    "fieldName": "plong",
-                    "fieldType": "LONG"
+                    "name": "plong",
+                    "type": "LONG"
                 },
                 {
-                    "fieldName": "pshort",
-                    "fieldType": "SHORT"
+                    "name": "pshort",
+                    "type": "SHORT"
                 },
                 {
-                    "fieldName": "pdouble",
-                    "fieldType": "DOUBLE"
+                    "name": "pdouble",
+                    "type": "DOUBLE"
                 },
                 {
-                    "fieldName": "pstringarr",
-                    "fieldType": "STRING_ARRAY",
-                    "split": ",",
-                    "arrayTrimChars": [
-                        "[",
-                        "]"
-                    ]
+                    "name": "pstringarr",
+                    "type": "STRING_ARRAY",
+                    "split": ","
                 },
                 {
-                    "fieldName": "plocaldate",
-                    "fieldType": "LOCAL_DATE",
+                    "name": "plocaldate",
+                    "type": "LOCAL_DATE",
                     "dateFormat": "yyyy-MM-dd"
                 }
             ]
@@ -126,16 +122,16 @@ Object_ARRAY
             "password": "Test@12343",
             "database": "neo4j",
             "cypher": "unwind $batch as row match(p1:Person) where p1.id = row.startNodeId match(p2:Person) where p2.id = row.endNodeId create (p1)-[:LINK]->(p2)",
-            "batch_data_variable_name": "batch",
+            "batchDataVariableName": "batch",
             "batch_size": "33",
-            "fields": [
+            "properties": [
                 {
-                    "fieldName": "startNodeId",
-                    "fieldType": "STRING"
+                    "name": "startNodeId",
+                    "type": "STRING"
                 },
                 {
-                    "fieldName": "endNodeId",
-                    "fieldType": "STRING"
+                    "name": "endNodeId",
+                    "type": "STRING"
                 }
             ]
         }
@@ -155,16 +151,16 @@ Object_ARRAY
             "password": "yourPassword",
             "database": "yourDataBase",
             "cypher": "unwind $batch as row CALL apoc.cypher.doIt( 'create (n:`' + row.Label + '`{id:$id})' ,{id: row.id} ) YIELD value RETURN 1 ",
-            "batch_data_variable_name": "batch",
+            "batchDataVariableName": "batch",
             "batch_size": "1",
-            "fields": [
+            "properties": [
                 {
-                    "fieldName": "Label",
-                    "fieldType": "STRING"
+                    "name": "Label",
+                    "type": "STRING"
                 },
                 {
-                    "fieldName": "id",
-                    "fieldType": "STRING"
+                    "name": "id",
+                    "type": "STRING"
                 }
             ]
         }
@@ -173,7 +169,7 @@ Object_ARRAY
 
 ## 注意事项
 
-* fields的定义需要与源端一一对应。如果源端的数据列少于neo4j字段怎么办？建议将源端数据加工成json格式，在neo4j端将数据类型设置成map。在cypher中，可以根据jsonpath语法一直取值。比如 unwind $batch as row create (p) set p.name = row.props.name,set p.age = row.props.age
+* properties的定义的顺序需要与源端一一对应，但数量不必要对齐，neo4j writer 会取最小值。如果源端的数据列少于neo4j字段怎么办？建议将源端数据加工成json格式，在neo4j端将数据类型设置成map。在cypher中，可以根据jsonpath语法一直取值。比如 unwind $batch as row create (p) set p.name = row.properties.name,set p.age = row.properties.age
 * 如果提示事务超时，建议调大事务运行时间或者调小batch_size
 * 如果用于更新场景，会遇到死锁问题，建议二开源码加入死锁异常检测，并进行重试，开源版本不提供此功能。
 
