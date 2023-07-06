@@ -7,7 +7,8 @@ import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.plugin.writer.mock.MockRecord;
 import com.alibaba.datax.plugin.writer.mock.MockUtil;
 import com.alibaba.datax.plugin.writer.neo4jwriter.Neo4jClient;
-import com.alibaba.datax.plugin.writer.neo4jwriter.config.Neo4jField;
+import com.alibaba.datax.plugin.writer.neo4jwriter.config.Neo4jProperty;
+import com.alibaba.datax.plugin.writer.neo4jwriter.element.PropertyType;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -225,10 +226,10 @@ public class Neo4jWriterTest {
     }
 
 
-    private Record mockAllTypeFieldTestNode(List<Neo4jField> neo4jFields) {
+    private Record mockAllTypeFieldTestNode(List<Neo4jProperty> neo4JProperties) {
         Record mock = new MockRecord();
-        for (Neo4jField field : neo4jFields) {
-            mock.addColumn(MockUtil.mockColumnByType(field.getFieldType()));
+        for (Neo4jProperty field : neo4JProperties) {
+            mock.addColumn(MockUtil.mockColumnByType(PropertyType.fromStrIgnoreCase(field.getType())));
         }
         return mock;
     }

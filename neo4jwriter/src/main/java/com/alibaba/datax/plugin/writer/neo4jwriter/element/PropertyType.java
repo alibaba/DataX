@@ -1,10 +1,12 @@
 package com.alibaba.datax.plugin.writer.neo4jwriter.element;
 
+import java.util.Arrays;
+
 /**
  * @see org.neo4j.driver.Values
  * @author fuyouj
  */
-public enum FieldType {
+public enum PropertyType {
     NULL,
     BOOLEAN,
     STRING,
@@ -27,6 +29,12 @@ public enum FieldType {
     SHORT_ARRAY,
     DOUBLE_ARRAY,
     FLOAT_ARRAY,
-    Object_ARRAY
+    Object_ARRAY;
 
+    public static PropertyType fromStrIgnoreCase(String typeStr) {
+        return Arrays.stream(PropertyType.values())
+                .filter(e -> e.name().equalsIgnoreCase(typeStr))
+                .findFirst()
+                .orElse(PropertyType.STRING);
+    }
 }

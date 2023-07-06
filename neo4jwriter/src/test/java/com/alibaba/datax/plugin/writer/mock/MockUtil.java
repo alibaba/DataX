@@ -2,7 +2,7 @@ package com.alibaba.datax.plugin.writer.mock;
 
 
 import com.alibaba.datax.common.element.*;
-import com.alibaba.datax.plugin.writer.neo4jwriter.element.FieldType;
+import com.alibaba.datax.plugin.writer.neo4jwriter.element.PropertyType;
 import com.alibaba.fastjson2.JSON;
 
 import java.time.LocalDate;
@@ -13,7 +13,7 @@ import java.util.Random;
 
 public class MockUtil {
 
-    public static Column mockColumnByType(FieldType type) {
+    public static Column mockColumnByType(PropertyType type) {
         Random random = new Random();
         switch (type) {
             case SHORT:

@@ -9,7 +9,7 @@ public enum Neo4jErrorCode implements ErrorCode {
      * Invalid configuration
      * 配置校验异常
      */
-    CONFIG_INVALID("NEO4J_ERROR_01","Invalid configuration"),
+    CONFIG_INVALID("NEO4J_ERROR_01","invalid configuration"),
     /**
      * database error
      * 在执行写入到数据库时抛出的异常，可能是权限异常，也可能是连接超时，或者是配置到了从节点。
