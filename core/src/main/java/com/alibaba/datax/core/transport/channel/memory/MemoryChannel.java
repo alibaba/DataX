@@ -29,7 +29,7 @@ public class MemoryChannel extends Channel {
 
 	private ReentrantLock lock;
 
-	private Condition notInsufficient, notEmpty;
+	private Condition notSufficient, notEmpty;
 
 	public MemoryChannel(final Configuration configuration) {
 		super(configuration);
@@ -37,7 +37,7 @@ public class MemoryChannel extends Channel {
 		this.bufferSize = configuration.getInt(CoreConstant.DATAX_CORE_TRANSPORT_EXCHANGER_BUFFERSIZE);
 
 		lock = new ReentrantLock();
-		notInsufficient = lock.newCondition();
+		notSufficient = lock.newCondition();
 		notEmpty = lock.newCondition();
 	}
 
@@ -75,7 +75,7 @@ public class MemoryChannel extends Channel {
 			lock.lockInterruptibly();
 			int bytes = getRecordBytes(rs);
 			while (memoryBytes.get() + bytes > this.byteCapacity || rs.size() > this.queue.remainingCapacity()) {
-				notInsufficient.await(200L, TimeUnit.MILLISECONDS);
+				notSufficient.await(200L, TimeUnit.MILLISECONDS);
             }
 			this.queue.addAll(rs);
 			waitWriterTime += System.nanoTime() - startTime;
@@ -116,7 +116,7 @@ public class MemoryChannel extends Channel {
 			waitReaderTime += System.nanoTime() - startTime;
 			int bytes = getRecordBytes(rs);
 			memoryBytes.addAndGet(-bytes);
-			notInsufficient.signalAll();
+			notSufficient.signalAll();
 		} catch (InterruptedException e) {
 			throw DataXException.asDataXException(
 					FrameworkErrorCode.RUNTIME_ERROR, e);
