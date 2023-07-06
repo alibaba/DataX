@@ -17,7 +17,7 @@
             <outputDirectory>plugin/writer/neo4jwriter</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>/target</directory>
+            <directory>target/</directory>
             <includes>
                 <include>neo4jwriter-0.0.1-SNAPSHOT.jar</include>
             </includes>

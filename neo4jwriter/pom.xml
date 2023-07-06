@@ -2,16 +2,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.alibaba.datax</groupId>
         <artifactId>datax-all</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
+    <modelVersion>4.0.0</modelVersion>
 
     <artifactId>neo4jwriter</artifactId>
-    <groupId>com.alibaba.datax</groupId>
-    <version>0.0.1-SNAPSHOT</version>
+    <name>neo4jwriter</name>
     <packaging>jar</packaging>
 
     <properties>
@@ -55,15 +54,8 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
     <build>
-        <resources>
-            <resource>
-                <directory>src/main/java</directory>
-                <includes>
-                    <include>**/*.properties</include>
-                </includes>
-            </resource>
-        </resources>
         <plugins>
             <!-- compiler plugin -->
             <plugin>
@@ -95,5 +87,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>
