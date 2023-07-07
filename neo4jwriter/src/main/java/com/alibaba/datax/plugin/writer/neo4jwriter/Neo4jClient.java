@@ -198,13 +198,14 @@ public class Neo4jClient {
 
     private MapValue checkAndConvert(Record record) {
         int sourceColNum = record.getColumnNumber();
-        List<Neo4jProperty> neo4JProperties = writeConfig.neo4jProperties;
-
-        int len = Math.min(sourceColNum, neo4JProperties.size());
-        Map<String, Value> data = new HashMap<>(len * 4 / 3);
-        for (int i = 0; i < len; i++) {
+        List<Neo4jProperty> neo4jProperties = writeConfig.neo4jProperties;
+        if (neo4jProperties == null || neo4jProperties.size() != sourceColNum){
+            throw new DataXException(Neo4jErrorCode.CONFIG_INVALID,"the read and write columns do not match!");
+        }
+        Map<String, Value> data = new HashMap<>(sourceColNum * 4 / 3);
+        for (int i = 0; i < sourceColNum; i++) {
             Column column = record.getColumn(i);
-            Neo4jProperty neo4jProperty = neo4JProperties.get(i);
+            Neo4jProperty neo4jProperty = neo4jProperties.get(i);
             try {
 
                 Value value = ValueAdapter.column2Value(column, neo4jProperty);
