@@ -186,5 +186,6 @@ Object_ARRAY
 **datax 配置**
 
 Channel 20 batchsize = 1000
-
-![](./benchmark.png)
+任务平均流量：15.23MB/s
+记录写入速度：44440 rec/s
+读出记录总数：2222013
