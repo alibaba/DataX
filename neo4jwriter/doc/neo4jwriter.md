@@ -47,6 +47,7 @@ LOCAL_DATE,
 LOCAL_TIME,
 LOCAL_DATE_TIME,
 LIST,
+//map类型支持 . 属性表达式取值
 MAP,
 CHAR_ARRAY,
 BYTE_ARRAY,
@@ -169,9 +170,10 @@ Object_ARRAY
 
 ## 注意事项
 
-* properties的定义的顺序需要与源端一一对应，但数量不必要对齐，neo4j writer 会取最小值。如果源端的数据列少于neo4j字段怎么办？建议将源端数据加工成json格式，在neo4j端将数据类型设置成map。在cypher中，可以根据jsonpath语法一直取值。比如 unwind $batch as row create (p) set p.name = row.properties.name,set p.age = row.properties.age
-* 如果提示事务超时，建议调大事务运行时间或者调小batch_size
-* 如果用于更新场景，会遇到死锁问题，建议二开源码加入死锁异常检测，并进行重试，开源版本不提供此功能。
+* properties定义的顺序需要与reader端顺序一一对应。
+* 灵活使用map类型，可以免去很多数据加工的烦恼。在cypher中，可以根据 . 属性访问符号一直取值。比如 unwind $batch as row create (p) set p.name = row.prop.name,set p.age = row.prop.age，在这个例子中，prop是map类型，包含name和age两个属性。
+* 如果提示事务超时，建议调大事务运行时间或者调小batchSize
+* 如果用于更新场景，遇到死锁问题影响写入，建议二开源码加入死锁异常检测，并进行重试。
 
 ## 性能报告
 
@@ -185,7 +187,7 @@ Object_ARRAY
 
 **datax 配置**
 
-Channel 20 batchsize = 1000
-任务平均流量：15.23MB/s
-记录写入速度：44440 rec/s
-读出记录总数：2222013
+* Channel 20 batchsize = 1000
+* 任务平均流量：15.23MB/s
+* 记录写入速度：44440 rec/s
+* 读出记录总数：2222013

@@ -87,7 +87,7 @@ public class Neo4jWriterTest {
     }
 
     @Test
-    public void test_create_node_all_type_field() {
+    public void testCreateNodeAllTypeField() {
         final Result checkExists = neo4jSession.run("MATCH (p:Person) RETURN p limit 1");
         if (checkExists.hasNext()) {
             neo4jSession.run("MATCH (p:Person) delete p");
@@ -128,7 +128,7 @@ public class Neo4jWriterTest {
      * 所以先创建节点再模拟关系
      */
     @Test
-    public void test_create_relation() {
+    public void testCreateRelation() {
         final Result checkExists = neo4jSession.run("MATCH (p1:Person)-[r:LINK]->(p1:Person) return r limit 1");
         if (checkExists.hasNext()) {
             neo4jSession.run("MATCH (p1:Person)-[r:LINK]->(p1:Person) delete r,p1,p2");
@@ -179,7 +179,7 @@ public class Neo4jWriterTest {
      * neo4j中,Label和关系类型,想动态的写，需要借助于apoc函数
      */
     @Test
-    public void test_use_apoc_create_dynamic_label() {
+    public void testUseApocCreateDynamicLabel() {
         List<String> dynamicLabel = new ArrayList<>();
         for (int i = 0; i < MOCK_NUM; i++) {
             dynamicLabel.add("Label" + i);
