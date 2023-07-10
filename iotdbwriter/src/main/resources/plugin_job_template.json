@@ -1,0 +1,28 @@
+{
+  "name": "iotdbwriter",
+  "parameter": {
+    "addresses": "192.168.130.1:6667, 192.168.130.2:6667, 192.168.130.3:6667",
+    "username": "root",
+    "password": "root",
+    "sessionPoolMaxSize": 3,
+    "batchSize": 32768,
+    "databases": {
+      "root.db1": {
+        "d1": {
+          "sensors": ["s1", "s2"],
+          "dataTypes": ["DOUBLE", "FLOAT"]
+        },
+        "d2": {
+          "sensors": ["s"],
+          "dataTypes": ["BOOLEAN"]
+        }
+      },
+      "root.db2": {
+        "device": {
+          "sensors": ["sensor"],
+          "dataTypes": ["INT32"]
+        }
+      }
+    }
+  }
+}
