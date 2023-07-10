@@ -92,22 +92,17 @@ public class Neo4jClient {
 
         //connection timeout
         //连接超时时间
-        Long maxConnTime = config.getLong(MAX_CONNECTION_TIMEOUT_SECONDS.getKey());
-        if (maxConnTime != null && maxConnTime > 0) {
-            configBuilder
-                    .withConnectionAcquisitionTimeout(
-                            maxConnTime * 2, TimeUnit.SECONDS)
-                    .withConnectionTimeout(maxConnTime, TimeUnit.SECONDS);
-        }
+        Long maxConnTime = config.getLong(MAX_CONNECTION_TIMEOUT_SECONDS.getKey(), MAX_TRANSACTION_RETRY_TIME.getDefaultValue());
+        configBuilder
+                .withConnectionAcquisitionTimeout(
+                        maxConnTime * 2, TimeUnit.SECONDS)
+                .withConnectionTimeout(maxConnTime, TimeUnit.SECONDS);
+
 
         //transaction timeout
         //事务运行超时时间
-        Long txRetryTime = config.getLong(MAX_TRANSACTION_RETRY_TIME.getKey());
-        if (txRetryTime != null && txRetryTime > 0) {
-            configBuilder.withMaxTransactionRetryTime(
-                    txRetryTime, TimeUnit.SECONDS);
-        }
-
+        Long txRetryTime = config.getLong(MAX_TRANSACTION_RETRY_TIME.getKey(), MAX_TRANSACTION_RETRY_TIME.getDefaultValue());
+        configBuilder.withMaxTransactionRetryTime(txRetryTime, TimeUnit.SECONDS);
         String username = config.getString(USERNAME.getKey());
         String password = config.getString(PASSWORD.getKey());
         String bearerToken = config.getString(BEARER_TOKEN.getKey());
@@ -199,8 +194,8 @@ public class Neo4jClient {
     private MapValue checkAndConvert(Record record) {
         int sourceColNum = record.getColumnNumber();
         List<Neo4jProperty> neo4jProperties = writeConfig.neo4jProperties;
-        if (neo4jProperties == null || neo4jProperties.size() != sourceColNum){
-            throw new DataXException(Neo4jErrorCode.CONFIG_INVALID,"the read and write columns do not match!");
+        if (neo4jProperties == null || neo4jProperties.size() != sourceColNum) {
+            throw new DataXException(Neo4jErrorCode.CONFIG_INVALID, "the read and write columns do not match!");
         }
         Map<String, Value> data = new HashMap<>(sourceColNum * 4 / 3);
         for (int i = 0; i < sourceColNum; i++) {
