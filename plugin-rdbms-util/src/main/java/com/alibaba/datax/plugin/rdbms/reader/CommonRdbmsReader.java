@@ -27,10 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.Types;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -188,6 +185,18 @@ public class CommonRdbmsReader {
             // session config .etc related
             DBUtil.dealWithSessionConfig(conn, readerSliceConfig,
                     this.dataBaseType, basicMsg);
+
+            //deal with drds big data error net_write_timeout
+            if (DataBaseType.DRDS.equals(dataBaseType)){
+                LOG.info("start DRDS  setNetWorkTimeOut...");
+                try {
+                    conn.setNetworkTimeout(Executors.newFixedThreadPool(1), 172800000);
+                    LOG.info("end DRDS  setNetWorkTimeOut...");
+                } catch (SQLException throwables) {
+                    LOG.error("setNetWorkTimeOut error  ["+throwables.getMessage()+"]");
+                    throwables.printStackTrace();
+                }
+            }
 
             int columnNumber = 0;
             ResultSet rs = null;
