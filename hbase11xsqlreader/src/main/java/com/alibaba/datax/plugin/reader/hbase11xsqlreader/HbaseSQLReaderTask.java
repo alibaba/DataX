@@ -1,6 +1,7 @@
 package com.alibaba.datax.plugin.reader.hbase11xsqlreader;
 
 import com.alibaba.datax.common.element.*;
+import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.util.Configuration;
 import org.apache.hadoop.mapreduce.TaskAttemptID;

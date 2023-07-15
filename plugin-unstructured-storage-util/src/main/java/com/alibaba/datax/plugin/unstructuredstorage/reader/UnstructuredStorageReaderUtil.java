@@ -1,6 +1,7 @@
 package com.alibaba.datax.plugin.unstructuredstorage.reader;
 
 import com.alibaba.datax.common.element.*;
+import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordSender;
 import com.alibaba.datax.common.plugin.TaskPluginCollector;
@@ -310,9 +311,9 @@ public class UnstructuredStorageReaderUtil {
 	}
 
 	public static Record transportOneRecord(RecordSender recordSender,
-											Configuration configuration,
-											TaskPluginCollector taskPluginCollector,
-											String line){
+                                            Configuration configuration,
+                                            TaskPluginCollector taskPluginCollector,
+                                            String line){
 		List<ColumnEntry> column = UnstructuredStorageReaderUtil
 				.getListColumnEntry(configuration, Key.COLUMN);
 		// 注意: nullFormat 没有默认值
