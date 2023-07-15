@@ -55,6 +55,9 @@ public final class OriginalConfPretreatmentUtil {
     private static void simplifyConf(Configuration originalConfig) {
         boolean isTableMode = recognizeTableOrQuerySqlMode(originalConfig);
         originalConfig.set(Constant.IS_TABLE_MODE, isTableMode);
+        //添加自动切分task
+        boolean isAutoSplit = recognizeAutoSplit(originalConfig);
+        originalConfig.set(Constant.IS_AUTO_SPILT,isAutoSplit);
 
         dealJdbcAndTable(originalConfig);
 
@@ -269,4 +272,13 @@ public final class OriginalConfPretreatmentUtil {
         return tableModeFlags.get(0);
     }
 
+    private static boolean recognizeAutoSplit(
+            Configuration originalConfig) {
+        String autoSplit = originalConfig.getString(Key.AUTOSPLIT, null);
+        boolean isAutoSplitMode = false;
+        if (StringUtils.isNotBlank(autoSplit) && "true".equals(autoSplit)){
+            isAutoSplitMode = true;
+        }
+        return isAutoSplitMode;
+    }
 }
