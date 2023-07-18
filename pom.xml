@@ -70,6 +70,7 @@
         <module>ftpreader</module>
         <module>txtfilereader</module>
         <module>streamreader</module>
+        <module>clickhousereader</module>
 
         <module>mongodbreader</module>
         <module>tdenginereader</module>

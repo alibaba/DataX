@@ -86,6 +86,7 @@ public class OceanBaseV10Writer extends Writer {
 			if (tableNumber == 1) {
 				this.commonJob.prepare(this.originalConfig);
 				final String version = fetchServerVersion(originalConfig);
+				ObWriterUtils.setObVersion(version);
 				originalConfig.set(Config.OB_VERSION, version);
 			}
 
@@ -187,8 +188,9 @@ public class OceanBaseV10Writer extends Writer {
 		}
 
 		private String fetchServerVersion(Configuration config) {
-			final String fetchVersionSql = "show variables like 'version'";
-			return DbUtils.fetchSingleValueWithRetry(config, fetchVersionSql);
+			final String fetchVersionSql = "show variables like 'version_comment'";
+			String versionComment =  DbUtils.fetchSingleValueWithRetry(config, fetchVersionSql);
+			return versionComment.split(" ")[1];
 		}
 
 		private void checkCompatibleMode(Configuration configure) {
