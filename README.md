@@ -109,6 +109,11 @@ DataX目前已经有了比较全面的插件体系，主流的RDBMS数据库、N
 # 重要版本更新说明
 
 DataX 后续计划月度迭代更新，也欢迎感兴趣的同学提交 Pull requests，月度更新内容会介绍介绍如下。
+- [datax_v202306]（https://github.com/alibaba/DataX/releases/tag/datax_v202306)
+  - 精简代码
+  - 新增插件（neo4jwriter、clickhousewriter）
+  - 优化插件、修复问题（oceanbase、hdfs、databend、txtfile）
+
 
 - [datax_v202303]（https://github.com/alibaba/DataX/releases/tag/datax_v202303)
   - 精简代码
