@@ -1,0 +1,41 @@
+{
+  "uri": "neo4j://localhost:7687",
+  "username":"neo4j",
+  "password":"Test@12343",
+  "database":"neo4j",
+  "cypher": "unwind $batch as row create(p:Person) set p.pbool = row.pbool,p.pstring = row.pstring,p.plong = row.plong,p.pshort = row.pshort,p.pdouble=row.pdouble,p.pstringarr=row.pstringarr,p.plocaldate=row.plocaldate",
+  "batchDataVariableName": "batch",
+  "batchSize": "33",
+  "properties": [
+    {
+      "name": "pbool",
+      "type": "BOOLEAN"
+    },
+    {
+      "name": "pstring",
+      "type": "STRING"
+    },
+    {
+      "name": "plong",
+      "type": "LONG"
+    },
+    {
+      "name": "pshort",
+      "type": "SHORT"
+    },
+    {
+      "name": "pdouble",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pstringarr",
+      "type": "STRING_ARRAY",
+      "split": ","
+    },
+    {
+      "name": "plocaldate",
+      "type": "LOCAL_DATE",
+      "dateFormat": "yyyy-MM-dd"
+    }
+  ]
+}
