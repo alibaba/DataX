@@ -78,7 +78,7 @@ public class StarRocksWriter extends Writer {
             List<String> renderedPostSqls = StarRocksWriterUtil.renderPreOrPostSqls(options.getPostSqlList(), options.getTable());
             if (null != renderedPostSqls && !renderedPostSqls.isEmpty()) {
                 Connection conn = DBUtil.getConnection(DataBaseType.MySql, jdbcUrl, username, password);
-                LOG.info("Begin to execute preSqls:[{}]. context info:{}.", String.join(";", renderedPostSqls), jdbcUrl);
+                LOG.info("Begin to execute postSqls:[{}]. context info:{}.", String.join(";", renderedPostSqls), jdbcUrl);
                 StarRocksWriterUtil.executeSqls(conn, renderedPostSqls);
                 DBUtil.closeDBResources(null, null, conn);
             }

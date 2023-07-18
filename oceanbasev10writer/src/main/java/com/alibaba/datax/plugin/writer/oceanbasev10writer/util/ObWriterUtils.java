@@ -1,5 +1,6 @@
 package com.alibaba.datax.plugin.writer.oceanbasev10writer.util;
 
+import com.alibaba.datax.plugin.rdbms.reader.util.ObVersion;
 import com.alibaba.datax.plugin.rdbms.util.DBUtil;
 import com.alibaba.datax.plugin.rdbms.writer.CommonRdbmsWriter.Task;
 import com.alibaba.datax.plugin.writer.oceanbasev10writer.Config;
@@ -18,8 +19,11 @@ public class ObWriterUtils {
 	private static final String ORACLE_KEYWORDS = "ACCESS,ADD,ALL,ALTER,AND,ANY,ARRAYLEN,AS,ASC,AUDIT,BETWEEN,BY,CHAR,CHECK,CLUSTER,COLUMN,COMMENT,COMPRESS,CONNECT,CREATE,CURRENT,DATE,DECIMAL,DEFAULT,DELETE,DESC,DISTINCT,DROP,ELSE,EXCLUSIVE,EXISTS,FILE,FLOAT,FOR,FROM,GRANT,GROUP,HAVING,IDENTIFIED,IMMEDIATE,IN,INCREMENT,INDEX,INITIAL,INSERT,INTEGER,INTERSECT,INTO,IS,LEVEL,LIKE,LOCK,LONG,MAXEXTENTS,MINUS,MODE,MODIFY,NOAUDIT,NOCOMPRESS,NOT,NOTFOUND,NOWAIT,NULL,NUMBER,OF,OFFLINE,ON,ONLINE,OPTION,OR,ORDER,PCTFREE,PRIOR,PRIVILEGES,PUBLIC,RAW,RENAME,RESOURCE,REVOKE,ROW,ROWID,ROWLABEL,ROWNUM,ROWS,SELECT,SESSION,SET,SHARE,SIZE,SMALLINT,SQLBUF,START,SUCCESSFUL,SYNONYM,TABLE,THEN,TO,TRIGGER,UID,UNION,UNIQUE,UPDATE,USER,VALIDATE,VALUES,VARCHAR,VARCHAR2,VIEW,WHENEVER,WHERE,WITH";
 
 	private static String CHECK_MEMSTORE = "select 1 from %s.gv$memstore t where t.total>t.mem_limit * ?";
+	private static final String CHECK_MEMSTORE_4_0 = "select 1 from %s.gv$ob_memstore t where t.MEMSTORE_USED>t.MEMSTORE_LIMIT * ?";
+
 	private static Set<String> databaseKeywords;
 	private static String compatibleMode = null;
+	private static String obVersion = null;
 	protected static final Logger LOG = LoggerFactory.getLogger(Task.class);
 	private static Set<String> keywordsFromString2HashSet(final String keywords) {
 		return new HashSet(Arrays.asList(keywords.split(",")));
@@ -61,7 +65,7 @@ public class ObWriterUtils {
 			if (isOracleMode()) {
 				sysDbName = "sys";
 			}
-			ps = conn.prepareStatement(String.format(CHECK_MEMSTORE, sysDbName));
+			ps = conn.prepareStatement(String.format(getMemStoreSql(), sysDbName));
 			ps.setDouble(1, memstoreThreshold);
 			rs = ps.executeQuery();
 			// 只要有满足条件的,则表示当前租户 有个机器的memstore即将满
@@ -81,12 +85,24 @@ public class ObWriterUtils {
 		return (compatibleMode.equals(Config.OB_COMPATIBLE_MODE_ORACLE));
 	}
 
+	private static String getMemStoreSql() {
+		if (ObVersion.valueOf(obVersion).compareTo(ObVersion.V4000) >= 0) {
+			return CHECK_MEMSTORE_4_0;
+		} else {
+			return CHECK_MEMSTORE;
+		}
+	}
+
 	public static String getCompatibleMode() {
 		return compatibleMode;
 	}
 
 	public static void setCompatibleMode(String mode) {
 		compatibleMode = mode;
+	}
+
+	public static void setObVersion(String version) {
+		obVersion = version;
 	}
 
 	private static String buildDeleteSql (String tableName, List<String> columns) {
