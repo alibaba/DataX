@@ -1,73 +1,51 @@
 package com.alibaba.datax.plugin.writer.otswriter.model;
 
+import com.alicloud.openservices.tablestore.model.PrimaryKeySchema;
+
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class OTSConf {
-    private String endpoint;
-    private String accessId;
-    private String accessKey;
-    private String instanceName;
-    private String tableName;
+    private String endpoint= null;
+    private String accessId = null;
+    private String accessKey = null;
+    private String instanceName = null;
+    private String tableName = null;
+
    
-    private List<OTSPKColumn> primaryKeyColumn;
-    private List<OTSAttrColumn> attributeColumn;
-
-    private int bufferSize = 1024;
-    private int retry =  18;
-    private int sleepInMillisecond = 100;
-    private int batchWriteCount = 10;
-    private int concurrencyWrite = 5;
-    private int ioThreadCount = 1;
-    private int socketTimeout = 20000;
-    private int connectTimeout = 10000;
+    private List<PrimaryKeySchema> primaryKeyColumn = null;
+    private List<OTSAttrColumn> attributeColumn = null;
+   
+    private int retry =  -1;
+    private int sleepInMillisecond = -1;
+    private int batchWriteCount = -1;
+    private int concurrencyWrite = -1;
+    private int ioThreadCount = -1;
+    private int socketTimeoutInMillisecond = -1;
+    private int connectTimeoutInMillisecond = -1;
     
-    private OTSOpType operation;
-    private RestrictConf restrictConf;
+    private OTSOpType operation = null;
 
-    //限制项
-    public class RestrictConf {
-        private int requestTotalSizeLimition = 1024 * 1024;
-        private int primaryKeyColumnSize = 1024;
-        private int attributeColumnSize = 2 * 1024 * 1024;
-        private int maxColumnsCount = 1024;
+    private int requestTotalSizeLimitation = -1;
+    
+    private OTSMode mode = null;
+    private boolean enableAutoIncrement = false;
+    private boolean isNewVersion = false;
+    private boolean isTimeseriesTable = false;
+    private TimeUnit timeUnit = TimeUnit.MICROSECONDS;
+    private long timestamp = -1;
+    private Map<String, Integer> encodePkColumnMapping = null;
+    private String columnNamePrefixFilter = null;
 
-        public int getRequestTotalSizeLimition() {
-            return requestTotalSizeLimition;
-        }
-        public void setRequestTotalSizeLimition(int requestTotalSizeLimition) {
-            this.requestTotalSizeLimition = requestTotalSizeLimition;
-        }
-
-        public void setPrimaryKeyColumnSize(int primaryKeyColumnSize) {
-            this.primaryKeyColumnSize = primaryKeyColumnSize;
-        }
-
-        public void setAttributeColumnSize(int attributeColumnSize) {
-            this.attributeColumnSize = attributeColumnSize;
-        }
-
-        public void setMaxColumnsCount(int maxColumnsCount) {
-            this.maxColumnsCount = maxColumnsCount;
-        }
-
-        public int getAttributeColumnSize() {
-            return attributeColumnSize;
-        }
-
-        public int getMaxColumnsCount() {
-            return maxColumnsCount;
-        }
-
-        public int getPrimaryKeyColumnSize() {
-            return primaryKeyColumnSize;
-        }
+    public Map<String, Integer> getEncodePkColumnMapping() {
+        return encodePkColumnMapping;
     }
-
-    public RestrictConf getRestrictConf() {
-        return restrictConf;
+    public void setEncodePkColumnMapping(Map<String, Integer> encodePkColumnMapping) {
+        this.encodePkColumnMapping = encodePkColumnMapping;
     }
-    public void setRestrictConf(RestrictConf restrictConf) {
-        this.restrictConf = restrictConf;
+    public int getSocketTimeoutInMillisecond() {
+        return socketTimeoutInMillisecond;
     }
     public OTSOpType getOperation() {
         return operation;
@@ -75,10 +53,10 @@ public class OTSConf {
     public void setOperation(OTSOpType operation) {
         this.operation = operation;
     }
-    public List<OTSPKColumn> getPrimaryKeyColumn() {
+    public List<PrimaryKeySchema> getPrimaryKeyColumn() {
         return primaryKeyColumn;
     }
-    public void setPrimaryKeyColumn(List<OTSPKColumn> primaryKeyColumn) {
+    public void setPrimaryKeyColumn(List<PrimaryKeySchema> primaryKeyColumn) {
         this.primaryKeyColumn = primaryKeyColumn;
     }
     
@@ -149,24 +127,72 @@ public class OTSConf {
         this.ioThreadCount = ioThreadCount;
     }
     public int getSocketTimeout() {
-        return socketTimeout;
+        return socketTimeoutInMillisecond;
     }
-    public void setSocketTimeout(int socketTimeout) {
-        this.socketTimeout = socketTimeout;
+    public void setSocketTimeoutInMillisecond(int socketTimeoutInMillisecond) {
+        this.socketTimeoutInMillisecond = socketTimeoutInMillisecond;
     }
-    public int getConnectTimeout() {
-        return connectTimeout;
+    public int getConnectTimeoutInMillisecond() {
+        return connectTimeoutInMillisecond;
+    }
+    public void setConnectTimeoutInMillisecond(int connectTimeoutInMillisecond) {
+        this.connectTimeoutInMillisecond = connectTimeoutInMillisecond;
+    }
+    public OTSMode getMode() {
+        return mode;
+    }
+    public void setMode(OTSMode mode) {
+        this.mode = mode;
+    }
+    public long getTimestamp() {
+        return timestamp;
+    }
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
+    public String getColumnNamePrefixFilter() {
+        return columnNamePrefixFilter;
+    }
+    public void setColumnNamePrefixFilter(String columnNamePrefixFilter) {
+        this.columnNamePrefixFilter = columnNamePrefixFilter;
     }
 
-    public int getBufferSize() {
-        return bufferSize;
+    public boolean getEnableAutoIncrement() {
+        return enableAutoIncrement;
     }
 
-    public void setBufferSize(int bufferSize) {
-        this.bufferSize = bufferSize;
+    public void setEnableAutoIncrement(boolean enableAutoIncrement) {
+        this.enableAutoIncrement = enableAutoIncrement;
+    }
+    public boolean isNewVersion() {
+        return isNewVersion;
     }
 
-    public void setConnectTimeout(int connectTimeout) {
-        this.connectTimeout = connectTimeout;
+    public void setNewVersion(boolean newVersion) {
+        isNewVersion = newVersion;
+    }
+
+    public boolean isTimeseriesTable() {
+        return isTimeseriesTable;
+    }
+
+    public void setTimeseriesTable(boolean timeseriesTable) {
+        isTimeseriesTable = timeseriesTable;
+    }
+
+    public TimeUnit getTimeUnit() {
+        return timeUnit;
+    }
+
+    public void setTimeUnit(TimeUnit timeUnit) {
+        this.timeUnit = timeUnit;
+    }
+
+    public int getRequestTotalSizeLimitation() {
+        return requestTotalSizeLimitation;
+    }
+
+    public void setRequestTotalSizeLimitation(int requestTotalSizeLimitation) {
+        this.requestTotalSizeLimitation = requestTotalSizeLimitation;
     }
 }

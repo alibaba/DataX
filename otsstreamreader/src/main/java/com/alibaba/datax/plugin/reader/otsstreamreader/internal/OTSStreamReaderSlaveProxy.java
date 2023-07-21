@@ -36,16 +36,18 @@ public class OTSStreamReaderSlaveProxy {
     private boolean findCheckpoints; // whether find checkpoint for last job, if so, we should read from checkpoint and skip nothing.
     private String slaveId = UUID.randomUUID().toString();
     private StreamDetails streamDetails;
+    private boolean enableSeekIteratorByTimestamp;
 
     public void init(final OTSStreamReaderConfig otsStreamReaderConfig, StreamJob streamJob, List<StreamShard> allShards, Set<String> ownedShardIds) {
         slaveNumber.getAndIncrement();
         this.config = otsStreamReaderConfig;
         this.ots = OTSHelper.getOTSInstance(config);
         this.streamJob = streamJob;
-        this.streamDetails = OTSHelper.getStreamDetails(ots, this.streamJob.getTableName());
+        this.streamDetails = OTSHelper.getStreamDetails(ots, this.streamJob.getTableName(),config.isTimeseriesTable());
         this.checkpointInfoTracker = new CheckpointTimeTracker(ots, config.getStatusTable(), this.streamJob.getStreamId());
         this.checker = new OTSStreamReaderChecker(ots, config);
         this.allShardsMap = OTSHelper.toShardMap(allShards);
+        this.enableSeekIteratorByTimestamp = otsStreamReaderConfig.getEnableSeekIteratorByTimestamp();
 
         LOG.info("SlaveId: {}, ShardIds: {}, OwnedShards: {}.", slaveId, allShards, ownedShardIds);
         this.ownedShards = new HashMap<String, StreamShard>();
@@ -58,12 +60,12 @@ public class OTSStreamReaderSlaveProxy {
         }
 
         findCheckpoints = checker.checkAndSetCheckpoints(checkpointInfoTracker, allShardsMap, streamJob, shardToCheckpointMap);
-        if (!findCheckpoints) {
-            LOG.info("Checkpoint for stream '{}' in timestamp '{}' is not found.", streamJob.getStreamId(), streamJob.getStartTimeInMillis());
+        if (!findCheckpoints && !enableSeekIteratorByTimestamp) {
+            LOG.info("Checkpoint for stream '{}' in timestamp '{}' is not found. EnableSeekIteratorByTimestamp: {}", streamJob.getStreamId(), streamJob.getStartTimeInMillis(), this.enableSeekIteratorByTimestamp);
             setWithNearestCheckpoint();
         }
 
-        LOG.info("Find checkpoints: {}.", findCheckpoints);
+        LOG.info("Find checkpoints: {}, EnableSeekIteratorByTimestamp: {}", findCheckpoints, enableSeekIteratorByTimestamp);
         for (Map.Entry<String, StreamShard> shard : ownedShards.entrySet()) {
             LOG.info("Shard to process, ShardInfo: [{}], StartCheckpoint: [{}].", shard.getValue(), shardToCheckpointMap.get(shard.getKey()));
         }
