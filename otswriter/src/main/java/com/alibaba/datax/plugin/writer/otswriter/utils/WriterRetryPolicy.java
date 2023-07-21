@@ -1,4 +1,4 @@
-package com.alibaba.datax.plugin.writer.otswriter;
+package com.alibaba.datax.plugin.writer.otswriter.utils;
 
 import com.alibaba.datax.plugin.writer.otswriter.model.OTSConf;
 import com.aliyun.openservices.ots.internal.OTSRetryStrategy;

@@ -14,10 +14,10 @@ public class OtsWriterError implements ErrorCode {
     
     public final static OtsWriterError ERROR = new OtsWriterError(
             "OtsWriterError", 
-            "该错误表示插件的内部错误，表示系统没有处理到的异常");
+            "This error represents an internal error of the ots writer plugin, which indicates that the system is not processed.");
     public final static OtsWriterError INVALID_PARAM = new OtsWriterError(
             "OtsWriterInvalidParameter", 
-            "该错误表示参数错误，表示用户输入了错误的参数格式等");
+            "This error represents a parameter error, indicating that the user entered the wrong parameter format.");
     
     public OtsWriterError (String code) {
         this.code = code;
@@ -41,6 +41,6 @@ public class OtsWriterError implements ErrorCode {
     
     @Override
     public String toString() {
-        return this.code;
+        return "[ code:" + this.code + ", message:" + this.description + "]";
     }
 }

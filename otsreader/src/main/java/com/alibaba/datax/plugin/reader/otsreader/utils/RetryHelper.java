@@ -1,15 +1,14 @@
 package com.alibaba.datax.plugin.reader.otsreader.utils;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.Callable;
-
+import com.alibaba.datax.plugin.reader.otsreader.model.OTSErrorCode;
+import com.alicloud.openservices.tablestore.ClientException;
+import com.alicloud.openservices.tablestore.TableStoreException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.aliyun.openservices.ots.ClientException;
-import com.aliyun.openservices.ots.OTSErrorCode;
-import com.aliyun.openservices.ots.OTSException;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.Callable;
 
 public class RetryHelper {
     
@@ -19,7 +18,7 @@ public class RetryHelper {
     public static <V> V executeWithRetry(Callable<V> callable, int maxRetryTimes, int sleepInMilliSecond) throws Exception {
         int retryTimes = 0;
         while (true){
-            Thread.sleep(Common.getDelaySendMillinSeconds(retryTimes, sleepInMilliSecond));
+            Thread.sleep(getDelaySendMillinSeconds(retryTimes, sleepInMilliSecond));
             try {
                 return callable.call();
             } catch (Exception e) {
@@ -60,9 +59,9 @@ public class RetryHelper {
     }
     
     public static boolean canRetry(Exception exception) {
-        OTSException e = null;
-        if (exception instanceof OTSException) {
-            e = (OTSException) exception;
+        TableStoreException e = null;
+        if (exception instanceof TableStoreException) {
+            e = (TableStoreException) exception;
             LOG.warn(
                     "OTSException:ErrorCode:{}, ErrorMsg:{}, RequestId:{}", 
                     new Object[]{e.getErrorCode(), e.getMessage(), e.getRequestId()}
@@ -72,12 +71,29 @@ public class RetryHelper {
         } else if (exception instanceof ClientException) {
             ClientException ce = (ClientException) exception;
             LOG.warn(
-                    "ClientException:{}, ErrorMsg:{}", 
-                    new Object[]{ce.getErrorCode(), ce.getMessage()}
+                    "ClientException:{}", 
+                    new Object[]{ce.getMessage()}
                     );
             return true;
         } else {
             return false;
         } 
+    }
+    
+    public static long getDelaySendMillinSeconds(int hadRetryTimes, int initSleepInMilliSecond) {
+
+        if (hadRetryTimes <= 0) {
+            return 0;
+        }
+
+        int sleepTime = initSleepInMilliSecond;
+        for (int i = 1; i < hadRetryTimes; i++) {
+            sleepTime += sleepTime;
+            if (sleepTime > 30000) {
+                sleepTime = 30000;
+                break;
+            } 
+        }
+        return sleepTime;
     }
 }

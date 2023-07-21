@@ -10,19 +10,20 @@
     </parent>
     <groupId>com.alibaba.datax</groupId>
     <artifactId>otsstreamreader</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.1-SNAPSHOT</version>
 
     <dependencies>
+        <!--Other 依赖 -->
         <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>2.17.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>2.17.1</version>
+            <groupId>com.aliyun.openservices</groupId>
+            <artifactId>tablestore-streamclient</artifactId>
+            <version>1.0.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.aliyun.openservices</groupId>
+                    <artifactId>tablestore</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.alibaba.datax</groupId>
@@ -33,22 +34,28 @@
                     <artifactId>slf4j-log4j12</artifactId>
                     <groupId>org.slf4j</groupId>
                 </exclusion>
-                <exclusion>
-                    <artifactId>logback-classic</artifactId>
-                    <groupId>ch.qos.logback</groupId>
-                </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.2.83_noneautotype</version>
+            <scope>compile</scope>
+        </dependency>        
         <!--Other 依赖 -->
         <dependency>
             <groupId>com.aliyun.openservices</groupId>
-            <artifactId>tablestore-streamclient</artifactId>
-            <version>1.0.0</version>
+            <artifactId>tablestore</artifactId>
+            <version>5.13.12</version>
             <exclusions>
-                <exclusion>
-                    <artifactId>log4j-api</artifactId>
-                    <groupId>org.apache.logging.log4j</groupId>
-                </exclusion>
                 <exclusion>
                     <artifactId>log4j-core</artifactId>
                     <groupId>org.apache.logging.log4j</groupId>
@@ -59,12 +66,6 @@
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.2.4</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>18.0</version>
-            <scope>test</scope>
         </dependency>
 
     </dependencies>
@@ -105,6 +106,18 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <!-- test runner -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.5</version>
+                <configuration>
+                    <includes>
+                        <include>**/unittest/*.java</include>
+                        <include>**/functiontest/*.java</include>
+                    </includes>
+                </configuration>
             </plugin>
         </plugins>
     </build>

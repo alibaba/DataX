@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.alibaba.datax.plugin.reader.otsreader;
+package com.alibaba.datax.plugin.reader.otsreader.utils;
 
 public final class Key {
     /* ots account configuration */
@@ -46,5 +46,13 @@ public final class Key {
     public final static String RANGE_END = "end";
     
     public final static String RANGE_SPLIT = "split";
+    
+    public final static String META_MODE = "metaMode";
+
+    public final static String MODE = "mode";
+    public final static String NEW_VERSION = "newVersion";
+
+    public final static String IS_TIMESERIES_TABLE = "isTimeseriesTable";
+    public final static String MEASUREMENT_NAME = "measurementName";
 
 }

@@ -1,19 +1,18 @@
 package com.alibaba.datax.plugin.reader.otsreader.model;
 
-import com.alibaba.datax.common.element.BoolColumn;
-import com.alibaba.datax.common.element.BytesColumn;
-import com.alibaba.datax.common.element.Column;
-import com.alibaba.datax.common.element.DoubleColumn;
-import com.alibaba.datax.common.element.LongColumn;
-import com.alibaba.datax.common.element.StringColumn;
-import com.aliyun.openservices.ots.model.ColumnType;
+import com.alibaba.datax.common.element.*;
+import com.alicloud.openservices.tablestore.model.ColumnType;
 
 public class OTSColumn {
     private String name;
     private Column value;
+
     private OTSColumnType columnType;
+
+    // 时序数据column配置
     private ColumnType valueType;
-    
+    private Boolean isTimeseriesTag;
+
     public static enum OTSColumnType {
         NORMAL, // 普通列
         CONST   // 常量列
@@ -24,10 +23,9 @@ public class OTSColumn {
         this.columnType = OTSColumnType.NORMAL;
     }
     
-    private OTSColumn(Column value, ColumnType type) {
+    private OTSColumn(Column value) {
         this.value = value;
         this.columnType = OTSColumnType.CONST;
-        this.valueType = type;
     }
     
     public static OTSColumn fromNormalColumn(String name) {
@@ -39,23 +37,23 @@ public class OTSColumn {
     } 
     
     public static OTSColumn fromConstStringColumn(String value) {
-        return new OTSColumn(new StringColumn(value), ColumnType.STRING);
+        return new OTSColumn(new StringColumn(value));
     } 
     
     public static OTSColumn fromConstIntegerColumn(long value) {
-        return new OTSColumn(new LongColumn(value), ColumnType.INTEGER);
+        return new OTSColumn(new LongColumn(value));
     } 
     
     public static OTSColumn fromConstDoubleColumn(double value) {
-        return new OTSColumn(new DoubleColumn(value), ColumnType.DOUBLE);
+        return new OTSColumn(new DoubleColumn(value));
     } 
     
     public static OTSColumn fromConstBoolColumn(boolean value) {
-        return new OTSColumn(new BoolColumn(value), ColumnType.BOOLEAN);
+        return new OTSColumn(new BoolColumn(value));
     } 
     
     public static OTSColumn fromConstBytesColumn(byte[] value) {
-        return new OTSColumn(new BytesColumn(value), ColumnType.BINARY);
+        return new OTSColumn(new BytesColumn(value));
     } 
     
     public Column getValue() {
@@ -65,12 +63,25 @@ public class OTSColumn {
     public OTSColumnType getColumnType() {
         return columnType;
     }
-    
+
+
+    public String getName() {
+        return name;
+    }
+
     public ColumnType getValueType() {
         return valueType;
     }
 
-    public String getName() {
-        return name;
+    public void setValueType(ColumnType valueType) {
+        this.valueType = valueType;
+    }
+
+    public Boolean getTimeseriesTag() {
+        return isTimeseriesTag;
+    }
+
+    public void setTimeseriesTag(Boolean timeseriesTag) {
+        isTimeseriesTag = timeseriesTag;
     }
 }

@@ -12,8 +12,8 @@
             <directory>src/main/resources</directory>
             <includes>
                 <include>plugin.json</include>
-                <include>plugin_job_template.json</include>
-            </includes>
+ 				<include>plugin_job_template.json</include>
+ 			</includes>
             <outputDirectory>plugin/writer/otswriter</outputDirectory>
         </fileSet>
         <fileSet>

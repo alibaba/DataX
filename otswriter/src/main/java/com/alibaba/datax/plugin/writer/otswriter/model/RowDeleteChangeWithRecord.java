@@ -1,6 +1,7 @@
 package com.alibaba.datax.plugin.writer.otswriter.model;
 
 import com.alibaba.datax.common.element.Record;
+import com.alibaba.datax.plugin.writer.otswriter.utils.WithRecord;
 
 public class RowDeleteChangeWithRecord extends com.aliyun.openservices.ots.model.RowDeleteChange implements WithRecord {
 

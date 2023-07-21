@@ -1,4 +1,4 @@
-package com.alibaba.datax.plugin.writer.otswriter.model;
+package com.alibaba.datax.plugin.writer.otswriter.utils;
 
 import com.alibaba.datax.common.element.Record;
 
