@@ -49,7 +49,7 @@ public class LoadUtil {
     /**
      * jarLoader的缓冲
      */
-    private static Map<String, JarLoader> jarLoaderCenter = new HashMap<String, JarLoader>();
+    private static Map<String, ClassLoader> jarLoaderCenter = new HashMap();
 
     /**
      * 设置pluginConfigs，方便后面插件来获取
@@ -167,7 +167,7 @@ public class LoadUtil {
             PluginType pluginType, String pluginName,
             ContainerType pluginRunType) {
         Configuration pluginConf = getPluginConf(pluginType, pluginName);
-        JarLoader jarLoader = LoadUtil.getJarLoader(pluginType, pluginName);
+        ClassLoader jarLoader = LoadUtil.getJarLoader(pluginType, pluginName);
         try {
             return (Class<? extends AbstractPlugin>) jarLoader
                     .loadClass(pluginConf.getString("class") + "$"
@@ -177,22 +177,23 @@ public class LoadUtil {
         }
     }
 
-    public static synchronized JarLoader getJarLoader(PluginType pluginType,
+    public static synchronized ClassLoader getJarLoader(PluginType pluginType,
                                                       String pluginName) {
         Configuration pluginConf = getPluginConf(pluginType, pluginName);
 
-        JarLoader jarLoader = jarLoaderCenter.get(generatePluginKey(pluginType,
+        ClassLoader jarLoader = jarLoaderCenter.get(generatePluginKey(pluginType,
                 pluginName));
         if (null == jarLoader) {
             String pluginPath = pluginConf.getString("path");
-            if (StringUtils.isBlank(pluginPath)) {
-                throw DataXException.asDataXException(
-                        FrameworkErrorCode.RUNTIME_ERROR,
-                        String.format(
-                                "%s插件[%s]路径非法!",
-                                pluginType, pluginName));
-            }
-            jarLoader = new JarLoader(new String[]{pluginPath});
+//            jarLoader = new JarLoader(new String[]{pluginPath});
+            jarLoader = PluginLoaderFactory.create(pluginConf);
+//            if (StringUtils.isBlank(pluginPath)) {
+//                throw DataXException.asDataXException(
+//                        FrameworkErrorCode.RUNTIME_ERROR,
+//                        String.format(
+//                                "%s插件[%s]路径非法!",
+//                                pluginType, pluginName));
+//            }
             jarLoaderCenter.put(generatePluginKey(pluginType, pluginName),
                     jarLoader);
         }
