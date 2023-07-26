@@ -605,6 +605,8 @@ public class DFSUtil {
             }
         } catch (IOException e) {
             LOG.info(String.format("检查文件类型: [%s] 不是ORC File.", file.toString()));
+        } catch (IndexOutOfBoundsException e2) {
+            LOG.info(String.format("检查文件类型: [%s] 不是ORC File.", file.toString()));
         }
         return false;
     }
