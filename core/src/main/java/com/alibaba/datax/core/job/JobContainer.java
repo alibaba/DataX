@@ -653,7 +653,6 @@ public class JobContainer extends AbstractContainer {
      */
     private Reader.Job initJobReader(
             JobPluginCollector jobPluginCollector) {
-        //TODO loadUtil加载或者是 pluginUtil加载
         this.readerPluginName = this.configuration.getString(
                 CoreConstant.DATAX_JOB_CONTENT_READER_NAME);
         classLoaderSwapper.setCurrentThreadClassLoader(LoadUtil.getJarLoader(
