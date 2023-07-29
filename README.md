@@ -100,7 +100,10 @@ DataX目前已经有了比较全面的插件体系，主流的RDBMS数据库、N
     - 整库迁移：https://help.aliyun.com/document_detail/137809.html
     - 批量上云：https://help.aliyun.com/document_detail/146671.html
     - 更新更多能力请访问：https://help.aliyun.com/document_detail/137663.html
-
+    - 
+# 本地快速调试读写插件定位BUG
+在example模块可以方便快速的在本地运行任务
+点击：[datax-example使用](https://github.com/alibaba/DataX/datax-example/doc/README.md)
 
 # 我要开发新的插件
 
