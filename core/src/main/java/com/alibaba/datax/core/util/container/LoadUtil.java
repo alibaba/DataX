@@ -184,16 +184,7 @@ public class LoadUtil {
         ClassLoader jarLoader = jarLoaderCenter.get(generatePluginKey(pluginType,
                 pluginName));
         if (null == jarLoader) {
-            String pluginPath = pluginConf.getString("path");
-//            jarLoader = new JarLoader(new String[]{pluginPath});
-            jarLoader = PluginLoaderFactory.create(pluginConf);
-//            if (StringUtils.isBlank(pluginPath)) {
-//                throw DataXException.asDataXException(
-//                        FrameworkErrorCode.RUNTIME_ERROR,
-//                        String.format(
-//                                "%s插件[%s]路径非法!",
-//                                pluginType, pluginName));
-//            }
+            jarLoader = PluginLoaderFactory.create(pluginConf,pluginType,pluginName);
             jarLoaderCenter.put(generatePluginKey(pluginType, pluginName),
                     jarLoader);
         }

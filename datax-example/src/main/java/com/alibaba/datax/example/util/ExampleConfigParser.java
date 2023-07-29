@@ -40,7 +40,7 @@ public class ExampleConfigParser {
         return configuration;
     }
 
-    public static Configuration parsePluginsConfig(Map<String, String> pluginTypeMap) {
+    private static Configuration parsePluginsConfig(Map<String, String> pluginTypeMap) {
 
         Configuration configuration = Configuration.newDefault();
 
@@ -79,6 +79,7 @@ public class ExampleConfigParser {
 
     private static Configuration parseOnePlugin(String pluginType, String pluginName, Configuration pluginDesc) {
 
+        pluginDesc.set("loadType","pluginLoader");
         Configuration pluginConfInJob = Configuration.newDefault();
         pluginConfInJob.set(
                 String.format("plugin.%s.%s", pluginType, pluginName),
