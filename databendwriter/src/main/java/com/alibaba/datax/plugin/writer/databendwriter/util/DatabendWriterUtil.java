@@ -32,7 +32,7 @@ public final class DatabendWriterUtil {
                 LOG.error("Replace mode must has onConflictColumn conf");
                 return;
             }
-            // for databend if you want to use replace mode, the writeMode should be:  "writeMode": "replace (userid)"
+            // for databend if you want to use replace mode, the writeMode should be:  "writeMode": "replace"
             writeDataSqlTemplate.append("REPLACE INTO %s (")
                     .append(StringUtils.join(columns, ",")).append(") ").append(onConFlictDoString(onConflictColumns))
                     .append(" VALUES");
