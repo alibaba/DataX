@@ -144,13 +144,13 @@ create table if not exsits datax.sample1(a string, b int64, c date, d timestamp,
   * Default: none
 * writeMode
   * Description：The write mode, support `insert` and `replace` two mode.
-  * Required：否
+  * Required：no
   * Default：insert
   * Example："replace"
 * onConflictColumn
   * Description：On conflict fields list.
-  * Required：否
-  * Default：无
+  * Required：no
+  * Default：none
   * Example：["id","user"]
 
 ### 3.3 Type Convert
