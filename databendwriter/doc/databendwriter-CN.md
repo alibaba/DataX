@@ -79,6 +79,8 @@ create table if not exsits datax.sample1(a string, b int64, c date, d timestamp,
         "writer": {
           "name": "databendwriter",
           "parameter": {
+            "writeMode": "replace", 
+            "onConflictColumn": ["id"],
             "username": "databend",
             "password": "databend",
             "column": ["a", "b", "c", "d", "e", "f", "g"],
@@ -149,6 +151,16 @@ create table if not exsits datax.sample1(a string, b int64, c date, d timestamp,
     * 必选: 否
     * 默认值: 无
     * 示例: ["select count(*) from datax.sample1"]
+* writeMode
+    * 描述：写入模式，支持 insert 和 replace 两种模式，默认为 insert。若为 replace，务必填写 onConflictColumn 参数
+    * 必选：否
+    * 默认值：insert
+    * 示例："replace"
+* onConflictColumn
+    * 描述：on conflict 字段，指定 writeMode 为 replace 后，需要此参数
+    * 必选：否
+    * 默认值：无
+    * 示例：["id","user"]
 
 ### 3.3 类型转化
 DataX中的数据类型可以转换为databend中的相应数据类型。下表显示了两种类型之间的对应关系。

@@ -19,7 +19,7 @@ public final class DatabendWriterUtil {
 
     public static void dealWriteMode(Configuration originalConfig) {
         List<String> columns = originalConfig.getList(Key.COLUMN, String.class);
-        String valueHolders = "?";
+        List<String> onConflictColumns = originalConfig.getList(Key.ONCONFLICT_COLUMN, String.class);
         StringBuilder writeDataSqlTemplate = new StringBuilder();
 
         String jdbcUrl = originalConfig.getString(String.format("%s[0].%s",
@@ -28,9 +28,13 @@ public final class DatabendWriterUtil {
         String writeMode = originalConfig.getString(Key.WRITE_MODE, "INSERT");
         LOG.info("write mode is {}", writeMode);
         if (writeMode.toLowerCase().contains("replace")) {
+            if (onConflictColumns == null || onConflictColumns.size() == 0) {
+                LOG.error("Replace mode must has onConflictColumn conf");
+                return;
+            }
             // for databend if you want to use replace mode, the writeMode should be:  "writeMode": "replace (userid)"
             writeDataSqlTemplate.append("REPLACE INTO %s (")
-                    .append(StringUtils.join(columns, ",")).append(") ").append(onConFlictDoString(writeMode))
+                    .append(StringUtils.join(columns, ",")).append(") ").append(onConFlictDoString(onConflictColumns))
                     .append(" VALUES");
 
             LOG.info("Replace data [\n{}\n], which jdbcUrl like:[{}]", writeDataSqlTemplate, jdbcUrl);
@@ -51,11 +55,9 @@ public final class DatabendWriterUtil {
         }
     }
 
-    public static String onConFlictDoString(String conflict) {
-        conflict = conflict.replace("replace", "");
-        StringBuilder sb = new StringBuilder();
-        sb.append(" ON ");
-        sb.append(conflict);
-        return sb.toString();
+    public static String onConFlictDoString(List<String> conflictColumns) {
+        return " ON " +
+                "(" +
+                StringUtils.join(conflictColumns, ",") + ") ";
     }
 }
