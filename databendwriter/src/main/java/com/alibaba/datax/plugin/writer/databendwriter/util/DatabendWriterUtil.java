@@ -17,7 +17,7 @@ public final class DatabendWriterUtil {
     private DatabendWriterUtil() {
     }
 
-    public static void dealWriteMode(Configuration originalConfig) {
+    public static void dealWriteMode(Configuration originalConfig) throws Exception {
         List<String> columns = originalConfig.getList(Key.COLUMN, String.class);
         List<String> onConflictColumns = originalConfig.getList(Key.ONCONFLICT_COLUMN, String.class);
         StringBuilder writeDataSqlTemplate = new StringBuilder();
@@ -29,8 +29,7 @@ public final class DatabendWriterUtil {
         LOG.info("write mode is {}", writeMode);
         if (writeMode.toLowerCase().contains("replace")) {
             if (onConflictColumns == null || onConflictColumns.size() == 0) {
-                LOG.error("Replace mode must has onConflictColumn conf");
-                return;
+                throw new Exception("Replace mode must has onConflictColumn config");
             }
             // for databend if you want to use replace mode, the writeMode should be:  "writeMode": "replace"
             writeDataSqlTemplate.append("REPLACE INTO %s (")
