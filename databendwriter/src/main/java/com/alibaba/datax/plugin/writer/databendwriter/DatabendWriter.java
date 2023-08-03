@@ -27,16 +27,12 @@ public class DatabendWriter extends Writer {
         private CommonRdbmsWriter.Job commonRdbmsWriterMaster;
 
         @Override
-        public void init() {
+        public void init() throws DataXException {
             this.originalConfig = super.getPluginJobConf();
             this.commonRdbmsWriterMaster = new CommonRdbmsWriter.Job(DATABASE_TYPE);
             this.commonRdbmsWriterMaster.init(this.originalConfig);
             // placeholder currently not supported by databend driver, needs special treatment
-            try {
-                DatabendWriterUtil.dealWriteMode(this.originalConfig);
-            } catch (Exception e) {
-                LOG.error(e.toString());
-            }
+            DatabendWriterUtil.dealWriteMode(this.originalConfig);
         }
 
         @Override
