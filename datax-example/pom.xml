@@ -28,6 +28,7 @@
             <artifactId>datax-core</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
+<!--        默认引入streamwriter,streamreader-->
         <dependency>
             <groupId>com.alibaba.datax</groupId>
             <artifactId>streamwriter</artifactId>
@@ -49,12 +50,31 @@
     <build>
         <resources>
             <resource>
-                <directory>src/main/java</directory>
+                <directory>src/main/resources</directory>
                 <includes>
-                    <include>**/*.properties</include>
+                    <include>**/*.*</include>
                 </includes>
+                <filtering>true</filtering>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*.*</include>
+                </includes>
+                <filtering>true</filtering>
             </resource>
         </resources>
+        <plugins>
+            <!-- compiler plugin -->
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>${jdk-version}</source>
+                    <target>${jdk-version}</target>
+                    <encoding>${project-sourceEncoding}</encoding>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 
 </project>

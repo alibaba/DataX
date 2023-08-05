@@ -7,10 +7,10 @@ import com.alibaba.datax.core.util.FrameworkErrorCode;
 import com.alibaba.datax.core.util.container.CoreConstant;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author fuyouj
@@ -44,9 +44,15 @@ public class ExampleConfigParser {
 
         Configuration configuration = Configuration.newDefault();
 
-        String workingDirectory = System.getProperty("user.dir");
-        File file = new File(workingDirectory);
-        scanPlugin(configuration, file.listFiles(), pluginTypeMap);
+        //最初打算通过user.dir获取工作目录来扫描插件，
+        //但是user.dir在不同有一些不确定性，所以废弃了这个选择
+
+        for (File basePackage : runtimeBasePackages()) {
+            if (pluginTypeMap.isEmpty()) {
+                break;
+            }
+            scanPluginByPackage(basePackage, configuration, basePackage.listFiles(), pluginTypeMap);
+        }
         if (!pluginTypeMap.isEmpty()) {
             throw DataXException.asDataXException(FrameworkErrorCode.PLUGIN_INIT_ERROR,
                     "load plugin failed，未完成指定插件加载:"
@@ -55,7 +61,42 @@ public class ExampleConfigParser {
         return configuration;
     }
 
-    private static void scanPlugin(Configuration configuration, File[] files, Map<String, String> pluginTypeMap) {
+    /**
+     * 通过classLoader获取程序编译的输出目录
+     * @return File[/datax-example/target/classes,xxReader/target/classes,xxWriter/target/classes]
+     */
+    private static File[] runtimeBasePackages() {
+        List<File> basePackages = new ArrayList<>();
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        Enumeration<URL> resources = null;
+        try {
+            resources = classLoader.getResources("");
+        } catch (IOException e) {
+            throw DataXException.asDataXException(e.getMessage());
+        }
+
+        while (resources.hasMoreElements()) {
+            URL resource = resources.nextElement();
+            File file = new File(resource.getFile());
+            if (file.isDirectory()) {
+                basePackages.add(file);
+            }
+        }
+
+        return basePackages.toArray(new File[0]);
+    }
+
+    /**
+     *
+     * @param packageFile 编译出来的target/classes根目录 便于找到插件时设置插件的URL目录，设置根目录是最保险的方式
+     * @param configuration pluginConfig
+     * @param files 待扫描文件
+     * @param needPluginTypeMap 需要的插件
+     */
+    private static void scanPluginByPackage(File packageFile,
+                                            Configuration configuration,
+                                            File[] files,
+                                            Map<String, String> needPluginTypeMap) {
         if (files == null) {
             return;
         }
@@ -64,22 +105,26 @@ public class ExampleConfigParser {
                 Configuration pluginDesc = Configuration.from(file);
                 String descPluginName = pluginDesc.getString("name", "");
 
-                if (pluginTypeMap.containsKey(descPluginName)) {
+                if (needPluginTypeMap.containsKey(descPluginName)) {
 
-                    String type = pluginTypeMap.get(descPluginName);
-                    configuration.merge(parseOnePlugin(type, descPluginName, pluginDesc), false);
-                    pluginTypeMap.remove(descPluginName);
+                    String type = needPluginTypeMap.get(descPluginName);
+                    configuration.merge(parseOnePlugin(packageFile.getAbsolutePath(),type, descPluginName, pluginDesc), false);
+                    needPluginTypeMap.remove(descPluginName);
 
                 }
             } else {
-                scanPlugin(configuration, file.listFiles(), pluginTypeMap);
+                scanPluginByPackage(packageFile,configuration, file.listFiles(), needPluginTypeMap);
             }
         }
     }
 
-    private static Configuration parseOnePlugin(String pluginType, String pluginName, Configuration pluginDesc) {
 
-        pluginDesc.set("loadType","pluginLoader");
+    private static Configuration parseOnePlugin(String packagePath,
+                                                String pluginType,
+                                                String pluginName,
+                                                Configuration pluginDesc) {
+        //设置path 兼容jarLoader的加载方式URLClassLoader
+        pluginDesc.set("path", packagePath);
         Configuration pluginConfInJob = Configuration.newDefault();
         pluginConfInJob.set(
                 String.format("plugin.%s.%s", pluginType, pluginName),

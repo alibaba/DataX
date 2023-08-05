@@ -21,28 +21,82 @@
 
 ### 实现原理
 
-- 不修改原有的ConfigParer,使用新的ExampleConfigParser,仅用于example模块。
-- 提供新的PluginLoader 插件加载器，可以从程序运行目录获取插件，与JarLoader各司其职。
+- 不修改原有的ConfigParer,使用新的ExampleConfigParser,仅用于example模块。他不依赖datax.home,而是依赖ide编译后的target目录
+- 将ide的target目录作为每个插件的目录类加载目录。
 
 ![img](img/img02.png)
 
-### 如何使用
+### 如何使用 
+1.修改插件的pom文件，做如下改动。以streamreader为例。<br/>
+改动前
+```xml
+<build>
+		<plugins>
+			<!-- compiler plugin -->
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>${jdk-version}</source>
+					<target>${jdk-version}</target>
+					<encoding>${project-sourceEncoding}</encoding>
+				</configuration>
+			</plugin>
+        </plugins>
+</build>
+```
+改动后
+```xml
+<build>
+    <resources>
+        <!--将resource目录也输出到target-->
+        <resource>
+            <directory>src/main/resources</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <filtering>true</filtering>
+        </resource>
+    </resources>
+		<plugins>
+			<!-- compiler plugin -->
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>${jdk-version}</source>
+					<target>${jdk-version}</target>
+					<encoding>${project-sourceEncoding}</encoding>
+				</configuration>
+			</plugin>
+        </plugins>
+</build>
+```
+2.在datax-example模块引入你需要的插件，默认只引入了streamreader、writer
+
+3.打开datax-example的Main class
 
 ```java
 public class Main {
-    public static void main(String[] args) {
-        //1. 在 datax-example pom文件中加入测试插件模块的依赖，默认导入了streamreader/writer
-        //2. 在此处指定你的测试文件路径
-        String path = "/job/stream2stream.json";
 
-        Configuration configuration = ExampleConfigParser.parse(
-                PathUtil.getAbsolutePathFromClassPath(path)
-        );
+    /**
+     * 注意！
+     * 1.在example模块pom文件添加你依赖的的调试插件，
+     *   你可以直接打开本模块的pom文件,参考是如何引入streamreader，streamwriter
+     * 2. 在此处指定你的job文件
+     */
+    public static void main(String[] args) {
+
+        String classPathJobPath = "/job/stream2stream.json";
+        String absJobPath = PathUtil.getAbsolutePathFromClassPath(classPathJobPath);
+        startExample(absJobPath);
+    }
+
+    public static void startExample(String jobPath) {
+
+        Configuration configuration = ExampleConfigParser.parse(jobPath);
 
         Engine engine = new Engine();
         engine.start(configuration);
     }
+
 }
 ```
-### 注意
-此模块不参与打包

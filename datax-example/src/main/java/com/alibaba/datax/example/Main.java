@@ -10,15 +10,25 @@ import com.alibaba.datax.example.util.PathUtil;
  * @author fuyouj
  */
 public class Main {
-    public static void main(String[] args) {
-        //在此处指定你的测试文件路径
-        String path = "/job/stream2stream.json";
 
-        Configuration configuration = ExampleConfigParser.parse(
-                PathUtil.getAbsolutePathFromClassPath(path)
-        );
+    /**
+     * 1.在example模块pom文件添加你依赖的的调试插件，
+     *   你可以直接打开本模块的pom文件,参考是如何引入streamreader，streamwriter
+     * 2. 在此处指定你的job文件
+     */
+    public static void main(String[] args) {
+
+        String classPathJobPath = "/job/stream2stream.json";
+        String absJobPath = PathUtil.getAbsolutePathFromClassPath(classPathJobPath);
+        startExample(absJobPath);
+    }
+
+    public static void startExample(String jobPath) {
+
+        Configuration configuration = ExampleConfigParser.parse(jobPath);
 
         Engine engine = new Engine();
         engine.start(configuration);
     }
+
 }
