@@ -18,6 +18,7 @@ public class Neo4jWriter extends Writer {
         @Override
         public void init() {
             LOGGER.info("Neo4jWriter Job init success");
+            this.jobConf = getPluginJobConf();
         }
 
         @Override

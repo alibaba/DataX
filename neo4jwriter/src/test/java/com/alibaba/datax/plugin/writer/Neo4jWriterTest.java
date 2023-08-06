@@ -52,8 +52,8 @@ public class Neo4jWriterTest {
     protected static final Network NETWORK = Network.newNetwork();
 
     private GenericContainer<?> container;
-    private Driver neo4jDriver;
-    private Session neo4jSession;
+     protected Driver neo4jDriver;
+     protected Session neo4jSession;
 
     @Before
     public void init() {

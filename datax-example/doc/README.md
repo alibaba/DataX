@@ -70,9 +70,10 @@
         </plugins>
 </build>
 ```
-2.在datax-example模块引入你需要的插件，默认只引入了streamreader、writer
+#### 在example模块使用
+1.在datax-example模块引入你需要的插件，默认只引入了streamreader、writer
 
-3.打开datax-example的Main class
+2.打开datax-example的Main class
 
 ```java
 public class Main {
@@ -99,4 +100,51 @@ public class Main {
     }
 
 }
+```
+#### 在reader/writer模块使用
+参考neo4jwriter的StreamReader2Neo4jWriterTest
+```java
+public class StreamReader2Neo4jWriterTest extends Neo4jWriterTest {
+    private static final int CHANNEL = 5;
+    private static final int READER_NUM = 10;
+
+    //在neo4jWriter模块使用Example测试整个job,方便发现整个流程的代码问题
+    @Test
+    public void streamReader2Neo4j() {
+
+        deleteHistoryIfExist();
+
+        String path = "/streamreader2neo4j.json";
+        String jobPath = PathUtil.getAbsolutePathFromClassPath(path);
+
+        ExampleContainer.start(jobPath);
+
+        //根据channel和reader的mock数据，校验结果集是否符合预期
+        verifyWriteResult();
+    }
+
+    private void deleteHistoryIfExist() {
+        String query = "match (n:StreamReader) return n limit 1";
+        String delete = "match (n:StreamReader) delete n";
+        if (super.neo4jSession.run(query).hasNext()) {
+            neo4jSession.run(delete);
+        }
+    }
+
+    private void verifyWriteResult() {
+        int total = CHANNEL * READER_NUM;
+        String query = "match (n:StreamReader) return n";
+        Result run = neo4jSession.run(query);
+        int count = 0;
+        while (run.hasNext()) {
+            Record record = run.next();
+            Node node = record.get("n").asNode();
+            if (node.hasLabel("StreamReader")) {
+                count++;
+            }
+        }
+        Assert.assertEquals(count, total);
+    }
+}
+
 ```

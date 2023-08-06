@@ -11,6 +11,6 @@ public class DataXExampleTest {
     public void testStreamReader2StreamWriter() {
         String path = "/job/stream2stream.json";
         String jobPath = PathUtil.getAbsolutePathFromClassPath(path);
-        Main.startExample(jobPath);
+        ExampleContainer.start(jobPath);
     }
 }

@@ -22,7 +22,7 @@ public class ExampleConfigParser {
 
     /**
      * 指定Job配置路径，ConfigParser会解析Job、Plugin、Core全部信息，并以Configuration返回
-     * 不同于Core的ConfigParser,这里的core,plugin 不依赖于编译后的datax.home,而是扫描程序目录
+     * 不同于Core的ConfigParser,这里的core,plugin 不依赖于编译后的datax.home,而是扫描程序编译后的target目录
      */
     public static Configuration parse(final String jobPath) {
 
@@ -54,15 +54,26 @@ public class ExampleConfigParser {
             scanPluginByPackage(basePackage, configuration, basePackage.listFiles(), pluginTypeMap);
         }
         if (!pluginTypeMap.isEmpty()) {
-            throw DataXException.asDataXException(FrameworkErrorCode.PLUGIN_INIT_ERROR,
-                    "load plugin failed，未完成指定插件加载:"
-                            + pluginTypeMap.keySet());
+            String failedPlugin = pluginTypeMap.keySet().toString();
+            String message = "\n插件%s加载失败：尝试从以下方面分析原因。\n" +
+                    "1: 检查插件的名字是否书写正确\n" +
+                    "2：相关插件的pom文件的<build></build>下是否已经添加了 <resource>\n" +
+                    "                <directory>src/main/resources</directory>\n" +
+                    "                <includes>\n" +
+                    "                    <include>**/*.*</include>\n" +
+                    "                </includes>\n" +
+                    "                <filtering>true</filtering>\n" +
+                    "            </resource>\n [可参阅streamreader pom文件] \n" +
+                    "3：如果你是以datax-example为启动模块，example模块是否导入了插件的依赖。参开example的pom文件";
+            message = String.format(message, failedPlugin);
+            throw DataXException.asDataXException(FrameworkErrorCode.PLUGIN_INIT_ERROR, message);
         }
         return configuration;
     }
 
     /**
      * 通过classLoader获取程序编译的输出目录
+     *
      * @return File[/datax-example/target/classes,xxReader/target/classes,xxWriter/target/classes]
      */
     private static File[] runtimeBasePackages() {
@@ -87,10 +98,9 @@ public class ExampleConfigParser {
     }
 
     /**
-     *
-     * @param packageFile 编译出来的target/classes根目录 便于找到插件时设置插件的URL目录，设置根目录是最保险的方式
-     * @param configuration pluginConfig
-     * @param files 待扫描文件
+     * @param packageFile       编译出来的target/classes根目录 便于找到插件时设置插件的URL目录，设置根目录是最保险的方式
+     * @param configuration     pluginConfig
+     * @param files             待扫描文件
      * @param needPluginTypeMap 需要的插件
      */
     private static void scanPluginByPackage(File packageFile,
@@ -108,12 +118,12 @@ public class ExampleConfigParser {
                 if (needPluginTypeMap.containsKey(descPluginName)) {
 
                     String type = needPluginTypeMap.get(descPluginName);
-                    configuration.merge(parseOnePlugin(packageFile.getAbsolutePath(),type, descPluginName, pluginDesc), false);
+                    configuration.merge(parseOnePlugin(packageFile.getAbsolutePath(), type, descPluginName, pluginDesc), false);
                     needPluginTypeMap.remove(descPluginName);
 
                 }
             } else {
-                scanPluginByPackage(packageFile,configuration, file.listFiles(), needPluginTypeMap);
+                scanPluginByPackage(packageFile, configuration, file.listFiles(), needPluginTypeMap);
             }
         }
     }
