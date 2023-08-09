@@ -17,20 +17,17 @@ import java.sql.*;
 import java.util.List;
 import java.util.regex.Pattern;
 
-public class DatabendWriter extends Writer
-{
+public class DatabendWriter extends Writer {
     private static final DataBaseType DATABASE_TYPE = DataBaseType.Databend;
 
     public static class Job
-            extends Writer.Job
-    {
+            extends Writer.Job {
         private static final Logger LOG = LoggerFactory.getLogger(Job.class);
         private Configuration originalConfig;
         private CommonRdbmsWriter.Job commonRdbmsWriterMaster;
 
         @Override
-        public void init()
-        {
+        public void init() throws DataXException {
             this.originalConfig = super.getPluginJobConf();
             this.commonRdbmsWriterMaster = new CommonRdbmsWriter.Job(DATABASE_TYPE);
             this.commonRdbmsWriterMaster.init(this.originalConfig);
@@ -39,8 +36,7 @@ public class DatabendWriter extends Writer
         }
 
         @Override
-        public void preCheck()
-        {
+        public void preCheck() {
             this.init();
             this.commonRdbmsWriterMaster.writerPreCheck(this.originalConfig, DATABASE_TYPE);
         }
@@ -67,8 +63,7 @@ public class DatabendWriter extends Writer
     }
 
 
-    public static class Task extends Writer.Task
-    {
+    public static class Task extends Writer.Task {
         private static final Logger LOG = LoggerFactory.getLogger(Task.class);
 
         private Configuration writerSliceConfig;
@@ -76,11 +71,10 @@ public class DatabendWriter extends Writer
         private CommonRdbmsWriter.Task commonRdbmsWriterSlave;
 
         @Override
-        public void init()
-        {
+        public void init() {
             this.writerSliceConfig = super.getPluginJobConf();
 
-            this.commonRdbmsWriterSlave = new CommonRdbmsWriter.Task(DataBaseType.Databend){
+            this.commonRdbmsWriterSlave = new CommonRdbmsWriter.Task(DataBaseType.Databend) {
                 @Override
                 protected PreparedStatement fillPreparedStatementColumnType(PreparedStatement preparedStatement, int columnIndex, int columnSqltype, String typeName, Column column) throws SQLException {
                     try {
@@ -177,8 +171,8 @@ public class DatabendWriter extends Writer
 
                             case Types.BOOLEAN:
 
-                            // warn: bit(1) -> Types.BIT 可使用setBoolean
-                            // warn: bit(>1) -> Types.VARBINARY 可使用setBytes
+                                // warn: bit(1) -> Types.BIT 可使用setBoolean
+                                // warn: bit(>1) -> Types.VARBINARY 可使用setBytes
                             case Types.BIT:
                                 if (this.dataBaseType == DataBaseType.MySql) {
                                     Boolean asBoolean = column.asBoolean();
@@ -224,8 +218,7 @@ public class DatabendWriter extends Writer
         }
 
         @Override
-        public void destroy()
-        {
+        public void destroy() {
             this.commonRdbmsWriterSlave.destroy(this.writerSliceConfig);
         }
 
@@ -238,9 +231,9 @@ public class DatabendWriter extends Writer
         public void post() {
             this.commonRdbmsWriterSlave.post(this.writerSliceConfig);
         }
+
         @Override
-        public void startWrite(RecordReceiver lineReceiver)
-        {
+        public void startWrite(RecordReceiver lineReceiver) {
             this.commonRdbmsWriterSlave.startWrite(lineReceiver, this.writerSliceConfig, this.getTaskPluginCollector());
         }
 
