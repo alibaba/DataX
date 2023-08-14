@@ -15,10 +15,11 @@ public class PathUtil {
     public static String getAbsolutePathFromClassPath(String path) {
         URL resource = PathUtil.class.getResource(path);
         try {
+            assert resource != null;
             URI uri = resource.toURI();
             return Paths.get(uri).toString();
         } catch (NullPointerException | URISyntaxException e) {
-            throw DataXException.asDataXException("path 路径错误");
+            throw DataXException.asDataXException("path error,please check whether the path is correct");
         }
 
     }

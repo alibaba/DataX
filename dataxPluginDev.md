@@ -447,6 +447,10 @@ DataX的内部类型在实现上会选用不同的java类型：
 3. 用户在插件中在`reader`/`writer`配置的`name`字段指定插件名字。框架根据插件的类型（`reader`/`writer`）和插件名称去插件的路径下扫描所有的jar，加入`classpath`。
 4. 根据插件配置中定义的入口类，框架通过反射实例化对应的`Job`和`Task`对象。
 
+### 编写测试用例
+1. 你可以在你的插件模块引入datax-example模块,调用`ExampleContainer.start(jobPath)`方法来检测你的代码逻辑是否正确。[datax-example使用](https://github.com/alibaba/DataX/datax-example/doc/README.md)
+2. 你可以在datax-example模块引入你的插件模块，编写测试方法调用`ExampleContainer.start(jobPath)`方法来检测你的代码逻辑是否正确。[datax-example使用](https://github.com/alibaba/DataX/datax-example/doc/README.md)
+
 
 ## 三、Last but not Least
 

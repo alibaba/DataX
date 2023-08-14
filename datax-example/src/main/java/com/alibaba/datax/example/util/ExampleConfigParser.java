@@ -55,16 +55,17 @@ public class ExampleConfigParser {
         }
         if (!pluginTypeMap.isEmpty()) {
             String failedPlugin = pluginTypeMap.keySet().toString();
-            String message = "\n插件%s加载失败：尝试从以下方面分析原因。\n" +
-                    "1: 检查插件的名字是否书写正确\n" +
-                    "2：相关插件的pom文件的<build></build>下是否已经添加了 <resource>\n" +
+            String message = "\nplugin %s load failed ：ry to analyze the reasons from the following aspects.。\n" +
+                    "1: Check if the name of the plugin is spelled correctly, and verify whether DataX supports this plugin\n" +
+                    "2：Verify if the <resource></resource> tag has been added under <build></build> section in the pom file of the relevant plugin.\n<resource>" +
                     "                <directory>src/main/resources</directory>\n" +
                     "                <includes>\n" +
                     "                    <include>**/*.*</include>\n" +
                     "                </includes>\n" +
                     "                <filtering>true</filtering>\n" +
                     "            </resource>\n [可参阅streamreader pom文件] \n" +
-                    "3：如果你是以datax-example为启动模块，example模块是否导入了插件的依赖。参开example的pom文件";
+                    "3：If you are using 'datax-example' as the startup module, " +
+                    "check whether the 'example' module has imported the dependencies of the plugin. Refer to the 'pom' file of the 'example' module";
             message = String.format(message, failedPlugin);
             throw DataXException.asDataXException(FrameworkErrorCode.PLUGIN_INIT_ERROR, message);
         }
