@@ -7,8 +7,100 @@
 通过 DataX 框架接收 reader 插件提供的数据，过滤出在配置文件中指定的列，转换为 CnosDB 的无模式写入语句，通过 [HTTP REST API](https://docs.cnosdb.com/zh/latest/reference/rest_api.html#接口列表) 发送至 CnosDB。
 
 ## 3 配置说明
+   
+### 3.1 参数说明
 
-### 3.1 配置样例
+* `cnosdbWriteAPI`
+    * 描述：CnosDB 写 API 的 URL，字符串
+    * 必选：否
+    * 默认值：`http://127.0.0.1:8902/api/v1/write`
+
+* `tenant`
+    * 描述：租户，字符串
+    * 必选：否
+    * 默认值：`cnosdb`
+
+* `database`
+    * 描述：数据库，字符串
+    * 必选：否
+    * 默认值：`public`
+
+* `username`
+    * 描述：用户名，字符串
+    * 必选：否
+    * 默认值：`root`
+
+* `password`
+    * 描述：密码，字符串
+    * 必选：否
+    * 默认值：`root`
+
+* `batchSize`
+    * 描述：每批次写入 CnosDB 的最大行数，无符号整数
+    * 必选：否
+    * 默认值：1000
+
+* `bufferSize`
+    * 描述：每批次写入 CnosDB 的最大字节数，无符号整数
+    * 必选：否
+    * 默认值：1024 * 1024 * 8
+    * 示例：`1048576`
+
+* `format`
+    * 描述：Reader 所使用的格式，字符串
+    * 必选：否
+    * 默认值：`datax`
+    * 可选值：`datax`, `opentsdb`
+    * 备注：一般情况下使用默认值即可，除非 reader 使用了特殊格式，如 opentsdbreader，此时，`format` 需要设置为 `opentsdb`。
+      当设置为 `opentsdb` 时，配置项 `table`, `tags`, `fields`, `timeIndex` 不再生效，转而通过 `fieldsExtra` 进行配置，
+      详见[示例](#3.3%20配置样例%20%28OpenTSDB%29)。
+
+* `table`
+    * 描述：表，字符串
+    * 必选：format 为 datax 时必选
+    * 默认值：无
+    * 示例：`table_cpu_usages`
+
+* `tags`
+    * 描述：Tag 名称与对应输入列的序号（无符号整数）的映射，Map 类型
+    * 必选：format 为 datax 时必选
+    * 默认值：无
+    * 示例：`{ "host": 1, "core": 3 }`
+
+* `fields`
+    * 描述：Field 名称与对应输入列的序号（无符号整数）的映射，Map 类型
+    * 必选：format 为 datax 时必选
+    * 默认值：无
+    * 示例:`{ "usage": 5 }`
+
+* `timeIndex`
+    * 描述：时间字段对应输入列的序号，无符号整数
+    * 必选：`format` 设置为默认值，或 `datax` 时必选
+    * 默认值：无
+    * 示例：1
+
+* `precision`
+    * 描述：输入数据的时间戳精度，字符串
+    * 必选：否
+    * 默认值：`ms`
+    * 可选值：`s`, `ms`, `us`, `ns`
+
+* `tagsExtra`
+    * 描述：配置额外的 Tag，作为每一行数据的额外的列，一并导入到 CnosDB 中，Map 类型
+    * 必选：否
+    * 默认值：无
+    * 示例：`{ "host": "localhost" }`
+    * 备注：各个参数的含义分别是：`{ tag 名称: tag 值 }`。如果定义的某个 Tag 在输入的数据中已存在，则被忽略，转而使用输入数据中的 Tag。
+
+* `fieldsExtra`
+    * 描述：配置来自 reader 的某些列的数据输出至 CnosDB 的哪些表、列中，Map 类型
+    * 必选：否
+    * 默认值：无
+    * 示例：`{ "cpu_usage": { "table": "cpu", "field": "usage" } }`
+    * 备注：各个参数的含义分别是：`{ 来源列: { "table": 目标表, "field": 目标列 } }`，
+      这个配置仅当 format 设置为 `opentsdb` 时生效。
+
+### 3.2 配置样例 (MySQL)
 
 假设有 MySQL 表如下：
 
@@ -57,7 +149,6 @@ create table test_1
           "name": "cnosdbwriter",
           "parameter": {
             "cnosdbWriteAPI": "http://127.0.0.1:8902/api/v1/write",
-            "tenant": "cnosdb",
             "database": "public",
             "username": "root",
             "password": "root",
@@ -90,81 +181,80 @@ create table test_1
 }
 ```
 
-### 3.2 参数说明
+### 3.3 配置样例 (OpenTSDB)
 
-* `cnosdbWriteAPI`
-    * 描述：CnosDB 写 API 的 URL，字符串
-    * 必选：否
-    * 默认值：`http://127.0.0.1:8902/api/v1/write`
+假设有 OpenTSDB 数据如下：
 
-* `tenant`
-    * 描述：租户，字符串
-    * 必选：否
-    * 默认值：`cnosdb`
+```json
+[
+  {
+    "metric": "cpu.usage.nice",
+    "timestamp": 1692028811,
+    "value": 5,
+    "tags": { "host": "localhost", "service": "10086" }
+  },
+  {
+    "metric": "cpu.usage.idle",
+    "timestamp": 1692028811,
+    "value": 9,
+    "tags": { "host": "localhost", "service": "10086" }
+  }
+]
+```
 
-* `database`
-    * 描述：数据库，字符串
-    * 必选：否
-    * 默认值：`public`
+以下配置从 OpenTSDB 中读取数据，并导入到 CnosDB 的 `cpu` 表中，并且通过配置 `fieldsExtra` 将来源数据中的列 `cpu.usage.idle` 与 `cpu.usage.nice`
+导出到 `cpu` 表的 `usage_idle` 列与 `usage_nice` 列。
 
-* `username`
-    * 描述：用户名，字符串
-    * 必选：否
-    * 默认值：`root`
+而如果不配置 `fieldsExtra`，那么 `cpu.usage.idle` 与 `cpu.usage.nice` 将会作为 CnosDB 中的表的名称。
 
-* `password`
-    * 描述：密码，字符串
-    * 必选：否
-    * 默认值：`root`
-
-* `batchSize`
-    * 描述：每批次写入 CnosDB 的最大行数，无符号整数
-    * 必选：否
-    * 默认值：1000
-
-* `bufferSize`
-    * 描述：每批次写入 CnosDB 的最大字节数，无符号整数
-    * 必选：否
-    * 默认值：1024 * 1024 * 8
-    * 示例：`1048576`
-
-* `format`
-    * 描述：reader 所使用的格式，字符串。如果使用了特殊格式（如 opentsdbreader），那么需要提供该配置，以提示 cnosdbwriter
-      进行特殊处理
-    * 必选：否
-    * 默认值：`datax`
-    * 可选值：`datax`, `opentsdb`
-    * 备注：在使用 `opentsdb` 时，不需要额外设置 `table`, `tags`, `fields`, `timeIndex`
-
-* `table`
-    * 描述：表，字符串
-    * 必选：format 为 datax 时必选
-    * 默认值：无
-    * 示例：`table_cpu_usages`
-
-* `tags`
-    * 描述：Map 类型，Tag 名称与对应输入列的序号（无符号整数）的映射
-    * 必选：format 为 datax 时必选
-    * 默认值：无
-    * 示例：`{ "host": 1, "core": 3 }`
-
-* `fields`
-    * 描述：Map 类型，Field 名称与对应输入列的序号（无符号整数）的映射
-    * 必选：format 为 datax 时必选
-    * 默认值：无
-    * 示例:`{ "usage": 5 }`
-
-* `timeIndex`
-    * 描述：时间字段对应输入列的序号，无符号整数
-    * 必选：format 为 datax 时必选
-    * 默认值：`http://127.0.0.1:8902/api/v1/write`
-    * 示例：`1`
-
-* `precision`
-    * 描述：输入数据的时间戳精度，字符串
-    * 必选：否
-    * 默认值：`ms`
-    * 可选值：`ms`, `us`, `ns`
+```json
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "name": "opentsdbreader",
+          "parameter": {
+            "endpoint": "http://localhost:4242",
+            "column": [
+              "cpu.usage.idle",
+              "cpu.usage.nice"
+            ],
+            "beginDateTime": "2023-08-14 00:00:00",
+            "endDateTime": "2023-08-16 00:00:00"
+          }
+        },
+        "writer": {
+          "name": "cnosdbwriter",
+          "parameter": {
+            "cnosdbWriteAPI": "http://127.0.0.1:8902/api/v1/write",
+            "database": "public",
+            "username": "root",
+            "password": "root",
+            "format": "opentsdb",
+            "precision": "s",
+            "fieldsExtra": {
+              "cpu.usage.idle": {
+                "table": "cpu",
+                "field": "usage_idle"
+              },
+              "cpu.usage.nice": {
+                "table": "cpu",
+                "field": "usage_nice"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "setting": {
+      "speed": {
+        "channel": 1
+      }
+    }
+  }
+}
+```
 
 ## 4 类型转换
 

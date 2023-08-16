@@ -11,14 +11,14 @@ import com.alibaba.datax.plugin.rdbms.util.DBUtilErrorCode;
 import com.alibaba.datax.plugin.writer.cnosdbwriter.format.ICnosDBRequestBuilder;
 import com.alibaba.datax.plugin.writer.cnosdbwriter.format.datax.CnosDBDataXRequestBuilder;
 import com.alibaba.datax.plugin.writer.cnosdbwriter.format.opentsdb.CnosDBOpenTSDBRequestBuilder;
+import org.apache.commons.io.input.CharSequenceInputStream;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.BasicHttpEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.UnsupportedEncodingException;
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -37,27 +37,45 @@ public class CnosDBWriter extends Writer {
     public final static String CFG_FORMAT = "format";
     public final static String CFG_TABLE = "table";
     public final static String CFG_TAGS = "tags";
+    public final static String CFG_TAGS_EXTRA = "tagsExtra";
     public final static String CFG_FIELDS = "fields";
+    public final static String CFG_FIELDS_EXTRA = "fieldsExtra";
+    public final static String CFG_FIELD = "field";
     public final static String CFG_TIME_INDEX = "timeIndex";
     public final static String CFG_PRECISION = "precision";
 
     final static String ERR_MISSING_CFG_FIELD = "缺少必填的配置项: '%s'";
-    final static String ERR_INVALID_CFG_PRECISION = "配置项不正确: 'precision': %s, 配置项值仅能为以下值: ms, us, ns";
+    final static String ERR_INVALID_CFG = "配置项不正确: '%s', %s";
+    final static String ERR_INVALID_CFG_PRECISION = "配置项不正确: 'precision': %s, 配置项值仅能为以下值: s, ms, us, ns";
     final static String ERR_INVALID_CFG_FORMAT = "配置项不正确: 'format': %s, 配置项仅能为以下值: datax, opentsdb";
 
     public static int precisionToMultiplier(String precision) {
-        if (!(precision.equals("ms") || precision.equals("us") || precision.equals("ns"))) {
+        if (!(precision.equals("ms") || precision.equals("us") || precision.equals("ns") || precision.equals("s"))) {
             throw new DataXException(String.format(ERR_INVALID_CFG_PRECISION, precision));
         }
         switch (precision) {
+            case "ms":
+                return 1_000_000;
             case "us":
                 // 1us = 1_000ns
                 return 1_000;
             case "ns":
                 return 1;
             default:
-                // 1ms = 1_000_000ns
-                return 1_000_000;
+                // 1s = 1_000_000_000ns
+                return 1_000_000_000;
+        }
+    }
+
+    /**
+     * For each fieldExtra.tagsExtra, if it's null or empty, set to the given tagsExtra.
+     */
+    public static void mergeFieldsExtraTags(Map<String, CnosDBWriterConfigFieldExtra> fieldsExtra, Map<String, String> tagsExtra) {
+        for (CnosDBWriterConfigFieldExtra v : fieldsExtra.values()) {
+            if (tagsExtra != null && !tagsExtra.isEmpty()
+                    && (v.getTagsExtra() == null || v.getTagsExtra().isEmpty())) {
+                v.setTagsExtra(tagsExtra);
+            }
         }
     }
 
@@ -107,13 +125,19 @@ public class CnosDBWriter extends Writer {
         // Config table
         protected String table;
         // Config tags, but reversed key&value pair.
-        protected HashMap<Integer, String> tagIndexes;
+        protected Map<Integer, String> tagIndexes;
         // Config fields, but reversed key&value pair.
-        protected HashMap<Integer, String> fieldIndexes;
+        protected Map<Integer, String> fieldIndexes;
         // Config timeIndex
+        // TODO: Support string "time" column by config 'timeFormat' or 'dateFormat'
         protected Integer timeIndex;
         // Config precision
         protected String precision = "ms";
+        // Config tagsExtra, maps tag key to value.
+        protected Map<String, String> tagsExtra;
+        // Config fieldsExtra, maps source field to CnosDB table&field.
+        protected Map<String, CnosDBWriterConfigFieldExtra> fieldsExtra;
+
         // Precision multiplier, maps from precision:
         // s -> 1,
         // ms -> 1_000,
@@ -190,6 +214,7 @@ public class CnosDBWriter extends Writer {
                     if (this.timeIndex == null) {
                         throw new DataXException(String.format(ERR_MISSING_CFG_FIELD, CFG_TIME_INDEX));
                     }
+
                     if (this.tagIndexes.containsKey(this.timeIndex)) {
                         String k0 = this.tagIndexes.get(this.timeIndex);
                         LOGGER.warn("配置项 '{}' 可能出现错误, 与 tag key '{}' 的列序号定义出现重复", CFG_TIME_INDEX, k0);
@@ -197,17 +222,57 @@ public class CnosDBWriter extends Writer {
                         String k0 = this.fieldIndexes.get(this.timeIndex);
                         LOGGER.warn("配置项 '{}' 可能出现错误, 与 field key '{}' 的列序号定义出现重复", CFG_TIME_INDEX, k0);
                     }
-                    this.reqBuilder = new CnosDBDataXRequestBuilder(this.bufferSize, this.batchSize, this.precisionMultiplier, this.table, this.tagIndexes, this.fieldIndexes, this.timeIndex);
+
+                    this.tagsExtra = config.getMap(CFG_TAGS_EXTRA, String.class);
+                    if (this.tagsExtra != null) {
+                        // Remove all keys from config 'tagsExtra' that contained by config 'tags'.
+                        for (String key : this.tagsExtra.keySet()) {
+                            if (tagsMap.containsKey(key)) {
+                                this.tagsExtra.remove(key);
+                            }
+                        }
+                    }
+
+                    this.reqBuilder = new CnosDBDataXRequestBuilder(
+                            this.bufferSize, this.batchSize, this.precisionMultiplier, this.table, this.tagIndexes,
+                            this.fieldIndexes, this.timeIndex, this.tagsExtra);
                     break;
                 case ICnosDBRequestBuilder.FORMAT_OPENTSDB:
                     // If using opentsdbreader format: opentsdb .
-                    this.reqBuilder = new CnosDBOpenTSDBRequestBuilder(this.bufferSize, this.batchSize, this.precisionMultiplier);
+                    this.tagsExtra = config.getMap(CFG_TAGS_EXTRA, String.class);
+
+                    try {
+                        Map<String, Configuration> fieldsExtraMap = config.getMapConfiguration(CFG_FIELDS_EXTRA);
+                        this.fieldsExtra = new HashMap<>(fieldsExtraMap.size());
+                        for (Map.Entry<String, Configuration> e : fieldsExtraMap.entrySet()) {
+                            this.fieldsExtra.put(e.getKey(), new CnosDBWriterConfigFieldExtra(e.getValue()));
+                        }
+                    } catch (Exception e) {
+                        throw new DataXException(String.format(ERR_INVALID_CFG, CFG_FIELDS_EXTRA, "JSON 解析失败" + e));
+                    }
+                    if (this.fieldsExtra != null) {
+                        mergeFieldsExtraTags(this.fieldsExtra, this.tagsExtra);
+                        for (CnosDBWriterConfigFieldExtra v : this.fieldsExtra.values()) {
+                            if (StringUtils.isNotBlank(this.table) && StringUtils.isBlank(v.getTable())) {
+                                v.setTable(this.table);
+                            }
+                            try {
+                                v.check();
+                            } catch (Exception e) {
+                                throw new DataXException(String.format(ERR_INVALID_CFG, CFG_FIELDS_EXTRA, e));
+                            }
+                        }
+                    }
+
+                    this.reqBuilder = new CnosDBOpenTSDBRequestBuilder(this.bufferSize, this.batchSize,
+                            this.precisionMultiplier, this.tagsExtra, this.fieldsExtra);
                     break;
                 default:
                     throw new DataXException(String.format(ERR_INVALID_CFG_FORMAT, this.format));
             }
 
             // Set precision=ns, the inserted timestamp is data.timestamp * precisionMultiplier
+            // TODO: check this.writeReqUrl after being built.
             this.writeReqUrl = this.cnosdbWriteAPI + "?precision=ns";
             if (!this.tenant.isEmpty()) {
                 this.writeReqUrl = this.writeReqUrl + "&tenant=" + this.tenant;
@@ -236,7 +301,10 @@ public class CnosDBWriter extends Writer {
                 Record record;
                 while ((record = lineReceiver.getFromReader()) != null) {
                     try {
-                        this.reqBuilder.appendRecord(record).ifPresent(this::writeCnosDB);
+                        this.reqBuilder.append(record).ifPresent((lpData) -> {
+                            this.writeCnosDB(lpData);
+                            this.reqBuilder.clear();
+                        });
                     } catch (CnosDBWriterException writerException) {
                         LOGGER.error(writerException.getMessage());
                         super.getTaskPluginCollector().collectDirtyRecord(record, writerException);
@@ -245,9 +313,9 @@ public class CnosDBWriter extends Writer {
 
                 if (this.reqBuilder.length() > 0) {
                     // Write the buffer to CnosDB.
-                    String lp = this.reqBuilder.take();
+                    CharSequence lpData = this.reqBuilder.get();
                     try {
-                        this.writeCnosDB(lp);
+                        this.writeCnosDB(lpData);
                     } catch (CnosDBWriterException writerException) {
                         LOGGER.error(writerException.getMessage());
                         super.getTaskPluginCollector().collectDirtyRecord(record, writerException);
@@ -258,17 +326,18 @@ public class CnosDBWriter extends Writer {
             }
         }
 
-        private void writeCnosDB(String lpData) {
-            LOGGER.trace("sending lines: {}.", lpData);
+        private void writeCnosDB(CharSequence lpData) {
+            LOGGER.trace("sending lines to {}: {}", this.writeReqUrl, lpData);
             HttpPost req = HttpClientUtil.getPostRequest();
             req.setURI(URI.create(this.writeReqUrl));
-            req.setHeader("Authorization", this.basicAuth);
-            try {
-                HttpEntity entity = new StringEntity(lpData);
-                req.setEntity(entity);
-            } catch (UnsupportedEncodingException e) {
-                throw new CnosDBWriterException(CnosDBWriterErrorCode.EncodeWriteRequest, "写入请求编码失败");
-            }
+            req.addHeader("Authorization", this.basicAuth);
+            // CnosDB needs Header Content-Length, so here use BasicHttpEntity.
+            BasicHttpEntity entity = new BasicHttpEntity();
+            entity.setContentLength(lpData.length());
+            InputStream in = new CharSequenceInputStream(lpData, StandardCharsets.UTF_8);
+            entity.setContent(in);
+            req.setEntity(entity);
+
             try {
                 HttpClientUtil.getHttpClientUtil().executeAndGetWithRetry(req, 3, 1000);
             } catch (DataXException e) {

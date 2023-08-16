@@ -10,6 +10,7 @@ import com.alibaba.datax.plugin.writer.cnosdbwriter.format.ICnosDBRequestBuilder
 import junit.framework.TestCase;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 public class CnosDBDataXRequestBuilderTest extends TestCase {
@@ -22,14 +23,15 @@ public class CnosDBDataXRequestBuilderTest extends TestCase {
         fieldIndexes.put(3, "fb");
         int timeIndex = 2;
         int precisionToMultiplier = CnosDBWriter.precisionToMultiplier("ms");
-        ICnosDBRequestBuilder builder = new CnosDBDataXRequestBuilder(1024, 2, precisionToMultiplier, "test", tagIndexes, fieldIndexes, timeIndex);
+        ICnosDBRequestBuilder builder = new CnosDBDataXRequestBuilder(1024, 2, precisionToMultiplier,
+                "test", tagIndexes, fieldIndexes, timeIndex);
         {
             Record r1 = new DefaultRecord();
             r1.addColumn(new StringColumn("a1"));
             r1.addColumn(new DoubleColumn(1.0));
             r1.addColumn(new LongColumn(10001L));
             r1.addColumn(new StringColumn("fb1"));
-            Optional<String> write_batch = builder.appendRecord(r1);
+            Optional<CharSequence> write_batch = builder.append(r1);
             assert !write_batch.isPresent();
         }
         {
@@ -38,18 +40,19 @@ public class CnosDBDataXRequestBuilderTest extends TestCase {
             r2.addColumn(new DoubleColumn(2F));
             r2.addColumn(new LongColumn(10002L));
             r2.addColumn(new StringColumn("fb2"));
-            Optional<String> write_batch = builder.appendRecord(r2);
+            Optional<CharSequence> write_batch = builder.append(r2);
             assert write_batch.isPresent();
             assertEquals("test,ta=a1 fa=1.0,fb=\"fb1\" 10001000000\n" +
-                    "test,ta=a2 fa=2.0,fb=\"fb2\" 10002000000\n", write_batch.get());
+                    "test,ta=a2 fa=2.0,fb=\"fb2\" 10002000000\n", write_batch.get().toString());
         }
+        builder.clear();
         {
             Record r3 = new DefaultRecord();
             r3.addColumn(new StringColumn("a3"));
             r3.addColumn(new DoubleColumn(3.0));
             r3.addColumn(new LongColumn(10003L));
             r3.addColumn(new StringColumn("fb3"));
-            Optional<String> write_batch = builder.appendRecord(r3);
+            Optional<CharSequence> write_batch = builder.append(r3);
             assert !write_batch.isPresent();
         }
         {
@@ -58,10 +61,67 @@ public class CnosDBDataXRequestBuilderTest extends TestCase {
             r4.addColumn(new DoubleColumn(4F));
             r4.addColumn(new LongColumn(10004L));
             r4.addColumn(new StringColumn("fb4"));
-            Optional<String> write_batch = builder.appendRecord(r4);
+            Optional<CharSequence> write_batch = builder.append(r4);
             assert write_batch.isPresent();
             assertEquals("test,ta=a3 fa=3.0,fb=\"fb3\" 10003000000\n" +
-                    "test,ta=a4 fa=4.0,fb=\"fb4\" 10004000000\n", write_batch.get());
+                    "test,ta=a4 fa=4.0,fb=\"fb4\" 10004000000\n", write_batch.get().toString());
+        }
+    }
+
+    public void testAppendRecordWithTagsExtra() {
+        HashMap<Integer, String> tagIndexes = new HashMap<>();
+        tagIndexes.put(0, "ta");
+        HashMap<Integer, String> fieldIndexes = new HashMap<>();
+        fieldIndexes.put(1, "fa");
+        fieldIndexes.put(3, "fb");
+        int timeIndex = 2;
+        int precisionToMultiplier = CnosDBWriter.precisionToMultiplier("ms");
+        Map<String, String> tagsExtra = new HashMap<String, String>() {{
+            put("t1", "t1_1");
+            put("t2", "t2_1");
+        }};
+        ICnosDBRequestBuilder builder = new CnosDBDataXRequestBuilder(1024, 2, precisionToMultiplier,
+                "test", tagIndexes, fieldIndexes, timeIndex, tagsExtra);
+        {
+            Record r1 = new DefaultRecord();
+            r1.addColumn(new StringColumn("a1"));
+            r1.addColumn(new DoubleColumn(1.0));
+            r1.addColumn(new LongColumn(10001L));
+            r1.addColumn(new StringColumn("fb1"));
+            Optional<CharSequence> write_batch = builder.append(r1);
+            assert !write_batch.isPresent();
+        }
+        {
+            Record r2 = new DefaultRecord();
+            r2.addColumn(new StringColumn("a2"));
+            r2.addColumn(new DoubleColumn(2F));
+            r2.addColumn(new LongColumn(10002L));
+            r2.addColumn(new StringColumn("fb2"));
+            Optional<CharSequence> write_batch = builder.append(r2);
+            assert write_batch.isPresent();
+            assertEquals("test,ta=a1,t1=t1_1,t2=t2_1 fa=1.0,fb=\"fb1\" 10001000000\n" +
+                    "test,ta=a2,t1=t1_1,t2=t2_1 fa=2.0,fb=\"fb2\" 10002000000\n", write_batch.get().toString());
+        }
+        builder.clear();
+        {
+            Record r3 = new DefaultRecord();
+            r3.addColumn(new StringColumn("a3"));
+            r3.addColumn(new DoubleColumn(3.0));
+            r3.addColumn(new LongColumn(10003L));
+            r3.addColumn(new StringColumn("fb3"));
+            Optional<CharSequence> write_batch = builder.append(r3);
+            assert !write_batch.isPresent();
+        }
+        {
+            Record r4 = new DefaultRecord();
+            r4.addColumn(new StringColumn("a4"));
+            r4.addColumn(new DoubleColumn(4F));
+            r4.addColumn(new LongColumn(10004L));
+            r4.addColumn(new StringColumn("fb4"));
+            Optional<CharSequence> write_batch = builder.append(r4);
+            assert write_batch.isPresent();
+            assertEquals("test,ta=a3,t1=t1_1,t2=t2_1 fa=3.0,fb=\"fb3\" 10003000000\n" +
+                    "test,ta=a4,t1=t1_1,t2=t2_1 fa=4.0,fb=\"fb4\" 10004000000\n", write_batch.get().toString());
         }
     }
 
@@ -80,20 +140,20 @@ public class CnosDBDataXRequestBuilderTest extends TestCase {
             r1.addColumn(new DoubleColumn(1.0));
             r1.addColumn(new LongColumn(10001L));
             r1.addColumn(new StringColumn("fb1"));
-            Optional<String> write_batch = builder.appendRecord(r1);
+            Optional<CharSequence> write_batch = builder.append(r1);
             assert write_batch.isPresent();
-            assertEquals("test,ta=a1 fa=1.0,fb=\"fb1\" 10001\n", write_batch.get());
+            assertEquals("test,ta=a1 fa=1.0,fb=\"fb1\" 10001\n", write_batch.get().toString());
         }
+        builder.clear();
         {
             Record r2 = new DefaultRecord();
             r2.addColumn(new StringColumn("a2"));
             r2.addColumn(new DoubleColumn(2.0));
             r2.addColumn(new LongColumn(1687622400000L));
             r2.addColumn(new StringColumn("fb2"));
-            Optional<String> write_batch = builder.appendRecord(r2);
+            Optional<CharSequence> write_batch = builder.append(r2);
             assert write_batch.isPresent();
-            assertEquals("test,ta=a2 fa=2.0,fb=\"fb2\" 1687622400000\n", write_batch.get());
+            assertEquals("test,ta=a2 fa=2.0,fb=\"fb2\" 1687622400000\n", write_batch.get().toString());
         }
-
     }
 }

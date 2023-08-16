@@ -10,15 +10,17 @@ public class CnosDBWriteBatchBuilder {
     public CnosDBWriteBatchBuilder(int capacity) {
         this.buffer = new StringBuilder(capacity);
         this.capacity = capacity;
-        this.keyBuffer = new StringBuilder(capacity / 2);
-        this.valueBuffer = new StringBuilder(capacity / 2);
+        this.keyBuffer = new StringBuilder(256);
+        this.valueBuffer = new StringBuilder(256);
         this.timeBuffer = new StringBuilder(32);
     }
 
-    public String take() {
-        String str = this.buffer.toString();
+    public CharSequence getBuffer() {
+        return this.buffer;
+    }
+
+    public void clearBuffer() {
         this.buffer.setLength(0);
-        return str;
     }
 
     public String takeKey() {
@@ -56,8 +58,8 @@ public class CnosDBWriteBatchBuilder {
     }
 
     public void appendTag(String key, String value) {
-        // TODO escape characters in tag key&values.
-        this.keyBuffer.append(",").append(key).append('=').append(value);
+        this.keyBuffer.append(",").append(key).append('=');
+        this.appendEscapedTagValue(value);
     }
 
     /**
@@ -117,6 +119,35 @@ public class CnosDBWriteBatchBuilder {
     }
 
     /**
+     * insert value into keyBuffer, with escaped characters.
+     *
+     * @param value Tag value
+     */
+    protected void appendEscapedTagValue(String value) {
+        // {escaped, }
+        final boolean[] flags = {false};
+        value.chars().mapToObj(c -> (char) c).forEach(c -> {
+            if (flags[0]) {
+                flags[0] = false;
+                this.keyBuffer.append(c);
+                return;
+            }
+            if (c == '\\') {
+                flags[0] = true;
+                this.keyBuffer.append(c);
+                return;
+            }
+            if (c == ' ' && !flags[0]) {
+                this.keyBuffer.append('\\');
+                this.keyBuffer.append(c);
+                return;
+            }
+
+            this.keyBuffer.append(c);
+        });
+    }
+
+    /**
      * insert value into valueBuffer, with surrounding double-quotes and escaped characters.
      *
      * @param value Field value
@@ -162,6 +193,10 @@ public class CnosDBWriteBatchBuilder {
 
     public boolean isFull() {
         return this.buffer.length() >= this.capacity;
+    }
+
+    public boolean isEmpty() {
+        return this.buffer.length() == 0;
     }
 
     @Override
