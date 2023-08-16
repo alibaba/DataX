@@ -10,19 +10,24 @@ public interface ICnosDBRequestBuilder {
 
     /**
      * Parse record to line protocol, insert into buffer.
-     * If buffer is full, return the buffer.
+     * If buffer is full, return the buffer as a CharSequence.
      *
      * @param record Alibaba DataX Record
      * @return An optional line protocol string.
      */
-    Optional<String> appendRecord(Record record);
+    Optional<CharSequence> append(Record record);
 
     /**
-     * Return the buffered string, and clean the buffer
+     * Return the buffered request as CharSequence
      *
      * @return buffered string
      */
-    String take();
+    CharSequence get();
+
+    /**
+     * Clear the built data and buffers.
+     */
+    void clear();
 
     /**
      * Returns the buffer length

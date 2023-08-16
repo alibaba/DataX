@@ -5,6 +5,7 @@ import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.plugin.writer.cnosdbwriter.CnosDBWriteBatchBuilder;
 import com.alibaba.datax.plugin.writer.cnosdbwriter.format.ICnosDBRequestBuilder;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -19,8 +20,24 @@ public class CnosDBDataXRequestBuilder implements ICnosDBRequestBuilder {
     private final int batchSize;
     private final CnosDBWriteBatchBuilder buffer;
     private final Consumer<Long> timeAppender;
+    /**
+     * Config tagsExtra, tags also in tagIndexes will be removed,
+     * and this field will never be null.
+     */
+    private final Map<String, String> tagsExtra;
 
-    public CnosDBDataXRequestBuilder(int capacity, int batchSize, int precisionMultiplier, String table, Map<Integer, String> tagIndexes, Map<Integer, String> fieldIndexes, Integer timeIndex) {
+    public CnosDBDataXRequestBuilder(
+            int capacity, int batchSize, int precisionMultiplier, String table,
+            Map<Integer, String> tagIndexes, Map<Integer, String> fieldIndexes, Integer timeIndex
+    ) {
+        this(capacity, batchSize, precisionMultiplier, table, tagIndexes, fieldIndexes, timeIndex, null);
+    }
+
+    public CnosDBDataXRequestBuilder(
+            int capacity, int batchSize, int precisionMultiplier, String table,
+            Map<Integer, String> tagIndexes, Map<Integer, String> fieldIndexes, Integer timeIndex,
+            Map<String, String> tagsExtra
+    ) {
         this.table = table;
         this.tagIndexes = tagIndexes;
         this.fieldIndexes = fieldIndexes;
@@ -40,10 +57,16 @@ public class CnosDBDataXRequestBuilder implements ICnosDBRequestBuilder {
                 this.buffer.appendTime(suffix);
             };
         }
+
+        if (tagsExtra == null) {
+            this.tagsExtra = new HashMap<>(0);
+        } else {
+            this.tagsExtra = tagsExtra;
+        }
     }
 
     @Override
-    public Optional<String> appendRecord(Record record) {
+    public Optional<CharSequence> append(Record record) {
         this.buffer.startWriteRecord(this.table);
         for (int i = 0; i < record.getColumnNumber(); i++) {
             Column col = record.getColumn(i);
@@ -82,21 +105,29 @@ public class CnosDBDataXRequestBuilder implements ICnosDBRequestBuilder {
                 this.timeAppender.accept(col.asDate().getTime());
             }
         }
+        for (Map.Entry<String, String> e : this.tagsExtra.entrySet()) {
+            this.buffer.appendTag(e.getKey(), e.getValue());
+        }
         this.buffer.endWriteRecord();
 
         this.count += 1;
         if (this.buffer.isFull() || this.count >= this.batchSize) {
             this.count = 0;
-            return Optional.of(this.buffer.take());
+            return Optional.of(this.buffer.getBuffer());
         } else {
             return Optional.empty();
         }
     }
 
     @Override
-    public String take() {
+    public CharSequence get() {
+        return this.buffer.getBuffer();
+    }
+
+    @Override
+    public void clear() {
         this.count = 0;
-        return this.buffer.take();
+        this.buffer.clearBuffer();
     }
 
     @Override
