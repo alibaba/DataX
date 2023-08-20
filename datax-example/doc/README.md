@@ -19,6 +19,10 @@
 
 <img src="img/img01.png" alt="img" style="zoom:40%;" />
 
+### 目录结构
+该目录结构演示了如何使用datax-example-core编写测试用例，和校验代码流程。
+<img src="img/img03.png" alt="img" style="zoom:100%;" />
+
 ### 实现原理
 
 - 不修改原有的ConfigParer,使用新的ExampleConfigParser,仅用于example模块。他不依赖datax.home,而是依赖ide编译后的target目录
@@ -70,46 +74,23 @@
         </plugins>
 </build>
 ```
-#### 在example模块使用
-1.在datax-example模块引入你需要的插件，默认只引入了streamreader、writer
-
-2.打开datax-example的Main class
-
+#### 在测试模块模块使用
+参考datax-example/datax-example-streamreader的StreamReader2StreamWriterTest.java
 ```java
-public class Main {
-
-    /**
-     * 注意！
-     * 1.在example模块pom文件添加你依赖的的调试插件，
-     *   你可以直接打开本模块的pom文件,参考是如何引入streamreader，streamwriter
-     * 2. 在此处指定你的job文件
-     */
-    public static void main(String[] args) {
-
-        String classPathJobPath = "/job/stream2stream.json";
-        String absJobPath = PathUtil.getAbsolutePathFromClassPath(classPathJobPath);
-        startExample(absJobPath);
-    }
-
-    public static void startExample(String jobPath) {
-
-        Configuration configuration = ExampleConfigParser.parse(jobPath);
-
-        Engine engine = new Engine();
-        engine.start(configuration);
-    }
-
-}
-```
-#### 在reader/writer模块使用
-参考neo4jwriter的StreamReader2Neo4jWriterTest
-```java
-public class StreamReader2Neo4jWriterTest extends Neo4jWriterTest {
-    private static final int CHANNEL = 5;
-    private static final int READER_NUM = 10;
-
-    //在neo4jWriter模块使用Example测试整个job,方便发现整个流程的代码问题
+public class StreamReader2StreamWriterTest {
     @Test
+    public void testStreamReader2StreamWriter() {
+        String path = "/stream2stream.json";
+        String jobPath = PathUtil.getAbsolutePathFromClassPath(path);
+        ExampleContainer.start(jobPath);
+    }
+}
+
+```
+参考datax-example/datax-example-neo4j的StreamReader2Neo4jWriterTest
+```java
+public class StreamReader2Neo4jWriterTest{
+@Test
     public void streamReader2Neo4j() {
 
         deleteHistoryIfExist();
@@ -122,29 +103,5 @@ public class StreamReader2Neo4jWriterTest extends Neo4jWriterTest {
         //根据channel和reader的mock数据，校验结果集是否符合预期
         verifyWriteResult();
     }
-
-    private void deleteHistoryIfExist() {
-        String query = "match (n:StreamReader) return n limit 1";
-        String delete = "match (n:StreamReader) delete n";
-        if (super.neo4jSession.run(query).hasNext()) {
-            neo4jSession.run(delete);
-        }
-    }
-
-    private void verifyWriteResult() {
-        int total = CHANNEL * READER_NUM;
-        String query = "match (n:StreamReader) return n";
-        Result run = neo4jSession.run(query);
-        int count = 0;
-        while (run.hasNext()) {
-            Record record = run.next();
-            Node node = record.get("n").asNode();
-            if (node.hasLabel("StreamReader")) {
-                count++;
-            }
-        }
-        Assert.assertEquals(count, total);
-    }
 }
-
 ```
