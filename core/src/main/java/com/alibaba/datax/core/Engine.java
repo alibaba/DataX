@@ -210,7 +210,7 @@ public class Engine {
     public static void main(String[] args) throws Exception {
         int exitCode = 0;
         try {
-            System.setProperty("datax.home", "/Users/mumu/workSpace/tools/datax");
+//            System.setProperty("datax.home", "/Users/mumu/workSpace/tools/datax");
             Engine.entry(args);
         } catch (Throwable e) {
             exitCode = 1;
