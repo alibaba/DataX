@@ -3,18 +3,17 @@ package com.alibaba.datax.plugin.writer.oceanbasev10writer.util;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.plugin.rdbms.util.DBUtil;
 import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
-import com.alibaba.datax.plugin.rdbms.writer.CommonRdbmsWriter;
 import com.alibaba.datax.plugin.rdbms.writer.Constant;
 import com.alibaba.datax.plugin.rdbms.writer.Key;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.alibaba.datax.plugin.writer.oceanbasev10writer.Config;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DbUtils {
 
@@ -25,7 +24,7 @@ public class DbUtils {
         final String password = config.getString(Key.PASSWORD);
         String jdbcUrl = config.getString(Key.JDBC_URL);
 
-        if(jdbcUrl == null) {
+        if (jdbcUrl == null) {
             List<Object> conns = config.getList(Constant.CONN_MARK, Object.class);
             Configuration connConf = Configuration.from(conns.get(0).toString());
             jdbcUrl = connConf.getString(Key.JDBC_URL);
@@ -34,9 +33,9 @@ public class DbUtils {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet result = null;
-        boolean need_retry = false;
         String value = null;
         int retry = 0;
+        int failTryCount = config.getInt(Config.FAIL_TRY_COUNT, Config.DEFAULT_FAIL_TRY_COUNT);
         do {
             try {
                 if (retry > 0) {
@@ -58,13 +57,12 @@ public class DbUtils {
                 LOG.info("value for query [{}] is [{}]", query, value);
                 break;
             } catch (SQLException e) {
-                need_retry = true;
                 ++retry;
                 LOG.warn("fetch value with {} error {}", query, e);
             } finally {
-                DBUtil.closeDBResources(result, stmt, null);
+                DBUtil.closeDBResources(result, stmt, conn);
             }
-        } while (need_retry);
+        } while (retry < failTryCount);
 
         return value;
     }

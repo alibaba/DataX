@@ -1,0 +1,20 @@
+{
+    "name": "adbmysqlwriter",
+    "parameter": {
+        "username": "username",
+        "password": "password",
+        "column": ["col1", "col2", "col3"],
+        "connection": [
+            {
+                "jdbcUrl": "jdbc:mysql://<host>:<port>[/<database>]",
+                "table": ["table1", "table2"]
+            }
+        ],
+        "preSql": [],
+        "postSql": [],
+        "batchSize": 65536,
+        "batchByteSize": 134217728,
+        "dryRun": false,
+        "writeMode": "insert"
+    }
+}

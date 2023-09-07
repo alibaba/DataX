@@ -5,8 +5,8 @@ import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.plugin.writer.elasticsearchwriter.jest.ClusterInfo;
 import com.alibaba.datax.plugin.writer.elasticsearchwriter.jest.ClusterInfoResult;
 import com.alibaba.datax.plugin.writer.elasticsearchwriter.jest.PutMapping7;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -53,6 +53,8 @@ public class ElasticSearchClient {
     public ElasticSearchClient(Configuration conf) {
         this.conf = conf;
         String endpoint = Key.getEndpoint(conf);
+        //es是支持集群写入的
+        String[] endpoints = endpoint.split(",");
         String user = Key.getUsername(conf);
         String passwd = Key.getPassword(conf);
         boolean multiThread = Key.isMultiThread(conf);
@@ -63,7 +65,7 @@ public class ElasticSearchClient {
         int totalConnection = this.conf.getInt("maxTotalConnection", 200);
         JestClientFactory factory = new JestClientFactory();
         Builder httpClientConfig = new HttpClientConfig
-                .Builder(endpoint)
+                .Builder(Arrays.asList(endpoints))
 //                .setPreemptiveAuth(new HttpHost(endpoint))
                 .multiThreaded(multiThread)
                 .connTimeout(readTimeout)

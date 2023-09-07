@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * 提供Jar隔离的加载机制，会把传入的路径、及其子路径、以及路径中的jar文件加入到class path。
  */
-public class JarLoader extends URLClassLoader {
+public class JarLoader extends URLClassLoader{
     public JarLoader(String[] paths) {
         this(paths, JarLoader.class.getClassLoader());
     }

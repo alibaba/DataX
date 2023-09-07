@@ -261,7 +261,7 @@ public final class OriginalConfPretreatmentUtil {
 
         // 混合配制 table 和 querySql
         if (!ListUtil.checkIfValueSame(tableModeFlags)
-                || !ListUtil.checkIfValueSame(tableModeFlags)) {
+                || !ListUtil.checkIfValueSame(querySqlModeFlags)) {
             throw DataXException.asDataXException(DBUtilErrorCode.TABLE_QUERYSQL_MIXED,
                     "您配置凌乱了. 不能同时既配置table又配置querySql. 请检查您的配置并作出修改.");
         }

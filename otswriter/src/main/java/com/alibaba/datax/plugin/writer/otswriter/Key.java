@@ -25,7 +25,11 @@ public final class Key {
     public final static String OTS_ACCESSKEY = "accessKey";
     
     public final static String OTS_INSTANCE_NAME = "instanceName";
-    
+    public final static String ENABLE_AUTO_INCREMENT = "enableAutoIncrement";
+    public final static String IS_TIMESERIES_TABLE = "isTimeseriesTable";
+
+    public final static String TIMEUNIT_FORMAT = "timeunit";
+
     public final static String TABLE_NAME = "table";
 
     public final static String PRIMARY_KEY = "primaryKey";
@@ -33,4 +37,11 @@ public final class Key {
     public final static String COLUMN = "column";
     
     public final static String WRITE_MODE = "writeMode";
+    
+    public final static String MODE = "mode";
+    public final static String NEW_VERISON = "newVersion";
+
+    public final static String DEFAULT_TIMESTAMP = "defaultTimestampInMillisecond";
+    
+    public final static String COLUMN_NAME_PREFIX_FILTER = "columnNamePrefixFilter";
 }

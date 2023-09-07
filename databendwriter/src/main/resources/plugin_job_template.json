@@ -1,0 +1,19 @@
+{
+  "name": "databendwriter",
+  "parameter": {
+    "username": "username",
+    "password": "password",
+    "column": ["col1", "col2", "col3"],
+    "connection": [
+      {
+        "jdbcUrl": "jdbc:databend://<host>:<port>[/<database>]",
+        "table": "table1"
+      }
+    ],
+    "preSql": [],
+    "postSql": [],
+
+    "maxBatchRows": 65536,
+    "maxBatchSize": 134217728
+  }
+}

@@ -5,8 +5,9 @@ import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.plugin.rdbms.reader.Constant;
 import com.alibaba.datax.plugin.rdbms.reader.Key;
 import com.alibaba.datax.plugin.rdbms.util.*;
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 
+import java.text.MessageFormat;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -20,6 +21,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 public class SingleTableSplitUtil {
     private static final Logger LOG = LoggerFactory
@@ -277,7 +279,24 @@ public class SingleTableSplitUtil {
         String splitPK = configuration.getString(Key.SPLIT_PK).trim();
         String table = configuration.getString(Key.TABLE).trim();
         String where = configuration.getString(Key.WHERE, null);
-        return genPKSql(splitPK,table,where);
+        String obMode = configuration.getString("obCompatibilityMode");
+        // OceanBase对SELECT MIN(%s),MAX(%s) FROM %s这条sql没有做查询改写，会进行全表扫描，在数据量的时候查询耗时很大甚至超时；
+        // 所以对于OceanBase数据库，查询模板需要改写为分别查询最大值和最小值。这样可以提升查询数量级的性能。
+        if (DATABASE_TYPE == DataBaseType.OceanBase && StringUtils.isNotEmpty(obMode)) {
+            boolean isOracleMode = "ORACLE".equalsIgnoreCase(obMode);
+
+            String minMaxTemplate = isOracleMode ? "select v2.id as min_a, v1.id as max_a from ("
+                + "select * from (select %s as id from %s {0} order by id desc) where rownum =1 ) v1,"
+                + "(select * from (select %s as id from %s order by id asc) where rownum =1 ) v2;" :
+                "select v2.id as min_a, v1.id as max_a from (select %s as id from %s {0} order by id desc limit 1) v1,"
+                    + "(select %s as id from %s order by id asc limit 1) v2;";
+
+            String pkRangeSQL = String.format(minMaxTemplate, splitPK, table, splitPK, table);
+            String whereString = StringUtils.isNotBlank(where) ? String.format("WHERE (%s AND %s IS NOT NULL)", where, splitPK) : EMPTY;
+            pkRangeSQL = MessageFormat.format(pkRangeSQL, whereString);
+            return pkRangeSQL;
+        }
+        return genPKSql(splitPK, table, where);
     }
 
     public static String genPKSql(String splitPK, String table, String where){

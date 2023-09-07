@@ -40,11 +40,11 @@ public class OTSStreamReaderChecker {
      *      为了避免时间误差影响，允许导出的范围为： [now - expirationTime + beforeOffset, now - afterOffset]
      */
     public void checkStreamEnabledAndTimeRangeOK() {
-        boolean exists = OTSHelper.checkTableExists(ots, config.getDataTable());
+        boolean exists = OTSHelper.checkTableExists(ots, config.getDataTable(), config.isTimeseriesTable());
         if (!exists) {
             throw new OTSStreamReaderException("The data table is not exist.");
         }
-        StreamDetails streamDetails = OTSHelper.getStreamDetails(ots, config.getDataTable());
+        StreamDetails streamDetails = OTSHelper.getStreamDetails(ots, config.getDataTable(), config.isTimeseriesTable());
         if (streamDetails == null || !streamDetails.isEnableStream()) {
             throw new OTSStreamReaderException("The stream of data table is not enabled.");
         }
@@ -81,7 +81,7 @@ public class OTSStreamReaderChecker {
      * 检查statusTable是否存在，如果不存在就创建statusTable，并等待表ready。
      */
     public void checkAndCreateStatusTableIfNotExist() {
-        boolean tableExist = OTSHelper.checkTableExists(ots, config.getStatusTable());
+        boolean tableExist = OTSHelper.checkTableExists(ots, config.getStatusTable(), false);
         if (tableExist) {
             DescribeTableResponse describeTableResult = OTSHelper.describeTable(ots, config.getStatusTable());
             checkTableMetaOfStatusTable(describeTableResult.getTableMeta());
@@ -132,23 +132,6 @@ public class OTSStreamReaderChecker {
             } else {
                 currentShardCheckpointMap.put(shardId, new ShardCheckpoint(shardId, streamJob.getVersion(),
                         checkpoint.getCheckpoint(), checkpoint.getSkipCount()));
-            }
-        }
-
-        // 检查是否有丢失的shard
-        for (Map.Entry<String, StreamShard> entry : allShardsMap.entrySet()) {
-            StreamShard shard = entry.getValue();
-            String parentId = shard.getParentId();
-            // shard不在本次任务中，且shard也不在上一次任务中
-            if (parentId != null && !allShardsMap.containsKey(parentId) && !allCheckpoints.containsKey(parentId)) {
-                LOG.error("Shard is lost: {}.", shard);
-                throw new OTSStreamReaderException("Can't find checkpoint for shard: " + parentId);
-            }
-
-            parentId = shard.getParentSiblingId();
-            if (parentId != null && !allShardsMap.containsKey(parentId) && !allCheckpoints.containsKey(parentId)) {
-                LOG.error("Shard is lost: {}.", shard);
-                throw new OTSStreamReaderException("Can't find checkpoint for shard: " + parentId);
             }
         }
 

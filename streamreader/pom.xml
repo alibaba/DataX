@@ -39,6 +39,16 @@
 	</dependencies>
 
 	<build>
+		<resources>
+			<!--将resource目录也输出到target-->
+			<resource>
+				<directory>src/main/resources</directory>
+				<includes>
+					<include>**/*.*</include>
+				</includes>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
 		<plugins>
 			<!-- compiler plugin -->
 			<plugin>

@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
+import static com.alibaba.datax.plugin.reader.otsstreamreader.internal.config.OTSStreamReaderConstants.CONF_SIMPLIFY_ENABLE;
+
 public class OTSStreamReaderMasterProxy {
 
     private OTSStreamReaderConfig conf = null;
@@ -22,6 +24,7 @@ public class OTSStreamReaderMasterProxy {
 
     private StreamJob streamJob;
     private List<StreamShard> allShards;
+    private String version;
 
     private static final Logger LOG = LoggerFactory.getLogger(OTSStreamReaderConfig.class);
 
@@ -41,19 +44,20 @@ public class OTSStreamReaderMasterProxy {
         checker.checkAndCreateStatusTableIfNotExist();
 
         // 删除StatusTable记录的对应EndTime时刻的Checkpoint信息。防止本次任务受到之前导出任务的影响。
-        String streamId = OTSHelper.getStreamDetails(ots, config.getDataTable()).getStreamId();
+        String streamId = OTSHelper.getStreamResponse(ots, config.getDataTable(), config.isTimeseriesTable()).getStreamId();
         CheckpointTimeTracker checkpointInfoTracker = new CheckpointTimeTracker(ots, config.getStatusTable(), streamId);
         checkpointInfoTracker.clearAllCheckpoints(config.getEndTimestampMillis());
 
         SyncClientInterface ots = OTSHelper.getOTSInstance(config);
 
-        allShards = OTSHelper.getOrderedShardList(ots, streamId);
+        allShards = OTSHelper.getOrderedShardList(ots, streamId, conf.isTimeseriesTable());
         List<String> shardIds = new ArrayList<String>();
         for (StreamShard shard : allShards) {
             shardIds.add(shard.getShardId());
         }
 
-        String version = "" + System.currentTimeMillis() + "-" + UUID.randomUUID();
+        this.version = "" + System.currentTimeMillis() + "-" + UUID.randomUUID();
+        LOG.info("version is: {}", this.version);
 
         streamJob = new StreamJob(conf.getDataTable(), streamId, version, new HashSet<String>(shardIds),
                 conf.getStartTimestampMillis(), conf.getEndTimestampMillis());
@@ -97,8 +101,16 @@ public class OTSStreamReaderMasterProxy {
 
             Configuration configuration = Configuration.newDefault();
             configuration.set(OTSStreamReaderConstants.CONF, GsonParser.configToJson(conf));
-            configuration.set(OTSStreamReaderConstants.STREAM_JOB, streamJob.toJson());
-            configuration.set(OTSStreamReaderConstants.ALL_SHARDS, GsonParser.toJson(allShards));
+
+            // Fix #39430646 [离线同步分布式]DataX OTSStreamReader插件分布式模式优化瘦身
+            if (conf.isConfSimplifyEnable()) {
+                configuration.set(OTSStreamReaderConstants.VERSION, this.version);
+                configuration.set(CONF_SIMPLIFY_ENABLE, true);
+            } else {
+                configuration.set(OTSStreamReaderConstants.STREAM_JOB, streamJob.toJson());
+                configuration.set(OTSStreamReaderConstants.ALL_SHARDS, GsonParser.toJson(allShards));
+            }
+
             configuration.set(OTSStreamReaderConstants.OWNED_SHARDS, GsonParser.listToJson(shardIds.subList(start, end)));
             configurations.add(configuration);
         }

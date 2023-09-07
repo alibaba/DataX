@@ -1,0 +1,57 @@
+{
+  "job": {
+    "setting": {
+      "speed": {
+        "channel": 5
+      }
+    },
+    "content": [
+      {
+        "reader": {
+          "name": "clickhousereader",
+          "parameter": {
+            "username": "XXXX",
+            "password": "XXXX",
+            "column": [
+              "uint8_col",
+              "uint16_col",
+              "uint32_col",
+              "uint64_col",
+              "int8_col",
+              "int16_col",
+              "int32_col",
+              "int64_col",
+              "float32_col",
+              "float64_col",
+              "bool_col",
+              "str_col",
+              "fixedstr_col",
+              "uuid_col",
+              "date_col",
+              "datetime_col",
+              "enum_col",
+              "ary_uint8_col",
+              "ary_str_col",
+              "tuple_col",
+              "nullable_col",
+              "nested_col.nested_id",
+              "nested_col.nested_str",
+              "ipv4_col",
+              "ipv6_col",
+              "decimal_col"
+            ],
+            "connection": [
+              {
+                "table": [
+                  "all_type_tbl"
+                ],
+                "jdbcUrl":["jdbc:clickhouse://XXXX:8123/default"]
+              }
+            ]
+          }
+        },
+        "writer": {}
+      }
+    ]
+  }
+}

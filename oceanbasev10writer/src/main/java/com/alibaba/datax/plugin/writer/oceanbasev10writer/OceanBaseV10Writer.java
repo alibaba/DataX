@@ -12,7 +12,7 @@ import com.alibaba.datax.plugin.rdbms.writer.util.WriterUtil;
 import com.alibaba.datax.plugin.writer.oceanbasev10writer.task.ConcurrentTableWriterTask;
 import com.alibaba.datax.plugin.writer.oceanbasev10writer.util.DbUtils;
 import com.alibaba.datax.plugin.writer.oceanbasev10writer.util.ObWriterUtils;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,6 +86,7 @@ public class OceanBaseV10Writer extends Writer {
 			if (tableNumber == 1) {
 				this.commonJob.prepare(this.originalConfig);
 				final String version = fetchServerVersion(originalConfig);
+				ObWriterUtils.setObVersion(version);
 				originalConfig.set(Config.OB_VERSION, version);
 			}
 
@@ -187,8 +188,9 @@ public class OceanBaseV10Writer extends Writer {
 		}
 
 		private String fetchServerVersion(Configuration config) {
-			final String fetchVersionSql = "show variables like 'version'";
-			return DbUtils.fetchSingleValueWithRetry(config, fetchVersionSql);
+			final String fetchVersionSql = "show variables like 'version_comment'";
+			String versionComment =  DbUtils.fetchSingleValueWithRetry(config, fetchVersionSql);
+			return versionComment.split(" ")[1];
 		}
 
 		private void checkCompatibleMode(Configuration configure) {
