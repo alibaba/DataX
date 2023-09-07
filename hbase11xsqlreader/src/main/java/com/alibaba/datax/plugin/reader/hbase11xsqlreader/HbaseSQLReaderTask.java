@@ -19,10 +19,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.*;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.sql.Date;
+import java.util.*;
 
 /**
  * Created by admin on 1/3/18.
@@ -42,11 +40,14 @@ public class HbaseSQLReaderTask {
     }
 
     private void getPColumns() throws SQLException {
+        Properties pro = new Properties();
+        pro.put(Key.NAME_SPACE_MAPPING_ENABLED, true);
+        pro.put(Key.SYSTEM_TABLES_TO_NAMESPACE, true);
         Connection con =
-                DriverManager.getConnection(this.readerConfig.getConnectionString());
+                DriverManager.getConnection(this.readerConfig.getConnectionString(),pro);
         PhoenixConnection phoenixConnection = con.unwrap(PhoenixConnection.class);
         MetaDataClient metaDataClient = new MetaDataClient(phoenixConnection);
-        PTable table = metaDataClient.updateCache("", this.readerConfig.getTableName()).getTable();
+        PTable table = metaDataClient.updateCache(this.readerConfig.getSchema(), this.readerConfig.getTableName()).getTable();
         List<String> columnNames = this.readerConfig.getColumns();
         for (PColumn pColumn : table.getColumns()) {
             if (columnNames.contains(pColumn.getName().getString())) {

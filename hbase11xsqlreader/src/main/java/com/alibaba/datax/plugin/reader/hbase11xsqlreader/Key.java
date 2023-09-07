@@ -24,5 +24,18 @@ public final class Key {
      * 【必选】列配置
      */
     public final static String COLUMN = "column";
+    /**
+     *
+     */
+    public static final String WHERE = "where";
+
+    /**
+     * 【可选】Phoenix表所属schema，默认为空
+     */
+    public static final String SCHEMA = "schema";
+
+    public static final String NAME_SPACE_MAPPING_ENABLED = "phoenix.schema.isNamespaceMappingEnabled";
+
+    public static final String SYSTEM_TABLES_TO_NAMESPACE = "phoenix.schema.mapSystemTablesToNamespace";
 
 }
