@@ -14,7 +14,7 @@
                 <include>plugin.json</include>
                 <include>plugin_job_template.json</include>
             </includes>
-            <outputDirectory>plugin/reader/gaussdbwriter</outputDirectory>
+            <outputDirectory>plugin/writer/gaussdbwriter</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>target/</directory>
@@ -28,7 +28,7 @@
     <dependencySets>
         <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
-            <outputDirectory>plugin/reader/gaussdbwriter/libs</outputDirectory>
+            <outputDirectory>plugin/writer/gaussdbwriter/libs</outputDirectory>
             <scope>runtime</scope>
         </dependencySet>
     </dependencySets>
