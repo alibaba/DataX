@@ -21,7 +21,7 @@
             <includes>
                 <include>gaussdbwriter-0.0.1-SNAPSHOT.jar</include>
             </includes>
-            <outputDirectory>plugin/reader/gaussdbwriter</outputDirectory>
+            <outputDirectory>plugin/writer/gaussdbwriter</outputDirectory>
         </fileSet>
     </fileSets>
 
