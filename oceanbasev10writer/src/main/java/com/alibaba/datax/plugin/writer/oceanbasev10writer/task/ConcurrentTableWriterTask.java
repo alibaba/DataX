@@ -36,8 +36,6 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-//import java.sql.PreparedStatement;
-
 public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
     private static final Logger LOG = LoggerFactory.getLogger(ConcurrentTableWriterTask.class);
 
@@ -62,7 +60,7 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
 	private ObPartitionIdCalculator partCalculator = null;
 
 	private HashMap<Long, List<Record>> groupInsertValues;
-	List<Record> unknownPartRecords = new ArrayList<Record>();
+	List<Record> unknownPartRecords = new ArrayList<>();
 //	private List<Record> unknownPartRecords;
 	private List<Integer> partitionKeyIndexes;
 	
@@ -121,8 +119,8 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
         }
 
 		obUpdateColumns = config.getString(Config.OB_UPDATE_COLUMNS, null);
-		groupInsertValues = new HashMap<Long, List<Record>>();
-		partitionKeyIndexes = new ArrayList<Integer>();
+		groupInsertValues = new HashMap<>();
+		partitionKeyIndexes = new ArrayList<>();
 		rewriteSql();
 
 		if (null == concurrentWriter) {
@@ -140,7 +138,8 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
 		do {
 			try {
 				if (retry > 0) {
-					int sleep = retry > 8 ? 500 : (1 << retry);
+					// 下边的代码原本是 retry > 8 ? 500 : (1 << retry); 但是循环条件原本就判断了 retry < 3, 所以这显得有些多余
+					int sleep = 1 << retry;
 					TimeUnit.SECONDS.sleep(sleep);
 					LOG.info("retry create new part calculator, the {} times", retry);
 				}
@@ -220,7 +219,9 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
         do {
         	try {
         		if (retryTimes > 0) {
-        			TimeUnit.SECONDS.sleep((1 << retryTimes));
+					// 解决：1 << retryTimes: integer shift implicitly cast to long
+					// 增加代码易读性
+        			TimeUnit.SECONDS.sleep((1L << retryTimes));
     				DBUtil.closeDBResources(null, connection);
         			connection = DBUtil.getConnection(dataBaseType, jdbcUrl, username, password);
         			LOG.warn("getColumnMetaData of table {} failed, retry the {} times ...", this.table, retryTimes);
@@ -235,9 +236,8 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
         		LOG.warn("fetch column meta of [{}] failed..., retry {} times", this.table, retryTimes);
         	} catch (InterruptedException e) {
 				LOG.warn("startWriteWithConnection interrupt, ignored");
-			} finally {
-        	}
-        } while (needRetry && retryTimes < 100);
+			}
+		} while (needRetry && retryTimes < 100);
 
         try {
             Record record;
@@ -246,7 +246,7 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
                 if (record.getColumnNumber() != this.columnNumber) {
                     // 源头读取字段列数与目的表字段写入列数不相等，直接报错
                 	LOG.error("column not equal {} != {}, record = {}",
-                			this.columnNumber, record.getColumnNumber(), record.toString());
+                			this.columnNumber, record.getColumnNumber(), record);
                     throw DataXException
                             .asDataXException(
                                     DBUtilErrorCode.CONF_ERROR,
@@ -273,9 +273,9 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
 
     public PreparedStatement fillStatementIndex(PreparedStatement preparedStatement,
                                                 int prepIdx, int columnIndex, Column column) throws SQLException {
-        int columnSqltype = this.resultSetMetaData.getMiddle().get(columnIndex);
+        int columnSqlType = this.resultSetMetaData.getMiddle().get(columnIndex);
         String typeName = this.resultSetMetaData.getRight().get(columnIndex);
-        return fillPreparedStatementColumnType(preparedStatement, prepIdx, columnSqltype, typeName, column);
+        return fillPreparedStatementColumnType(preparedStatement, prepIdx, columnSqlType, typeName, column);
     }
 
     public void collectDirtyRecord(Record record, SQLException e) {
@@ -307,34 +307,22 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
 		}
 
         if (partId == null) {
-            LOG.debug("fail to calculate parition id, just put into the default buffer.");
+            LOG.debug("fail to calculate partition id, just put into the default buffer.");
             partId = Long.MAX_VALUE;
         }
 
-		if (partId != null) {
-			List<Record> groupValues = groupInsertValues.get(partId);
-			if (groupValues == null) {
-				groupValues = new ArrayList<Record>(batchSize);
-				groupInsertValues.put(partId, groupValues);
-			}
-			groupValues.add(record);
-			if (groupValues.size() >= batchSize) {
-				groupValues = addRecordsToWriteQueue(groupValues);
-				groupInsertValues.put(partId, groupValues);
-			}
-		} else {
-			LOG.debug("add unknown part record {}", record);
-			unknownPartRecords.add(record);
-			if (unknownPartRecords.size() >= batchSize) {
-				unknownPartRecords = addRecordsToWriteQueue(unknownPartRecords);
-			}
-
+		// 这里实际上已经不需要进行 partId != null 的判断了，即 partId != null 永远为 true
+		List<Record> groupValues = groupInsertValues.computeIfAbsent(partId, k -> new ArrayList<>(batchSize));
+		groupValues.add(record);
+		if (groupValues.size() >= batchSize) {
+			groupValues = addRecordsToWriteQueue(groupValues);
+			groupInsertValues.put(partId, groupValues);
 		}
 	}
 
 	/**
 	 *
-	 * @param records
+	 * @param records 记录
 	 * @return 返回一个新的Cache用于存储接下来的数据
 	 */
 	private List<Record> addRecordsToWriteQueue(List<Record> records) {
@@ -351,7 +339,7 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
 				LOG.info("Concurrent table writer is interrupted");
 			}
 		}
-		return new ArrayList<Record>(batchSize);
+		return new ArrayList<>(batchSize);
 	}
 	private void checkMemStore() {
 		Connection checkConn = checkConnHolder.reconnect();
@@ -404,7 +392,7 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
 		LOG.debug("wait all InsertTask finished ...");
 	}
 	
-	public void singalTaskFinish() {
+	public void signalTaskFinish() {
 		lock.lock();
 		condition.signal();
 		lock.unlock();
@@ -412,8 +400,8 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
 	
 	@Override
 	public void destroy(Configuration writerSliceConfig) {
-	   if(concurrentWriter!=null) {
-		concurrentWriter.destory();
+		if (concurrentWriter != null) {
+			concurrentWriter.destroy();
 		}
 		// 把本级持有的conn关闭掉
 		DBUtil.closeDBResources(null, connHolder.getConn());
@@ -434,8 +422,8 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
 
 		public ConcurrentTableWriter(Configuration config, ServerConnectInfo connInfo, String rewriteRecordSql) {
 			threadCount = config.getInt(Config.WRITER_THREAD_COUNT, Config.DEFAULT_WRITER_THREAD_COUNT);
-			queue = new LinkedBlockingQueue<List<Record>>(threadCount << 1);
-			insertTasks = new ArrayList<InsertTask>(threadCount);
+			queue = new LinkedBlockingQueue<>(threadCount << 1);
+			insertTasks = new ArrayList<>(threadCount);
 			this.config = config;
 			this.connectInfo = connInfo;
 			this.rewriteRecordSql = rewriteRecordSql;
@@ -501,7 +489,7 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
 			totalTaskCount.incrementAndGet();
 		}
 		
-		public synchronized void destory() {
+		public synchronized void destroy() {
 			if (insertTasks != null) {
 				for(InsertTask task : insertTasks) {
 					task.setStop();
