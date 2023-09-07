@@ -1,0 +1,13 @@
+{
+    "name": "gaussdbreader",
+    "parameter": {
+        "username": "",
+        "password": "",
+        "connection": [
+            {
+                "table": [],
+                "jdbcUrl": []
+            }
+        ]
+    }
+}
