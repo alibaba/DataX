@@ -75,6 +75,8 @@ public enum DataBaseType {
                 break;
             case GaussDB:
                 break;
+            case Xugu:
+                break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type.");
         }
