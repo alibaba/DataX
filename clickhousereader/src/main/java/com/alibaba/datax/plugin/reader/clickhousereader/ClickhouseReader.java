@@ -27,8 +27,6 @@ public class ClickhouseReader extends Reader {
     private static final Logger LOG = LoggerFactory.getLogger(ClickhouseReader.class);
 
     public static class Job extends Reader.Job {
-        private static MessageSource MESSAGE_SOURCE = MessageSource.loadResourceBundle(ClickhouseReader.class);
-
         private Configuration jobConfig = null;
         private CommonRdbmsReader.Job commonRdbmsReaderMaster;
 
