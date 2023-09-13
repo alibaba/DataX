@@ -448,7 +448,7 @@ DataX的内部类型在实现上会选用不同的java类型：
 4. 根据插件配置中定义的入口类，框架通过反射实例化对应的`Job`和`Task`对象。
 
 ### 编写测试用例
-1. 在datax-example工程下新建新的插件测试模块,调用`ExampleContainer.start(jobPath)`方法来检测你的代码逻辑是否正确。[datax-example使用](https://github.com/alibaba/DataX/datax-example/doc/README.md)
+1. 在datax-example工程下新建新的插件测试模块,调用`ExampleContainer.start(jobPath)`方法来检测你的代码逻辑是否正确。[datax-example使用](https://github.com/alibaba/DataX/blob/master/datax-example/doc/README.md)
 
 
 ## 三、Last but not Least
