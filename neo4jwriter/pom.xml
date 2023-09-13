@@ -53,11 +53,6 @@
             <version>${junit4.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>com.alibaba.datax</groupId>
-            <artifactId>datax-example</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
     </dependencies>
 
     <build>

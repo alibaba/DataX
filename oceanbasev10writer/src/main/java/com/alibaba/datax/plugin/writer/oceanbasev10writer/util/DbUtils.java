@@ -66,4 +66,48 @@ public class DbUtils {
 
         return value;
     }
+
+    /**
+     * build sys connection from ordinary jdbc url
+     *
+     * @param jdbcUrl
+     * @param clusterName
+     * @return
+     * @throws Exception
+     */
+    public static Connection buildSysConn(String jdbcUrl, String clusterName) throws Exception {
+        jdbcUrl = jdbcUrl.replace("jdbc:mysql://", "jdbc:oceanbase://");
+        int startIdx = jdbcUrl.indexOf('/', "jdbc:oceanbase://".length());
+        int endIdx = jdbcUrl.lastIndexOf('?');
+        String prefix = jdbcUrl.substring(0, startIdx + 1);
+        final String postfix = jdbcUrl.substring(endIdx);
+        String sysJDBCUrl = prefix + "oceanbase" + postfix;
+
+        String tenantName = "sys";
+        String[][] userConfigs = {
+            {"monitor", "monitor"}
+        };
+
+        Connection conn = null;
+        for (String[] userConfig : userConfigs) {
+            try {
+                conn = DBUtil.getConnectionWithoutRetry(DataBaseType.OceanBase, sysJDBCUrl, String.format("%s@%s#%s", userConfig[0],
+                    tenantName, clusterName), userConfig[1]);
+            } catch (Exception e) {
+                LOG.warn("fail connecting to ob: " + e.getMessage());
+
+            }
+            if (conn == null) {
+                LOG.warn("fail to get connection with user " + userConfig[0] + ", try alternative user.");
+            } else {
+                break;
+            }
+        }
+
+        if (conn == null) {
+            throw new Exception("fail to get connection with sys tenant.");
+        }
+
+        return conn;
+    }
 }
