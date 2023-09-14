@@ -118,6 +118,7 @@ DataX 后续计划月度迭代更新，也欢迎感兴趣的同学提交 Pull re
   - 修复 orc空文件报错问题
   - 优化obwriter性能
   - txtfilewriter 增加导出为insert语句功能支持
+  - HdfsReader/HdfsWriter 支持parquet读写能力
   
 - [datax_v202308]（https://github.com/alibaba/DataX/releases/tag/datax_v202308)
   - OTS 插件更新
