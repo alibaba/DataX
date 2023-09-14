@@ -83,9 +83,10 @@ public class HdfsReader extends Reader {
                     !specifiedFileType.equalsIgnoreCase(Constant.TEXT) &&
                     !specifiedFileType.equalsIgnoreCase(Constant.CSV) &&
                     !specifiedFileType.equalsIgnoreCase(Constant.SEQ) &&
-                    !specifiedFileType.equalsIgnoreCase(Constant.RC)){
-                String message = "HdfsReader插件目前支持ORC, TEXT, CSV, SEQUENCE, RC五种格式的文件," +
-                        "请将fileType选项的值配置为ORC, TEXT, CSV, SEQUENCE 或者 RC";
+                    !specifiedFileType.equalsIgnoreCase(Constant.RC) &&
+                    !specifiedFileType.equalsIgnoreCase(Constant.PARQUET)){
+                String message = "HdfsReader插件目前支持ORC, TEXT, CSV, SEQUENCE, RC, PARQUET 六种格式的文件," +
+                        "请将fileType选项的值配置为ORC, TEXT, CSV, SEQUENCE,RC 和 PARQUET";
                 throw DataXException.asDataXException(HdfsReaderErrorCode.FILE_TYPE_ERROR, message);
             }
 
