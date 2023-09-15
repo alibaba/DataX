@@ -15,7 +15,7 @@
 
     <properties>
         <phoenix.version>5.2.5-HBase-2.x</phoenix.version>
-        <commons-codec.version>1.8</commons-codec.version>
+        <commons-codec.version>1.13</commons-codec.version>
     </properties>
 
     <dependencies>
