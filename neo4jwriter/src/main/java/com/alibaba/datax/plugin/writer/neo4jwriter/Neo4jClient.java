@@ -10,6 +10,7 @@ import com.alibaba.datax.common.util.RetryUtil;
 import com.alibaba.datax.plugin.writer.neo4jwriter.adapter.DateAdapter;
 import com.alibaba.datax.plugin.writer.neo4jwriter.adapter.ValueAdapter;
 import com.alibaba.datax.plugin.writer.neo4jwriter.config.Neo4jProperty;
+import com.alibaba.datax.plugin.writer.neo4jwriter.config.WriteMode;
 import com.alibaba.datax.plugin.writer.neo4jwriter.exception.Neo4jErrorCode;
 import com.alibaba.fastjson2.JSON;
 import org.apache.commons.lang3.StringUtils;
@@ -67,14 +68,26 @@ public class Neo4jClient {
         String batchVariableName = config.getString(BATCH_DATA_VARIABLE_NAME.getKey(),
                 BATCH_DATA_VARIABLE_NAME.getDefaultValue());
         List<Neo4jProperty> neo4jProperties = JSON.parseArray(config.getString(NEO4J_PROPERTIES.getKey()), Neo4jProperty.class);
+
         int batchSize = config.getInt(BATCH_SIZE.getKey(), BATCH_SIZE.getDefaultValue());
         int retryTimes = config.getInt(RETRY_TIMES.getKey(), RETRY_TIMES.getDefaultValue());
+        long retrySleepMills = RETRY_SLEEP_MILLS.getDefaultValue();
+        String writeMode = config.getString(WRITE_MODE.getKey(), WRITE_MODE.getDefaultValue());
+
 
         return new Neo4jClient(driver,
                 new WriteConfig(cypher, database, batchVariableName, neo4jProperties, batchSize),
-                new RetryConfig(retryTimes, config.getLong(RETRY_SLEEP_MILLS.getKey(), RETRY_SLEEP_MILLS.getDefaultValue())),
+                new RetryConfig(retryTimes,
+                        config.getLong(RETRY_SLEEP_MILLS.getKey(), retrySleepMills),
+                        checkWriteMode(writeMode)),
                 taskPluginCollector
         );
+    }
+
+    private static WriteMode checkWriteMode(String writeMode) {
+        Optional<WriteMode> mode = WriteMode.from(writeMode);
+        return mode.orElseThrow(() ->
+                DataXException.asDataXException(Neo4jErrorCode.CONFIG_INVALID, "writeMode should be INSERT or UPDATE"));
     }
 
     private static String checkCypher(Configuration config) {
@@ -177,6 +190,10 @@ public class Neo4jClient {
 
     }
 
+    public boolean supportFailOver() {
+        return WriteMode.UPDATE.equals(this.retryConfig.writeMode);
+    }
+
     private String toUnwindStr(List<MapValue> values) {
         StringJoiner joiner = new StringJoiner(",");
         for (MapValue value : values) {
@@ -222,9 +239,14 @@ public class Neo4jClient {
         int retryTimes;
         long retrySleepMills;
 
-        RetryConfig(int retryTimes, long retrySleepMills) {
+        //INSERT
+        //UPDATE
+        WriteMode writeMode;
+
+        RetryConfig(int retryTimes, long retrySleepMills, WriteMode writeMode) {
             this.retryTimes = retryTimes;
             this.retrySleepMills = retrySleepMills;
+            this.writeMode = writeMode;
         }
     }
 

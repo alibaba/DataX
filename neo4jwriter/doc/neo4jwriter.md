@@ -16,8 +16,8 @@
 
 ### 配置项介绍
 
-| 配置                             | 说明                 | 是否必须 | 默认值 | 示例                                                 |
-|:-------------------------------|--------------------| -------- | ------ | ---------------------------------------------------- |
+| 配置                             | 说明                 | 是否必须 | 默认值    | 示例                                                   |
+|:-------------------------------|--------------------| -------- |--------|------------------------------------------------------|
 | database                       | 数据库名字              | 是       | -      | neo4j                                                |
 | uri                            | 数据库访问链接            | 是       | -      | bolt://localhost:7687                                |
 | username                       | 访问用户名              | 是       | -      | neo4j                                                |
@@ -25,13 +25,14 @@
 | bearerToken                    | 权限相关               | 否       | -      | -                                                    |
 | kerberosTicket                 | 权限相关               | 否       | -      | -                                                    |
 | cypher                         | 同步语句               | 是       | -      | unwind $batch as row create(p) set p.name = row.name |
-| batchDataVariableName          | unwind 携带的数据变量名    |          |        | batch                                                |
-| properties                        | 定义neo4j中数据的属性名字和类型 | 是       | -      | 见后续案例                                           |
+| batchDataVariableName          | unwind 携带的数据变量名    |          | batch  | batch                                                |
+| properties                     | 定义neo4j中数据的属性名字和类型 | 是       | -      | 见后续案例                                                |
 | batchSize                      | 一批写入数据量            | 否       | 1000   |                                                      |
-| maxTransactionRetryTimeSeconds | 事务运行最长时间           | 否       | 30秒   | 30                                                   |
-| maxConnectionTimeoutSeconds    | 驱动最长链接时间           | 否       | 30秒   | 30                                                   |
-| retryTimes                     | 发生错误的重试次数          | 否       | 3次    | 3                                                    |
-| retrySleepMills                | 重试失败后的等待时间         | 否       | 3秒    | 3                                                    |
+| maxTransactionRetryTimeSeconds | 事务运行最长时间           | 否       | 30秒    | 30                                                   |
+| maxConnectionTimeoutSeconds    | 驱动最长链接时间           | 否       | 30秒    | 30                                                   |
+| retryTimes                     | 发生错误的重试次数          | 否       | 3次     | 3                                                    |
+| retrySleepMills                | 重试失败后的等待时间         | 否       | 3秒     | 3                                                    |
+| writeMode                      | 写入模式               | 否       | INSERT | INSERT  or UPDATE                                    |
 
 ### 支持的数据类型
 > 配置时均忽略大小写
@@ -124,7 +125,7 @@ Object_ARRAY
             "database": "neo4j",
             "cypher": "unwind $batch as row match(p1:Person) where p1.id = row.startNodeId match(p2:Person) where p2.id = row.endNodeId create (p1)-[:LINK]->(p2)",
             "batchDataVariableName": "batch",
-            "batch_size": "33",
+            "batchSize": "33",
             "properties": [
                 {
                     "name": "startNodeId",
@@ -153,7 +154,7 @@ Object_ARRAY
             "database": "yourDataBase",
             "cypher": "unwind $batch as row CALL apoc.cypher.doIt( 'create (n:`' + row.Label + '`{id:$id})' ,{id: row.id} ) YIELD value RETURN 1 ",
             "batchDataVariableName": "batch",
-            "batch_size": "1",
+            "batchSize": "1",
             "properties": [
                 {
                     "name": "Label",
