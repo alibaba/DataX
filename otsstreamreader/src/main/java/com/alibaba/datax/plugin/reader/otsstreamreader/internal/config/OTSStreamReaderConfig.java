@@ -13,6 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static com.alibaba.datax.plugin.reader.otsstreamreader.internal.config.OTSStreamReaderConstants.CONF_SIMPLIFY_ENABLE;
+import static com.alibaba.datax.plugin.reader.otsstreamreader.internal.config.OTSStreamReaderConstants.DEFAULT_CONF_SIMPLIFY_ENABLE_VALUE;
+
 public class OTSStreamReaderConfig {
 
     private static final Logger LOG = LoggerFactory.getLogger(OTSStreamReaderConfig.class);
@@ -33,6 +36,11 @@ public class OTSStreamReaderConfig {
     private static final String KEY_MODE = "mode";
     private static final String KEY_COLUMN = "column";
     private static final String KEY_THREAD_NUM = "threadNum";
+    private static final String KEY_ENABLE_TABLE_GROUP_SUPPORT = "enableTableGroupSupport";
+
+    private static final String ENABLE_SEEK_SHARD_ITERATOR = "enableSeekIterator";
+
+    private static final String IS_TIMESERIES_TABLE = "isTimeseriesTable";
 
     private static final int DEFAULT_MAX_RETRIES = 30;
     private static final long DEFAULT_SLAVE_LOOP_INTERVAL = 10 * TimeUtils.SECOND_IN_MILLIS;
@@ -51,11 +59,18 @@ public class OTSStreamReaderConfig {
     private int threadNum = 32;
     private long slaveLoopInterval = DEFAULT_SLAVE_LOOP_INTERVAL;
     private long slaveLoggingStatusInterval = DEFAULT_SLAVE_LOGGING_STATUS_INTERVAL;
+    private boolean enableSeekIteratorByTimestamp;
+    private boolean enableTableGroupSupport;
 
     private Mode mode;
     private List<String> columns;
+    private List<Boolean> columnsIsTimeseriesTags;
 
     private transient SyncClientInterface otsForTest;
+
+    private boolean confSimplifyEnable;
+
+    private boolean isTimeseriesTable;
 
     public String getEndpoint() {
         return endpoint;
@@ -129,6 +144,22 @@ public class OTSStreamReaderConfig {
         this.isExportSequenceInfo = isExportSequenceInfo;
     }
 
+    public boolean isEnableTableGroupSupport() {
+        return enableTableGroupSupport;
+    }
+
+    public void setEnableTableGroupSupport(boolean enableTableGroupSupport) {
+        this.enableTableGroupSupport = enableTableGroupSupport;
+    }
+
+    public boolean getEnableSeekIteratorByTimestamp() {
+        return enableSeekIteratorByTimestamp;
+    }
+
+    public void setEnableSeekIteratorByTimestamp(boolean enableSeekIteratorByTimestamp) {
+        this.enableSeekIteratorByTimestamp = enableSeekIteratorByTimestamp;
+    }
+
     public Mode getMode() {
         return mode;
     }
@@ -145,24 +176,62 @@ public class OTSStreamReaderConfig {
         this.columns = columns;
     }
 
+    public List<Boolean> getColumnsIsTimeseriesTags() {
+        return columnsIsTimeseriesTags;
+    }
+
+    public void setColumnsIsTimeseriesTags(List<Boolean> columnsIsTimeseriesTags) {
+        this.columnsIsTimeseriesTags = columnsIsTimeseriesTags;
+    }
+
+    public boolean isTimeseriesTable() {
+        return isTimeseriesTable;
+    }
+
+    public void setTimeseriesTable(boolean timeseriesTable) {
+        isTimeseriesTable = timeseriesTable;
+    }
+
     private static void parseConfigForSingleVersionAndUpdateOnlyMode(OTSStreamReaderConfig config, Configuration param) {
+        try {
+            Boolean isTimeseriesTable = param.getBool(IS_TIMESERIES_TABLE);
+            if (isTimeseriesTable != null) {
+                config.setTimeseriesTable(isTimeseriesTable);
+            } else {
+                config.setTimeseriesTable(false);
+            }
+        } catch (RuntimeException ex) {
+            throw new OTSStreamReaderException("Parse timeseries stream settings fail, please check your config.", ex);
+        }
+
         try {
             List<Object> values = param.getList(KEY_COLUMN);
             if (values == null) {
                 config.setColumns(new ArrayList<String>());
+                config.setColumnsIsTimeseriesTags(new ArrayList<Boolean>());
                 return;
             }
 
             List<String> columns = new ArrayList<String>();
+            List<Boolean> columnsIsTimeseriesTags = new ArrayList<Boolean>();
+            Boolean isTimeseriesTable = config.isTimeseriesTable();
+
             for (Object item : values) {
                 if (item instanceof Map) {
                     String columnName = (String) ((Map) item).get("name");
                     columns.add(columnName);
+
+                    boolean columnsIsTimeseriesTag = false;
+                    if (isTimeseriesTable && Boolean.parseBoolean((String) ((Map) item).getOrDefault("is_timeseries_tag", "false"))) {
+                        columnsIsTimeseriesTag = true;
+                    }
+                    columnsIsTimeseriesTags.add(columnsIsTimeseriesTag);
                 } else {
                     throw new IllegalArgumentException("The item of column must be map object, please check your input.");
                 }
             }
             config.setColumns(columns);
+            config.setColumnsIsTimeseriesTags(columnsIsTimeseriesTags);
         } catch (RuntimeException ex) {
             throw new OTSStreamReaderException("Parse column fail, please check your config.", ex);
         }
@@ -178,56 +247,59 @@ public class OTSStreamReaderConfig {
         config.setDataTable(ParamChecker.checkStringAndGet(param, KEY_DATA_TABLE_NAME, true));
         config.setStatusTable(ParamChecker.checkStringAndGet(param, KEY_STATUS_TABLE_NAME, true));
         config.setIsExportSequenceInfo(param.getBool(KEY_IS_EXPORT_SEQUENCE_INFO, false));
+        config.setEnableSeekIteratorByTimestamp(param.getBool(ENABLE_SEEK_SHARD_ITERATOR, false));
+        config.setConfSimplifyEnable(param.getBool(CONF_SIMPLIFY_ENABLE, DEFAULT_CONF_SIMPLIFY_ENABLE_VALUE));
+        config.setEnableTableGroupSupport(param.getBool(KEY_ENABLE_TABLE_GROUP_SUPPORT, false));
 
         if (param.getInt(KEY_THREAD_NUM) != null) {
             config.setThreadNum(param.getInt(KEY_THREAD_NUM));
         }
 
         if (param.getString(KEY_DATE) == null &&
-                (param.getLong(KEY_START_TIMESTAMP_MILLIS) == null || param.getLong(KEY_END_TIMESTAMP_MILLIS) == null) && 
+                (param.getLong(KEY_START_TIMESTAMP_MILLIS) == null || param.getLong(KEY_END_TIMESTAMP_MILLIS) == null) &&
                 (param.getLong(KEY_START_TIME_STRING) == null || param.getLong(KEY_END_TIME_STRING) == null)) {
             throw new OTSStreamReaderException("Must set date or time range millis or time range string, please check your config.");
         }
-        
+
         if (param.get(KEY_DATE) != null &&
                 (param.getLong(KEY_START_TIMESTAMP_MILLIS) != null || param.getLong(KEY_END_TIMESTAMP_MILLIS) != null) &&
                 (param.getLong(KEY_START_TIME_STRING) != null || param.getLong(KEY_END_TIME_STRING) != null)) {
             throw new OTSStreamReaderException("Can't set date and time range millis and time range string, please check your config.");
         }
-        
+
         if (param.get(KEY_DATE) != null &&
                 (param.getLong(KEY_START_TIMESTAMP_MILLIS) != null || param.getLong(KEY_END_TIMESTAMP_MILLIS) != null)) {
             throw new OTSStreamReaderException("Can't set date and time range both, please check your config.");
         }
-        
+
         if (param.get(KEY_DATE) != null &&
                 (param.getLong(KEY_START_TIME_STRING) != null || param.getLong(KEY_END_TIME_STRING) != null)) {
             throw new OTSStreamReaderException("Can't set date and time range string both, please check your config.");
         }
-        
-        if ((param.getLong(KEY_START_TIMESTAMP_MILLIS) != null || param.getLong(KEY_END_TIMESTAMP_MILLIS) != null)&&
+
+        if ((param.getLong(KEY_START_TIMESTAMP_MILLIS) != null || param.getLong(KEY_END_TIMESTAMP_MILLIS) != null) &&
                 (param.getLong(KEY_START_TIME_STRING) != null || param.getLong(KEY_END_TIME_STRING) != null)) {
-            throw new OTSStreamReaderException("Can't set time range millis and time range string both, please check your config.");
+            throw new OTSStreamReaderException("Can't set time range millis and time range string both, expect timestamp like '1516010400000'.");
         }
 
         if (param.getString(KEY_START_TIME_STRING) != null &&
                 param.getString(KEY_END_TIME_STRING) != null) {
-            String startTime=ParamChecker.checkStringAndGet(param, KEY_START_TIME_STRING, true);
-            String endTime=ParamChecker.checkStringAndGet(param, KEY_END_TIME_STRING, true);
+            String startTime = ParamChecker.checkStringAndGet(param, KEY_START_TIME_STRING, true);
+            String endTime = ParamChecker.checkStringAndGet(param, KEY_END_TIME_STRING, true);
             try {
                 long startTimestampMillis = TimeUtils.parseTimeStringToTimestampMillis(startTime);
                 config.setStartTimestampMillis(startTimestampMillis);
             } catch (Exception ex) {
-                throw new OTSStreamReaderException("Can't parse startTimeString: " + startTime);
+                throw new OTSStreamReaderException("Can't parse startTimeString: " + startTime + ", expect format date like '201801151612'.");
             }
             try {
                 long endTimestampMillis = TimeUtils.parseTimeStringToTimestampMillis(endTime);
                 config.setEndTimestampMillis(endTimestampMillis);
             } catch (Exception ex) {
-                throw new OTSStreamReaderException("Can't parse startTimeString: " + startTime);
-            }  
-            
-        }else if (param.getString(KEY_DATE) == null) {
+                throw new OTSStreamReaderException("Can't parse endTimeString: " + endTime + ", expect format date like '201801151612'.");
+            }
+
+        } else if (param.getString(KEY_DATE) == null) {
             config.setStartTimestampMillis(param.getLong(KEY_START_TIMESTAMP_MILLIS));
             config.setEndTimestampMillis(param.getLong(KEY_END_TIMESTAMP_MILLIS));
         } else {
@@ -240,8 +312,6 @@ public class OTSStreamReaderConfig {
                 throw new OTSStreamReaderException("Can't parse date: " + date);
             }
         }
-
-        
 
 
         if (config.getStartTimestampMillis() >= config.getEndTimestampMillis()) {
@@ -262,15 +332,21 @@ public class OTSStreamReaderConfig {
             config.setMode(Mode.MULTI_VERSION);
             List<Object> values = param.getList(KEY_COLUMN);
             if (values != null) {
-                throw new OTSStreamReaderException("The multi version mode doesn't support setting columns.");
+                LOG.warn("The multi version mode doesn't support setting columns, column config will ignore.");
+            }
+            Boolean isTimeseriesTable = param.getBool(IS_TIMESERIES_TABLE);
+            if (isTimeseriesTable != null) {
+                LOG.warn("The multi version mode doesn't support setting Timeseries stream, stream config will ignore.");
             }
         }
 
-        LOG.info("endpoint: {}, accessId: {}, accessKey: {}, instanceName: {}, dataTableName: {}, statusTableName: {}," +
-                " isExportSequenceInfo: {}, startTimestampMillis: {}, endTimestampMillis:{}, maxRetries:{}.", config.getEndpoint(),
+        LOG.info("endpoint: {}, accessKeyId: {}, accessKeySecret: {}, instanceName: {}, dataTableName: {}, statusTableName: {}," +
+                        " isExportSequenceInfo: {}, startTimestampMillis: {}, endTimestampMillis:{}, maxRetries:{}, enableSeekIteratorByTimestamp: {}, "
+                        + "confSimplifyEnable: {}, isTimeseriesTable: {}.", config.getEndpoint(),
                 config.getAccessId(), config.getAccessKey(), config.getInstanceName(), config.getDataTable(),
                 config.getStatusTable(), config.isExportSequenceInfo(), config.getStartTimestampMillis(),
-                config.getEndTimestampMillis(), config.getMaxRetries());
+                config.getEndTimestampMillis(), config.getMaxRetries(), config.getEnableSeekIteratorByTimestamp(),
+                config.isConfSimplifyEnable(), config.isTimeseriesTable());
 
         return config;
     }
@@ -282,7 +358,6 @@ public class OTSStreamReaderConfig {
     public SyncClientInterface getOtsForTest() {
         return otsForTest;
     }
-
     /**
      * test use
      * @param otsForTest
@@ -290,36 +365,36 @@ public class OTSStreamReaderConfig {
     public void setOtsForTest(SyncClientInterface otsForTest) {
         this.otsForTest = otsForTest;
     }
-
     public int getMaxRetries() {
         return maxRetries;
     }
-
     public void setMaxRetries(int maxRetries) {
         this.maxRetries = maxRetries;
     }
-
     public int getThreadNum() {
         return threadNum;
     }
-
     public void setSlaveLoopInterval(long slaveLoopInterval) {
         this.slaveLoopInterval = slaveLoopInterval;
     }
-
     public void setSlaveLoggingStatusInterval(long slaveLoggingStatusInterval) {
         this.slaveLoggingStatusInterval = slaveLoggingStatusInterval;
     }
-
     public long getSlaveLoopInterval() {
         return slaveLoopInterval;
     }
-
     public long getSlaveLoggingStatusInterval() {
         return slaveLoggingStatusInterval;
     }
-
     public void setThreadNum(int threadNum) {
         this.threadNum = threadNum;
+    }
+
+    public boolean isConfSimplifyEnable() {
+        return confSimplifyEnable;
+    }
+
+    public void setConfSimplifyEnable(boolean confSimplifyEnable) {
+        this.confSimplifyEnable = confSimplifyEnable;
     }
 }

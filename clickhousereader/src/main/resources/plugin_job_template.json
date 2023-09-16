@@ -1,0 +1,16 @@
+{
+  "name": "clickhousereader",
+  "parameter": {
+    "username": "username",
+    "password": "password",
+    "column": ["col1", "col2", "col3"],
+    "connection": [
+      {
+        "jdbcUrl": "jdbc:clickhouse://<host>:<port>[/<database>]",
+        "table": ["table1", "table2"]
+      }
+    ],
+    "preSql": [],
+    "postSql": []
+  }
+}

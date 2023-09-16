@@ -42,7 +42,7 @@ dx_substr(1,"5","10")  column 1的value为“dataxTest”=>"Test"
   * 举例：
 ```
 dx_replace(1,"2","4","****")  column 1的value为“dataxTest”=>"da****est"
-dx_replace(1,"5","10","****")  column 1的value为“dataxTest”=>"data****"
+dx_replace(1,"5","10","****")  column 1的value为“dataxTest”=>"datax****"
 ```
 4. dx_filter （关联filter暂不支持，即多个字段的联合判断，函参太过复杂，用户难以使用。）
   * 参数：

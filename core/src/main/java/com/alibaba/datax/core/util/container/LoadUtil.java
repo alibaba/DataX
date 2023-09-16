@@ -49,7 +49,7 @@ public class LoadUtil {
     /**
      * jarLoader的缓冲
      */
-    private static Map<String, JarLoader> jarLoaderCenter = new HashMap<String, JarLoader>();
+    private static Map<String, JarLoader> jarLoaderCenter = new HashMap();
 
     /**
      * 设置pluginConfigs，方便后面插件来获取

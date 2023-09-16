@@ -168,6 +168,7 @@ public final class ConfigParser {
         boolean isDefaultPath = StringUtils.isBlank(pluginPath);
         if (isDefaultPath) {
             configuration.set("path", path);
+            configuration.set("loadType","jarLoader");
         }
 
         Configuration result = Configuration.newDefault();

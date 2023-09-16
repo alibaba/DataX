@@ -27,9 +27,8 @@ import org.apache.hadoop.mapred.*;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import parquet.schema.OriginalType;
-import parquet.schema.PrimitiveType;
-import parquet.schema.Types;
+import parquet.hadoop.metadata.CompressionCodecName;
+import parquet.schema.*;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -626,4 +625,61 @@ public  class HdfsHelper {
         }
         return typeBuilder.named("m").toString();
     }
+
+    public void parquetFileStartWrite(RecordReceiver lineReceiver, Configuration config, String fileName, TaskPluginCollector taskPluginCollector, Configuration taskConfig) {
+        MessageType messageType = null;
+        ParquetFileProccessor proccessor = null;
+        Path outputPath = new Path(fileName);
+        String schema = config.getString(Key.PARQUET_SCHEMA);
+        try {
+            messageType = MessageTypeParser.parseMessageType(schema);
+        } catch (Exception e) {
+            String message = String.format("Error parsing the Schema string [%s] into MessageType", schema);
+            LOG.error(message);
+            throw DataXException.asDataXException(HdfsWriterErrorCode.PARSE_MESSAGE_TYPE_FROM_SCHEMA_ERROR, e);
+        }
+
+        // determine the compression codec
+        String compress = config.getString(Key.COMPRESS, null);
+        // be compatible with the old NONE
+        if ("NONE".equalsIgnoreCase(compress)) {
+            compress = "UNCOMPRESSED";
+        }
+        CompressionCodecName compressionCodecName = CompressionCodecName.fromConf(compress);
+        LOG.info("The compression codec used for parquet writing is: {}", compressionCodecName, compress);
+        try {
+            proccessor = new ParquetFileProccessor(outputPath, messageType, compressionCodecName, false, taskConfig, taskPluginCollector, hadoopConf);
+        } catch (Exception e) {
+            String message = String.format("Initializing ParquetFileProccessor based on Schema[%s] failed.", schema);
+            LOG.error(message);
+            throw DataXException.asDataXException(HdfsWriterErrorCode.INIT_PROCCESSOR_FAILURE, e);
+        }
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
+        String attempt = "attempt_" + dateFormat.format(new Date()) + "_0001_m_000000_0";
+        conf.set(JobContext.TASK_ATTEMPT_ID, attempt);
+        FileOutputFormat outFormat = new TextOutputFormat();
+        outFormat.setOutputPath(conf, outputPath);
+        outFormat.setWorkOutputPath(conf, outputPath);
+        try {
+            Record record = null;
+            while ((record = lineReceiver.getFromReader()) != null) {
+                proccessor.write(record);
+            }
+        } catch (Exception e) {
+            String message = String.format("An exception occurred while writing the file file [%s]", fileName);
+            LOG.error(message);
+            Path path = new Path(fileName);
+            deleteDir(path.getParent());
+            throw DataXException.asDataXException(HdfsWriterErrorCode.Write_FILE_IO_ERROR, e);
+        } finally {
+            if (proccessor != null) {
+                try {
+                    proccessor.close();
+                } catch (IOException e) {
+                    LOG.error(e.getMessage(), e);
+                }
+            }
+        }
+    }
+
 }
