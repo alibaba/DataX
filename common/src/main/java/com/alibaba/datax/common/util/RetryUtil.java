@@ -12,6 +12,8 @@ public final class RetryUtil {
 
     private static final long MAX_SLEEP_MILLISECOND = 256 * 1000;
 
+    private static final Retry RETRY_SINGLETON = new Retry();
+
     /**
      * 重试次数工具方法.
      *
@@ -26,8 +28,7 @@ public final class RetryUtil {
                                          int retryTimes,
                                          long sleepTimeInMilliSecond,
                                          boolean exponential) throws Exception {
-        Retry retry = new Retry();
-        return retry.doRetry(callable, retryTimes, sleepTimeInMilliSecond, exponential, null);
+        return RETRY_SINGLETON.doRetry(callable, retryTimes, sleepTimeInMilliSecond, exponential, null);
     }
     
     /**
