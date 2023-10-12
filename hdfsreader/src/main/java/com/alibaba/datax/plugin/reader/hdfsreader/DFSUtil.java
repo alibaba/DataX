@@ -18,6 +18,7 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.io.RCFile;
 import org.apache.hadoop.hive.ql.io.RCFileRecordReader;
@@ -41,6 +42,8 @@ import org.apache.parquet.io.api.Binary;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.MessageTypeParser;
 import org.apache.parquet.schema.PrimitiveType;
+import org.apache.parquet.tools.read.SimpleReadSupport;
+import org.apache.parquet.tools.read.SimpleRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -609,8 +612,12 @@ public class DFSUtil {
                 if (isSEQ) {
                     return false;
                 }
+                boolean isPar = isParquetFile(file,in);
+                if (isPar){
+                    return false;
+                }
                 // 如果不是ORC,RC和SEQ,则默认为是TEXT或CSV类型
-                return !isORC && !isRC && !isSEQ;
+                return !isORC && !isRC && !isSEQ && !isPar;
 
             } else if (StringUtils.equalsIgnoreCase(specifiedFileType, Constant.ORC)) {
 
@@ -621,6 +628,8 @@ public class DFSUtil {
             } else if (StringUtils.equalsIgnoreCase(specifiedFileType, Constant.SEQ)) {
 
                 return isSequenceFile(filepath, in);
+            } else if (StringUtils.equalsIgnoreCase(specifiedFileType,Constant.PARQUET)) {
+                return isParquetFile(file,in);
             }
 
         } catch (Exception e) {
@@ -628,6 +637,22 @@ public class DFSUtil {
                     "请检查您文件类型和文件是否正确。", filepath);
             LOG.error(message);
             throw DataXException.asDataXException(HdfsReaderErrorCode.READ_FILE_ERROR, message, e);
+        }
+        return false;
+    }
+
+    private boolean isParquetFile(Path file, FSDataInputStream in) {
+        try {
+            hadoopConf.set("fs.hdfs.impl", DistributedFileSystem.class.getName());
+            System.out.println(JSON.toJSONString(hadoopConf));
+            ParquetReader<SimpleRecord> reader = ParquetReader.builder(new SimpleReadSupport(), file).withConf(hadoopConf).build();
+            if (reader.read() != null) {
+                return true;
+            }
+
+
+        } catch (IOException e) {
+            LOG.info(String.format("检查文件类型: [%s] 不是PAR File.", file.toString()));
         }
         return false;
     }
