@@ -168,6 +168,136 @@ Object_ARRAY
         }
     }
 ```
+> 同步数据时，每一条数据的Label均不相同的情况下，写入到neo4j似乎有点麻烦。因为cypher语句中 Label 不支持动态引用变量，不得不使用字符串拼接 关系或者节点的 Label.
+
+假设现在同步节点，然后同步关系。
+
+**节点源头表**
+
+| 类型(TYPE) | 姓名属性(NAME) | uid属性(UID) |
+| ---------- | -------------- | ------------ |
+| Boy        | 小付           | 1            |
+| Girl       | 小杰           | 2            |
+
+假设以上两条数据,是节点数据，他们的 Label 分别是 Boy 和 Girl.
+
+那么我们的writer这样配置。
+
+```json
+    "writer": {
+        "name": "neo4jWriter",
+        "parameter": {
+            "uri": "bolt://localhost:7687",
+            "username": "yourUserName",
+            "password": "yourPassword",
+            "database": "yourDataBase",
+            "cypher": "unwind $batch as row CALL apoc.cypher.doIt( 'create (n:`' + row.type + '`{uid:$uid}) set n.name = name' ,{uid: row.uid,name:row.name,type:row.type} ) YIELD value RETURN 1",
+            "batchDataVariableName": "batch",
+            "batchSize": "1",
+            "properties": [
+                {
+                    "name": "type",
+                    "type": "STRING"
+                },
+                {
+                    "name": "name",
+                    "type": "STRING"
+                },
+                {
+                    "name":"uid",
+                    "type":"STRING"
+                }
+            ]
+        }
+    }
+//注意字符串拼接的规则。
+前面的语句`'+要拼接的类型+'`后面的语句.
+```
+
+我们将每一行的属性都作为参数传递给了apoc函数，在使用类型的地方，使用了字符串拼接。注意字符串拼接的规则。
+
+实际上，以上语句最后到neo4j会被解析如下：
+
+```cypher
+unwind [{type:'Boy',uid:'1',name:'小付'},{type:'Girl',uid:'2',name:'小杰'}] as row 
+ CALL apoc.cypher.doIt( 'create (n:`' + row.type + '`{uid:$uid}) set n.name = name' ,{uid: row.uid,name:row.name,type:row.type} ) YIELD value RETURN 1
+```
+
+假设节点同步成功后，我们开始同步关系。
+
+**关系源头描述表**
+
+| 开始节点id | 结束节点id | 关系id | 开始节点类型type | 结束节点类型type | 关系类型type | 关系属性name |
+| ---------- | ---------- | ------ | ---------------- | ---------------- | ------------ | ------------ |
+| 1          | 2          | 3      | Boy              | Girl             | Link         | link         |
+
+我们根据开始节点和结束节点建立起连接关系。
+
+```json
+    "writer": {
+        "name": "neo4jWriter",
+        "parameter": {
+            "uri": "bolt://localhost:7687",
+            "username": "yourUserName",
+            "password": "yourPassword",
+            "database": "yourDataBase",
+            "cypher": "unwind $batch as row CALL apoc.cypher.doIt(
+'match(start:`'+row.startType+'`) where start.uid = $startId
+match(end:`'+row.endType+'`{uid:$endId}) create (start)-[r:`'+row.rType+'`]->
+(end) set r.rid = $rid,r.name=name' ,
+{rType:row.rType,startType:row.startType,endType:row.endType,startId:row.startId
+,endId:row.endId,name:row.name,rid:row.rid} ) YIELD value RETURN 1",
+            "batchDataVariableName": "batch",
+            "batchSize": "1000",
+            "properties": [
+                {
+                    "name": "rType",
+                    "type": "STRING"
+                },
+                {
+                    "name": "startType",
+                    "type": "STRING"
+                },
+                {
+                    "name":"endType",
+                    "type":"STRING"
+                },
+              	{
+                  "name":"startId",
+                  "type":"STRING"
+                },
+              	{
+                "name":"endId",
+                 "type":"STRING"
+                },
+              	{
+                "name":"name",
+                 "type":"STRING"
+                }
+            ]
+        }
+    }
+//注意字符串拼接的规则。
+前面的语句`'+要拼接的类型+'`后面的语句.
+```
+
+在配置中，我们解析每一行的数据，根据类型和id找到开始节点和结束节点，并将他们链接起来。
+
+实际的cypher会被解析为：
+
+```cypher
+unwind
+[{rType:'Link',startType:'Boy',endType:'Girl',startId:'1',endId:'2',
+name:'link',rid:'3'}] as row
+CALL apoc.cypher.doIt( 'match(start:`'+row.startType+'`) where
+start.uid = $startId match(end:`'+row.endType+'`{uid:$endId}) create (start)-
+[r:`'+row.rType+'`]->(end) set r.rid = $rid,r.name=name' ,
+{rType:row.rType,startType:row.startType,endType:row.endType,startId:row.startId
+,endId:row.endId,name:row.name,rid:row.rid} ) YIELD value RETURN 1
+```
+
+* 动态写入Label的语法确实比较复杂，请用户复制以上案例到测试环境方便理解为何要使用字符串拼接。
+* 如果觉得这种写法太过于复杂，后续可能会引入其他方式。
 
 ## 注意事项
 
