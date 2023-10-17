@@ -5,6 +5,7 @@ import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.plugin.rdbms.util.DBUtilErrorCode;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -120,8 +121,9 @@ public class Keys implements Serializable {
     }
 
     public Map<String, Object> getLoadProps() {
-        return options.getMap(LOAD_PROPS);
-    }
+        return options.getMap(LOAD_PROPS) == null || options.getMap(LOAD_PROPS).size() == 0 ||
+                options.getMap(LOAD_PROPS).get("file.type") == null || options.getMap(LOAD_PROPS).get("file.type").equals("") ||
+                options.getMap(LOAD_PROPS).get("file.type").toString().toLowerCase().equals("json") ? copyDefaults() : options.getMap(LOAD_PROPS);    }
 
     public int getMaxRetries() {
         Integer retries = options.getInt(MAX_RETRIES);
@@ -151,14 +153,11 @@ public class Keys implements Serializable {
 
     public StreamLoadFormat getStreamLoadFormat() {
         Map<String, Object> loadProps = getLoadProps();
-        if (null == loadProps) {
+        if (loadProps.containsKey(LOAD_PROPS_FORMAT)
+                && StreamLoadFormat.CSV.name().equalsIgnoreCase(String.valueOf(loadProps.get(LOAD_PROPS_FORMAT)))) {
             return StreamLoadFormat.CSV;
         }
-        if (loadProps.containsKey(LOAD_PROPS_FORMAT)
-                && StreamLoadFormat.JSON.name().equalsIgnoreCase(String.valueOf(loadProps.get(LOAD_PROPS_FORMAT)))) {
-            return StreamLoadFormat.JSON;
-        }
-        return StreamLoadFormat.CSV;
+        return StreamLoadFormat.JSON;
     }
 
     private void validateStreamLoadUrl() {
@@ -182,5 +181,15 @@ public class Keys implements Serializable {
         for (String optionKey : requiredOptionKeys) {
             options.getNecessaryValue(optionKey, DBUtilErrorCode.REQUIRED_VALUE);
         }
+    }
+
+    private Map<String, Object> copyDefaults() {
+        Map<String, Object> copyMap = new HashMap<>();
+        if (options.getMap(LOAD_PROPS).get("columns") != null) {
+            copyMap.put("columns", options.getMap(LOAD_PROPS).get("columns"));
+        }
+        copyMap.put("file.type", "json");
+        copyMap.put("file.strip_outer_array", "true");
+        return copyMap;
     }
 }
