@@ -820,10 +820,10 @@ public class JobContainer extends AbstractContainer {
      * 计算： 总channel数为：1000M/s / 3M/s =
      * 333个，为平均分配，计算可知有308个每个channel有3个tasks，而有25个每个channel有4个tasks，
      * 需要的taskGroup数为：333 / 7 =
-     * 47...4，也就是需要48个taskGroup，47个是每个负责7个channel，有4个负责1个channel
+     * 47...4，也就是需要48个taskGroup，47个taskGroup每个负责7个channel，1个taskGroup负责4个channel
      * <p/>
      * 处理：我们先将这负责4个channel的taskGroup处理掉，逻辑是：
-     * 先按平均为3个tasks找4个channel，设置taskGroupId为0，
+     * 先将其中的4个channel，每个channel分配3个tasks，设置为taskGroupId为0
      * 接下来就像发牌一样轮询分配task到剩下的包含平均channel数的taskGroup中
      * <p/>
      * TODO delete it
