@@ -30,8 +30,12 @@ import java.util.Map;
 public class Hbase11xHelper {
 
     private static final Logger LOG = LoggerFactory.getLogger(Hbase11xHelper.class);
+    private static org.apache.hadoop.hbase.client.Connection H_CONNECTION = null;
 
-    public static org.apache.hadoop.hbase.client.Connection getHbaseConnection(String hbaseConfig) {
+    public synchronized static org.apache.hadoop.hbase.client.Connection getHbaseConnection(String hbaseConfig) {
+        if(H_CONNECTION != null && !H_CONNECTION.isClosed()){
+            return H_CONNECTION;
+        }
         if (StringUtils.isBlank(hbaseConfig)) {
             throw DataXException.asDataXException(Hbase11xReaderErrorCode.REQUIRED_VALUE, "读 Hbase 时需要配置hbaseConfig，其内容为 Hbase 连接信息，请联系 Hbase PE 获取该信息.");
         }
@@ -46,15 +50,13 @@ public class Hbase11xHelper {
         } catch (Exception e) {
             throw DataXException.asDataXException(Hbase11xReaderErrorCode.GET_HBASE_CONNECTION_ERROR, e);
         }
-        org.apache.hadoop.hbase.client.Connection hConnection = null;
         try {
-            hConnection = ConnectionFactory.createConnection(hConfiguration);
-
+            H_CONNECTION = ConnectionFactory.createConnection(hConfiguration);
         } catch (Exception e) {
-            Hbase11xHelper.closeConnection(hConnection);
+            Hbase11xHelper.closeConnection(H_CONNECTION);
             throw DataXException.asDataXException(Hbase11xReaderErrorCode.GET_HBASE_CONNECTION_ERROR, e);
         }
-        return hConnection;
+        return H_CONNECTION;
     }
 
 
@@ -69,7 +71,6 @@ public class Hbase11xHelper {
             admin = hConnection.getAdmin();
             Hbase11xHelper.checkHbaseTable(admin,hTableName);
             hTable = hConnection.getTable(hTableName);
-
         } catch (Exception e) {
             Hbase11xHelper.closeTable(hTable);
             Hbase11xHelper.closeAdmin(admin);
@@ -100,7 +101,7 @@ public class Hbase11xHelper {
 
    }
 
-    public static void closeConnection(Connection hConnection){
+    public synchronized static void closeConnection(Connection hConnection) {
         try {
             if(null != hConnection)
                 hConnection.close();
