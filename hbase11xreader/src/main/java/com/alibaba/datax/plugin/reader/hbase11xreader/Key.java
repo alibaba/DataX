@@ -48,4 +48,6 @@ public final class Key {
 
     public final static String SCAN_BATCH_SIZE = "scanBatchSize";
 
+    public final static String MAX_RESULT_SIZE = "maxResultSize";
+
 }
