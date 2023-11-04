@@ -41,6 +41,8 @@ public class HdfsReader extends Reader {
         private String specifiedFileType = null;
         private DFSUtil dfsUtil = null;
         private List<String> path = null;
+        private boolean skipEmptyOrcFile = false;
+        private Integer orcFileEmptySize = null;
 
         @Override
         public void init() {
@@ -81,9 +83,10 @@ public class HdfsReader extends Reader {
                     !specifiedFileType.equalsIgnoreCase(Constant.TEXT) &&
                     !specifiedFileType.equalsIgnoreCase(Constant.CSV) &&
                     !specifiedFileType.equalsIgnoreCase(Constant.SEQ) &&
-                    !specifiedFileType.equalsIgnoreCase(Constant.RC)){
-                String message = "HdfsReader插件目前支持ORC, TEXT, CSV, SEQUENCE, RC五种格式的文件," +
-                        "请将fileType选项的值配置为ORC, TEXT, CSV, SEQUENCE 或者 RC";
+                    !specifiedFileType.equalsIgnoreCase(Constant.RC) &&
+                    !specifiedFileType.equalsIgnoreCase(Constant.PARQUET)){
+                String message = "HdfsReader插件目前支持ORC, TEXT, CSV, SEQUENCE, RC, PARQUET 六种格式的文件," +
+                        "请将fileType选项的值配置为ORC, TEXT, CSV, SEQUENCE,RC 和 PARQUET";
                 throw DataXException.asDataXException(HdfsReaderErrorCode.FILE_TYPE_ERROR, message);
             }
 
@@ -115,6 +118,16 @@ public class HdfsReader extends Reader {
                 UnstructuredStorageReaderUtil.validateCompress(this.readerOriginConfig);
                 UnstructuredStorageReaderUtil.validateCsvReaderConfig(this.readerOriginConfig);
             }
+            if (this.specifiedFileType.equalsIgnoreCase(Constant.ORC)) {
+                skipEmptyOrcFile = this.readerOriginConfig.getBool(Key.SKIP_EMPTY_ORCFILE, false);
+                orcFileEmptySize = this.readerOriginConfig.getInt(Key.ORCFILE_EMPTYSIZE);
+                //将orcFileEmptySize必填项检查去掉，仅需要配置skipEmptyOrcFile即可，考虑历史任务兼容性(For中华保险)，保留orcFileEmptySize参数配置
+                //if (skipEmptyOrcFile && orcFileEmptySize == null) {
+                //    throw new IllegalArgumentException("When \"skipEmptyOrcFile\" is configured, "
+                //        + "parameter \"orcFileEmptySize\" cannot be null.");
+                //}
+            }
+            LOG.info("skipEmptyOrcFile: {}, orcFileEmptySize: {}", skipEmptyOrcFile, orcFileEmptySize);
 
         }
 
@@ -166,7 +179,7 @@ public class HdfsReader extends Reader {
         @Override
         public void prepare() {
             LOG.info("prepare(), start to getAllFiles...");
-            this.sourceFiles = dfsUtil.getAllFiles(path, specifiedFileType);
+            this.sourceFiles = dfsUtil.getAllFiles(path, specifiedFileType,skipEmptyOrcFile, orcFileEmptySize);
             LOG.info(String.format("您即将读取的文件数为: [%s], 列表为: [%s]",
                     this.sourceFiles.size(),
                     StringUtils.join(this.sourceFiles, ",")));
@@ -273,7 +286,9 @@ public class HdfsReader extends Reader {
                 }else if(specifiedFileType.equalsIgnoreCase(Constant.RC)){
 
                     dfsUtil.rcFileStartRead(sourceFile, this.taskConfig, recordSender, this.getTaskPluginCollector());
-                }else {
+                } else if (specifiedFileType.equalsIgnoreCase(Constant.PARQUET)) {
+                    dfsUtil.parquetFileStartRead(sourceFile, this.taskConfig, recordSender, this.getTaskPluginCollector());
+                } else {
 
                     String message = "HdfsReader插件目前支持ORC, TEXT, CSV, SEQUENCE, RC五种格式的文件," +
                             "请将fileType选项的值配置为ORC, TEXT, CSV, SEQUENCE 或者 RC";

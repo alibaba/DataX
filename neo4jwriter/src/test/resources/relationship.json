@@ -1,0 +1,19 @@
+{
+  "uri": "neo4j://localhost:7687",
+  "username":"neo4j",
+  "password":"Test@12343",
+  "database":"neo4j",
+  "cypher": "unwind $batch as row match(p1:Person) where p1.id = row.startNodeId match(p2:Person) where p2.id = row.endNodeId create (p1)-[:LINK]->(p2)",
+  "batchDataVariableName": "batch",
+  "batchSize": "33",
+  "properties": [
+    {
+      "name": "startNodeId",
+      "type": "STRING"
+    },
+    {
+      "name": "endNodeId",
+      "type": "STRING"
+    }
+  ]
+}

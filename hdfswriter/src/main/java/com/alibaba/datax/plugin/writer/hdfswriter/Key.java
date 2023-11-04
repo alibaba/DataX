@@ -46,4 +46,32 @@ public class Key {
 
     public static final String PARQUET_SCHEMA = "parquetSchema";
     public static final String PARQUET_MERGE_RESULT = "parquetMergeResult";
+
+    /**
+     * hive 3.x 或 cdh高版本，使用UTC时区存储时间戳，如果发现时区偏移，该配置项要配置成 true
+     */
+    public static final String PARQUET_UTC_TIMESTAMP = "parquetUtcTimestamp";
+
+    // Kerberos
+    public static final String KERBEROS_CONF_FILE_PATH = "kerberosConfFilePath";
+
+    // PanguFS
+    public final static String PANGU_FS_CONFIG = "panguFSConfig";
+    public final static String PANGU_FS_CONFIG_NUWA_CLUSTER = "nuwaCluster";
+    public final static String PANGU_FS_CONFIG_NUWA_SERVERS = "nuwaServers";
+    public final static String PANGU_FS_CONFIG_NUWA_PROXIES = "nuwaProxies";
+    public final static String PANGU_FS_CONFIG_CAPABILITY = "capability";
+
+
+    public static final String FS_OSS_UPLOAD_THREAD_CONCURRENCY = "ossUploadConcurrency";
+    //  <!-- oss 并发上传任务队列大小 -->
+    public static final String FS_OSS_UPLOAD_QUEUE_SIZE = "ossUploadQueueSize";
+    //    <!-- 进程内 oss 最大并发上传任务数 -->
+    public static final String FS_OSS_UPLOAD_MAX_PENDING_TASKS_PER_STREAM = "ossUploadMaxPendingTasksPerStream";
+
+    public static final String FS_OSS_BLOCKLET_SIZE_MB = "ossBlockSize";
+
+    public static final String FILE_SYSTEM_TYPE = "fileSystemType";
+    public static final String ENABLE_COLUMN_EXCHANGE = "enableColumnExchange";
+    public static final String SUPPORT_HIVE_DATETIME = "supportHiveDateTime";
 }

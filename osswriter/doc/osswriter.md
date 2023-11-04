@@ -18,7 +18,7 @@ OSSWriter提供了向OSS写入类CSV格式的一个或者多个表文件。
 
 OSSWriter实现了从DataX协议转为OSS中的TXT文件功能，OSS本身是无结构化数据存储，OSSWriter需要在如下几个方面增加:
 
-1. 支持且仅支持写入 TXT的文件，且要求TXT中shema为一张二维表。
+1. 支持写入 TXT的文件，且要求TXT中shema为一张二维表。
 
 2. 支持类CSV格式文件，自定义分隔符。
 
@@ -27,6 +27,8 @@ OSSWriter实现了从DataX协议转为OSS中的TXT文件功能，OSS本身是无
 6. 支持多线程写入，每个线程写入不同子文件。
 
 7. 文件支持滚动，当文件大于某个size值或者行数值，文件需要切换。 [暂不支持]
+
+8. 支持写 PARQUET、ORC 文件
 
 我们不能做到：
 
@@ -37,7 +39,7 @@ OSSWriter实现了从DataX协议转为OSS中的TXT文件功能，OSS本身是无
 
 
 ### 3.1 配置样例
-
+写 txt文件样例
 ```json
 {
     "job": {
@@ -65,7 +67,90 @@ OSSWriter实现了从DataX协议转为OSS中的TXT文件功能，OSS本身是无
     }
 }
 ```
+写 orc 文件样例
+```json
+{
+	"job": {
+		"setting": {},
+		"content": [
+			{
+				"reader": {},
+				"writer": {
+					"name": "osswriter",
+					"parameter": {
+						"endpoint": "http://oss.aliyuncs.com",
+						"accessId": "",
+						"accessKey": "",
+						"bucket": "myBucket",
+						"fileName": "test",
+						"encoding": "UTF-8",
+						"column": [
+							{
+								"name": "col1",
+								"type": "BIGINT"
+							},
+							{
+								"name": "col2",
+								"type": "DOUBLE"
+							},
+							{
+								"name": "col3",
+								"type": "STRING"
+							}
+						],
+						"fileFormat": "orc",
+						"path": "/tests/case61",
+						"writeMode": "append"
+					}
+				}
+			}
+		]
+	}
+}
+```
 
+写 parquet 文件样例
+```json
+{
+	"job": {
+		"setting": {},
+		"content": [
+			{
+				"reader": {},
+				"writer": {
+					"name": "osswriter",
+					"parameter": {
+						"endpoint": "http://oss.aliyuncs.com",
+						"accessId": "",
+						"accessKey": "",
+						"bucket": "myBucket",
+						"fileName": "test",
+						"encoding": "UTF-8",
+						"column": [
+							{
+								"name": "col1",
+								"type": "BIGINT"
+							},
+							{
+								"name": "col2",
+								"type": "DOUBLE"
+							},
+							{
+								"name": "col3",
+								"type": "STRING"
+							}
+						],
+						"parquetSchema": "message test { required int64 int64_col;\n required binary str_col (UTF8);\nrequired group params (MAP) {\nrepeated group key_value {\nrequired binary key (UTF8);\nrequired binary value (UTF8);\n}\n}\nrequired group params_arr (LIST) {\n  repeated group list {\n    required binary element (UTF8);\n  }\n}\nrequired group params_struct {\n  required int64 id;\n required binary name (UTF8);\n }\nrequired group params_arr_complex (LIST) {\n  repeated group list {\n    required group element {\n required int64 id;\n required binary name (UTF8);\n}\n  }\n}\nrequired group params_complex (MAP) {\nrepeated group key_value {\nrequired binary key (UTF8);\nrequired group value {\n  required int64 id;\n required binary name (UTF8);\n  }\n}\n}\nrequired group params_struct_complex {\n  required int64 id;\n required group detail {\n  required int64 id;\n required binary name (UTF8);\n  }\n  }\n}",
+						"fileFormat": "parquet",
+						"path": "/tests/case61",
+						"writeMode": "append"
+					}
+				}
+			}
+		]
+	}
+}
+```
 ### 3.2 参数说明
 
 * **endpoint**

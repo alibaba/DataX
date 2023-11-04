@@ -16,7 +16,7 @@ import com.alibaba.datax.plugin.writer.oceanbasev10writer.util.ObWriterUtils;
  * @author oceanbase
  *
  */
-public class ObClientConnHolder extends ConnHolder {
+public class ObClientConnHolder extends AbstractConnHolder {
 	private final String jdbcUrl;
 	private final String userName;
 	private final String password;

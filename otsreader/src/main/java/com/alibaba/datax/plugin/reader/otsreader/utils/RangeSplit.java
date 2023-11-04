@@ -1,17 +1,15 @@
 package com.alibaba.datax.plugin.reader.otsreader.utils;
 
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
 import com.alibaba.datax.plugin.reader.otsreader.model.OTSPrimaryKeyColumn;
 import com.alibaba.datax.plugin.reader.otsreader.model.OTSRange;
-import com.aliyun.openservices.ots.model.PrimaryKeyType;
-import com.aliyun.openservices.ots.model.PrimaryKeyValue;
-import com.aliyun.openservices.ots.model.RowPrimaryKey;
-import com.aliyun.openservices.ots.model.TableMeta;
+import com.alicloud.openservices.tablestore.model.PrimaryKeyColumn;
+import com.alicloud.openservices.tablestore.model.PrimaryKeyType;
+import com.alicloud.openservices.tablestore.model.PrimaryKeyValue;
+import com.alicloud.openservices.tablestore.model.TableMeta;
+
+
+import java.math.BigInteger;
+import java.util.*;
 
 /**
  * 主要提供对范围的解析
@@ -35,8 +33,8 @@ public class RangeSplit {
      * 
      * 注意：该方法只支持begin小于end
      * 
-     * @param beginStr
-     * @param endStr
+     * @param begin
+     * @param end
      * @param count
      * @return
      */
@@ -88,7 +86,6 @@ public class RangeSplit {
      * @return
      */
     public static List<String> splitStringRange(String begin, String end, int count) {
-
         if (count <= 1) {
             throw new IllegalArgumentException("Input count <= 1 .");
         }
@@ -136,15 +133,14 @@ public class RangeSplit {
         }
 
         results.add(end);
-
         return results;
     }
     
     /**
      * begin 一定要小于 end
-     * @param begin
-     * @param end
-     * @param count
+     * @param bigBegin
+     * @param bigEnd
+     * @param bigCount
      * @return
      */
     private static List<Long> splitIntegerRange(BigInteger bigBegin, BigInteger bigEnd, BigInteger bigCount) {
@@ -228,20 +224,31 @@ public class RangeSplit {
     }
 
     public static List<OTSRange> rangeSplitByCount(TableMeta meta,
-            RowPrimaryKey begin, RowPrimaryKey end, int count) {
+            List<PrimaryKeyColumn> begin, List<PrimaryKeyColumn> end, int count) {
         List<OTSRange> results = new ArrayList<OTSRange>();
 
         OTSPrimaryKeyColumn partitionKey = Common.getPartitionKey(meta);
 
-        PrimaryKeyValue beginPartitionKey = begin.getPrimaryKey().get(
+        Map<String, PrimaryKeyValue> beginMap = new HashMap<>();
+        Map<String, PrimaryKeyValue> endMap = new HashMap<>();
+
+        for(PrimaryKeyColumn primaryKeyColumn : begin){
+            beginMap.put(primaryKeyColumn.getName(), primaryKeyColumn.getValue());
+        }
+        for(PrimaryKeyColumn primaryKeyColumn : end){
+            endMap.put(primaryKeyColumn.getName(), primaryKeyColumn.getValue());
+        }
+
+
+        PrimaryKeyValue beginPartitionKey = beginMap.get(
                 partitionKey.getName());
-        PrimaryKeyValue endPartitionKey = end.getPrimaryKey().get(
+        PrimaryKeyValue endPartitionKey = endMap.get(
                 partitionKey.getName());
 
         // 第一，先对PartitionKey列进行拆分
 
         List<PrimaryKeyValue> ranges = RangeSplit.splitRangeByPrimaryKeyType(
-                partitionKey.getType(), beginPartitionKey, endPartitionKey,
+                partitionKey.getType(true), beginPartitionKey, endPartitionKey,
                 count);
 
         if (ranges.isEmpty()) {
@@ -250,130 +257,44 @@ public class RangeSplit {
 
         int size = ranges.size();
         for (int i = 0; i < size - 1; i++) {
-            RowPrimaryKey bPk = new RowPrimaryKey();
-            RowPrimaryKey ePk = new RowPrimaryKey();
+            List<PrimaryKeyColumn> bPk = new ArrayList<>();
+            List<PrimaryKeyColumn> ePk = new ArrayList<>();
 
-            bPk.addPrimaryKeyColumn(partitionKey.getName(), ranges.get(i));
-            ePk.addPrimaryKeyColumn(partitionKey.getName(), ranges.get(i + 1));
+            bPk.add(new PrimaryKeyColumn(partitionKey.getName(), ranges.get(i)));
+            ePk.add(new PrimaryKeyColumn(partitionKey.getName(), ranges.get(i + 1)));
 
-            results.add(new OTSRange(bPk, ePk));
+            OTSRange range = new OTSRange();
+            range.setBegin(bPk);
+            range.setEnd(ePk);
+            results.add(range);
         }
 
         // 第二，填充非PartitionKey的ParimaryKey列
         // 注意：在填充过程中，需要使用用户给定的Begin和End来替换切分出来的第一个Range
         // 的Begin和最后一个Range的End
 
-        List<String> keys = new ArrayList<String>(meta.getPrimaryKey().size());
-        keys.addAll(meta.getPrimaryKey().keySet());
+        List<String> keys = new ArrayList<String>(meta.getPrimaryKeyMap().size());
+        keys.addAll(meta.getPrimaryKeyMap().keySet());
 
         for (int i = 0; i < results.size(); i++) {
             for (int j = 1; j < keys.size(); j++) {
                 OTSRange c = results.get(i);
-                RowPrimaryKey beginPK = c.getBegin();
-                RowPrimaryKey endPK = c.getEnd();
+                List<PrimaryKeyColumn> beginPK = c.getBegin();
+                List<PrimaryKeyColumn> endPK = c.getEnd();
                 String key = keys.get(j);
                 if (i == 0) { // 第一行
-                    beginPK.addPrimaryKeyColumn(key,
-                            begin.getPrimaryKey().get(key));
-                    endPK.addPrimaryKeyColumn(key, PrimaryKeyValue.INF_MIN);
+                    beginPK.add(new PrimaryKeyColumn(key,
+                            beginMap.get(key)));
+                    endPK.add(new PrimaryKeyColumn(key, PrimaryKeyValue.INF_MIN));
                 } else if (i == results.size() - 1) {// 最后一行
-                    beginPK.addPrimaryKeyColumn(key, PrimaryKeyValue.INF_MIN);
-                    endPK.addPrimaryKeyColumn(key, end.getPrimaryKey().get(key));
+                    beginPK.add(new PrimaryKeyColumn(key, PrimaryKeyValue.INF_MIN));
+                    endPK.add(new PrimaryKeyColumn(key, endMap.get(key)));
                 } else {
-                    beginPK.addPrimaryKeyColumn(key, PrimaryKeyValue.INF_MIN);
-                    endPK.addPrimaryKeyColumn(key, PrimaryKeyValue.INF_MIN);
+                    beginPK.add(new PrimaryKeyColumn(key, PrimaryKeyValue.INF_MIN));
+                    endPK.add(new PrimaryKeyColumn(key, PrimaryKeyValue.INF_MIN));
                 }
             }
         }
-        return results;
-    }
-
-    private static List<PrimaryKeyValue> getCompletePK(int num,
-            PrimaryKeyValue value) {
-        List<PrimaryKeyValue> values = new ArrayList<PrimaryKeyValue>();
-        for (int j = 0; j < num; j++) {
-            if (j == 0) {
-                values.add(value);
-            } else {
-                // 这里在填充PK时，系统需要选择特定的值填充于此
-                // 系统默认填充INF_MIN
-                values.add(PrimaryKeyValue.INF_MIN);
-            }
-        }
-        return values;
-    }
-
-    /**
-     * 根据输入的范围begin和end，从target中取得对应的point
-     * @param begin
-     * @param end
-     * @param target
-     * @return
-     */
-    public static List<PrimaryKeyValue> getSplitPoint(PrimaryKeyValue begin, PrimaryKeyValue end, List<PrimaryKeyValue> target) {
-        List<PrimaryKeyValue> result = new ArrayList<PrimaryKeyValue>();
-
-        int cmp = Common.primaryKeyValueCmp(begin, end); 
-
-        if (cmp == 0) {
-            return result;
-        }
-
-        result.add(begin);
-
-        Comparator<PrimaryKeyValue> comparator = new Comparator<PrimaryKeyValue>(){
-            public int compare(PrimaryKeyValue arg0, PrimaryKeyValue arg1) {
-                return Common.primaryKeyValueCmp(arg0, arg1);
-            }
-        };
-
-        if (cmp > 0) { // 如果是逆序，则 reverse Comparator
-            comparator = Collections.reverseOrder(comparator);
-        }
-
-        Collections.sort(target, comparator); 
-
-        for (PrimaryKeyValue value:target) {
-            if (comparator.compare(value, begin) > 0 && comparator.compare(value, end) < 0) {
-                result.add(value);
-            }
-        }
-        result.add(end);
-
-        return result;
-    }
-
-    public static List<OTSRange> rangeSplitByPoint(TableMeta meta, RowPrimaryKey beginPK, RowPrimaryKey endPK,
-            List<PrimaryKeyValue> splits) {
-        
-        List<OTSRange> results = new ArrayList<OTSRange>();
-
-        int pkCount = meta.getPrimaryKey().size();
-
-        String partName = Common.getPartitionKey(meta).getName();
-        PrimaryKeyValue begin = beginPK.getPrimaryKey().get(partName);
-        PrimaryKeyValue end = endPK.getPrimaryKey().get(partName);
-
-        List<PrimaryKeyValue> newSplits = getSplitPoint(begin, end, splits);
-
-        if (newSplits.isEmpty()) {
-            return results;
-        }
-
-        for (int i = 0; i < newSplits.size() - 1; i++) {
-            OTSRange item = new OTSRange(
-                    ParamChecker.checkInputPrimaryKeyAndGet(meta,
-                            getCompletePK(pkCount, newSplits.get(i))),
-                            ParamChecker.checkInputPrimaryKeyAndGet(meta,
-                                    getCompletePK(pkCount, newSplits.get(i + 1))));
-            results.add(item);
-        }
-        // replace first and last
-        OTSRange first = results.get(0);
-        OTSRange last = results.get(results.size() - 1);
-
-        first.setBegin(beginPK);
-        last.setEnd(endPK);
         return results;
     }
 }

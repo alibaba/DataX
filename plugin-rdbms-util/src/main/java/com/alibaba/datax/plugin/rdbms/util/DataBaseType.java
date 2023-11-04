@@ -25,6 +25,7 @@ public enum DataBaseType {
     Oscar("oscar", "com.oscar.Driver"),
     OceanBase("oceanbase", "com.alipay.oceanbase.jdbc.Driver"),
     StarRocks("starrocks", "com.mysql.jdbc.Driver"),
+    GaussDB("gaussdb", "org.opengauss.Driver"),
     Databend("databend", "com.databend.jdbc.DatabendDriver");
 
     private String typeName;
@@ -70,6 +71,8 @@ public enum DataBaseType {
             case Oscar:
                 break;
             case StarRocks:
+                break;
+            case GaussDB:
                 break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type.");
@@ -132,6 +135,8 @@ public enum DataBaseType {
                     result = jdbc + "?" + suffix;
                 }
                 break;
+            case GaussDB:
+                break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type.");
         }
@@ -159,6 +164,8 @@ public enum DataBaseType {
             case KingbaseES:
             case Oscar:
                 break;
+            case GaussDB:
+                break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type.");
         }
@@ -183,6 +190,8 @@ public enum DataBaseType {
             case PostgreSQL:
             case KingbaseES:
             case Oscar:
+                break;
+            case GaussDB:
                 break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type");
@@ -209,6 +218,8 @@ public enum DataBaseType {
             case KingbaseES:
                 break;
             case Oscar:
+                break;
+            case GaussDB:
                 break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type");

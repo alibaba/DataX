@@ -77,8 +77,8 @@ public class VMInfo {
         garbageCollectorMXBeanList = java.lang.management.ManagementFactory.getGarbageCollectorMXBeans();
         memoryPoolMXBeanList = java.lang.management.ManagementFactory.getMemoryPoolMXBeans();
 
-        osInfo = runtimeMXBean.getVmVendor() + " " + runtimeMXBean.getSpecVersion() + " " + runtimeMXBean.getVmVersion();
-        jvmInfo = osMXBean.getName() + " " + osMXBean.getArch() + " " + osMXBean.getVersion();
+        jvmInfo = runtimeMXBean.getVmVendor() + " " + runtimeMXBean.getSpecVersion() + " " + runtimeMXBean.getVmVersion();
+        osInfo = osMXBean.getName() + " " + osMXBean.getArch() + " " + osMXBean.getVersion();
         totalProcessorCount = osMXBean.getAvailableProcessors();
 
         //构建startPhyOSStatus

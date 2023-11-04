@@ -6,6 +6,7 @@ public interface Config {
 
 	double DEFAULT_MEMSTORE_THRESHOLD = 0.9d;
 
+	double DEFAULT_SLOW_MEMSTORE_THRESHOLD = 0.75d;
 	String MEMSTORE_CHECK_INTERVAL_SECOND = "memstoreCheckIntervalSecond";
 
 	long DEFAULT_MEMSTORE_CHECK_INTERVAL_SECOND = 30;
