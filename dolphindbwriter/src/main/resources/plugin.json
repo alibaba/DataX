@@ -1,0 +1,7 @@
+{
+    "name": "dolphindbwriter",
+    "class": "com.alibaba.datax.plugin.writer.dolphindbwriter.DolphinDbWriter",
+    "description": "useScene: prod. mechanism: Jdbc connection using the database, execute tableInsert.",
+    "developer": "DolphinDB"
+}
+

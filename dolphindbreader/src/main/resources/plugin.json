@@ -1,0 +1,6 @@
+{
+    "name": "dolphindbreader",
+    "class": "com.alibaba.datax.plugin.reader.dolphindbreader.DolphinDBReader",
+    "description": "useScene: prod. mechanism: Jdbc connection using the database, execute select sql, retrieve data from the ResultSet.",
+    "developer": "DolphinDB"
+}

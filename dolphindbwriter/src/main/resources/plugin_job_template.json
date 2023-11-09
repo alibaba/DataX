@@ -1,0 +1,29 @@
+{
+  "name": "dolphindbwriter",
+  "parameter": {
+    "userId": "admin",
+    "pwd": "123456",
+    "host": "saiying.imwork.net",
+    "port": 148,
+    "dbPath": "dfs://ddb",
+    "tableName": "config",
+    "table": [
+      {
+        "type": "DT_INT",
+        "name": "configIdx"
+      },
+      {
+        "type": "DT_STRING",
+        "name": "name"
+      },
+      {
+        "type": "DT_STRING",
+        "name": "value"
+      }
+    ],
+    "saveFunctionName": "",
+    "savePartitionDataRange": "",
+    "saveFunctionDef": ""
+  }
+}
+
