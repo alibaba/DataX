@@ -1,6 +1,7 @@
 {
     "name": "postgresqlreader",
     "parameter": {
+        "column": [],
         "username": "",
         "password": "",
         "connection": [
