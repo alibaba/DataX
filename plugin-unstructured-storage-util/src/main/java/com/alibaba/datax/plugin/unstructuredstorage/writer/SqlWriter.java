@@ -15,13 +15,15 @@ public class SqlWriter implements UnstructuredWriter {
     private String quoteChar;
     private String lineSeparator;
     private String tableName;
+    private String nullFormat;
     private StringBuilder insertPrefix;
 
-    public SqlWriter(Writer writer, String quoteChar, String tableName, String lineSeparator, List<String> columnNames) {
+    public SqlWriter(Writer writer, String quoteChar, String tableName, String lineSeparator, List<String> columnNames, String nullFormat) {
         this.sqlWriter = writer;
         this.quoteChar = quoteChar;
         this.lineSeparator = lineSeparator;
         this.tableName = tableName;
+        this.nullFormat = nullFormat;
         buildInsertPrefix(columnNames);
     }
 
@@ -33,7 +35,12 @@ public class SqlWriter implements UnstructuredWriter {
         }
 
         StringBuilder sqlPatten = new StringBuilder(4096).append(insertPrefix);
-        sqlPatten.append(splitedRows.stream().map(e -> "'" + DataXCsvWriter.replace(e, "'", "''") + "'").collect(Collectors.joining(",")));
+        sqlPatten.append(splitedRows.stream().map(e -> {
+            if (nullFormat.equals(e)) {
+                return "NULL";
+            }
+            return "'" + DataXCsvWriter.replace(e, "'", "''") + "'";
+        }).collect(Collectors.joining(",")));
         sqlPatten.append(");").append(lineSeparator);
         this.sqlWriter.write(sqlPatten.toString());
     }
@@ -48,9 +55,10 @@ public class SqlWriter implements UnstructuredWriter {
             sb.append(quoteChar).append(columnName).append(quoteChar);
         }
 
-        int capacity = 16 + tableName.length() + sb.length();
+        int capacity = 18 + tableName.length() + sb.length();
         this.insertPrefix = new StringBuilder(capacity);
-        this.insertPrefix.append("INSERT INTO ").append(tableName).append(" (").append(sb).append(")").append(" VALUES(");
+        this.insertPrefix
+                .append("INSERT INTO ").append("`").append(tableName).append("`").append(" (").append(sb).append(")").append(" VALUES(");
     }
 
     public void appendCommit() throws IOException {
