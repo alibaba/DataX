@@ -58,7 +58,7 @@ public class SqlWriter implements UnstructuredWriter {
         int capacity = 18 + tableName.length() + sb.length();
         this.insertPrefix = new StringBuilder(capacity);
         this.insertPrefix
-                .append("INSERT INTO ").append("`").append(tableName).append("`").append(" (").append(sb).append(")").append(" VALUES(");
+                .append("INSERT INTO ").append(quoteChar).append(tableName).append(quoteChar).append(" (").append(sb).append(")").append(" VALUES(");
     }
 
     public void appendCommit() throws IOException {
