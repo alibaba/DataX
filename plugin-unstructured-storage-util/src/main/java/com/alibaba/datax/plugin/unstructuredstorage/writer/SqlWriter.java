@@ -22,7 +22,7 @@ public class SqlWriter implements UnstructuredWriter {
         this.sqlWriter = writer;
         this.quoteChar = quoteChar;
         this.lineSeparator = lineSeparator;
-        this.tableName = tableName;
+        this.tableName = quoteChar + tableName + quoteChar;
         this.nullFormat = nullFormat;
         buildInsertPrefix(columnNames);
     }
@@ -55,10 +55,9 @@ public class SqlWriter implements UnstructuredWriter {
             sb.append(quoteChar).append(columnName).append(quoteChar);
         }
 
-        int capacity = 18 + tableName.length() + sb.length();
+        int capacity = 16 + tableName.length() + sb.length();
         this.insertPrefix = new StringBuilder(capacity);
-        this.insertPrefix
-                .append("INSERT INTO ").append(quoteChar).append(tableName).append(quoteChar).append(" (").append(sb).append(")").append(" VALUES(");
+        this.insertPrefix.append("INSERT INTO ").append(tableName).append(" (").append(sb).append(")").append(" VALUES(");
     }
 
     public void appendCommit() throws IOException {
