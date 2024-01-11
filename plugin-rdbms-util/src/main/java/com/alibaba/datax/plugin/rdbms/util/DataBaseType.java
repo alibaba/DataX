@@ -26,7 +26,8 @@ public enum DataBaseType {
     OceanBase("oceanbase", "com.alipay.oceanbase.jdbc.Driver"),
     StarRocks("starrocks", "com.mysql.jdbc.Driver"),
     GaussDB("gaussdb", "org.opengauss.Driver"),
-    Databend("databend", "com.databend.jdbc.DatabendDriver");
+    Databend("databend", "com.databend.jdbc.DatabendDriver"),
+    Xugu("xugu","com.xugu.cloudjdbc.Driver");
 
     private String typeName;
     private String driverClassName;
@@ -166,6 +167,11 @@ public enum DataBaseType {
                 break;
             case GaussDB:
                 break;
+            case Xugu:
+                if (splitPk.length() >= 2 && splitPk.startsWith("`") && splitPk.endsWith("`")) {
+                    result = splitPk.substring(1, splitPk.length() - 1).toLowerCase();
+                }
+                break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type.");
         }
@@ -192,6 +198,8 @@ public enum DataBaseType {
             case Oscar:
                 break;
             case GaussDB:
+                break;
+            case Xugu:
                 break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type");
@@ -221,6 +229,8 @@ public enum DataBaseType {
                 break;
             case GaussDB:
                 break;
+            case Xugu:
+                break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type");
         }
@@ -230,6 +240,7 @@ public enum DataBaseType {
 
     private static Pattern mysqlPattern = Pattern.compile("jdbc:mysql://(.+):\\d+/.+");
     private static Pattern oraclePattern = Pattern.compile("jdbc:oracle:thin:@(.+):\\d+:.+");
+    private static Pattern xuguPattern = Pattern.compile("jdbc:xugu://(.+):\\d+/.+");
 
     /**
      * 注意：目前只实现了从 mysql/oracle 中识别出ip 信息.未识别到则返回 null.
@@ -242,6 +253,10 @@ public enum DataBaseType {
         Matcher oracle = oraclePattern.matcher(jdbcUrl);
         if (oracle.matches()) {
             return oracle.group(1);
+        }
+        Matcher xugu = xuguPattern.matcher(jdbcUrl);
+        if (xugu.matches()) {
+            return xugu.group(1);
         }
         return null;
     }
