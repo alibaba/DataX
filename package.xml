@@ -75,6 +75,13 @@
             <outputDirectory>datax</outputDirectory>
         </fileSet>
         <fileSet>
+            <directory>xugureader/target/datax/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>datax</outputDirectory>
+        </fileSet>
+        <fileSet>
             <directory>rdbmsreader/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
@@ -352,6 +359,13 @@
         </fileSet>
         <fileSet>
             <directory>kingbaseeswriter/target/datax/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>datax</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>xuguwriter/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
             </includes>

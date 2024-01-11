@@ -1,0 +1,14 @@
+{
+    "name": "xugureader",
+    "parameter": {
+        "username": "",
+        "password": "",
+        "column": [],
+        "connection": [
+            {
+                "table": [],
+                "jdbcUrl": []
+            }
+        ]
+    }
+}
