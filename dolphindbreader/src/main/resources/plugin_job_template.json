@@ -1,0 +1,23 @@
+{
+  "name": "dolphindbreader",
+  "parameter": {
+    "userId": "admin",
+    "pwd": "123456",
+    "host": "192.168.1.14",
+    "port": 8900,
+    "dbPath": "dfs://testddb",
+    "tableName": "ps",
+    "table": [
+      {
+        "name": "id"
+      },
+      {
+        "name": "name"
+      },
+      {
+        "name": "age"
+      }
+    ]
+  }
+}
+
