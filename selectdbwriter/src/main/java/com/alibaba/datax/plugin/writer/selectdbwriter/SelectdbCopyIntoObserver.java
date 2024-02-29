@@ -188,15 +188,18 @@ public class SelectdbCopyIntoObserver {
             if(success){
                 LOG.info("commit success cost {}ms, response is {}", System.currentTimeMillis() - start, loadResult);
             }else{
-                throw new SelectdbWriterException("commit fail",true);
+                LOG.error("commit error with status {}, reason {}, response {}", statusCode, reasonPhrase, loadResult);
+                String copyErrMsg = String.format("commit error, status: %d, reason: %s, response: %s, copySQL: %s",
+                        statusCode, reasonPhrase, loadResult, copySQL);
+                throw new SelectdbWriterException(copyErrMsg,true);
             }
         }
     }
 
     public boolean handleCommitResponse(String loadResult) throws IOException {
-        BaseResponse<CopyIntoResp> baseResponse = OBJECT_MAPPER.readValue(loadResult, new TypeReference<BaseResponse<CopyIntoResp>>(){});
+        BaseResponse baseResponse = OBJECT_MAPPER.readValue(loadResult, new TypeReference<BaseResponse>(){});
         if(baseResponse.getCode() == SUCCESS){
-            CopyIntoResp dataResp = baseResponse.getData();
+            CopyIntoResp dataResp = OBJECT_MAPPER.convertValue(baseResponse.getData(), CopyIntoResp.class);
             if(FAIL.equals(dataResp.getDataCode())){
                 LOG.error("copy into execute failed, reason:{}", loadResult);
                 return false;
