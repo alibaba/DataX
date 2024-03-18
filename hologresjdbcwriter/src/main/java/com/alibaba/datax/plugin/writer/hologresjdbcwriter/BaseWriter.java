@@ -167,7 +167,7 @@ public class BaseWriter {
 				if (null != renderedPreSqls && !renderedPreSqls.isEmpty()) {
 					// 说明有 preSql 配置，则此处删除掉
 					originalConfig.remove(Key.PRE_SQL);
-					String tempJdbcUrl = jdbcUrl.replace("postgresql", "hologres");
+					String tempJdbcUrl = jdbcUrl.replace("jdbc:postgresql://", "jdbc:hologres://");
 					try (Connection conn = DriverManager.getConnection(
 							tempJdbcUrl, username, password)) {
 						LOG.info("Begin to execute preSqls:[{}]. context info:{}.",
@@ -207,7 +207,7 @@ public class BaseWriter {
 				if (null != renderedPostSqls && !renderedPostSqls.isEmpty()) {
 					// 说明有 postSql 配置，则此处删除掉
 					originalConfig.remove(Key.POST_SQL);
-					String tempJdbcUrl = jdbcUrl.replace("postgresql", "hologres");
+					String tempJdbcUrl = jdbcUrl.replace("jdbc:postgresql://", "jdbc:hologres://");
 					try (Connection conn = DriverManager.getConnection(
 							tempJdbcUrl, username, password)) {
 						LOG.info(
