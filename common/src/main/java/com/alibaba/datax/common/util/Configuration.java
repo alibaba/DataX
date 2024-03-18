@@ -1047,7 +1047,7 @@ public class Configuration {
 					"系统编程错误, 该异常代表系统编程错误, 请联系DataX开发团队!.");
 		}
 
-		for (final String each : StringUtils.split(".")) {
+		for (final String each : StringUtils.split(path, ".")) {
 			if (StringUtils.isBlank(each)) {
 				throw new IllegalArgumentException(String.format(
 						"系统编程错误, 路径[%s]不合法, 路径层次之间不能出现空白字符 .", path));
