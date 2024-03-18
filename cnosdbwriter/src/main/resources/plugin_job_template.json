@@ -1,0 +1,21 @@
+{
+  "name": "cnosdbwriter",
+  "parameter": {
+    "cnosdbWriteAPI": "http://127.0.0.1:8902/api/v1/write",
+    "tenant": "cnosdb",
+    "database": "public",
+    "username": "root",
+    "password": "root",
+    "batchSize": 200,
+    "format": "datax",
+    "table": "cpu",
+    "tags": {
+      "host": 1
+    },
+    "fields": {
+      "usage": 2
+    },
+    "timeIndex": 0,
+    "precision": "ms"
+  }
+}
