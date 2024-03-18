@@ -66,7 +66,7 @@ public class GroovyTransformer extends Transformer {
 
 
     private String getGroovyRule(String expression, List<String> extraPackagesStrList) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         if(extraPackagesStrList!=null) {
             for (String extraPackagesStr : extraPackagesStrList) {
                 if (StringUtils.isNotEmpty(extraPackagesStr)) {
