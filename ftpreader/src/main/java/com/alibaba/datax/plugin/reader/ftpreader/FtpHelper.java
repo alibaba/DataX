@@ -103,5 +103,16 @@ public abstract class FtpHelper {
 		}
 		return sourceAllFiles;
 	}
+	
+	/**
+	 *
+	 * @Title: deleteFile
+	 * @Description: 删除相应的文件
+	 * @param @param filePath 文件路径
+	 * @param @return
+	 * @return void
+	 * @throws
+	 */
+	public abstract void deleteFile(String filePath);
 
 }
