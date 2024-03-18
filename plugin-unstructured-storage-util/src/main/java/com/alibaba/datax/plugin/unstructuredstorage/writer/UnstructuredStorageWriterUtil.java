@@ -283,7 +283,8 @@ public class UnstructuredStorageWriterUtil {
             String lineSeparator = config.getString(Key.LINE_DELIMITER, IOUtils.LINE_SEPARATOR);
             List<String> headers = config.getList(Key.HEADER, String.class);
             Preconditions.checkArgument(CollectionUtils.isNotEmpty(headers), "column names are empty");
-            unstructuredWriter = new SqlWriter(writer, quoteChar, tableName, lineSeparator, headers);
+            String nullFormat = config.getString(Key.NULL_FORMAT, Constant.DEFAULT_NULL_FORMAT);
+            unstructuredWriter = new SqlWriter(writer, quoteChar, tableName, lineSeparator, headers, nullFormat);
         }
 
         return unstructuredWriter;
