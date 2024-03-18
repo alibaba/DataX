@@ -265,21 +265,9 @@ public class HdfsWriter extends Writer {
         }
 
         private String buildFilePath() {
-            boolean isEndWithSeparator = false;
-            switch (IOUtils.DIR_SEPARATOR) {
-                case IOUtils.DIR_SEPARATOR_UNIX:
-                    isEndWithSeparator = this.path.endsWith(String
-                            .valueOf(IOUtils.DIR_SEPARATOR));
-                    break;
-                case IOUtils.DIR_SEPARATOR_WINDOWS:
-                    isEndWithSeparator = this.path.endsWith(String
-                            .valueOf(IOUtils.DIR_SEPARATOR_WINDOWS));
-                    break;
-                default:
-                    break;
-            }
+            boolean isEndWithSeparator = this.path.endsWith(String.valueOf(IOUtils.DIR_SEPARATOR_UNIX));
             if (!isEndWithSeparator) {
-                this.path = this.path + IOUtils.DIR_SEPARATOR;
+                this.path = this.path + IOUtils.DIR_SEPARATOR_UNIX;
             }
             return this.path;
         }
@@ -291,38 +279,18 @@ public class HdfsWriter extends Writer {
          */
         private String buildTmpFilePath(String userPath) {
             String tmpFilePath;
-            boolean isEndWithSeparator = false;
-            switch (IOUtils.DIR_SEPARATOR) {
-                case IOUtils.DIR_SEPARATOR_UNIX:
-                    isEndWithSeparator = userPath.endsWith(String
-                            .valueOf(IOUtils.DIR_SEPARATOR));
-                    break;
-                case IOUtils.DIR_SEPARATOR_WINDOWS:
-                    isEndWithSeparator = userPath.endsWith(String
-                            .valueOf(IOUtils.DIR_SEPARATOR_WINDOWS));
-                    break;
-                default:
-                    break;
-            }
+            boolean isEndWithSeparator = userPath.endsWith(String.valueOf(IOUtils.DIR_SEPARATOR_UNIX));
             String tmpSuffix;
-            tmpSuffix = UUID.randomUUID().toString().replace('-', '_');
-            if (!isEndWithSeparator) {
-                tmpFilePath = String.format("%s__%s%s", userPath, tmpSuffix, IOUtils.DIR_SEPARATOR);
-            }else if("/".equals(userPath)){
-                tmpFilePath = String.format("%s__%s%s", userPath, tmpSuffix, IOUtils.DIR_SEPARATOR);
-            }else{
-                tmpFilePath = String.format("%s__%s%s", userPath.substring(0,userPath.length()-1), tmpSuffix, IOUtils.DIR_SEPARATOR);
-            }
-            while(hdfsHelper.isPathexists(tmpFilePath)){
+            do {
                 tmpSuffix = UUID.randomUUID().toString().replace('-', '_');
-                if (!isEndWithSeparator) {
-                    tmpFilePath = String.format("%s__%s%s", userPath, tmpSuffix, IOUtils.DIR_SEPARATOR);
-                }else if("/".equals(userPath)){
-                    tmpFilePath = String.format("%s__%s%s", userPath, tmpSuffix, IOUtils.DIR_SEPARATOR);
-                }else{
-                    tmpFilePath = String.format("%s__%s%s", userPath.substring(0,userPath.length()-1), tmpSuffix, IOUtils.DIR_SEPARATOR);
+                if (!isEndWithSeparator || String.valueOf(IOUtils.DIR_SEPARATOR_UNIX).equals(userPath)) {
+                    tmpFilePath = String.format("%s__%s%s", userPath, tmpSuffix, IOUtils.DIR_SEPARATOR_UNIX);
+                } else {
+                    tmpFilePath = String.format("%s__%s%s", userPath.substring(0,userPath.length()-1), tmpSuffix,
+                            IOUtils.DIR_SEPARATOR_UNIX);
                 }
-            }
+            } while(hdfsHelper.isPathexists(tmpFilePath));
+
             return tmpFilePath;
         }
         public void unitizeParquetConfig(Configuration writerSliceConfig) {
