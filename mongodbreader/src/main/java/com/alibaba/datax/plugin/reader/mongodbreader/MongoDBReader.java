@@ -162,6 +162,8 @@ public class MongoDBReader extends Reader {
                         record.addColumn(new LongColumn((Integer) tempCol));
                     }else if (tempCol instanceof Long) {
                         record.addColumn(new LongColumn((Long) tempCol));
+                    }else if (tempCol instanceof Document) {//兼容document数据类型
+                        record.addColumn(new StringColumn(((Document) tempCol).toJson()));
                     } else {
                         if(KeyConstant.isArrayType(column.getString(KeyConstant.COLUMN_TYPE))) {
                             String splitter = column.getString(KeyConstant.COLUMN_SPLITTER);
