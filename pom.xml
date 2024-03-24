@@ -132,6 +132,7 @@
         <module>gaussdbreader</module>
         <module>gaussdbwriter</module>
         <module>datax-example</module>
+        <module>paimonwrite</module>
 
     </modules>
 
