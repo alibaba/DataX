@@ -4,6 +4,7 @@ import com.alibaba.datax.plugin.rdbms.reader.util.ObVersion;
 import com.alibaba.datax.plugin.rdbms.util.DBUtil;
 import com.alibaba.datax.plugin.rdbms.writer.CommonRdbmsWriter.Task;
 import com.alibaba.datax.plugin.writer.oceanbasev10writer.Config;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.*;
+import static com.alibaba.datax.plugin.writer.oceanbasev10writer.Config.DEFAULT_SLOW_MEMSTORE_THRESHOLD;
 
 public class ObWriterUtils {
 
@@ -20,6 +22,9 @@ public class ObWriterUtils {
 
 	private static String CHECK_MEMSTORE = "select 1 from %s.gv$memstore t where t.total>t.mem_limit * ?";
 	private static final String CHECK_MEMSTORE_4_0 = "select 1 from %s.gv$ob_memstore t where t.MEMSTORE_USED>t.MEMSTORE_LIMIT * ?";
+
+	private static String CHECK_MEMSTORE_RATIO = "select min(t.total/t.mem_limit) from %s.gv$memstore t";
+	private static final String CHECK_MEMSTORE_RATIO_4_0 = "select min(t.MEMSTORE_USED/t.MEMSTORE_LIMIT) from %s.gv$ob_memstore t";
 
 	private static Set<String> databaseKeywords;
 	private static String compatibleMode = null;
@@ -81,6 +86,30 @@ public class ObWriterUtils {
 		return result;
 	}
 
+	public static double queryMemUsedRatio (Connection conn) {
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		double result = 0;
+		try {
+			String sysDbName = "oceanbase";
+			if (isOracleMode()) {
+				sysDbName = "sys";
+			}
+			ps = conn.prepareStatement(String.format(getMemStoreRatioSql(), sysDbName));
+			rs = ps.executeQuery();
+			// 只要有满足条件的,则表示当前租户 有个机器的memstore即将满
+			if (rs.next()) {
+				result = rs.getDouble(1);
+			}
+		} catch (Throwable e) {
+			LOG.warn("Check memstore fail, reason: {}. Use a random value instead.", e.getMessage());
+			result = RandomUtils.nextDouble(0.3D, DEFAULT_SLOW_MEMSTORE_THRESHOLD + 0.2D);
+		} finally {
+			//do not need to close the statment in ob1.0
+		}
+		return result;
+	}
+
 	public static boolean isOracleMode(){
 		return (compatibleMode.equals(Config.OB_COMPATIBLE_MODE_ORACLE));
 	}
@@ -90,6 +119,14 @@ public class ObWriterUtils {
 			return CHECK_MEMSTORE_4_0;
 		} else {
 			return CHECK_MEMSTORE;
+		}
+	}
+
+	private static String getMemStoreRatioSql() {
+		if (ObVersion.valueOf(obVersion).compareTo(ObVersion.V4000) >= 0) {
+			return CHECK_MEMSTORE_RATIO_4_0;
+		} else {
+			return CHECK_MEMSTORE_RATIO;
 		}
 	}
 
@@ -181,7 +218,7 @@ public class ObWriterUtils {
 				}
 				List<String> s = uniqueKeys.get(keyName);
 				if (s == null) {
-					s = new ArrayList();
+					s = new ArrayList<>();
 					uniqueKeys.put(keyName, s);
 				}
 				s.add(columnName);
@@ -253,7 +290,7 @@ public class ObWriterUtils {
 				String columnName = StringUtils.upperCase(rs.getString("Column_name"));
 				Set<String> s = uniqueKeys.get(keyName);
 				if (s == null) {
-					s = new HashSet();
+					s = new HashSet<>();
 					uniqueKeys.put(keyName, s);
 				}
 				s.add(columnName);
@@ -415,7 +452,7 @@ public class ObWriterUtils {
 
 	private static Set<Integer> white = new HashSet<Integer>();
 	static {
-		int[] errList = { 1213, 1047, 1041, 1094, 4000, 4012 };
+		int[] errList = { 1213, 1047, 1041, 1094, 4000, 4012, 4013 };
 		for (int err : errList) {
 			white.add(err);
 		}
@@ -445,4 +482,26 @@ public class ObWriterUtils {
 		t.setDaemon(true);
 		t.start();
 	}
+
+	/**
+	 *
+	 */
+	public static enum LoadMode {
+
+		/**
+		 * Fast insert
+		 */
+		FAST,
+
+		/**
+		 * Insert slowly
+		 */
+		SLOW,
+
+		/**
+		 * Pause to insert
+		 */
+		PAUSE
+	}
+
 }

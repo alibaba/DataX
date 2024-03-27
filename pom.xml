@@ -81,8 +81,7 @@
         <module>datahubreader</module>
         <module>starrocksreader</module>
         <module>sybasereader</module>
-
-
+        <module>dorisreader</module>
         <!-- writer -->
         <module>mysqlwriter</module>
         <module>starrockswriter</module>
@@ -130,7 +129,10 @@
         <!-- common support module -->
         <module>plugin-rdbms-util</module>
         <module>plugin-unstructured-storage-util</module>
-       
+        <module>gaussdbreader</module>
+        <module>gaussdbwriter</module>
+        <module>datax-example</module>
+
     </modules>
 
     <dependencyManagement>

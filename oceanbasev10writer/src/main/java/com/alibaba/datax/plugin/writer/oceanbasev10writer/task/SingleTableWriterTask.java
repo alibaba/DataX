@@ -12,7 +12,7 @@ import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
 import com.alibaba.datax.plugin.rdbms.writer.CommonRdbmsWriter;
 import com.alibaba.datax.plugin.rdbms.writer.Key;
 import com.alibaba.datax.plugin.writer.oceanbasev10writer.Config;
-import com.alibaba.datax.plugin.writer.oceanbasev10writer.ext.ConnHolder;
+import com.alibaba.datax.plugin.writer.oceanbasev10writer.ext.AbstractConnHolder;
 import com.alibaba.datax.plugin.writer.oceanbasev10writer.ext.ObClientConnHolder;
 import com.alibaba.datax.plugin.writer.oceanbasev10writer.util.ObWriterUtils;
 
@@ -30,7 +30,7 @@ public class SingleTableWriterTask extends CommonRdbmsWriter.Task {
 	// 失败重试次数
 	private int failTryCount = Config.DEFAULT_FAIL_TRY_COUNT;
 
-	private ConnHolder connHolder;
+	private AbstractConnHolder connHolder;
 	private String obWriteMode = "update";
 	private boolean isOracleCompatibleMode = false;
 	private String obUpdateColumns = null;

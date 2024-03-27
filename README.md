@@ -26,7 +26,7 @@ DataX本身作为数据同步框架，将不同数据源的同步抽象为从源
 
 # Quick Start
 
-##### Download [DataX下载地址](https://datax-opensource.oss-cn-hangzhou.aliyuncs.com/202303/datax.tar.gz)
+##### Download [DataX下载地址](https://datax-opensource.oss-cn-hangzhou.aliyuncs.com/202308/datax.tar.gz)
 
 
 ##### 请点击：[Quick Start](https://github.com/alibaba/DataX/blob/master/userGuid.md)
@@ -100,7 +100,7 @@ DataX目前已经有了比较全面的插件体系，主流的RDBMS数据库、N
     - 整库迁移：https://help.aliyun.com/document_detail/137809.html
     - 批量上云：https://help.aliyun.com/document_detail/146671.html
     - 更新更多能力请访问：https://help.aliyun.com/document_detail/137663.html
-
+    -
 
 # 我要开发新的插件
 
@@ -109,6 +109,23 @@ DataX目前已经有了比较全面的插件体系，主流的RDBMS数据库、N
 # 重要版本更新说明
 
 DataX 后续计划月度迭代更新，也欢迎感兴趣的同学提交 Pull requests，月度更新内容会介绍介绍如下。
+
+- [datax_v202309]（https://github.com/alibaba/DataX/releases/tag/datax_v202309)
+  - 支持Phoenix 同步数据添加 where条件
+  - 支持华为 GuassDB读写插件
+  - 修复ClickReader 插件运行报错 Can't find bundle for base name
+  - 增加 DataX调试模块
+  - 修复 orc空文件报错问题
+  - 优化obwriter性能
+  - txtfilewriter 增加导出为insert语句功能支持
+  - HdfsReader/HdfsWriter 支持parquet读写能力
+  
+- [datax_v202308]（https://github.com/alibaba/DataX/releases/tag/datax_v202308)
+  - OTS 插件更新
+  - databend 插件更新
+  - Oceanbase驱动修复
+
+
 - [datax_v202306]（https://github.com/alibaba/DataX/releases/tag/datax_v202306)
   - 精简代码
   - 新增插件（neo4jwriter、clickhousewriter）

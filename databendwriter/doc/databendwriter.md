@@ -142,6 +142,16 @@ create table if not exsits datax.sample1(a string, b int64, c date, d timestamp,
   * Description: A list of SQL statements that will be executed after the write operation.
   * Required: no
   * Default: none
+* writeMode
+  * Description：The write mode, support `insert` and `replace` two mode.
+  * Required：no
+  * Default：insert
+  * Example："replace"
+* onConflictColumn
+  * Description：On conflict fields list.
+  * Required：no
+  * Default：none
+  * Example：["id","user"]
 
 ### 3.3 Type Convert
 Data types in datax can be converted to the corresponding data types in databend. The following table shows the correspondence between the two types.

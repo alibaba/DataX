@@ -26,6 +26,8 @@ OSSReader实现了从OSS读取数据并转为DataX协议的功能，OSS本身是
 
 6. 多个object可以支持并发读取。
 
+7. 支持读取 parquet orc 文件
+
 我们暂时不能做到：
 
 1. 单个Object(File)支持多线程并发读取，这里涉及到单个Object内部切分算法。二期考虑支持。
@@ -37,7 +39,7 @@ OSSReader实现了从OSS读取数据并转为DataX协议的功能，OSS本身是
 
 
 ### 3.1 配置样例
-
+读取 txt, csv 格式样例
 ```json
 {
     "job": {
@@ -78,6 +80,63 @@ OSSReader实现了从OSS读取数据并转为DataX协议的功能，OSS本身是
             }
         ]
     }
+}
+```
+读取 orc 格式样例
+```json
+{
+  "stepType": "oss",
+  "parameter": {
+	"endpoint": "http://oss.aliyuncs.com",
+	"accessId": "",
+	"accessKey": "",
+	"bucket": "myBucket",
+	"fileFormat": "orc",
+	"path": "/tests/case61/orc__691b6815_9260_4037_9899_****",
+	"column": [
+	  {
+		"index": 0,
+		"type": "long"
+	  },
+	  {
+		"index": "1",
+		"type": "string"
+	  },
+	  {
+		"index": "2",
+		"type": "string"
+	  }
+	]
+  }
+}
+```
+读取 parquet 格式样例
+```json
+{
+  "stepType": "oss",
+  "parameter": {
+	"endpoint": "http://oss.aliyuncs.com",
+	"accessId": "",
+	"accessKey": "",
+	"bucket": "myBucket",
+	"fileFormat": "parquet",
+	"path": "/parquet",
+	"parquetSchema":"message m { optional BINARY registration_dttm (UTF8); optional Int64 id; optional BINARY first_name (UTF8); optional BINARY last_name (UTF8); optional BINARY email (UTF8); optional BINARY gender (UTF8); optional BINARY ip_address (UTF8); optional BINARY cc (UTF8); optional BINARY country (UTF8); optional BINARY birthdate (UTF8); optional DOUBLE salary; optional BINARY title (UTF8); optional BINARY comments (UTF8); }", 
+	"column": [
+	  {
+		"index": 0,
+		"type": "long"
+	  },
+	  {
+		"index": "1",
+		"type": "string"
+	  },
+	  {
+		"index": "2",
+		"type": "string"
+	  }
+	]
+  }
 }
 ```
 

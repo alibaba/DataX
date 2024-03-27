@@ -1,5 +1,6 @@
 package com.alibaba.datax.plugin.reader.otsstreamreader.internal.core;
 
+import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordSender;
 import com.alibaba.datax.plugin.reader.otsstreamreader.internal.config.Mode;
 import com.alibaba.datax.plugin.reader.otsstreamreader.internal.config.OTSStreamReaderConfig;
@@ -48,6 +49,9 @@ public class RecordProcessor implements Runnable {
     private AtomicBoolean stop;
     private AtomicLong sendRecordCount;
 
+    //enable seek shardIterator by timestamp
+    private boolean enableSeekShardIteratorByTimestamp;
+
     public enum State {
         READY,        // initialized but not start
         RUNNING,      // start to read and process records
@@ -78,6 +82,7 @@ public class RecordProcessor implements Runnable {
         this.recordSender = recordSender;
         this.isExportSequenceInfo = config.isExportSequenceInfo();
         this.lastRecordCheckpointTime = 0;
+        this.enableSeekShardIteratorByTimestamp = config.getEnableSeekIteratorByTimestamp();
 
         // set init state
         startTime = 0;
@@ -107,22 +112,31 @@ public class RecordProcessor implements Runnable {
         if (readerConfig.getMode().equals(Mode.MULTI_VERSION)) {
             this.otsStreamRecordSender = new MultiVerModeRecordSender(recordSender, shard.getShardId(), isExportSequenceInfo);
         } else if (readerConfig.getMode().equals(Mode.SINGLE_VERSION_AND_UPDATE_ONLY)) {
-            this.otsStreamRecordSender = new SingleVerAndUpOnlyModeRecordSender(recordSender, shard.getShardId(), isExportSequenceInfo, readerConfig.getColumns());
+            this.otsStreamRecordSender = new SingleVerAndUpOnlyModeRecordSender(recordSender, shard.getShardId(), isExportSequenceInfo, readerConfig.getColumns(), readerConfig.getColumnsIsTimeseriesTags());
         } else {
             throw new OTSStreamReaderException("Internal Error. Unhandled Mode: " + readerConfig.getMode());
         }
 
         if (startCheckpoint.getCheckpoint().equals(CheckpointPosition.TRIM_HORIZON)) {
             lastShardIterator = null;
-            nextShardIterator = ots.getShardIterator(new GetShardIteratorRequest(stream.getStreamId(), shard.getShardId())).getShardIterator();
+            if (enableSeekShardIteratorByTimestamp) {
+                long beginTimeStamp = startTimestampMillis - 10 * 60 * 1000;
+                if (beginTimeStamp > 0) {
+                    nextShardIterator = getShardIteratorWithBeginTime((startTimestampMillis - 10 * 60 * 1000) * 1000);
+                } else {
+                    nextShardIterator = ots.getShardIterator(new GetShardIteratorRequest(stream.getStreamId(), shard.getShardId())).getShardIterator();
+                }
+            } else {
+                nextShardIterator = ots.getShardIterator(new GetShardIteratorRequest(stream.getStreamId(), shard.getShardId())).getShardIterator();
+            }
             skipCount = startCheckpoint.getSkipCount();
         } else {
             lastShardIterator = null;
             nextShardIterator = startCheckpoint.getCheckpoint();
             skipCount = startCheckpoint.getSkipCount();
         }
-        LOG.info("Initialize record processor. Mode: {}, StartCheckpoint: [{}], ShardId: {}, ShardIterator: {}, SkipCount: {}.",
-                readerConfig.getMode(), startCheckpoint, shard.getShardId(), nextShardIterator, skipCount);
+        LOG.info("Initialize record processor. Mode: {}, StartCheckpoint: [{}], ShardId: {}, ShardIterator: {}, SkipCount: {}, enableSeekShardIteratorByTimestamp: {}, startTimestamp: {}.",
+                readerConfig.getMode(), startCheckpoint, shard.getShardId(), nextShardIterator, skipCount, enableSeekShardIteratorByTimestamp, startTimestampMillis);
     }
 
     private long getTimestamp(StreamRecord record) {
@@ -181,15 +195,32 @@ public class RecordProcessor implements Runnable {
      *
      * @param records
      * @param nextShardIterator
+     * @param mayMoreRecord
      * @return
      */
-    boolean process(List<StreamRecord> records, String nextShardIterator) {
+    boolean process(List<StreamRecord> records, String nextShardIterator, Boolean mayMoreRecord) {
         if (records.isEmpty() && nextShardIterator != null) {
-            LOG.info("ProcessFinished: No more data in shard, shardId: {}.", shard.getShardId());
-            ShardCheckpoint checkpoint = new ShardCheckpoint(shard.getShardId(), stream.getVersion(), nextShardIterator, 0);
-            checkpointTimeTracker.writeCheckpoint(endTimestampMillis, checkpoint, sendRecordCount.get());
-            checkpointTimeTracker.setShardTimeCheckpoint(shard.getShardId(), endTimestampMillis, nextShardIterator);
-            return true;
+            // 没有读到更多数据
+            if (!readerConfig.isEnableTableGroupSupport()) {
+                LOG.info("ProcessFinished: No more data in shard, shardId: {}.", shard.getShardId());
+                ShardCheckpoint checkpoint = new ShardCheckpoint(shard.getShardId(), stream.getVersion(), nextShardIterator, 0);
+                checkpointTimeTracker.writeCheckpoint(endTimestampMillis, checkpoint, sendRecordCount.get());
+                checkpointTimeTracker.setShardTimeCheckpoint(shard.getShardId(), endTimestampMillis, nextShardIterator);
+                return true;
+            } else {
+                if (mayMoreRecord == null) {
+                    LOG.error("mayMoreRecord can not be null when tablegroup is true");
+                    throw DataXException.asDataXException("mayMoreRecord can not be null when tablegroup is true");
+                } else if (mayMoreRecord) {
+                    return false;
+                } else {
+                    LOG.info("ProcessFinished: No more data in shard, shardId: {}.", shard.getShardId());
+                    ShardCheckpoint checkpoint = new ShardCheckpoint(shard.getShardId(), stream.getVersion(), nextShardIterator, 0);
+                    checkpointTimeTracker.writeCheckpoint(endTimestampMillis, checkpoint, sendRecordCount.get());
+                    checkpointTimeTracker.setShardTimeCheckpoint(shard.getShardId(), endTimestampMillis, nextShardIterator);
+                    return true;
+                }
+            }
         }
 
         int size = records.size();
@@ -212,17 +243,19 @@ public class RecordProcessor implements Runnable {
                     continue;
                 }
                 shouldSkip = false;
-                if (skipCount > 0) {
-                    LOG.debug("Skip record. Timestamp: {}, SkipCount: {}.", timestamp, skipCount);
-                    skipCount -= 1;
-                    continue;
-                }
 
                 LOG.debug("Send record. Timestamp: {}.", timestamp);
                 sendRecord(records.get(i));
             } else {
                 LOG.info("ProcessFinished: Record in shard reach boundary of endTime, shardId: {}. Timestamp: {}, EndTime: {}", shard.getShardId(), timestamp, endTimestampMillis);
-                ShardCheckpoint checkpoint = new ShardCheckpoint(shard.getShardId(), stream.getVersion(), lastShardIterator, i);
+
+                String newIterator = lastShardIterator;
+                if (i > 0) {
+                    newIterator = GetStreamRecordWithLimitRowCount(lastShardIterator, i);
+                }
+
+                ShardCheckpoint checkpoint = new ShardCheckpoint(shard.getShardId(), stream.getVersion(), newIterator, 0);
+
                 checkpointTimeTracker.writeCheckpoint(endTimestampMillis, checkpoint, sendRecordCount.get());
                 return true;
             }
@@ -240,14 +273,35 @@ public class RecordProcessor implements Runnable {
 
     private boolean readAndProcessRecords() {
         LOG.debug("Read and process records. ShardId: {}, ShardIterator: {}.", shard.getShardId(), nextShardIterator);
+        if (enableSeekShardIteratorByTimestamp && nextShardIterator == null) {
+            LOG.info("ProcessFinished: Shard has reach to end, shardId: {}.", shard.getShardId());
+            ShardCheckpoint checkpoint = new ShardCheckpoint(shard.getShardId(), stream.getVersion(), CheckpointPosition.SHARD_END, 0);
+            checkpointTimeTracker.writeCheckpoint(endTimestampMillis, checkpoint, sendRecordCount.get());
+            return true;
+        }
+
         GetStreamRecordRequest request = new GetStreamRecordRequest(nextShardIterator);
+        if (readerConfig.isEnableTableGroupSupport()) {
+            request.setTableName(stream.getTableName());
+        }
+        if (readerConfig.isTimeseriesTable()){
+            request.setParseInTimeseriesDataFormat(true);
+        }
         GetStreamRecordResponse response = ots.getStreamRecord(request);
         lastShardIterator = nextShardIterator;
         nextShardIterator = response.getNextShardIterator();
-        return processRecords(response.getRecords(), nextShardIterator);
+        return processRecords(response.getRecords(), nextShardIterator, response.getMayMoreRecord());
     }
 
-    public boolean processRecords(List<StreamRecord> records, String nextShardIterator) {
+    private String GetStreamRecordWithLimitRowCount(String beginIterator, int expectedRowCount) {
+        LOG.debug("Read and process records. ShardId: {}, ShardIterator: {},  expectedRowCount: {}..", shard.getShardId(), beginIterator, expectedRowCount);
+        GetStreamRecordRequest request = new GetStreamRecordRequest(beginIterator);
+        request.setLimit(expectedRowCount);
+        GetStreamRecordResponse response = ots.getStreamRecord(request);
+        return response.getNextShardIterator();
+    }
+
+    public boolean processRecords(List<StreamRecord> records, String nextShardIterator, Boolean mayMoreRecord) {
         long startTime = System.currentTimeMillis();
 
         if (records.isEmpty()) {
@@ -256,12 +310,35 @@ public class RecordProcessor implements Runnable {
             LOG.debug("StartProcessRecords: size: {}, recordTime: {}.", records.size(), getTimestamp(records.get(0)));
         }
 
-        if (process(records, nextShardIterator)) {
+        if (process(records, nextShardIterator, mayMoreRecord)) {
             return true;
         }
 
         LOG.debug("ProcessRecords, ProcessShard:{}, ProcessTime: {}, Size:{}, NextShardIterator:{}",
                 shard.getShardId(), System.currentTimeMillis() - startTime, records.size(), nextShardIterator);
         return false;
+    }
+
+    private String getShardIteratorWithBeginTime(long timestamp){
+        LOG.info("Begin to seek shard iterator with timestamp, shardId: {}, timestamp: {}.", shard.getShardId(), timestamp);
+        GetShardIteratorRequest getShardIteratorRequest = new GetShardIteratorRequest(stream.getStreamId(), shard.getShardId());
+        getShardIteratorRequest.setTimestamp(timestamp);
+
+        GetShardIteratorResponse response =  ots.getShardIterator(getShardIteratorRequest);
+        String nextToken = response.getNextToken();
+
+        if (nextToken == null) {
+            return response.getShardIterator();
+        }
+
+        while (nextToken != null) {
+            getShardIteratorRequest = new GetShardIteratorRequest(stream.getStreamId(), shard.getShardId());
+            getShardIteratorRequest.setTimestamp(timestamp);
+            getShardIteratorRequest.setToken(nextToken);
+
+            response =  ots.getShardIterator(getShardIteratorRequest);
+            nextToken = response.getNextToken();
+        }
+        return response.getShardIterator();
     }
 }

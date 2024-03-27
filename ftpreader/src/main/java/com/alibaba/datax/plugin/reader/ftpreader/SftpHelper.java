@@ -64,6 +64,8 @@ public class SftpHelper extends FtpHelper {
 					String message = String.format("请确认连接ftp服务器端口是否正确，错误的端口: [%s] ", port);
 					LOG.error(message);
 					throw DataXException.asDataXException(FtpReaderErrorCode.FAIL_LOGIN, message, e);
+				}else{
+					throw DataXException.asDataXException(FtpReaderErrorCode.COMMAND_FTP_IO_EXCEPTION, "", e);
 				}
 			}else {
 				if("Auth fail".equals(e.getMessage())){

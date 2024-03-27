@@ -19,7 +19,12 @@ public enum HdfsReaderErrorCode implements ErrorCode {
     FILE_TYPE_UNSUPPORT("HdfsReader-12", "文件类型目前不支持"),
     KERBEROS_LOGIN_ERROR("HdfsReader-13", "KERBEROS认证失败"),
     READ_SEQUENCEFILE_ERROR("HdfsReader-14", "读取SequenceFile文件出错"),
-    READ_RCFILE_ERROR("HdfsReader-15", "读取RCFile文件出错"),;
+    READ_RCFILE_ERROR("HdfsReader-15", "读取RCFile文件出错"),
+    INIT_RCFILE_SERDE_ERROR("HdfsReader-16", "Deserialize RCFile, initialization failed!"),
+    PARSE_MESSAGE_TYPE_FROM_SCHEMA_ERROR("HdfsReader-17", "Error parsing ParquetSchema"),
+    INVALID_PARQUET_SCHEMA("HdfsReader-18", "ParquetSchema is invalid"),
+    READ_PARQUET_ERROR("HdfsReader-19", "Error reading Parquet file"),
+    CONNECT_HDFS_IO_ERROR("HdfsReader-20", "I/O exception in establishing connection with HDFS");
 
     private final String code;
     private final String description;
