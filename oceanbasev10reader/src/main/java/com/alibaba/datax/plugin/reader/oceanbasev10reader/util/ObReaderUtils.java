@@ -154,12 +154,14 @@ public class ObReaderUtils {
             } else {
                 schema = "(select sys_context('USERENV','current_schema') from dual)";
             }
+            //OceanBase oracle模式下需要使用position排序获取正确的联合主键顺序
             sql = String.format(
                 "SELECT cols.column_name Column_name " +
                     "FROM all_constraints cons, all_cons_columns cols " +
                     "WHERE cols.table_name = '%s' AND cons.constraint_type = 'P' " +
                     "AND cons.constraint_name = cols.constraint_name " +
-                    "AND cons.owner = cols.owner and cons.OWNER = %s",
+                    "AND cons.owner = cols.owner and cons.OWNER = %s " +
+                    "order by cols.position " ,
                 tableName, schema);
         }
         LOG.info("get primary key by sql: " + sql);
