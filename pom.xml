@@ -80,6 +80,7 @@
         <module>loghubreader</module>
         <module>datahubreader</module>
         <module>starrocksreader</module>
+        <module>sybasereader</module>
         <module>dorisreader</module>
         <!-- writer -->
         <module>mysqlwriter</module>
@@ -124,8 +125,8 @@
         <module>doriswriter</module>
         <module>selectdbwriter</module>
         <module>adbmysqlwriter</module>
+        <module>sybasewriter</module>
         <module>neo4jwriter</module>
-
         <!-- common support module -->
         <module>plugin-rdbms-util</module>
         <module>plugin-unstructured-storage-util</module>

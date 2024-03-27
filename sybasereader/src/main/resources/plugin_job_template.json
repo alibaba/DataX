@@ -1,0 +1,14 @@
+{
+    "name": "sybasereader",
+    "parameter": {
+        "username": "",
+        "password": "",
+        "column": [],
+        "connection": [
+            {
+                "table": [],
+                "jdbcUrl": []
+            }
+        ]
+    }
+}
