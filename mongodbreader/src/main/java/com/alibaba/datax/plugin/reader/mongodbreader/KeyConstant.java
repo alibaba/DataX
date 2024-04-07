@@ -70,6 +70,10 @@ public class KeyConstant {
     public static final String UPPER_BOUND = "upperBound";
     public static final String IS_OBJECTID = "isObjectId";
     /**
+     * 增量更新
+     */
+    public static final String INCREMENT_FLAG = "incrementFlag";
+    /**
      * 批量获取的记录数
      */
     public static final String BATCH_SIZE = "batchSize";
@@ -82,6 +86,10 @@ public class KeyConstant {
      */
     public static final int MONGO_UNAUTHORIZED_ERR_CODE = 13;
     public static final int MONGO_ILLEGALOP_ERR_CODE = 20;
+    public static final String START_UPDATE_TIME = "startUpdateTime";
+    public static final String END_UPDATE_TIME = "endUpdateTime";
+    public static final String UPDATE_KEY = "updateKey";
+
     /**
      * 判断是否为数组类型
      * @param type 数据类型
