@@ -1,5 +1,6 @@
 package com.alibaba.datax.plugin.reader.mongodbreader;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -28,6 +29,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -125,16 +127,57 @@ public class MongoDBReader extends Reader {
             } else {
                 filter.append(KeyConstant.MONGO_PRIMARY_ID, new Document("$gte", isObjectId ? new ObjectId(lowerBound.toString()) : lowerBound).append("$lt", isObjectId ? new ObjectId(upperBound.toString()) : upperBound));
             }
+            Document queryFilter = null;
             if (!Strings.isNullOrEmpty(query)) {
-                Document queryFilter = Document.parse(query);
+                queryFilter = Document.parse(query);
                 filter = new Document("$and", Arrays.asList(filter, queryFilter));
             }
+
             if (incrementFlag && StringUtils.isNotBlank(updateKey)) {
-                if (StringUtils.isNotBlank(startUpdateTime)) {
-                    filter.append(KeyConstant.UPDATE_KEY, new Document("$lt", startUpdateTime));
-                }
-                if (StringUtils.isNotBlank(endUpdateTime)) {
-                    filter.append(KeyConstant.UPDATE_KEY, new Document("$gte", endUpdateTime));
+                if (StringUtils.isNotBlank(startUpdateTime) && StringUtils.isNotBlank(endUpdateTime)) {
+                    SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
+                    try {
+                        Date date1 = formatter.parse(startUpdateTime);
+                        Date date2 = formatter.parse(endUpdateTime);
+                        Document doc = new Document(updateKey, new Document("$gte", date1).append("$lte", date2));
+                        if (queryFilter != null) {
+                            filter = new Document("$and", Arrays.asList(filter, queryFilter,doc));
+                        }else {
+                            filter = new Document("$and", Arrays.asList(filter, doc));
+                        }
+                    } catch (Exception e) {
+                        throw new RuntimeException("时间格式错误/n" + e.getMessage());
+                    }
+                } else {
+                    if (StringUtils.isNotBlank(startUpdateTime)) {
+                        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
+                        try {
+                            Date date1 = formatter.parse(startUpdateTime);
+                            Document doc = new Document(updateKey, new Document("$gte", date1));
+                            if (queryFilter != null) {
+                                filter = new Document("$and", Arrays.asList(filter, queryFilter,doc));
+                            }else {
+                                filter = new Document("$and", Arrays.asList(filter, doc));
+                            }
+                        } catch (Exception e) {
+                            throw new RuntimeException("时间格式错误/n" + e.getMessage());
+                        }
+
+                    }
+                    if (StringUtils.isNotBlank(endUpdateTime)) {
+                        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
+                        try {
+                            Date date1 = formatter.parse(endUpdateTime + " 00:00:00");
+                            Document doc = new Document(updateKey, new Document("$lte", date1));
+                            if (queryFilter != null) {
+                                filter = new Document("$and", Arrays.asList(filter, queryFilter,doc));
+                            }else {
+                                filter = new Document("$and", Arrays.asList(filter, doc));
+                            }
+                        } catch (Exception e) {
+                            throw new RuntimeException("时间格式错误/n" + e.getMessage());
+                        }
+                    }
                 }
             }
             dbCursor = col.find(filter).iterator();
@@ -230,4 +273,5 @@ public class MongoDBReader extends Reader {
         }
 
     }
+
 }
