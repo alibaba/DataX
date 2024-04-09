@@ -26,7 +26,7 @@ public class KingbaseesReader extends Reader {
                     Constant.DEFAULT_FETCH_SIZE);
             if (fetchSize < 1) {
             	throw DataXException.asDataXException(DBUtilErrorCode.REQUIRED_VALUE,
-					String.format("您配置的fetchSize有误，根据DataX的设计，fetchSize : [%d] 设置值不能小于 1.", fetchSize));
+					String.format("您配置的有误，根据DataX的设计，fetchSize : [%d] 设置值不能小于 1.", fetchSize));
             }
             this.originalConfig.set(com.alibaba.datax.plugin.rdbms.reader.Constant.FETCH_SIZE, fetchSize);
 
