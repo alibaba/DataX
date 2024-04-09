@@ -39,6 +39,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
         <mysql.driver.version>5.1.47</mysql.driver.version>
+        <sap.hana.driver.version>2.16.14</sap.hana.driver.version>
     </properties>
 
     <modules>
@@ -82,6 +83,7 @@
         <module>starrocksreader</module>
         <module>sybasereader</module>
         <module>dorisreader</module>
+        <module>hanareader</module>
         <!-- writer -->
         <module>mysqlwriter</module>
         <module>starrockswriter</module>
@@ -127,6 +129,7 @@
         <module>adbmysqlwriter</module>
         <module>sybasewriter</module>
         <module>neo4jwriter</module>
+        <module>hanawriter</module>
         <!-- common support module -->
         <module>plugin-rdbms-util</module>
         <module>plugin-unstructured-storage-util</module>

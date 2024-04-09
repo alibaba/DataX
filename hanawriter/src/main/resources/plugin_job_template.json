@@ -1,0 +1,52 @@
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "name": "mysqlreader",
+          "parameter": {
+            "username": "root",
+            "password": "RoOt#2024",
+            "connection": [
+              {
+                "querySql": [
+                  "select id,module,name,type,time from template.t_operator_log"
+                ],
+                "jdbcUrl": [
+                  "jdbc:mysql://192.168.16.20:3306/template"
+                ]
+              }
+            ]
+          }
+        },
+        "writer": {
+          "name": "hanawriter",
+          "parameter": {
+            "username": "SYSTEM",
+            "password": "Xing1234",
+            "column": [
+              "ID",
+              "MODULE",
+              "NAME",
+              "TYPE",
+              "TIME"
+            ],
+            "connection": [
+              {
+                "jdbcUrl": "jdbc:sap://192.168.16.20:39013?currentschema=SYSTEM&reconnect=true",
+                "table": [
+                  "T_OPERATOR_LOG"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "setting": {
+      "speed": {
+        "channel": 1
+      }
+    }
+  }
+}

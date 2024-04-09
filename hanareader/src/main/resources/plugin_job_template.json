@@ -1,0 +1,37 @@
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "name": "hanareader",
+          "parameter": {
+            "username": "SYSTEM",
+            "password": "Xing1234",
+            "connection": [
+              {
+                "querySql": [
+                  "select ID,MODULE,NAME,TYPE,TIME from T_OPERATOR_LOG"
+                ],
+                "jdbcUrl": [
+                  "jdbc:sap://192.168.16.20:39013?currentschema=SYSTEM&reconnect=true"
+                ]
+              }
+            ]
+          }
+        },
+        "writer": {
+          "name": "streamwriter",
+          "parameter": {
+            "print": true,
+            "encoding": "UTF-8"
+          }
+        }
+      }
+    ],
+    "setting": {
+      "speed": {
+        "channel": 1
+      }
+    }
+  }
+}

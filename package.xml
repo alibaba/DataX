@@ -250,7 +250,13 @@
             </includes>
             <outputDirectory>datax</outputDirectory>
         </fileSet>
-
+        <fileSet>
+            <directory>hanareader/target/datax/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>datax</outputDirectory>
+        </fileSet>
         <!-- writer -->
         <fileSet>
             <directory>mysqlwriter/target/datax/</directory>
@@ -527,6 +533,13 @@
         </fileSet>
         <fileSet>
             <directory>sybasewriter/target/datax/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>datax</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>hanawriter/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
             </includes>
