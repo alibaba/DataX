@@ -1,0 +1,19 @@
+{
+  "name": "selectdbwriter",
+  "parameter": {
+    "username": "",
+    "password": "",
+    "column": [],
+    "preSql": [],
+    "postSql": [],
+    "loadUrl": [],
+    "loadProps": {},
+    "connection": [
+      {
+        "jdbcUrl": "",
+        "selectedDatabase": "",
+        "table": []
+      }
+    ]
+  }
+}

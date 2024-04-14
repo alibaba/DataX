@@ -1,0 +1,6 @@
+{
+  "name": "doriswriter",
+  "class": "com.alibaba.datax.plugin.writer.doriswriter.DorisWriter",
+  "description": "apache doris writer plugin",
+  "developer": "apche doris"
+}

@@ -1,0 +1,6 @@
+{
+    "name": "neo4jWriter",
+    "class": "com.alibaba.datax.plugin.writer.neo4jwriter.Neo4jWriter",
+    "description": "dataX neo4j 写插件",
+    "developer": "付有杰"
+}

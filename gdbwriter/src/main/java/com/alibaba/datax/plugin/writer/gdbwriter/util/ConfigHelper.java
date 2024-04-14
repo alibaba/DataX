@@ -12,8 +12,8 @@ import org.apache.commons.lang3.StringUtils;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.plugin.writer.gdbwriter.GdbWriterErrorCode;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 
 /**
  * @author jerrywang

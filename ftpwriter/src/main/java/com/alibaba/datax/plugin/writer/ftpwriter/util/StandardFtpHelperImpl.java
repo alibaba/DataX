@@ -18,8 +18,8 @@ import org.slf4j.LoggerFactory;
 
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.plugin.writer.ftpwriter.FtpWriterErrorCode;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONWriter;
 
 public class StandardFtpHelperImpl implements IFtpHelper {
     private static final Logger LOG = LoggerFactory
@@ -244,7 +244,7 @@ public class StandardFtpHelperImpl implements IFtpHelper {
             FTPFile[] fs = this.ftpClient.listFiles(dir);
             // LOG.debug(JSON.toJSONString(this.ftpClient.listNames(dir)));
             LOG.debug(String.format("ls: %s",
-                    JSON.toJSONString(fs, SerializerFeature.UseSingleQuotes)));
+                    JSON.toJSONString(fs, JSONWriter.Feature.UseSingleQuotes)));
             for (FTPFile ff : fs) {
                 String strName = ff.getName();
                 if (strName.startsWith(prefixFileName)) {

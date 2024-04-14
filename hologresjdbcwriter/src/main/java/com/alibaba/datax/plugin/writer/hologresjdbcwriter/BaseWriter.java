@@ -15,8 +15,8 @@ import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
 import com.alibaba.datax.plugin.writer.hologresjdbcwriter.util.ConfLoader;
 import com.alibaba.datax.plugin.writer.hologresjdbcwriter.util.OriginalConfPretreatmentUtil;
 import com.alibaba.datax.plugin.writer.hologresjdbcwriter.util.WriterUtil;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.hologres.client.HoloClient;
 import com.alibaba.hologres.client.HoloConfig;
 import com.alibaba.hologres.client.Put;
@@ -167,7 +167,7 @@ public class BaseWriter {
 				if (null != renderedPreSqls && !renderedPreSqls.isEmpty()) {
 					// 说明有 preSql 配置，则此处删除掉
 					originalConfig.remove(Key.PRE_SQL);
-					String tempJdbcUrl = jdbcUrl.replace("postgresql", "hologres");
+					String tempJdbcUrl = jdbcUrl.replace("jdbc:postgresql://", "jdbc:hologres://");
 					try (Connection conn = DriverManager.getConnection(
 							tempJdbcUrl, username, password)) {
 						LOG.info("Begin to execute preSqls:[{}]. context info:{}.",
@@ -191,32 +191,34 @@ public class BaseWriter {
 		// 一般来说，是需要推迟到 task 中进行post 的执行（单表情况例外）
 		public void post(Configuration originalConfig) {
 
-			String username = originalConfig.getString(Key.USERNAME);
-			String password = originalConfig.getString(Key.PASSWORD);
+			try {
+				String username = originalConfig.getString(Key.USERNAME);
+				String password = originalConfig.getString(Key.PASSWORD);
 
-			String jdbcUrl = originalConfig.getString(Key.JDBC_URL);
+				String jdbcUrl = originalConfig.getString(Key.JDBC_URL);
 
-			String table = originalConfig.getString(Key.TABLE);
+				String table = originalConfig.getString(Key.TABLE);
 
-			List<String> postSqls = originalConfig.getList(Key.POST_SQL,
-					String.class);
-			List<String> renderedPostSqls = WriterUtil.renderPreOrPostSqls(
-					postSqls, table);
+				List<String> postSqls = originalConfig.getList(Key.POST_SQL,
+						String.class);
+				List<String> renderedPostSqls = WriterUtil.renderPreOrPostSqls(
+						postSqls, table);
 
-			if (null != renderedPostSqls && !renderedPostSqls.isEmpty()) {
-				// 说明有 postSql 配置，则此处删除掉
-				originalConfig.remove(Key.POST_SQL);
-				String tempJdbcUrl = jdbcUrl.replace("postgresql", "hologres");
-				Connection conn = DBUtil.getConnection(this.dataBaseType,
-						tempJdbcUrl, username, password);
-
-				LOG.info(
-						"Begin to execute postSqls:[{}]. context info:{}.",
-						StringUtils.join(renderedPostSqls, ";"), tempJdbcUrl);
-				WriterUtil.executeSqls(conn, renderedPostSqls, tempJdbcUrl, dataBaseType);
-				DBUtil.closeDBResources(null, null, conn);
+				if (null != renderedPostSqls && !renderedPostSqls.isEmpty()) {
+					// 说明有 postSql 配置，则此处删除掉
+					originalConfig.remove(Key.POST_SQL);
+					String tempJdbcUrl = jdbcUrl.replace("jdbc:postgresql://", "jdbc:hologres://");
+					try (Connection conn = DriverManager.getConnection(
+							tempJdbcUrl, username, password)) {
+						LOG.info(
+								"Begin to execute postSqls:[{}]. context info:{}.",
+								StringUtils.join(renderedPostSqls, ";"), tempJdbcUrl);
+						WriterUtil.executeSqls(conn, renderedPostSqls, tempJdbcUrl, dataBaseType);
+					}
+				}
+			} catch (SQLException e) {
+				throw DataXException.asDataXException(DBUtilErrorCode.SQL_EXECUTE_FAIL, e);
 			}
-
 		}
 
 		public void destroy(Configuration originalConfig) {

@@ -2,7 +2,7 @@ package com.alibaba.datax.plugin.writer.tsdbwriter;
 
 import com.alibaba.datax.common.element.Column;
 import com.alibaba.datax.common.element.Record;
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 import com.aliyun.hitsdb.client.value.request.MultiFieldPoint;
 import com.aliyun.hitsdb.client.value.request.Point;
 import org.slf4j.Logger;

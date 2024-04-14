@@ -12,9 +12,9 @@ import com.alibaba.datax.common.util.MessageSource;
 import com.alibaba.datax.plugin.writer.odpswriter.model.PartitionInfo;
 import com.alibaba.datax.plugin.writer.odpswriter.model.UserDefinedFunction;
 import com.alibaba.datax.plugin.writer.odpswriter.util.*;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
 import com.aliyun.odps.Odps;
 import com.aliyun.odps.Table;
 import com.aliyun.odps.TableSchema;
@@ -62,7 +62,6 @@ public class OdpsWriter extends Writer {
         private String tableName;
         private String tunnelServer;
         private String partition;
-        private String accountType;
         private boolean truncate;
         private String uploadId;
         private TableTunnel.UploadSession masterUpload;
@@ -103,8 +102,6 @@ public class OdpsWriter extends Writer {
             this.projectName = this.originalConfig.getString(Key.PROJECT);
             this.tableName = this.originalConfig.getString(Key.TABLE);
             this.tunnelServer = this.originalConfig.getString(Key.TUNNEL_SERVER, null);
-
-            this.dealAK();
 
             // init odps config
             this.odps = OdpsUtil.initOdpsProject(this.originalConfig);
@@ -150,31 +147,6 @@ public class OdpsWriter extends Writer {
             if (IS_DEBUG) {
                 LOG.debug("After master init(), job config now is: [\n{}\n] .",
                         this.originalConfig.toJSON());
-            }
-        }
-
-        private void dealAK() {
-            this.accountType = this.originalConfig.getString(Key.ACCOUNT_TYPE,
-                Constant.DEFAULT_ACCOUNT_TYPE);
-
-            if (!Constant.DEFAULT_ACCOUNT_TYPE.equalsIgnoreCase(this.accountType) &&
-                    !Constant.TAOBAO_ACCOUNT_TYPE.equalsIgnoreCase(this.accountType)) {
-                throw DataXException.asDataXException(OdpsWriterErrorCode.ACCOUNT_TYPE_ERROR,
-                        MESSAGE_SOURCE.message("odpswriter.1", accountType));
-            }
-            this.originalConfig.set(Key.ACCOUNT_TYPE, this.accountType);
-
-            //检查accessId,accessKey配置
-            if (Constant.DEFAULT_ACCOUNT_TYPE
-                    .equalsIgnoreCase(this.accountType)) {
-                this.originalConfig = IdAndKeyUtil.parseAccessIdAndKey(this.originalConfig);
-                String accessId = this.originalConfig.getString(Key.ACCESS_ID);
-                String accessKey = this.originalConfig.getString(Key.ACCESS_KEY);
-                if (IS_DEBUG) {
-                    LOG.debug("accessId:[{}], accessKey:[{}] .", accessId,
-                            accessKey);
-                }
-                LOG.info("accessId:[{}] .", accessId);
             }
         }
 
@@ -241,20 +213,6 @@ public class OdpsWriter extends Writer {
 
         @Override
         public void prepare() {
-            String accessId = null;
-            String accessKey = null;
-            if (Constant.DEFAULT_ACCOUNT_TYPE
-                    .equalsIgnoreCase(this.accountType)) {
-                this.originalConfig = IdAndKeyUtil.parseAccessIdAndKey(this.originalConfig);
-                accessId = this.originalConfig.getString(Key.ACCESS_ID);
-                accessKey = this.originalConfig.getString(Key.ACCESS_KEY);
-                if (IS_DEBUG) {
-                    LOG.debug("accessId:[{}], accessKey:[{}] .", accessId,
-                            accessKey);
-                }
-                LOG.info("accessId:[{}] .", accessId);
-            }
-
             // init odps config
             this.odps = OdpsUtil.initOdpsProject(this.originalConfig);
 

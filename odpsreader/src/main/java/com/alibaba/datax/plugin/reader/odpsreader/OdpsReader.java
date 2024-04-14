@@ -7,7 +7,7 @@ import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.common.util.FilterUtil;
 import com.alibaba.datax.common.util.MessageSource;
 import com.alibaba.datax.plugin.reader.odpsreader.util.*;
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 import com.aliyun.odps.Column;
 import com.aliyun.odps.Odps;
 import com.aliyun.odps.Table;
@@ -15,8 +15,6 @@ import com.aliyun.odps.TableSchema;
 import com.aliyun.odps.tunnel.TableTunnel.DownloadSession;
 import com.aliyun.odps.type.TypeInfo;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.MutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,12 +41,6 @@ public class OdpsReader extends Reader {
         public void init() {
             this.originalConfig = super.getPluginJobConf();
             this.successOnNoPartition = this.originalConfig.getBool(Key.SUCCESS_ON_NO_PATITION, false);
-
-            //如果用户没有配置accessId/accessKey,尝试从环境变量获取
-            String accountType = originalConfig.getString(Key.ACCOUNT_TYPE, Constant.DEFAULT_ACCOUNT_TYPE);
-            if (Constant.DEFAULT_ACCOUNT_TYPE.equalsIgnoreCase(accountType)) {
-                this.originalConfig = IdAndKeyUtil.parseAccessIdAndKey(this.originalConfig);
-            }
 
             //检查必要的参数配置
             OdpsUtil.checkNecessaryConfig(this.originalConfig);
@@ -311,7 +303,7 @@ public class OdpsReader extends Reader {
              */
             List<String> allPartitionColumns = this.originalConfig.getList(
                 Constant.PARTITION_COLUMNS, String.class);
-            List<Pair<String, ColumnType>> parsedColumns = OdpsUtil
+            List<InternalColumnInfo> parsedColumns = OdpsUtil
                 .parseColumns(allNormalColumns, allPartitionColumns,
                     userConfiguredColumns);
 
@@ -320,13 +312,15 @@ public class OdpsReader extends Reader {
             StringBuilder sb = new StringBuilder();
             sb.append("[ ");
             for (int i = 0, len = parsedColumns.size(); i < len; i++) {
-                Pair<String, ColumnType> pair = parsedColumns.get(i);
-                sb.append(String.format(" %s : %s", pair.getLeft(),
-                    pair.getRight()));
+            	InternalColumnInfo pair = parsedColumns.get(i);
+                sb.append(String.format(" %s : %s", pair.getColumnName(),
+                    pair.getColumnType()));
                 if (i != len - 1) {
                     sb.append(",");
                 }
             }
+            
+            
             sb.append(" ]");
             LOG.info("parsed column details: {} .", sb.toString());
         }
@@ -500,22 +494,11 @@ public class OdpsReader extends Reader {
             }
 
             try {
-                List<Configuration> parsedColumnsTmp = this.readerSliceConf
-                    .getListConfiguration(Constant.PARSED_COLUMNS);
-                List<Pair<String, ColumnType>> parsedColumns = new ArrayList<Pair<String, ColumnType>>();
-                for (int i = 0; i < parsedColumnsTmp.size(); i++) {
-                    Configuration eachColumnConfig = parsedColumnsTmp.get(i);
-                    String columnName = eachColumnConfig.getString("left");
-                    ColumnType columnType = ColumnType
-                        .asColumnType(eachColumnConfig.getString("right"));
-                    parsedColumns.add(new MutablePair<String, ColumnType>(
-                        columnName, columnType));
-
-                }
+				List<InternalColumnInfo> parsedColumns = this.readerSliceConf.getListWithJson(Constant.PARSED_COLUMNS,
+						InternalColumnInfo.class);
                 ReaderProxy readerProxy = new ReaderProxy(recordSender, downloadSession,
                         columnTypeMap, parsedColumns, partition, this.isPartitionedTable,
                         start, count, this.isCompress, this.readerSliceConf);
-
                 readerProxy.doRead();
             } catch (Exception e) {
                 throw DataXException.asDataXException(OdpsReaderErrorCode.READ_DATA_FAIL,

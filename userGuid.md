@@ -17,7 +17,7 @@ DataX本身作为数据同步框架，将不同数据源的同步抽象为从源
 
 * 工具部署
   
-  * 方法一、直接下载DataX工具包：[DataX下载地址](http://datax-opensource.oss-cn-hangzhou.aliyuncs.com/datax.tar.gz)
+  * 方法一、直接下载DataX工具包：[DataX下载地址](https://datax-opensource.oss-cn-hangzhou.aliyuncs.com/202309/datax.tar.gz)
     
     下载后解压至本地某个目录，进入bin目录，即可运行同步作业：
     

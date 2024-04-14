@@ -10,7 +10,10 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.alibaba.datax.common.element.BytesColumn;
+
+import com.google.common.base.Preconditions;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.compress.compressors.CompressorOutputStream;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
@@ -90,7 +93,8 @@ public class UnstructuredStorageWriterUtil {
             writerConfiguration.set(Key.FILE_FORMAT, fileFormat);
         }
         if (!Constant.FILE_FORMAT_CSV.equals(fileFormat)
-                && !Constant.FILE_FORMAT_TEXT.equals(fileFormat)) {
+                && !Constant.FILE_FORMAT_TEXT.equals(fileFormat)
+                && !Constant.FILE_FORMAT_SQL.equals(fileFormat)) {
             throw DataXException.asDataXException(
                     UnstructuredStorageWriterErrorCode.ILLEGAL_VALUE, String.format("unsupported fileFormat  %s ", fileFormat));
         }
@@ -232,22 +236,31 @@ public class UnstructuredStorageWriterUtil {
 
         // warn: default false
         String fileFormat = config.getString(Key.FILE_FORMAT, Constant.FILE_FORMAT_TEXT);
-
+        boolean isSqlFormat = Constant.FILE_FORMAT_SQL.equalsIgnoreCase(fileFormat);
+        int commitSize = config.getInt(Key.COMMIT_SIZE, Constant.DEFAULT_COMMIT_SIZE);
         UnstructuredWriter unstructuredWriter = produceUnstructuredWriter(fileFormat, config, writer);
 
         List<String> headers = config.getList(Key.HEADER, String.class);
-        if (null != headers && !headers.isEmpty()) {
+        if (null != headers && !headers.isEmpty() && !isSqlFormat) {
             unstructuredWriter.writeOneRecord(headers);
         }
 
         Record record = null;
+        int receivedCount = 0;
         String byteEncoding = config.getString(Key.BYTE_ENCODING);
         while ((record = lineReceiver.getFromReader()) != null) {
             UnstructuredStorageWriterUtil.transportOneRecord(record,
                     nullFormat, dateParse, taskPluginCollector,
                     unstructuredWriter, byteEncoding);
+            receivedCount++;
+            if (isSqlFormat && receivedCount % commitSize == 0) {
+                ((SqlWriter) unstructuredWriter).appendCommit();
+            }
         }
 
+        if (isSqlFormat) {
+            ((SqlWriter)unstructuredWriter).appendCommit();
+        }
         // warn:由调用方控制流的关闭
         // IOUtils.closeQuietly(unstructuredWriter);
     }
@@ -262,6 +275,16 @@ public class UnstructuredStorageWriterUtil {
 
             String fieldDelimiter = config.getString(Key.FIELD_DELIMITER, String.valueOf(Constant.DEFAULT_FIELD_DELIMITER));
             unstructuredWriter = TextCsvWriterManager.produceTextWriter(writer, fieldDelimiter, config);
+        } else if (StringUtils.equalsIgnoreCase(fileFormat, Constant.FILE_FORMAT_SQL)) {
+            String tableName = config.getString(Key.TABLE_NAME);
+            Preconditions.checkArgument(StringUtils.isNotEmpty(tableName), "table name is empty");
+            String quoteChar = config.getString(Key.QUOTE_CHARACTER);
+            Preconditions.checkArgument(StringUtils.isNotEmpty(quoteChar), "quote character is empty");
+            String lineSeparator = config.getString(Key.LINE_DELIMITER, IOUtils.LINE_SEPARATOR);
+            List<String> headers = config.getList(Key.HEADER, String.class);
+            Preconditions.checkArgument(CollectionUtils.isNotEmpty(headers), "column names are empty");
+            String nullFormat = config.getString(Key.NULL_FORMAT, Constant.DEFAULT_NULL_FORMAT);
+            unstructuredWriter = new SqlWriter(writer, quoteChar, tableName, lineSeparator, headers, nullFormat);
         }
 
         return unstructuredWriter;

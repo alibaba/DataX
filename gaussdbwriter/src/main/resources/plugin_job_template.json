@@ -1,0 +1,16 @@
+{
+    "name": "gaussdbwriter",
+    "parameter": {
+        "username": "",
+        "password": "",
+        "column": [],
+        "connection": [
+            {
+                "jdbcUrl": "",
+                "table": []
+            }
+        ],
+        "preSql": [],
+        "postSql": []
+    }
+}

@@ -2,8 +2,8 @@ package com.alibaba.datax.plugin.reader.hbase11xsqlreader;
 
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.util.Configuration;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.TypeReference;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.TypeReference;
 import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.util.Pair;
 import org.apache.hadoop.mapreduce.InputSplit;
@@ -26,9 +26,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 public class HbaseSQLHelper {
@@ -50,10 +48,14 @@ public class HbaseSQLHelper {
         String zkUrl = readerConfig.getZkUrl();
 
         PhoenixConfigurationUtil.setInputClass(conf, PhoenixRecordWritable.class);
-        PhoenixConfigurationUtil.setInputTableName(conf, table);
+
+        PhoenixConfigurationUtil.setInputTableName(conf, readerConfig.getSchema()+"."+table);
 
         if (!columns.isEmpty()) {
             PhoenixConfigurationUtil.setSelectColumnNames(conf, columns.toArray(new String[columns.size()]));
+        }
+        if(Objects.nonNull(readerConfig.getWhere())){
+            PhoenixConfigurationUtil.setInputTableConditions(conf,readerConfig.getWhere());
         }
         PhoenixEmbeddedDriver.ConnectionInfo info = null;
         try {
@@ -67,15 +69,19 @@ public class HbaseSQLHelper {
             conf.setInt(HConstants.ZOOKEEPER_CLIENT_PORT, info.getPort());
         if (info.getRootNode() != null)
             conf.set(HConstants.ZOOKEEPER_ZNODE_PARENT, info.getRootNode());
+        conf.set(Key.NAME_SPACE_MAPPING_ENABLED,"true");
+        conf.set(Key.SYSTEM_TABLES_TO_NAMESPACE,"true");
         return conf;
     }
 
-    public static List<String> getPColumnNames(String connectionString, String tableName) throws SQLException {
-        Connection con =
-                DriverManager.getConnection(connectionString);
+    public static List<String> getPColumnNames(String connectionString, String tableName,String schema) throws SQLException {
+        Properties pro = new Properties();
+        pro.put(Key.NAME_SPACE_MAPPING_ENABLED, true);
+        pro.put(Key.SYSTEM_TABLES_TO_NAMESPACE, true);
+        Connection con = DriverManager.getConnection(connectionString,pro);
         PhoenixConnection phoenixConnection = con.unwrap(PhoenixConnection.class);
         MetaDataClient metaDataClient = new MetaDataClient(phoenixConnection);
-        PTable table = metaDataClient.updateCache("", tableName).getTable();
+        PTable table = metaDataClient.updateCache(schema, tableName).getTable();
         List<String> columnNames = new ArrayList<String>();
         for (PColumn pColumn : table.getColumns()) {
             if (!pColumn.getName().getString().equals(SaltingUtil.SALTING_COLUMN_NAME))

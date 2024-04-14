@@ -79,16 +79,9 @@ public class Engine {
             perfReportEnable = false;
         }
 
-        int priority = 0;
-        try {
-            priority = Integer.parseInt(System.getenv("SKYNET_PRIORITY"));
-        }catch (NumberFormatException e){
-            LOG.warn("prioriy set to 0, because NumberFormatException, the value is: "+System.getProperty("PROIORY"));
-        }
-
         Configuration jobInfoConfig = allConf.getConfiguration(CoreConstant.DATAX_JOB_JOBINFO);
         //初始化PerfTrace
-        PerfTrace perfTrace = PerfTrace.getInstance(isJob, instanceId, taskGroupId, priority, traceEnable);
+        PerfTrace perfTrace = PerfTrace.getInstance(isJob, instanceId, taskGroupId, traceEnable);
         perfTrace.setJobInfo(jobInfoConfig,perfReportEnable,channelNumber);
         container.start();
 

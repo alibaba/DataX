@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.StringJoiner;
 
 public class HbaseSQLReaderConfig {
     private final static Logger LOG = LoggerFactory.getLogger(HbaseSQLReaderConfig.class);
@@ -27,6 +28,9 @@ public class HbaseSQLReaderConfig {
     private String tableName;
     private List<String> columns;         // 目的表的所有列的列名，包括主键和非主键，不包括时间列
 
+    private String where;//条件
+
+    private String schema;//
     /**
      * @return 获取原始的datax配置
      */
@@ -96,22 +100,27 @@ public class HbaseSQLReaderConfig {
         }
         String zkQuorum = zkCfg.getFirst();
         String znode = zkCfg.getSecond();
+
         if (zkQuorum == null || zkQuorum.isEmpty()) {
             throw DataXException.asDataXException(
                     HbaseSQLReaderErrorCode.ILLEGAL_VALUE, "HBase的hbase.zookeeper.quorum配置不能为空" );
         }
         // 生成sql使用的连接字符串， 格式： jdbc:hbase:zk_quorum:2181:/znode_parent
-        cfg.connectionString = "jdbc:phoenix:" + zkQuorum;
-        cfg.zkUrl = zkQuorum + ":2181";
+        StringBuilder connectionString=new StringBuilder("jdbc:phoenix:");
+        connectionString.append(zkQuorum);
+        cfg.connectionString = connectionString.toString();
+        StringBuilder zkUrl =new StringBuilder(zkQuorum);
+        cfg.zkUrl = zkUrl.append(":2181").toString();
         if (!znode.isEmpty()) {
-            cfg.connectionString += cfg.connectionString + ":" + znode;
-            cfg.zkUrl += cfg.zkUrl + ":" + znode;
+            cfg.connectionString =  connectionString.append(":").append(znode).toString();
+            cfg.zkUrl=zkUrl.append(":").append(znode).toString();
         }
     }
 
     private static void parseTableConfig(HbaseSQLReaderConfig cfg, Configuration dataxCfg) {
         // 解析并检查表名
         cfg.tableName = dataxCfg.getString(Key.TABLE);
+        cfg.schema = dataxCfg.getString(Key.SCHEMA);
         if (cfg.tableName == null || cfg.tableName.isEmpty()) {
             throw DataXException.asDataXException(
                     HbaseSQLReaderErrorCode.ILLEGAL_VALUE, "HBase的tableName配置不能为空,请检查并修改配置." );
@@ -124,13 +133,14 @@ public class HbaseSQLReaderConfig {
                     HbaseSQLReaderErrorCode.ILLEGAL_VALUE, "您配置的tableName含有非法字符{0}，请检查您的配置.");
         } else if (cfg.columns.isEmpty()) {
             try {
-                cfg.columns = HbaseSQLHelper.getPColumnNames(cfg.connectionString, cfg.tableName);
+                cfg.columns = HbaseSQLHelper.getPColumnNames(cfg.connectionString, cfg.tableName,cfg.schema);
                 dataxCfg.set(Key.COLUMN, cfg.columns);
             } catch (SQLException e) {
                 throw DataXException.asDataXException(
                         HbaseSQLReaderErrorCode.GET_PHOENIX_COLUMN_ERROR, "HBase的columns配置不能为空,请添加目标表的列名配置." + e.getMessage(), e);
             }
         }
+        cfg.where=dataxCfg.getString(Key.WHERE);
     }
 
     @Override
@@ -151,6 +161,8 @@ public class HbaseSQLReaderConfig {
             ret.append(",");
         }
         ret.setLength(ret.length() - 1);
+        ret.append("[where=]").append(getWhere());
+        ret.append("[schema=]").append(getSchema());
         ret.append("\n");
 
         return ret.toString();
@@ -160,5 +172,21 @@ public class HbaseSQLReaderConfig {
      * 禁止直接实例化本类，必须调用{@link #parse}接口来初始化
      */
     private HbaseSQLReaderConfig() {
+    }
+
+    public String getWhere() {
+        return where;
+    }
+
+    public void setWhere(String where) {
+        this.where = where;
+    }
+
+    public String getSchema() {
+        return schema;
+    }
+
+    public void setSchema(String schema) {
+        this.schema = schema;
     }
 }

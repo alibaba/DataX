@@ -37,6 +37,28 @@
             <!--</includes>-->
             <!--<outputDirectory>plugin/reader/hdfsreader/libs</outputDirectory>-->
         <!--</fileSet>-->
+        <!--<fileSet>-->
+            <!--<directory>src/main/libs</directory>-->
+            <!--<includes>-->
+                <!--<include>*.*</include>-->
+            <!--</includes>-->
+            <!--<outputDirectory>plugin/reader/hdfsreader/libs</outputDirectory>-->
+        <!--</fileSet>-->
+
+        <fileSet>
+            <directory>src/main/libs</directory>
+            <includes>
+                <include>*.*</include>
+            </includes>
+            <outputDirectory>plugin/reader/ossreader/libs</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/libs</directory>
+            <includes>
+                <include>*.*</include>
+            </includes>
+            <outputDirectory>plugin/reader/hivereader/libs</outputDirectory>
+        </fileSet>
     </fileSets>
 
     <dependencySets>

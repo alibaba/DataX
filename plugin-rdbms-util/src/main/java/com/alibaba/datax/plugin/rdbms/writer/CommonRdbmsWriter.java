@@ -12,6 +12,7 @@ import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
 import com.alibaba.datax.plugin.rdbms.util.RdbmsException;
 import com.alibaba.datax.plugin.rdbms.writer.util.OriginalConfPretreatmentUtil;
 import com.alibaba.datax.plugin.rdbms.writer.util.WriterUtil;
+import java.util.concurrent.atomic.AtomicLong;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
@@ -199,6 +200,9 @@ public class CommonRdbmsWriter {
         protected boolean emptyAsNull;
         protected Triple<List<String>, List<Integer>, List<String>> resultSetMetaData;
 
+        private int dumpRecordLimit = Constant.DEFAULT_DUMP_RECORD_LIMIT;
+        private AtomicLong dumpRecordCount = new AtomicLong(0);
+
         public Task(DataBaseType dataBaseType) {
             this.dataBaseType = dataBaseType;
         }
@@ -209,7 +213,7 @@ public class CommonRdbmsWriter {
             this.jdbcUrl = writerSliceConfig.getString(Key.JDBC_URL);
 
             //ob10的处理
-            if (this.jdbcUrl.startsWith(Constant.OB10_SPLIT_STRING) && this.dataBaseType == DataBaseType.MySql) {
+            if (this.jdbcUrl.startsWith(Constant.OB10_SPLIT_STRING)) {
                 String[] ss = this.jdbcUrl.split(Constant.OB10_SPLIT_STRING_PATTERN);
                 if (ss.length != 3) {
                     throw DataXException
@@ -368,7 +372,11 @@ public class CommonRdbmsWriter {
             }
         }
 
-        protected void doOneInsert(Connection connection, List<Record> buffer) {
+        public boolean needToDumpRecord() {
+            return dumpRecordCount.incrementAndGet() <= dumpRecordLimit;
+        }
+
+        public void doOneInsert(Connection connection, List<Record> buffer) {
             PreparedStatement preparedStatement = null;
             try {
                 connection.setAutoCommit(true);
@@ -381,7 +389,10 @@ public class CommonRdbmsWriter {
                                 preparedStatement, record);
                         preparedStatement.execute();
                     } catch (SQLException e) {
-                        LOG.debug(e.toString());
+                        if (needToDumpRecord()) {
+                            LOG.warn("ERROR : record {}", record);
+                            LOG.warn("Insert fatal error SqlState ={}, errorCode = {}, {}", e.getSQLState(), e.getErrorCode(), e);
+                        }
 
                         this.taskPluginCollector.collectDirtyRecord(record, e);
                     } finally {
@@ -407,11 +418,6 @@ public class CommonRdbmsWriter {
             }
 
             return preparedStatement;
-        }
-
-        protected PreparedStatement fillPreparedStatementColumnType(PreparedStatement preparedStatement, int columnIndex,
-                                                                    int columnSqltype, Column column) throws SQLException {
-            return fillPreparedStatementColumnType(preparedStatement, columnIndex, columnSqltype, null, column);
         }
 
         protected PreparedStatement fillPreparedStatementColumnType(PreparedStatement preparedStatement, int columnIndex,
@@ -524,7 +530,7 @@ public class CommonRdbmsWriter {
                     break;
 
                 case Types.BOOLEAN:
-                    preparedStatement.setString(columnIndex + 1, column.asString());
+                    preparedStatement.setBoolean(columnIndex + 1, column.asBoolean());
                     break;
 
                 // warn: bit(1) -> Types.BIT 可使用setBoolean

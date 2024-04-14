@@ -3,7 +3,7 @@ package com.alibaba.datax.plugin.reader.oceanbasev10reader.util;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.plugin.rdbms.reader.Constant;
 import com.alibaba.datax.plugin.rdbms.reader.Key;
-import com.alibaba.datax.plugin.rdbms.reader.util.HintUtil;
+import com.alibaba.datax.plugin.rdbms.reader.util.ObVersion;
 import com.alibaba.datax.plugin.rdbms.util.DBUtil;
 import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
 import com.alibaba.datax.plugin.reader.oceanbasev10reader.ext.ObReaderKey;
@@ -11,8 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,12 +20,76 @@ import java.util.List;
 public class PartitionSplitUtil {
     private static final Logger LOG = LoggerFactory.getLogger(PartitionSplitUtil.class);
 
+    private static final String ORACLE_GET_SUBPART_TEMPLATE =
+        "select subpartition_name "
+            + "from dba_tab_subpartitions "
+            + "where table_name = '%s' and table_owner = '%s'";
+
+    private static final String ORACLE_GET_PART_TEMPLATE =
+        "select partition_name "
+            + "from dba_tab_partitions "
+            + "where table_name = '%s' and table_owner = '%s'";
+
+    private static final String MYSQL_GET_PART_TEMPLATE =
+        "select p.part_name "
+            + "from oceanbase.__all_part p, oceanbase.%s t, oceanbase.__all_database d "
+            + "where p.table_id = t.table_id "
+            + "and d.database_id = t.database_id "
+            + "and d.database_name = '%s' "
+            + "and t.table_name = '%s'";
+
+    private static final String MYSQL_GET_SUBPART_TEMPLATE =
+        "select p.sub_part_name "
+            + "from oceanbase.__all_sub_part p, oceanbase.%s t, oceanbase.__all_database d "
+            + "where p.table_id = t.table_id "
+            + "and d.database_id = t.database_id "
+            + "and d.database_name = '%s' "
+            + "and t.table_name = '%s'";
+
+    /**
+     * get partition info from data dictionary in ob oracle mode
+     * @param config
+     * @param tableName
+     * @return
+     */
+    public static PartInfo getObOraclePartInfoBySQL(Configuration config, String tableName) {
+        PartInfo partInfo;
+        DataBaseType dbType = ObReaderUtils.databaseType;
+        String jdbcUrl = config.getString(Key.JDBC_URL);
+        String username = config.getString(Key.USERNAME);
+        String password = config.getString(Key.PASSWORD);
+        String dbname = ObReaderUtils.getDbNameFromJdbcUrl(jdbcUrl).toUpperCase();
+        Connection conn = DBUtil.getConnection(dbType, jdbcUrl, username, password);
+        tableName = tableName.toUpperCase();
+
+        // check if the table has subpartitions or not
+        String getSubPartSql = String.format(ORACLE_GET_SUBPART_TEMPLATE, tableName, dbname);
+        List<String> partList = ObReaderUtils.getResultsFromSql(conn, getSubPartSql);
+        if (partList != null && partList.size() > 0) {
+            partInfo = new PartInfo(PartType.SUBPARTITION);
+            partInfo.addPart(partList);
+            return partInfo;
+        }
+
+        String getPartSql = String.format(ORACLE_GET_PART_TEMPLATE, tableName, dbname);
+        partList = ObReaderUtils.getResultsFromSql(conn, getPartSql);
+        if (partList != null && partList.size() > 0) {
+            partInfo = new PartInfo(PartType.PARTITION);
+            partInfo.addPart(partList);
+            return partInfo;
+        }
+
+        // table is not partitioned
+        partInfo = new PartInfo(PartType.NONPARTITION);
+        return partInfo;
+    }
+
     public static List<Configuration> splitByPartition (Configuration configuration) {
         List<Configuration> allSlices = new ArrayList<>();
-        List<Object> conns = configuration.getList(Constant.CONN_MARK, Object.class);
-        for (int i = 0, len = conns.size(); i < len; i++) {
+        List<Object> connections = configuration.getList(Constant.CONN_MARK, Object.class);
+        for (int i = 0, len = connections.size(); i < len; i++) {
             Configuration sliceConfig = configuration.clone();
-            Configuration connConf = Configuration.from(conns.get(i).toString());
+            Configuration connConf = Configuration.from(connections.get(i).toString());
             String jdbcUrl = connConf.getString(Key.JDBC_URL);
             sliceConfig.set(Key.JDBC_URL, jdbcUrl);
             sliceConfig.remove(Constant.CONN_MARK);
@@ -64,7 +126,7 @@ public class PartitionSplitUtil {
                 slices.add(slice);
             }
         } else {
-            LOG.info("fail to get table part info or table is not partitioned, proceed as non-partitioned table.");
+            LOG.info("table is not partitioned.");
 
             Configuration slice = configuration.clone();
             slice.set(Key.QUERY_SQL, ObReaderUtils.buildQuerySql(weakRead, column, table, where));
@@ -74,7 +136,16 @@ public class PartitionSplitUtil {
         return slices;
     }
 
-    private static PartInfo getObPartInfoBySQL(Configuration config, String table) {
+    public static PartInfo getObPartInfoBySQL(Configuration config, String table) {
+        boolean isOracleMode = config.getString(ObReaderKey.OB_COMPATIBILITY_MODE).equals("ORACLE");
+        if (isOracleMode) {
+            return getObOraclePartInfoBySQL(config, table);
+        } else {
+            return getObMySQLPartInfoBySQL(config, table);
+        }
+    }
+
+    public static PartInfo getObMySQLPartInfoBySQL(Configuration config, String table) {
         PartInfo partInfo = new PartInfo(PartType.NONPARTITION);
         List<String> partList;
         Connection conn = null;
@@ -86,45 +157,23 @@ public class PartitionSplitUtil {
             String allTable = "__all_table";
 
             conn = DBUtil.getConnection(DataBaseType.OceanBase, jdbcUrl, username, password);
-            String obVersion = getResultsFromSql(conn, "select version()").get(0);
-
-            LOG.info("obVersion: " + obVersion);
-
-            if (ObReaderUtils.compareObVersion("2.2.76", obVersion) < 0) {
+            ObVersion obVersion = ObReaderUtils.getObVersion(conn);
+            if (obVersion.compareTo(ObVersion.V2276) >= 0 &&
+                obVersion.compareTo(ObVersion.V4000) < 0) {
                 allTable = "__all_table_v2";
             }
 
-            String queryPart = String.format(
-                "select p.part_name " +
-                    "from oceanbase.__all_part p, oceanbase.%s t, oceanbase.__all_database d " +
-                    "where p.table_id = t.table_id " +
-                    "and d.database_id = t.database_id " +
-                    "and d.database_name = '%s' " +
-                    "and t.table_name = '%s'", allTable, dbname, table);
-            String querySubPart = String.format(
-                "select p.sub_part_name " +
-                    "from oceanbase.__all_sub_part p, oceanbase.%s t, oceanbase.__all_database d " +
-                    "where p.table_id = t.table_id " +
-                    "and d.database_id = t.database_id " +
-                    "and d.database_name = '%s' " +
-                    "and t.table_name = '%s'", allTable, dbname, table);
-            if (config.getString(ObReaderKey.OB_COMPATIBILITY_MODE).equals("ORACLE")) {
-                queryPart = String.format(
-                    "select partition_name from all_tab_partitions where TABLE_OWNER = '%s' and table_name = '%s'",
-                    dbname.toUpperCase(), table.toUpperCase());
-                querySubPart = String.format(
-                    "select subpartition_name from all_tab_subpartitions where TABLE_OWNER = '%s' and table_name = '%s'",
-                    dbname.toUpperCase(), table.toUpperCase());
-            }
+            String querySubPart = String.format(MYSQL_GET_SUBPART_TEMPLATE, allTable, dbname, table);
 
             PartType partType = PartType.SUBPARTITION;
 
             // try subpartition first
-            partList = getResultsFromSql(conn, querySubPart);
+            partList = ObReaderUtils.getResultsFromSql(conn, querySubPart);
 
             // if table is not sub-partitioned, the try partition
             if (partList.isEmpty()) {
-                partList = getResultsFromSql(conn, queryPart);
+                String queryPart = String.format(MYSQL_GET_PART_TEMPLATE, allTable, dbname, table);
+                partList = ObReaderUtils.getResultsFromSql(conn, queryPart);
                 partType = PartType.PARTITION;
             }
 
@@ -139,27 +188,5 @@ public class PartitionSplitUtil {
         }
 
         return partInfo;
-    }
-
-    private static List<String> getResultsFromSql(Connection conn, String sql) {
-        List<String> list = new ArrayList();
-        Statement stmt = null;
-        ResultSet rs = null;
-
-        LOG.info("executing sql: " + sql);
-
-        try {
-            stmt = conn.createStatement();
-            rs = stmt.executeQuery(sql);
-            while (rs.next()) {
-                list.add(rs.getString(1));
-            }
-        } catch (Exception e) {
-            LOG.error("error when executing sql: " + e.getMessage());
-        } finally {
-            DBUtil.closeDBResources(rs, stmt, null);
-        }
-
-        return list;
     }
 }

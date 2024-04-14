@@ -3,7 +3,7 @@ package com.q1.datax.plugin.writer.kudu11xwriter;
 import com.alibaba.datax.common.element.Column;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.util.Configuration;
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.kudu.ColumnSchema;

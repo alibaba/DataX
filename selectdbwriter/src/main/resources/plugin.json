@@ -1,0 +1,6 @@
+{
+  "name": "selectdbwriter",
+  "class": "com.alibaba.datax.plugin.writer.selectdbwriter.SelectdbWriter",
+  "description": "selectdb writer plugin",
+  "developer": "selectdb"
+}

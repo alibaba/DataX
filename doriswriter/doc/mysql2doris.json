@@ -1,0 +1,48 @@
+{
+    "job": {
+        "content": [
+            {
+                "reader": {
+                    "name": "mysqlreader",
+                    "parameter": {
+                        "column": ["k1", "k2", "k3"],
+                        "connection": [
+                            {
+                                "jdbcUrl": ["jdbc:mysql://192.168.10.10:3306/db1"],
+                                "table": ["t1"]
+                            }
+                        ],
+                        "username": "root",
+                        "password": "",
+                        "where": ""
+                    }
+                },
+                "writer": {
+                    "name": "doriswriter",
+                    "parameter": {
+                        "loadUrl": ["192.168.1.1:8030"],
+                        "loadProps": {},
+                        "database": "db1",
+                        "column": ["k1", "k2", "k3"],
+                        "username": "root",
+                        "password": "",
+                        "postSql": [],
+                        "preSql": [],
+                        "connection": [
+                            {
+                            "jdbcUrl":"jdbc:mysql://192.168.1.1:9030/",
+                            "table":["xxx"],
+                            "selectedDatabase":"xxxx"
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "setting": {
+            "speed": {
+                "channel": "1"
+            }
+        }
+    }
+}

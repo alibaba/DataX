@@ -25,12 +25,13 @@
 			</exclusions>
 		</dependency>
 
+		<!-- dm7 dm8 driver -->
 		<dependency>
-			<groupId>com.dm</groupId>
-			<artifactId>dm</artifactId>
-			<scope>system</scope>
-			<systemPath>${basedir}/src/main/libs/Dm7JdbcDriver16.jar</systemPath>
+			<groupId>com.dameng</groupId>
+			<artifactId>Dm7JdbcDriver17</artifactId>
+			<version>7.6.0.142</version>
 		</dependency>
+		<!-- sybase driver -->
 		<dependency>
             <groupId>com.sybase</groupId>
             <artifactId>jconn3</artifactId>
@@ -38,13 +39,20 @@
             <scope>system</scope>
             <systemPath>${basedir}/src/main/libs/jconn3-1.0.0-SNAPSHOT.jar</systemPath>
         </dependency>
-        <dependency>
+		<!-- ppas driver -->
+		<dependency>
             <groupId>ppas</groupId>
             <artifactId>ppas</artifactId>
             <version>16</version>
             <scope>system</scope>
             <systemPath>${basedir}/src/main/libs/edb-jdbc16.jar</systemPath>
         </dependency>
+		<!-- db2 driver -->
+		<dependency>
+			<groupId>com.ibm.db2.jcc</groupId>
+			<artifactId>db2jcc</artifactId>
+			<version>db2jcc4</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -97,13 +105,4 @@
 		</plugins>
 	</build>
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>com.dm</groupId>
-				<artifactId>dm</artifactId>
-				<version>16</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 </project>

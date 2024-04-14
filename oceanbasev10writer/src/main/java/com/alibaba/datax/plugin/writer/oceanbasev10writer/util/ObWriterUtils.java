@@ -1,8 +1,10 @@
 package com.alibaba.datax.plugin.writer.oceanbasev10writer.util;
 
+import com.alibaba.datax.plugin.rdbms.reader.util.ObVersion;
 import com.alibaba.datax.plugin.rdbms.util.DBUtil;
 import com.alibaba.datax.plugin.rdbms.writer.CommonRdbmsWriter.Task;
 import com.alibaba.datax.plugin.writer.oceanbasev10writer.Config;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -11,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.*;
+import static com.alibaba.datax.plugin.writer.oceanbasev10writer.Config.DEFAULT_SLOW_MEMSTORE_THRESHOLD;
 
 public class ObWriterUtils {
 
@@ -18,14 +21,20 @@ public class ObWriterUtils {
 	private static final String ORACLE_KEYWORDS = "ACCESS,ADD,ALL,ALTER,AND,ANY,ARRAYLEN,AS,ASC,AUDIT,BETWEEN,BY,CHAR,CHECK,CLUSTER,COLUMN,COMMENT,COMPRESS,CONNECT,CREATE,CURRENT,DATE,DECIMAL,DEFAULT,DELETE,DESC,DISTINCT,DROP,ELSE,EXCLUSIVE,EXISTS,FILE,FLOAT,FOR,FROM,GRANT,GROUP,HAVING,IDENTIFIED,IMMEDIATE,IN,INCREMENT,INDEX,INITIAL,INSERT,INTEGER,INTERSECT,INTO,IS,LEVEL,LIKE,LOCK,LONG,MAXEXTENTS,MINUS,MODE,MODIFY,NOAUDIT,NOCOMPRESS,NOT,NOTFOUND,NOWAIT,NULL,NUMBER,OF,OFFLINE,ON,ONLINE,OPTION,OR,ORDER,PCTFREE,PRIOR,PRIVILEGES,PUBLIC,RAW,RENAME,RESOURCE,REVOKE,ROW,ROWID,ROWLABEL,ROWNUM,ROWS,SELECT,SESSION,SET,SHARE,SIZE,SMALLINT,SQLBUF,START,SUCCESSFUL,SYNONYM,TABLE,THEN,TO,TRIGGER,UID,UNION,UNIQUE,UPDATE,USER,VALIDATE,VALUES,VARCHAR,VARCHAR2,VIEW,WHENEVER,WHERE,WITH";
 
 	private static String CHECK_MEMSTORE = "select 1 from %s.gv$memstore t where t.total>t.mem_limit * ?";
+	private static final String CHECK_MEMSTORE_4_0 = "select 1 from %s.gv$ob_memstore t where t.MEMSTORE_USED>t.MEMSTORE_LIMIT * ?";
+
+	private static String CHECK_MEMSTORE_RATIO = "select min(t.total/t.mem_limit) from %s.gv$memstore t";
+	private static final String CHECK_MEMSTORE_RATIO_4_0 = "select min(t.MEMSTORE_USED/t.MEMSTORE_LIMIT) from %s.gv$ob_memstore t";
+
 	private static Set<String> databaseKeywords;
 	private static String compatibleMode = null;
+	private static String obVersion = null;
 	protected static final Logger LOG = LoggerFactory.getLogger(Task.class);
 	private static Set<String> keywordsFromString2HashSet(final String keywords) {
 		return new HashSet(Arrays.asList(keywords.split(",")));
 	}
 
-	public static String escapeDatabaseKeywords(String keyword) {
+	public static String escapeDatabaseKeyword(String keyword) {
 		if (databaseKeywords == null) {
 			if (isOracleMode()) {
 				databaseKeywords = keywordsFromString2HashSet(ORACLE_KEYWORDS);
@@ -40,9 +49,9 @@ public class ObWriterUtils {
 		return keyword;
 	}
 
-	public static void escapeDatabaseKeywords(List<String> keywords) {
+	public static void escapeDatabaseKeyword(List<String> keywords) {
 		for (int i = 0; i < keywords.size(); i++) {
-			keywords.set(i, escapeDatabaseKeywords(keywords.get(i)));
+			keywords.set(i, escapeDatabaseKeyword(keywords.get(i)));
 		}
 	}
 	public static Boolean isEscapeMode(String keyword){
@@ -61,7 +70,7 @@ public class ObWriterUtils {
 			if (isOracleMode()) {
 				sysDbName = "sys";
 			}
-			ps = conn.prepareStatement(String.format(CHECK_MEMSTORE, sysDbName));
+			ps = conn.prepareStatement(String.format(getMemStoreSql(), sysDbName));
 			ps.setDouble(1, memstoreThreshold);
 			rs = ps.executeQuery();
 			// 只要有满足条件的,则表示当前租户 有个机器的memstore即将满
@@ -77,8 +86,48 @@ public class ObWriterUtils {
 		return result;
 	}
 
+	public static double queryMemUsedRatio (Connection conn) {
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		double result = 0;
+		try {
+			String sysDbName = "oceanbase";
+			if (isOracleMode()) {
+				sysDbName = "sys";
+			}
+			ps = conn.prepareStatement(String.format(getMemStoreRatioSql(), sysDbName));
+			rs = ps.executeQuery();
+			// 只要有满足条件的,则表示当前租户 有个机器的memstore即将满
+			if (rs.next()) {
+				result = rs.getDouble(1);
+			}
+		} catch (Throwable e) {
+			LOG.warn("Check memstore fail, reason: {}. Use a random value instead.", e.getMessage());
+			result = RandomUtils.nextDouble(0.3D, DEFAULT_SLOW_MEMSTORE_THRESHOLD + 0.2D);
+		} finally {
+			//do not need to close the statment in ob1.0
+		}
+		return result;
+	}
+
 	public static boolean isOracleMode(){
 		return (compatibleMode.equals(Config.OB_COMPATIBLE_MODE_ORACLE));
+	}
+
+	private static String getMemStoreSql() {
+		if (ObVersion.valueOf(obVersion).compareTo(ObVersion.V4000) >= 0) {
+			return CHECK_MEMSTORE_4_0;
+		} else {
+			return CHECK_MEMSTORE;
+		}
+	}
+
+	private static String getMemStoreRatioSql() {
+		if (ObVersion.valueOf(obVersion).compareTo(ObVersion.V4000) >= 0) {
+			return CHECK_MEMSTORE_RATIO_4_0;
+		} else {
+			return CHECK_MEMSTORE_RATIO;
+		}
 	}
 
 	public static String getCompatibleMode() {
@@ -87,6 +136,10 @@ public class ObWriterUtils {
 
 	public static void setCompatibleMode(String mode) {
 		compatibleMode = mode;
+	}
+
+	public static void setObVersion(String version) {
+		obVersion = version;
 	}
 
 	private static String buildDeleteSql (String tableName, List<String> columns) {
@@ -159,13 +212,13 @@ public class ObWriterUtils {
 			while (rs.next()) {
 				String keyName = rs.getString("Key_name");
 				String columnName = rs.getString("Column_name");
-				columnName=escapeDatabaseKeywords(columnName);
+				columnName= escapeDatabaseKeyword(columnName);
 				if(!ObWriterUtils.isEscapeMode(columnName)){
 					columnName = columnName.toUpperCase();
 				}
 				List<String> s = uniqueKeys.get(keyName);
 				if (s == null) {
-					s = new ArrayList();
+					s = new ArrayList<>();
 					uniqueKeys.put(keyName, s);
 				}
 				s.add(columnName);
@@ -237,7 +290,7 @@ public class ObWriterUtils {
 				String columnName = StringUtils.upperCase(rs.getString("Column_name"));
 				Set<String> s = uniqueKeys.get(keyName);
 				if (s == null) {
-					s = new HashSet();
+					s = new HashSet<>();
 					uniqueKeys.put(keyName, s);
 				}
 				s.add(columnName);
@@ -399,7 +452,7 @@ public class ObWriterUtils {
 
 	private static Set<Integer> white = new HashSet<Integer>();
 	static {
-		int[] errList = { 1213, 1047, 1041, 1094, 4000, 4012 };
+		int[] errList = { 1213, 1047, 1041, 1094, 4000, 4012, 4013 };
 		for (int err : errList) {
 			white.add(err);
 		}
@@ -429,4 +482,26 @@ public class ObWriterUtils {
 		t.setDaemon(true);
 		t.start();
 	}
+
+	/**
+	 *
+	 */
+	public static enum LoadMode {
+
+		/**
+		 * Fast insert
+		 */
+		FAST,
+
+		/**
+		 * Insert slowly
+		 */
+		SLOW,
+
+		/**
+		 * Pause to insert
+		 */
+		PAUSE
+	}
+
 }

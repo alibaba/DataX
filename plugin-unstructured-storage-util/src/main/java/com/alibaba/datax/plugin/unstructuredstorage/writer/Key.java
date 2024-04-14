@@ -5,11 +5,15 @@ public class Key {
     // must have
     public static final String FILE_NAME = "fileName";
 
+    public static final String TABLE_NAME = "table";
+
     // must have
     public static final String WRITE_MODE = "writeMode";
 
     // not must , not default ,
     public static final String FIELD_DELIMITER = "fieldDelimiter";
+
+    public static final String QUOTE_CHARACTER = "quoteChar";
 
     // not must , default os's line delimiter
     public static final String LINE_DELIMITER = "lineDelimiter";
@@ -38,6 +42,8 @@ public class Key {
     
     // writer maxFileSize
     public static final String MAX_FILE_SIZE = "maxFileSize";
+
+    public static final String COMMIT_SIZE = "commitSize";
     
     // writer file type suffix, like .txt  .csv
     public static final String SUFFIX = "suffix";

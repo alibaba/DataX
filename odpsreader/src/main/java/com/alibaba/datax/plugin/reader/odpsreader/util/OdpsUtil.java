@@ -7,6 +7,7 @@ import com.alibaba.datax.common.util.MessageSource;
 import com.alibaba.datax.common.util.RetryUtil;
 import com.alibaba.datax.plugin.reader.odpsreader.ColumnType;
 import com.alibaba.datax.plugin.reader.odpsreader.Constant;
+import com.alibaba.datax.plugin.reader.odpsreader.InternalColumnInfo;
 import com.alibaba.datax.plugin.reader.odpsreader.Key;
 import com.alibaba.datax.plugin.reader.odpsreader.OdpsReaderErrorCode;
 import com.aliyun.odps.*;
@@ -75,19 +76,12 @@ public final class OdpsUtil {
             defaultProject = packageAuthorizedProject;
         }
 
-        String accountType = originalConfig.getString(Key.ACCOUNT_TYPE,
-                Constant.DEFAULT_ACCOUNT_TYPE);
 
         Account account = null;
-        if (accountType.equalsIgnoreCase(Constant.DEFAULT_ACCOUNT_TYPE)) {
-            if (StringUtils.isNotBlank(securityToken)) {
-                account = new StsAccount(accessId, accessKey, securityToken);
-            } else {
-                account = new AliyunAccount(accessId, accessKey);
-            }
+        if (StringUtils.isNotBlank(securityToken)) {
+            account = new StsAccount(accessId, accessKey, securityToken);
         } else {
-            throw DataXException.asDataXException(OdpsReaderErrorCode.ACCOUNT_TYPE_ERROR,
-                    MESSAGE_SOURCE.message("odpsutil.3", accountType));
+            account = new AliyunAccount(accessId, accessKey);
         }
 
         Odps odps = new Odps(account);
@@ -215,19 +209,18 @@ public final class OdpsUtil {
         return userConfiguredPartitionClassification;
     }
 
-    public static List<Pair<String, ColumnType>> parseColumns(
+    public static List<InternalColumnInfo> parseColumns(
             List<String> allNormalColumns, List<String> allPartitionColumns,
             List<String> userConfiguredColumns) {
-        List<Pair<String, ColumnType>> parsededColumns = new ArrayList<Pair<String, ColumnType>>();
+        List<InternalColumnInfo> parsededColumns = new ArrayList<InternalColumnInfo>();
         // warn: upper & lower case
         for (String column : userConfiguredColumns) {
-            MutablePair<String, ColumnType> pair = new MutablePair<String, ColumnType>();
-
+        	InternalColumnInfo pair = new InternalColumnInfo();
             // if constant column
             if (OdpsUtil.checkIfConstantColumn(column)) {
                 // remove first and last '
-                pair.setLeft(column.substring(1, column.length() - 1));
-                pair.setRight(ColumnType.CONSTANT);
+            	pair.setColumnName(column.substring(1, column.length() - 1));
+            	pair.setColumnType(ColumnType.CONSTANT);
                 parsededColumns.add(pair);
                 continue;
             }
@@ -236,8 +229,8 @@ public final class OdpsUtil {
             // repeated in partitioning columns
             int index = OdpsUtil.indexOfIgnoreCase(allNormalColumns, column);
             if (0 <= index) {
-                pair.setLeft(allNormalColumns.get(index));
-                pair.setRight(ColumnType.NORMAL);
+            	pair.setColumnName(allNormalColumns.get(index));
+            	pair.setColumnType(ColumnType.NORMAL);
                 parsededColumns.add(pair);
                 continue;
             }
@@ -245,8 +238,8 @@ public final class OdpsUtil {
             // if partition column
             index = OdpsUtil.indexOfIgnoreCase(allPartitionColumns, column);
             if (0 <= index) {
-                pair.setLeft(allPartitionColumns.get(index));
-                pair.setRight(ColumnType.PARTITION);
+            	pair.setColumnName(allPartitionColumns.get(index));
+            	pair.setColumnType(ColumnType.PARTITION);
                 parsededColumns.add(pair);
                 continue;
             }
@@ -431,13 +424,13 @@ public final class OdpsUtil {
                 MESSAGE_SOURCE.message("odpsutil.12", tableName), e);
     }
 
-    public static List<Column> getNormalColumns(List<Pair<String, ColumnType>> parsedColumns,
+    public static List<Column> getNormalColumns(List<InternalColumnInfo> parsedColumns,
                                                 Map<String, TypeInfo> columnTypeMap) {
         List<Column> userConfigNormalColumns = new ArrayList<Column>();
         Set<String> columnNameSet = new HashSet<String>();
-        for (Pair<String, ColumnType> columnInfo : parsedColumns) {
-            if (columnInfo.getValue() == ColumnType.NORMAL) {
-                String columnName = columnInfo.getKey();
+        for (InternalColumnInfo columnInfo : parsedColumns) {
+            if (columnInfo.getColumnType() == ColumnType.NORMAL) {
+                String columnName = columnInfo.getColumnName();
                 if (!columnNameSet.contains(columnName)) {
                     Column column = new Column(columnName, columnTypeMap.get(columnName));
                     userConfigNormalColumns.add(column);

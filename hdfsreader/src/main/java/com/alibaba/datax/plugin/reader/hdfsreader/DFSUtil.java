@@ -8,13 +8,17 @@ import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.plugin.unstructuredstorage.reader.ColumnEntry;
 import com.alibaba.datax.plugin.unstructuredstorage.reader.UnstructuredStorageReaderErrorCode;
 import com.alibaba.datax.plugin.unstructuredstorage.reader.UnstructuredStorageReaderUtil;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.io.RCFile;
 import org.apache.hadoop.hive.ql.io.RCFileRecordReader;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
@@ -29,14 +33,30 @@ import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapred.*;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.parquet.example.data.Group;
+import org.apache.parquet.hadoop.ParquetReader;
+import org.apache.parquet.hadoop.example.GroupReadSupport;
+import org.apache.parquet.hadoop.util.HadoopInputFile;
+import org.apache.parquet.io.api.Binary;
+import org.apache.parquet.schema.MessageType;
+import org.apache.parquet.schema.MessageTypeParser;
+import org.apache.parquet.schema.PrimitiveType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * Created by mingya.wmy on 2015/8/12.
@@ -55,6 +75,10 @@ public class DFSUtil {
 
     public static final String HDFS_DEFAULTFS_KEY = "fs.defaultFS";
     public static final String HADOOP_SECURITY_AUTHENTICATION_KEY = "hadoop.security.authentication";
+
+    private Boolean skipEmptyOrcFile = false;
+
+    private Integer orcFileEmptySize = null;
 
 
     public DFSUtil(Configuration taskConfig) {
@@ -79,6 +103,7 @@ public class DFSUtil {
             this.hadoopConf.set(HADOOP_SECURITY_AUTHENTICATION_KEY, "kerberos");
         }
         this.kerberosAuthentication(this.kerberosPrincipal, this.kerberosKeytabFilePath);
+        this.skipEmptyOrcFile = taskConfig.getBool(Key.SKIP_EMPTY_ORCFILE, false);
 
         LOG.info(String.format("hadoopConfig details:%s", JSON.toJSONString(this.hadoopConf)));
     }
@@ -102,10 +127,11 @@ public class DFSUtil {
      * @param srcPaths          路径列表
      * @param specifiedFileType 指定文件类型
      */
-    public HashSet<String> getAllFiles(List<String> srcPaths, String specifiedFileType) {
+    public HashSet<String> getAllFiles(List<String> srcPaths, String specifiedFileType, Boolean skipEmptyOrcFile, Integer orcFileEmptySize) {
 
         this.specifiedFileType = specifiedFileType;
-
+        this.skipEmptyOrcFile = skipEmptyOrcFile;
+        this.orcFileEmptySize = orcFileEmptySize;
         if (!srcPaths.isEmpty()) {
             for (String eachPath : srcPaths) {
                 LOG.info(String.format("get HDFS all files in path = [%s]", eachPath));
@@ -127,8 +153,12 @@ public class DFSUtil {
                 FileStatus stats[] = hdfs.globStatus(path);
                 for (FileStatus f : stats) {
                     if (f.isFile()) {
-                        if (f.getLen() == 0) {
+                        long fileLength = f.getLen();
+                        if (fileLength == 0) {
                             String message = String.format("文件[%s]长度为0，将会跳过不作处理！", hdfsPath);
+                            LOG.warn(message);
+                        } else if (BooleanUtils.isTrue(this.skipEmptyOrcFile) && this.orcFileEmptySize != null && fileLength <= this.orcFileEmptySize) {
+                            String message = String.format("The orc file [%s] is empty, file size: %s, DataX will skip it !", f.getPath().toString(), fileLength);
                             LOG.warn(message);
                         } else {
                             addSourceFileByType(f.getPath().toString());
@@ -167,7 +197,16 @@ public class DFSUtil {
                 LOG.info(String.format("[%s] 是目录, 递归获取该目录下的文件", f.getPath().toString()));
                 getHDFSAllFilesNORegex(f.getPath().toString(), hdfs);
             } else if (f.isFile()) {
-
+                long fileLength = f.getLen();
+                if (fileLength == 0) {
+                    String message = String.format("The file [%s] is empty, DataX will skip it !", f.getPath().toString());
+                    LOG.warn(message);
+                    continue;
+                } else if (BooleanUtils.isTrue(this.skipEmptyOrcFile) && this.orcFileEmptySize != null && fileLength <= this.orcFileEmptySize) {
+                    String message = String.format("The orc file [%s] is empty, file size: %s, DataX will skip it !", f.getPath().toString(), fileLength);
+                    LOG.warn(message);
+                    continue;
+                }
                 addSourceFileByType(f.getPath().toString());
             } else {
                 String message = String.format("该路径[%s]文件类型既不是目录也不是文件，插件自动忽略。",
@@ -331,26 +370,45 @@ public class DFSUtil {
                 //If the network disconnected, will retry 45 times, each time the retry interval for 20 seconds
                 //Each file as a split
                 //TODO multy threads
-                InputSplit[] splits = in.getSplits(conf, 1);
-
-                RecordReader reader = in.getRecordReader(splits[0], conf, Reporter.NULL);
-                Object key = reader.createKey();
-                Object value = reader.createValue();
-                // 获取列信息
-                List<? extends StructField> fields = inspector.getAllStructFieldRefs();
-
-                List<Object> recordFields;
-                while (reader.next(key, value)) {
-                    recordFields = new ArrayList<Object>();
-
-                    for (int i = 0; i <= columnIndexMax; i++) {
-                        Object field = inspector.getStructFieldData(value, fields.get(i));
-                        recordFields.add(field);
+                // OrcInputFormat getSplits params numSplits not used, splits size = block numbers
+                InputSplit[] splits;
+                try {
+                    splits = in.getSplits(conf, 1);
+                } catch (Exception splitException) {
+                    if (Boolean.TRUE.equals(this.skipEmptyOrcFile)) {
+                        boolean isOrcFileEmptyException = checkIsOrcEmptyFileExecption(splitException);
+                        if (isOrcFileEmptyException) {
+                            LOG.info("skipEmptyOrcFile: true, \"{}\" is an empty orc file, skip it!", sourceOrcFilePath);
+                            return;
+                        }
                     }
-                    transportOneRecord(column, recordFields, recordSender,
-                            taskPluginCollector, isReadAllColumns, nullFormat);
+                    throw splitException;
                 }
-                reader.close();
+                for (InputSplit split : splits) {
+                    {
+                        RecordReader reader = in.getRecordReader(split, conf, Reporter.NULL);
+                        Object key = reader.createKey();
+                        Object value = reader.createValue();
+                        // 获取列信息
+                        List<? extends StructField> fields = inspector.getAllStructFieldRefs();
+
+                        List<Object> recordFields;
+                        while (reader.next(key, value)) {
+                            recordFields = new ArrayList<Object>();
+
+                            for (int i = 0; i <= columnIndexMax; i++) {
+                                Object field = inspector.getStructFieldData(value, fields.get(i));
+                                recordFields.add(field);
+                            }
+                            List<ColumnEntry> hivePartitionColumnEntrys = UnstructuredStorageReaderUtil.getListColumnEntry(readerSliceConfig, com.alibaba.datax.plugin.unstructuredstorage.reader.Key.HIVE_PARTION_COLUMN);
+                            ArrayList<Column> hivePartitionColumns = new ArrayList<>();
+                            hivePartitionColumns = UnstructuredStorageReaderUtil.getHivePartitionColumns(sourceOrcFilePath, hivePartitionColumnEntrys);
+                            transportOneRecord(column, recordFields, recordSender,
+                                    taskPluginCollector, isReadAllColumns, nullFormat,hivePartitionColumns);
+                        }
+                        reader.close();
+                    }
+                }
             } catch (Exception e) {
                 String message = String.format("从orcfile文件路径[%s]中读取数据发生异常，请联系系统管理员。"
                         , sourceOrcFilePath);
@@ -363,8 +421,20 @@ public class DFSUtil {
         }
     }
 
+    private boolean checkIsOrcEmptyFileExecption(Exception e) {
+        if (e == null) {
+            return false;
+        }
+
+        String fullStackTrace = ExceptionUtils.getStackTrace(e);
+        if (fullStackTrace.contains("org.apache.orc.impl.ReaderImpl.getRawDataSizeOfColumn") && fullStackTrace.contains("Caused by: java.lang.IndexOutOfBoundsException: Index: 1, Size: 1")) {
+            return true;
+        }
+        return false;
+    }
+
     private Record transportOneRecord(List<ColumnEntry> columnConfigs, List<Object> recordFields
-            , RecordSender recordSender, TaskPluginCollector taskPluginCollector, boolean isReadAllColumns, String nullFormat) {
+            , RecordSender recordSender, TaskPluginCollector taskPluginCollector, boolean isReadAllColumns, String nullFormat, ArrayList<Column> hiveParitionColumns) {
         Record record = recordSender.createRecord();
         Column columnGenerated;
         try {
@@ -551,8 +621,9 @@ public class DFSUtil {
             } else if (StringUtils.equalsIgnoreCase(specifiedFileType, Constant.SEQ)) {
 
                 return isSequenceFile(filepath, in);
+            } else if (StringUtils.equalsIgnoreCase(specifiedFileType, Constant.PARQUET)) {
+                return true;
             }
-
         } catch (Exception e) {
             String message = String.format("检查文件[%s]类型失败，目前支持ORC,SEQUENCE,RCFile,TEXT,CSV五种格式的文件," +
                     "请检查您文件类型和文件是否正确。", filepath);
@@ -688,5 +759,333 @@ public class DFSUtil {
         }
         return false;
     }
+
+    public void parquetFileStartRead(String sourceParquetFilePath, Configuration readerSliceConfig, RecordSender recordSender, TaskPluginCollector taskPluginCollector) {
+        String schemaString = readerSliceConfig.getString(Key.PARQUET_SCHEMA);
+        if (StringUtils.isNotBlank(schemaString)) {
+            LOG.info("You config parquet schema, use it {}", schemaString);
+        } else {
+            schemaString = getParquetSchema(sourceParquetFilePath, hadoopConf);
+            LOG.info("Parquet schema parsed from: {} , schema is {}", sourceParquetFilePath, schemaString);
+            if (StringUtils.isBlank(schemaString)) {
+                throw DataXException.asDataXException("ParquetSchema is required, please check your config");
+            }
+        }
+        MessageType parquetSchema = null;
+        List<org.apache.parquet.schema.Type> parquetTypes = null;
+        Map<String, ParquetMeta> parquetMetaMap = null;
+        int fieldCount = 0;
+        try {
+            parquetSchema = MessageTypeParser.parseMessageType(schemaString);
+            fieldCount = parquetSchema.getFieldCount();
+            parquetTypes = parquetSchema.getFields();
+            parquetMetaMap = ParquetMessageHelper.parseParquetTypes(parquetTypes);
+        } catch (Exception e) {
+            String message = String.format("Error parsing to MessageType via Schema string [%s]", schemaString);
+            LOG.error(message);
+            throw DataXException.asDataXException(HdfsReaderErrorCode.PARSE_MESSAGE_TYPE_FROM_SCHEMA_ERROR, e);
+        }
+        List<ColumnEntry> column = UnstructuredStorageReaderUtil.getListColumnEntry(readerSliceConfig, com.alibaba.datax.plugin.unstructuredstorage.reader.Key.COLUMN);
+        String nullFormat = readerSliceConfig.getString(com.alibaba.datax.plugin.unstructuredstorage.reader.Key.NULL_FORMAT);
+        boolean isUtcTimestamp = readerSliceConfig.getBool(Key.PARQUET_UTC_TIMESTAMP, false);
+        boolean isReadAllColumns = (column == null || column.size() == 0) ? true : false;
+        LOG.info("ReadingAllColums: " + isReadAllColumns);
+
+        /**
+         * 支持 hive 表中间加列场景
+         *
+         * 开关默认 false，在 hive表存在中间加列的场景打开，需要根据 name排序
+         * 不默认打开的原因
+         * 1、存量hdfs任务，只根据 index获取字段，无name字段配置
+         * 2、中间加列场景比较少
+         * 3、存量任务可能存在列错位的问题，不能随意纠正
+         */
+        boolean supportAddMiddleColumn = readerSliceConfig.getBool(Key.SUPPORT_ADD_MIDDLE_COLUMN, false);
+
+        boolean printNullValueException = readerSliceConfig.getBool("printNullValueException", false);
+        List<Integer> ignoreIndex = readerSliceConfig.getList("ignoreIndex", new ArrayList<Integer>(), Integer.class);
+
+        JobConf conf = new JobConf(hadoopConf);
+        ParquetReader<Group> reader = null;
+        try {
+            Path parquetFilePath = new Path(sourceParquetFilePath);
+            GroupReadSupport readSupport = new GroupReadSupport();
+            readSupport.init(conf, null, parquetSchema);
+            // 这里初始化parquetReader的时候，会getFileSystem，如果是HA集群，期间会根据hadoopConfig中区加载failover类，这里初始化builder带上conf
+            ParquetReader.Builder parquetReaderBuilder = ParquetReader.builder(readSupport, parquetFilePath);
+            parquetReaderBuilder.withConf(hadoopConf);
+            reader = parquetReaderBuilder.build();
+            Group g = null;
+
+            // 从文件名中解析分区信息
+            List<ColumnEntry> hivePartitionColumnEntrys = UnstructuredStorageReaderUtil.getListColumnEntry(readerSliceConfig, com.alibaba.datax.plugin.unstructuredstorage.reader.Key.HIVE_PARTION_COLUMN);
+            ArrayList<Column> hivePartitionColumns = new ArrayList<>();
+            hivePartitionColumns = UnstructuredStorageReaderUtil.getHivePartitionColumns(sourceParquetFilePath, hivePartitionColumnEntrys);
+            List<String> schemaFieldList = null;
+            Map<Integer, String> colNameIndexMap = null;
+            Map<Integer, Integer> indexMap = null;
+            if (supportAddMiddleColumn) {
+                boolean nonName = column.stream().anyMatch(columnEntry -> StringUtils.isEmpty(columnEntry.getName()));
+                if (nonName) {
+                    throw new DataXException("You configured column item without name, please correct it");
+                }
+                List<org.apache.parquet.schema.Type> parquetFileFields = getParquetFileFields(parquetFilePath, hadoopConf);
+                schemaFieldList = parquetFileFields.stream().map(org.apache.parquet.schema.Type::getName).collect(Collectors.toList());
+                colNameIndexMap = new ConcurrentHashMap<>();
+                Map<Integer, String> finalColNameIndexMap = colNameIndexMap;
+                column.forEach(columnEntry -> finalColNameIndexMap.put(columnEntry.getIndex(), columnEntry.getName()));
+                Iterator<Map.Entry<Integer, String>> iterator = finalColNameIndexMap.entrySet().iterator();
+                while (iterator.hasNext()) {
+                    Map.Entry<Integer, String> next = iterator.next();
+                    if (!schemaFieldList.contains(next.getValue())) {
+                        finalColNameIndexMap.remove((next.getKey()));
+                    }
+                }
+                LOG.info("SupportAddMiddleColumn is true, fields from parquet file is {}, " +
+                        "colNameIndexMap is {}", JSON.toJSONString(schemaFieldList), JSON.toJSONString(colNameIndexMap));
+                fieldCount = column.size();
+                indexMap = new HashMap<>();
+                for (int j = 0; j < fieldCount; j++) {
+                    if (colNameIndexMap.containsKey(j)) {
+                        int index = findIndex(schemaFieldList, findEleInMap(colNameIndexMap, j));
+                        indexMap.put(j, index);
+                    }
+                }
+            }
+            while ((g = reader.read()) != null) {
+                List<Object> formattedRecord = new ArrayList<Object>(fieldCount);
+                try {
+                    for (int j = 0; j < fieldCount; j++) {
+                        Object data = null;
+                        try {
+                            if (null != ignoreIndex && !ignoreIndex.isEmpty() && ignoreIndex.contains(j)) {
+                                data = null;
+                            } else {
+                                if (supportAddMiddleColumn) {
+                                    if (!colNameIndexMap.containsKey(j)) {
+                                        formattedRecord.add(null);
+                                        continue;
+                                    } else {
+                                        data = DFSUtil.this.readFields(g, parquetTypes.get(indexMap.get(j)), indexMap.get(j), parquetMetaMap, isUtcTimestamp);
+                                    }
+                                } else {
+                                    data = DFSUtil.this.readFields(g, parquetTypes.get(j), j, parquetMetaMap, isUtcTimestamp);
+                                }
+                            }
+                        } catch (RuntimeException e) {
+                            if (printNullValueException) {
+                                LOG.warn(e.getMessage());
+                            }
+                        }
+                        formattedRecord.add(data);
+                    }
+                    transportOneRecord(column, formattedRecord, recordSender, taskPluginCollector, isReadAllColumns, nullFormat, hivePartitionColumns);
+                } catch (Exception e) {
+                    throw DataXException.asDataXException(HdfsReaderErrorCode.READ_PARQUET_ERROR, e);
+                }
+            }
+        } catch (Exception e) {
+            throw DataXException.asDataXException(HdfsReaderErrorCode.READ_PARQUET_ERROR, e);
+        } finally {
+            org.apache.commons.io.IOUtils.closeQuietly(reader);
+        }
+    }
+
+    private String findEleInMap(Map<Integer, String> map, Integer key) {
+        Iterator<Map.Entry<Integer, String>> iterator = map.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<Integer, String> next = iterator.next();
+            if (key.equals(next.getKey())) {
+                return next.getValue();
+            }
+        }
+        return null;
+    }
+
+    private int findIndex(List<String> schemaFieldList, String colName) {
+        for (int i = 0; i < schemaFieldList.size(); i++) {
+            if (schemaFieldList.get(i).equals(colName)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private List<org.apache.parquet.schema.Type> getParquetFileFields(Path filePath, org.apache.hadoop.conf.Configuration configuration) {
+        try (org.apache.parquet.hadoop.ParquetFileReader reader = org.apache.parquet.hadoop.ParquetFileReader.open(HadoopInputFile.fromPath(filePath, configuration))) {
+            org.apache.parquet.schema.MessageType schema = reader.getFooter().getFileMetaData().getSchema();
+            List<org.apache.parquet.schema.Type> fields = schema.getFields();
+            return fields;
+        } catch (IOException e) {
+            LOG.error("Fetch parquet field error", e);
+            throw new DataXException(String.format("Fetch parquet field error, msg is %s", e.getMessage()));
+        }
+    }
+
+    private String getParquetSchema(String sourceParquetFilePath, org.apache.hadoop.conf.Configuration hadoopConf) {
+        GroupReadSupport readSupport = new GroupReadSupport();
+        ParquetReader.Builder parquetReaderBuilder = ParquetReader.builder(readSupport, new Path(sourceParquetFilePath));
+        ParquetReader<Group> reader = null;
+        try {
+            parquetReaderBuilder.withConf(hadoopConf);
+            reader = parquetReaderBuilder.build();
+            Group g = null;
+            if ((g = reader.read()) != null) {
+                return g.getType().toString();
+            }
+        } catch (Throwable e) {
+            LOG.error("Inner error, getParquetSchema failed, message is {}", e.getMessage());
+        } finally {
+            org.apache.commons.io.IOUtils.closeQuietly(reader);
+        }
+        return null;
+    }
+
+    /**
+     * parquet 相关
+     */
+    private static final int JULIAN_EPOCH_OFFSET_DAYS = 2440588;
+    private static final long MILLIS_IN_DAY = TimeUnit.DAYS.toMillis(1);
+    private static final long NANOS_PER_MILLISECOND = TimeUnit.MILLISECONDS.toNanos(1);
+
+    private long julianDayToMillis(int julianDay) {
+        return (julianDay - JULIAN_EPOCH_OFFSET_DAYS) * MILLIS_IN_DAY;
+    }
+
+    private org.apache.parquet.schema.OriginalType getOriginalType(org.apache.parquet.schema.Type type, Map<String, ParquetMeta> parquetMetaMap) {
+        ParquetMeta meta = parquetMetaMap.get(type.getName());
+        return meta.getOriginalType();
+    }
+
+    private org.apache.parquet.schema.PrimitiveType asPrimitiveType(org.apache.parquet.schema.Type type, Map<String, ParquetMeta> parquetMetaMap) {
+        ParquetMeta meta = parquetMetaMap.get(type.getName());
+        return meta.getPrimitiveType();
+    }
+
+    private Object readFields(Group g, org.apache.parquet.schema.Type type, int index, Map<String, ParquetMeta> parquetMetaMap, boolean isUtcTimestamp) {
+        if (this.getOriginalType(type, parquetMetaMap) == org.apache.parquet.schema.OriginalType.MAP) {
+            Group groupData = g.getGroup(index, 0);
+            List<org.apache.parquet.schema.Type> parquetTypes = groupData.getType().getFields();
+            JSONObject data = new JSONObject();
+            for (int i = 0; i < parquetTypes.size(); i++) {
+                int j = groupData.getFieldRepetitionCount(i);
+                // map key value 的对数
+                for (int k = 0; k < j; k++) {
+                    Group groupDataK = groupData.getGroup(0, k);
+                    List<org.apache.parquet.schema.Type> parquetTypesK = groupDataK.getType().getFields();
+                    if (2 != parquetTypesK.size()) {
+                        // warn: 不是key value成对出现
+                        throw new RuntimeException(String.format("bad parquet map type: %s", groupData.getValueToString(index, 0)));
+                    }
+                    Object subDataKey = this.readFields(groupDataK, parquetTypesK.get(0), 0, parquetMetaMap, isUtcTimestamp);
+                    Object subDataValue = this.readFields(groupDataK, parquetTypesK.get(1), 1, parquetMetaMap, isUtcTimestamp);
+                    if (StringUtils.equalsIgnoreCase("key", parquetTypesK.get(0).getName())) {
+                        ((JSONObject) data).put(subDataKey.toString(), subDataValue);
+                    } else {
+                        ((JSONObject) data).put(subDataValue.toString(), subDataKey);
+                    }
+                }
+            }
+            return data;
+        } else if (this.getOriginalType(type, parquetMetaMap) == org.apache.parquet.schema.OriginalType.MAP_KEY_VALUE) {
+            Group groupData = g.getGroup(index, 0);
+            List<org.apache.parquet.schema.Type> parquetTypes = groupData.getType().getFields();
+            JSONObject data = new JSONObject();
+            for (int i = 0; i < parquetTypes.size(); i++) {
+                int j = groupData.getFieldRepetitionCount(i);
+                // map key value 的对数
+                for (int k = 0; k < j; k++) {
+                    Group groupDataK = groupData.getGroup(0, k);
+                    List<org.apache.parquet.schema.Type> parquetTypesK = groupDataK.getType().getFields();
+                    if (2 != parquetTypesK.size()) {
+                        // warn: 不是key value成对出现
+                        throw new RuntimeException(String.format("bad parquet map type: %s", groupData.getValueToString(index, 0)));
+                    }
+                    Object subDataKey = this.readFields(groupDataK, parquetTypesK.get(0), 0, parquetMetaMap, isUtcTimestamp);
+                    Object subDataValue = this.readFields(groupDataK, parquetTypesK.get(1), 1, parquetMetaMap, isUtcTimestamp);
+                    if (StringUtils.equalsIgnoreCase("key", parquetTypesK.get(0).getName())) {
+                        ((JSONObject) data).put(subDataKey.toString(), subDataValue);
+                    } else {
+                        ((JSONObject) data).put(subDataValue.toString(), subDataKey);
+                    }
+                }
+            }
+            return data;
+        } else if (this.getOriginalType(type, parquetMetaMap) == org.apache.parquet.schema.OriginalType.LIST) {
+            Group groupData = g.getGroup(index, 0);
+            List<org.apache.parquet.schema.Type> parquetTypes = groupData.getType().getFields();
+            JSONArray data = new JSONArray();
+            for (int i = 0; i < parquetTypes.size(); i++) {
+                Object subData = this.readFields(groupData, parquetTypes.get(i), i, parquetMetaMap, isUtcTimestamp);
+                data.add(subData);
+            }
+            return data;
+        } else if (this.getOriginalType(type, parquetMetaMap) == org.apache.parquet.schema.OriginalType.DECIMAL) {
+            Binary binaryDate = g.getBinary(index, 0);
+            if (null == binaryDate) {
+                return null;
+            } else {
+                org.apache.hadoop.hive.serde2.io.HiveDecimalWritable decimalWritable = new org.apache.hadoop.hive.serde2.io.HiveDecimalWritable(binaryDate.getBytes(), this.asPrimitiveType(type, parquetMetaMap).getDecimalMetadata().getScale());
+                // g.getType().getFields().get(1).asPrimitiveType().getDecimalMetadata().getScale()
+                HiveDecimal hiveDecimal = decimalWritable.getHiveDecimal();
+                if (null == hiveDecimal) {
+                    return null;
+                } else {
+                    return hiveDecimal.bigDecimalValue();
+                }
+                // return decimalWritable.doubleValue();
+            }
+        } else if (this.getOriginalType(type, parquetMetaMap) == org.apache.parquet.schema.OriginalType.DATE) {
+            return java.sql.Date.valueOf(LocalDate.ofEpochDay(g.getInteger(index, 0)));
+        } else if (this.getOriginalType(type, parquetMetaMap) == org.apache.parquet.schema.OriginalType.UTF8) {
+            return g.getValueToString(index, 0);
+        } else {
+            if (type.isPrimitive()) {
+                PrimitiveType.PrimitiveTypeName primitiveTypeName = this.asPrimitiveType(type, parquetMetaMap).getPrimitiveTypeName();
+                if (PrimitiveType.PrimitiveTypeName.BINARY == primitiveTypeName) {
+                    return g.getValueToString(index, 0);
+                } else if (PrimitiveType.PrimitiveTypeName.BOOLEAN == primitiveTypeName) {
+                    return g.getValueToString(index, 0);
+                } else if (PrimitiveType.PrimitiveTypeName.DOUBLE == primitiveTypeName) {
+                    return g.getValueToString(index, 0);
+                } else if (PrimitiveType.PrimitiveTypeName.FIXED_LEN_BYTE_ARRAY == primitiveTypeName) {
+                    return g.getValueToString(index, 0);
+                } else if (PrimitiveType.PrimitiveTypeName.FLOAT == primitiveTypeName) {
+                    return g.getValueToString(index, 0);
+                } else if (PrimitiveType.PrimitiveTypeName.INT32 == primitiveTypeName) {
+                    return g.getValueToString(index, 0);
+                } else if (PrimitiveType.PrimitiveTypeName.INT64 == primitiveTypeName) {
+                    return g.getValueToString(index, 0);
+                } else if (PrimitiveType.PrimitiveTypeName.INT96 == primitiveTypeName) {
+                    Binary dataInt96 = g.getInt96(index, 0);
+                    if (null == dataInt96) {
+                        return null;
+                    } else {
+                        ByteBuffer buf = dataInt96.toByteBuffer();
+                        buf.order(ByteOrder.LITTLE_ENDIAN);
+                        long timeOfDayNanos = buf.getLong();
+                        int julianDay = buf.getInt();
+                        if (isUtcTimestamp) {
+                            // UTC
+                            LocalDate localDate = LocalDate.ofEpochDay(julianDay - JULIAN_EPOCH_OFFSET_DAYS);
+                            LocalTime localTime = LocalTime.ofNanoOfDay(timeOfDayNanos);
+                            return Timestamp.valueOf(LocalDateTime.of(localDate, localTime));
+                        } else {
+                            // local time
+                            long mills = julianDayToMillis(julianDay) + (timeOfDayNanos / NANOS_PER_MILLISECOND);
+                            Timestamp timestamp = new Timestamp(mills);
+                            timestamp.setNanos((int) (timeOfDayNanos % TimeUnit.SECONDS.toNanos(1)));
+                            return timestamp;
+                        }
+                    }
+                } else {
+                    return g.getValueToString(index, 0);
+                }
+            } else {
+                return g.getValueToString(index, 0);
+            }
+        }
+    }
+
 
 }

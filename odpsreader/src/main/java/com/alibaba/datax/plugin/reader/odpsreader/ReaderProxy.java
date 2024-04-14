@@ -6,7 +6,7 @@ import com.alibaba.datax.common.plugin.RecordSender;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.common.util.MessageSource;
 import com.alibaba.datax.plugin.reader.odpsreader.util.OdpsUtil;
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 import com.aliyun.odps.Column;
 import com.aliyun.odps.OdpsType;
 import com.aliyun.odps.data.*;
@@ -17,7 +17,6 @@ import com.aliyun.odps.type.MapTypeInfo;
 import com.aliyun.odps.type.TypeInfo;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +33,7 @@ public class ReaderProxy {
     private RecordSender recordSender;
     private TableTunnel.DownloadSession downloadSession;
     private Map<String, TypeInfo> columnTypeMap;
-    private List<Pair<String, ColumnType>> parsedColumns;
+    private List<InternalColumnInfo> parsedColumns;
     private String partition;
     private boolean isPartitionTable;
 
@@ -71,7 +70,7 @@ public class ReaderProxy {
 
     public ReaderProxy(RecordSender recordSender, TableTunnel.DownloadSession downloadSession,
                        Map<String, TypeInfo> columnTypeMap,
-                       List<Pair<String, ColumnType>> parsedColumns, String partition,
+                       List<InternalColumnInfo> parsedColumns, String partition,
                        boolean isPartitionTable, long start, long count, boolean isCompress, Configuration taskConfig) {
         this.recordSender = recordSender;
         this.downloadSession = downloadSession;
@@ -136,9 +135,9 @@ public class ReaderProxy {
                     // warn: for PARTITION||NORMAL columnTypeMap's key
                     // sets(columnName) is big than parsedColumns's left
                     // sets(columnName), always contain
-                    for (Pair<String, ColumnType> pair : this.parsedColumns) {
-                        String columnName = pair.getLeft();
-                        switch (pair.getRight()) {
+                    for (InternalColumnInfo pair : this.parsedColumns) {
+                        String columnName = pair.getColumnName();
+                        switch (pair.getColumnType()) {
                             case PARTITION:
                                 String partitionColumnValue = this
                                         .getPartitionColumnValue(partitionMap,
@@ -201,7 +200,7 @@ public class ReaderProxy {
         }
         if (IS_DEBUG) {
             LOG.debug(String.format("partition value details: %s",
-                    com.alibaba.fastjson.JSON.toJSONString(partitionMap)));
+                    com.alibaba.fastjson2.JSON.toJSONString(partitionMap)));
         }
         return partitionMap;
     }
@@ -213,7 +212,7 @@ public class ReaderProxy {
         // it's will never happen, but add this checking
         if (!partitionMap.containsKey(partitionColumnName)) {
             String errorMessage = MESSAGE_SOURCE.message("readerproxy.3",
-                    com.alibaba.fastjson.JSON.toJSONString(partitionMap),
+                    com.alibaba.fastjson2.JSON.toJSONString(partitionMap),
                     partitionColumnName);
             throw DataXException.asDataXException(
                     OdpsReaderErrorCode.READ_DATA_FAIL, errorMessage);
