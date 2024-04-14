@@ -33,14 +33,10 @@ public class DefaultDataHandlerTest {
     public void writeSupTableBySQL() throws SQLException {
         // given
         createSupAndSubTable();
-        Configuration configuration = Configuration.from("{" +
-                "\"username\": \"root\"," +
-                "\"password\": \"taosdata\"," +
-                "\"column\": [\"tbname\", \"ts\", \"f1\", \"f2\", \"t1\"]," +
-                "\"table\":[\"stb1\"]," +
-                "\"jdbcUrl\":\"jdbc:TAOS-RS://" + host + ":6041/test\"," +
-                "\"batchSize\": \"1000\"" +
-                "}");
+        Configuration configuration = Configuration.from(
+                "{" + "\"username\": \"root\"," + "\"password\": \"taosdata\"," +
+                        "\"column\": [\"tbname\", \"ts\", \"f1\", \"f2\", \"t1\"]," + "\"table\":[\"stb1\"]," +
+                        "\"jdbcUrl\":\"jdbc:TAOS-RS://" + host + ":6041/test\"," + "\"batchSize\": \"1000\"" + "}");
         long current = System.currentTimeMillis();
         List<Record> recordList = IntStream.range(1, 11).mapToObj(i -> {
             Record record = new DefaultRecord();
@@ -59,8 +55,8 @@ public class DefaultDataHandlerTest {
         SchemaManager schemaManager = new SchemaManager(conn);
         Map<String, TableMeta> tableMetas = schemaManager.loadTableMeta(tables);
         Map<String, List<ColumnMeta>> columnMetas = schemaManager.loadColumnMetas(tables);
-        handler.setTableMetas(tableMetas);
-        handler.setTbnameColumnMetasMap(columnMetas);
+        //handler.setTableMetas(tableMetas);
+        //handler.setTbnameColumnMetasMap(columnMetas);
         handler.setSchemaManager(schemaManager);
 
         int count = handler.writeBatch(conn, recordList);
@@ -73,14 +69,10 @@ public class DefaultDataHandlerTest {
     public void writeSupTableBySQL_2() throws SQLException {
         // given
         createSupAndSubTable();
-        Configuration configuration = Configuration.from("{" +
-                "\"username\": \"root\"," +
-                "\"password\": \"taosdata\"," +
-                "\"column\": [\"tbname\", \"ts\", \"f1\", \"t1\"]," +
-                "\"table\":[\"stb1\"]," +
-                "\"jdbcUrl\":\"jdbc:TAOS-RS://" + host + ":6041/test\"," +
-                "\"batchSize\": \"1000\"" +
-                "}");
+        Configuration configuration = Configuration.from(
+                "{" + "\"username\": \"root\"," + "\"password\": \"taosdata\"," +
+                        "\"column\": [\"tbname\", \"ts\", \"f1\", \"t1\"]," + "\"table\":[\"stb1\"]," +
+                        "\"jdbcUrl\":\"jdbc:TAOS-RS://" + host + ":6041/test\"," + "\"batchSize\": \"1000\"" + "}");
         long current = System.currentTimeMillis();
         List<Record> recordList = IntStream.range(1, 11).mapToObj(i -> {
             Record record = new DefaultRecord();
@@ -97,8 +89,8 @@ public class DefaultDataHandlerTest {
         SchemaManager schemaManager = new SchemaManager(conn);
         Map<String, TableMeta> tableMetas = schemaManager.loadTableMeta(tables);
         Map<String, List<ColumnMeta>> columnMetas = schemaManager.loadColumnMetas(tables);
-        handler.setTableMetas(tableMetas);
-        handler.setTbnameColumnMetasMap(columnMetas);
+        //handler.setTableMetas(tableMetas);
+        //handler.setTbnameColumnMetasMap(columnMetas);
         handler.setSchemaManager(schemaManager);
 
         int count = handler.writeBatch(conn, recordList);
@@ -111,14 +103,10 @@ public class DefaultDataHandlerTest {
     public void writeSupTableBySchemaless() throws SQLException {
         // given
         createSupTable();
-        Configuration configuration = Configuration.from("{" +
-                "\"username\": \"root\"," +
-                "\"password\": \"taosdata\"," +
-                "\"column\": [\"ts\", \"f1\", \"f2\", \"t1\"]," +
-                "\"table\":[\"stb1\"]," +
-                "\"jdbcUrl\":\"jdbc:TAOS://" + host + ":6030/scm_test\"," +
-                "\"batchSize\": \"1000\"" +
-                "}");
+        Configuration configuration = Configuration.from(
+                "{" + "\"username\": \"root\"," + "\"password\": \"taosdata\"," +
+                        "\"column\": [\"ts\", \"f1\", \"f2\", \"t1\"]," + "\"table\":[\"stb1\"]," +
+                        "\"jdbcUrl\":\"jdbc:TAOS://" + host + ":6030/scm_test\"," + "\"batchSize\": \"1000\"" + "}");
         String jdbcUrl = configuration.getString("jdbcUrl");
         Connection connection = DriverManager.getConnection(jdbcUrl, "root", "taosdata");
         long current = System.currentTimeMillis();
@@ -137,8 +125,8 @@ public class DefaultDataHandlerTest {
         SchemaManager schemaManager = new SchemaManager(connection);
         Map<String, TableMeta> tableMetas = schemaManager.loadTableMeta(tables);
         Map<String, List<ColumnMeta>> columnMetas = schemaManager.loadColumnMetas(tables);
-        handler.setTableMetas(tableMetas);
-        handler.setTbnameColumnMetasMap(columnMetas);
+        //handler.setTableMetas(tableMetas);
+        //handler.setTbnameColumnMetasMap(columnMetas);
         handler.setSchemaManager(schemaManager);
 
         int count = handler.writeBatch(connection, recordList);
@@ -151,14 +139,10 @@ public class DefaultDataHandlerTest {
     public void writeSubTableWithTableName() throws SQLException {
         // given
         createSupAndSubTable();
-        Configuration configuration = Configuration.from("{" +
-                "\"username\": \"root\"," +
-                "\"password\": \"taosdata\"," +
-                "\"column\": [\"tbname\", \"ts\", \"f1\", \"f2\", \"t1\"]," +
-                "\"table\":[\"tb1\"]," +
-                "\"jdbcUrl\":\"jdbc:TAOS-RS://" + host + ":6041/test\"," +
-                "\"batchSize\": \"1000\"" +
-                "}");
+        Configuration configuration = Configuration.from(
+                "{" + "\"username\": \"root\"," + "\"password\": \"taosdata\"," +
+                        "\"column\": [\"tbname\", \"ts\", \"f1\", \"f2\", \"t1\"]," + "\"table\":[\"tb1\"]," +
+                        "\"jdbcUrl\":\"jdbc:TAOS-RS://" + host + ":6041/test\"," + "\"batchSize\": \"1000\"" + "}");
         long current = System.currentTimeMillis();
         List<Record> recordList = IntStream.range(1, 11).mapToObj(i -> {
             Record record = new DefaultRecord();
@@ -176,8 +160,8 @@ public class DefaultDataHandlerTest {
         SchemaManager schemaManager = new SchemaManager(conn);
         Map<String, TableMeta> tableMetas = schemaManager.loadTableMeta(tables);
         Map<String, List<ColumnMeta>> columnMetas = schemaManager.loadColumnMetas(tables);
-        handler.setTableMetas(tableMetas);
-        handler.setTbnameColumnMetasMap(columnMetas);
+        //handler.setTableMetas(tableMetas);
+        //handler.setTbnameColumnMetasMap(columnMetas);
         handler.setSchemaManager(schemaManager);
 
         int count = handler.writeBatch(conn, recordList);
@@ -190,15 +174,11 @@ public class DefaultDataHandlerTest {
     public void writeSubTableWithoutTableName() throws SQLException {
         // given
         createSupAndSubTable();
-        Configuration configuration = Configuration.from("{" +
-                "\"username\": \"root\"," +
-                "\"password\": \"taosdata\"," +
-                "\"column\": [\"ts\", \"f1\", \"f2\", \"t1\"]," +
-                "\"table\":[\"tb1\"]," +
-                "\"jdbcUrl\":\"jdbc:TAOS-RS://" + host + ":6041/test\"," +
-                "\"batchSize\": \"1000\"," +
-                "\"ignoreTagsUnmatched\": \"true\"" +
-                "}");
+        Configuration configuration = Configuration.from(
+                "{" + "\"username\": \"root\"," + "\"password\": \"taosdata\"," +
+                        "\"column\": [\"ts\", \"f1\", \"f2\", \"t1\"]," + "\"table\":[\"tb1\"]," +
+                        "\"jdbcUrl\":\"jdbc:TAOS-RS://" + host + ":6041/test\"," + "\"batchSize\": \"1000\"," +
+                        "\"ignoreTagsUnmatched\": \"true\"" + "}");
         long current = System.currentTimeMillis();
         List<Record> recordList = IntStream.range(1, 11).mapToObj(i -> {
             Record record = new DefaultRecord();
@@ -215,8 +195,8 @@ public class DefaultDataHandlerTest {
         SchemaManager schemaManager = new SchemaManager(conn);
         Map<String, TableMeta> tableMetas = schemaManager.loadTableMeta(tables);
         Map<String, List<ColumnMeta>> columnMetas = schemaManager.loadColumnMetas(tables);
-        handler.setTableMetas(tableMetas);
-        handler.setTbnameColumnMetasMap(columnMetas);
+        //handler.setTableMetas(tableMetas);
+        //handler.setTbnameColumnMetasMap(columnMetas);
         handler.setSchemaManager(schemaManager);
 
         int count = handler.writeBatch(conn, recordList);
@@ -229,15 +209,11 @@ public class DefaultDataHandlerTest {
     public void writeNormalTable() throws SQLException {
         // given
         createSupAndSubTable();
-        Configuration configuration = Configuration.from("{" +
-                "\"username\": \"root\"," +
-                "\"password\": \"taosdata\"," +
-                "\"column\": [\"ts\", \"f1\", \"f2\", \"t1\"]," +
-                "\"table\":[\"weather\"]," +
-                "\"jdbcUrl\":\"jdbc:TAOS-RS://" + host + ":6041/test\"," +
-                "\"batchSize\": \"1000\"," +
-                "\"ignoreTagsUnmatched\": \"true\"" +
-                "}");
+        Configuration configuration = Configuration.from(
+                "{" + "\"username\": \"root\"," + "\"password\": \"taosdata\"," +
+                        "\"column\": [\"ts\", \"f1\", \"f2\", \"t1\"]," + "\"table\":[\"weather\"]," +
+                        "\"jdbcUrl\":\"jdbc:TAOS-RS://" + host + ":6041/test\"," + "\"batchSize\": \"1000\"," +
+                        "\"ignoreTagsUnmatched\": \"true\"" + "}");
         long current = System.currentTimeMillis();
         List<Record> recordList = IntStream.range(1, 11).mapToObj(i -> {
             Record record = new DefaultRecord();
@@ -254,8 +230,8 @@ public class DefaultDataHandlerTest {
         SchemaManager schemaManager = new SchemaManager(conn);
         Map<String, TableMeta> tableMetas = schemaManager.loadTableMeta(tables);
         Map<String, List<ColumnMeta>> columnMetas = schemaManager.loadColumnMetas(tables);
-        handler.setTableMetas(tableMetas);
-        handler.setTbnameColumnMetasMap(columnMetas);
+        //handler.setTableMetas(tableMetas);
+        //handler.setTbnameColumnMetasMap(columnMetas);
         handler.setSchemaManager(schemaManager);
 
         int count = handler.writeBatch(conn, recordList);
