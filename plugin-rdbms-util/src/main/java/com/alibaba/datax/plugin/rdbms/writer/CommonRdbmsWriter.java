@@ -266,14 +266,6 @@ public class CommonRdbmsWriter {
             DBUtil.closeDBResources(null, null, connection);
         }
         public void startWriteWithConnection(RecordReceiver recordReceiver, TaskPluginCollector taskPluginCollector, Connection connection) {
-            startWriteWithConnection(recordReceiver, taskPluginCollector, connection, 0);
-        }
-
-        public void startWriteWithConnection(RecordReceiver recordReceiver, TaskPluginCollector taskPluginCollector, Connection connection, int retryStackLevel) {
-            if (retryStackLevel > 4) {
-                throw DataXException.asDataXException(
-                        DBUtilErrorCode.WRITE_DATA_ERROR, "重试后依然写入数据库失败，请检查您的配置和数据是否有效");
-            }
 
             this.taskPluginCollector = taskPluginCollector;
 
