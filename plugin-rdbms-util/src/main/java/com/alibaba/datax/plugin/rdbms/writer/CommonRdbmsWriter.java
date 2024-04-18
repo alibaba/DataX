@@ -388,6 +388,19 @@ public class CommonRdbmsWriter {
                 connection.rollback();
                 doOneInsert(connection, buffer);
             } catch (Exception e) {
+                if (e instanceof SQLNonTransientConnectionException) {
+                    // 上面匹配不到。。。
+                    LOG.warn("连接失效，重连重试. 详情: {}" , e.getMessage());
+                    try {
+                        TimeUnit.SECONDS.sleep(ThreadLocalRandom.current().nextInt(3,15));
+                    } catch (InterruptedException ex) {
+                        return;
+                    }
+                    Connection connection2 = DBUtil.getConnection(this.dataBaseType,
+                            this.jdbcUrl, username, password);
+                    doBatchInsert(connection2,  buffer, (retryStackLevel + 1));
+                    return;
+                }
                 throw DataXException.asDataXException(
                         DBUtilErrorCode.WRITE_DATA_ERROR, e);
             } finally {
