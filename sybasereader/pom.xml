@@ -62,7 +62,7 @@
             <artifactId>jconn4</artifactId>
             <version>16.0</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/libs/jconn4-16.0.jar</systemPath>
+            <systemPath>${basedir}/src/main/libs/jconn4-16.0.jar</systemPath>
         </dependency>
 
         <dependency>

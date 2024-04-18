@@ -8,17 +8,22 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-
     <artifactId>hdfswriter</artifactId>
     <name>hdfswriter</name>
     <description>HdfsWriter提供了写入HDFS功能。</description>
     <packaging>jar</packaging>
     <properties>
-        <hive.version>1.1.1</hive.version>
+        <hive.version>3.1.3</hive.version>
         <hadoop.version>2.7.1</hadoop.version>
     </properties>
 
     <dependencies>
+        <!-- https://mvnrepository.com/artifact/com.twitter/parquet-hadoop-bundle -->
+        <dependency>
+            <groupId>com.twitter</groupId>
+            <artifactId>parquet-hadoop-bundle</artifactId>
+            <version>1.6.0</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>

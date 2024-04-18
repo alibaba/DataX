@@ -17,6 +17,13 @@
             <outputDirectory>plugin/reader/sybasereader</outputDirectory>
         </fileSet>
         <fileSet>
+            <directory>src/main/libs</directory>
+            <includes>
+                <include>*.*</include>
+            </includes>
+            <outputDirectory>plugin/reader/sybasereader/libs</outputDirectory>
+        </fileSet>
+        <fileSet>
             <directory>target/</directory>
             <includes>
                 <include>sybasereader-0.0.1-SNAPSHOT.jar</include>
