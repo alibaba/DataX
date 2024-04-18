@@ -109,9 +109,11 @@ public final class WriterUtil {
     }
 
     public static String getWriteTemplate(List<String> columnHolders, List<String> valueHolders, String writeMode, DataBaseType dataBaseType, boolean forceUseUpdate) {
-        boolean isWriteModeLegal = writeMode.trim().toLowerCase().startsWith("insert")
-                || writeMode.trim().toLowerCase().startsWith("replace")
-                || writeMode.trim().toLowerCase().startsWith("update");
+        String finalWriteMode = writeMode.trim().toLowerCase();
+        boolean isWriteModeLegal = finalWriteMode.startsWith("insert")
+                || finalWriteMode.startsWith("replace")
+                || finalWriteMode.startsWith("ignore")
+                || finalWriteMode.startsWith("update");
 
         if (!isWriteModeLegal) {
             throw DataXException.asDataXException(DBUtilErrorCode.ILLEGAL_VALUE,
@@ -120,7 +122,7 @@ public final class WriterUtil {
         // && writeMode.trim().toLowerCase().startsWith("replace")
         String writeDataSqlTemplate;
         if (forceUseUpdate ||
-                ((dataBaseType == DataBaseType.MySql || dataBaseType == DataBaseType.Tddl) && writeMode.trim().toLowerCase().startsWith("update"))
+                ((dataBaseType == DataBaseType.MySql || dataBaseType == DataBaseType.Tddl) && finalWriteMode.startsWith("update"))
                 ) {
             //update只在mysql下使用
 
@@ -132,11 +134,16 @@ public final class WriterUtil {
                     .toString();
         } else {
 
+            String sqlHead;
             //这里是保护,如果其他错误的使用了update,需要更换为replace
-            if (writeMode.trim().toLowerCase().startsWith("update")) {
-                writeMode = "replace";
+            if (finalWriteMode.startsWith("update")) {
+                sqlHead = "replace";
+            } else if (finalWriteMode.startsWith("ignore")) {
+                sqlHead = "insert ignore";
+            } else {
+                sqlHead = "insert";
             }
-            writeDataSqlTemplate = new StringBuilder().append(writeMode)
+            writeDataSqlTemplate = new StringBuilder().append(sqlHead)
                     .append(" INTO %s (").append(StringUtils.join(columnHolders, ","))
                     .append(") VALUES(").append(StringUtils.join(valueHolders, ","))
                     .append(")").toString();

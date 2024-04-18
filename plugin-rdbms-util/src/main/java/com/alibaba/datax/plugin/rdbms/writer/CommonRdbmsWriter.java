@@ -12,16 +12,20 @@ import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
 import com.alibaba.datax.plugin.rdbms.util.RdbmsException;
 import com.alibaba.datax.plugin.rdbms.writer.util.OriginalConfPretreatmentUtil;
 import com.alibaba.datax.plugin.rdbms.writer.util.WriterUtil;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.SQLNonTransientConnectionException;
+import java.sql.Types;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -292,13 +296,13 @@ public class CommonRdbmsWriter {
                     bufferBytes += record.getMemorySize();
 
                     if (writeBuffer.size() >= batchSize || bufferBytes >= batchByteSize) {
-                        doBatchInsert(connection, writeBuffer);
+                        doBatchInsert(connection, writeBuffer, 0);
                         writeBuffer.clear();
                         bufferBytes = 0;
                     }
                 }
                 if (!writeBuffer.isEmpty()) {
-                    doBatchInsert(connection, writeBuffer);
+                    doBatchInsert(connection, writeBuffer, 0);
                     writeBuffer.clear();
                     bufferBytes = 0;
                 }
@@ -347,6 +351,15 @@ public class CommonRdbmsWriter {
 
         protected void doBatchInsert(Connection connection, List<Record> buffer)
                 throws SQLException {
+            doBatchInsert(connection, buffer, 0);
+        }
+
+        protected void doBatchInsert(Connection connection, List<Record> buffer, int retryStackLevel)
+                throws SQLException {
+            if (retryStackLevel > 4) {
+                throw DataXException.asDataXException(
+                        DBUtilErrorCode.WRITE_DATA_ERROR,"重试后依然写入数据库失败，请检查您的配置和数据是否有效");
+            }
             PreparedStatement preparedStatement = null;
             try {
                 connection.setAutoCommit(false);
@@ -360,6 +373,16 @@ public class CommonRdbmsWriter {
                 }
                 preparedStatement.executeBatch();
                 connection.commit();
+            } catch (SQLNonTransientConnectionException e) {
+                LOG.warn("连接失效，重连重试. 详情: {}" , e.getMessage());
+                try {
+                    TimeUnit.SECONDS.sleep(ThreadLocalRandom.current().nextInt(3,15));
+                } catch (InterruptedException ex) {
+                    return;
+                }
+                Connection connection2 = DBUtil.getConnection(this.dataBaseType,
+                        this.jdbcUrl, username, password);
+                doBatchInsert(connection2,  buffer, (retryStackLevel + 1));
             } catch (SQLException e) {
                 LOG.warn("回滚此次写入, 采用每次写入一行方式提交. 因为:" + e.getMessage());
                 connection.rollback();
@@ -397,7 +420,12 @@ public class CommonRdbmsWriter {
                         this.taskPluginCollector.collectDirtyRecord(record, e);
                     } finally {
                         // 最后不要忘了关闭 preparedStatement
-                        preparedStatement.clearParameters();
+                        try {
+                            preparedStatement.clearParameters();
+                        } catch (SQLException e) {
+                            LOG.warn("关闭 PreparedStatement 时发生异常, ignore. MSG: {}", e.getMessage());
+                        }
+
                     }
                 }
             } catch (Exception e) {

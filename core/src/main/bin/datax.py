@@ -33,7 +33,8 @@ LOGBACK_FILE = ("%s/conf/logback.xml") % (DATAX_HOME)
 DEFAULT_JVM = "-Xms1g -Xmx1g -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=%s/log" % (DATAX_HOME)
 DEFAULT_PROPERTY_CONF = "-Dfile.encoding=UTF-8 -Dlogback.statusListenerClass=ch.qos.logback.core.status.NopStatusListener -Djava.security.egd=file:///dev/urandom -Ddatax.home=%s -Dlogback.configurationFile=%s" % (
     DATAX_HOME, LOGBACK_FILE)
-ENGINE_COMMAND = "java -server ${jvm} %s -classpath %s  ${params} com.alibaba.datax.core.Engine -mode ${mode} -jobid ${jobid} -job ${job}" % (
+
+ENGINE_COMMAND = "${javaHome}java -server ${jvm} %s -classpath %s  ${params} com.alibaba.datax.core.Engine -mode ${mode} -jobid ${jobid} -job ${job}" % (
     DEFAULT_PROPERTY_CONF, CLASS_PATH)
 REMOTE_DEBUG_CONFIG = "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=9999"
 
@@ -207,6 +208,11 @@ def buildStartCommand(options, args):
     commandMap["jvm"] = tempJVMCommand
     commandMap["params"] = jobParams
     commandMap["job"] = jobResource
+    jh = os.getenv("JAVA_HOME", "")
+    if jh:
+        commandMap["javaHome"] = jh + "/bin/"
+    else:
+        commandMap["javaHome"] = ""
 
     return Template(ENGINE_COMMAND).substitute(**commandMap)
 
