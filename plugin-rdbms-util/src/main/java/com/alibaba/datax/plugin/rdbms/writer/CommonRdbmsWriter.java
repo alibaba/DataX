@@ -359,40 +359,40 @@ public class CommonRdbmsWriter {
                 throw DataXException.asDataXException(
                         DBUtilErrorCode.WRITE_DATA_ERROR,"重试后依然写入数据库失败，请检查您的配置和数据是否有效");
             }
-            PreparedStatement preparedStatement = null;
             try {
-                connection.setAutoCommit(false);
-                preparedStatement = connection
-                        .prepareStatement(this.writeRecordSql);
+                PreparedStatement preparedStatement = null;
+                try {
+                    connection.setAutoCommit(false);
+                    preparedStatement = connection
+                            .prepareStatement(this.writeRecordSql);
 
-                for (Record record : buffer) {
-                    preparedStatement = fillPreparedStatement(
-                            preparedStatement, record);
-                    preparedStatement.addBatch();
-                }
-                preparedStatement.executeBatch();
-                connection.commit();
-            } catch (SQLException e) {
-                if (e instanceof SQLNonTransientConnectionException) {
-                    LOG.warn("连接失效，重连重试. 详情: {}", e.getMessage());
-                    try {
-                        TimeUnit.SECONDS.sleep(ThreadLocalRandom.current().nextInt(3, 15));
-                    } catch (InterruptedException ex) {
-                        return;
+                    for (Record record : buffer) {
+                        preparedStatement = fillPreparedStatement(
+                                preparedStatement, record);
+                        preparedStatement.addBatch();
                     }
-                    Connection connection2 = DBUtil.getConnection(this.dataBaseType,
-                            this.jdbcUrl, username, password);
-                    doBatchInsert(connection2, buffer, (retryStackLevel + 1));
+                    preparedStatement.executeBatch();
+                    connection.commit();
+                } catch (SQLException e) {
+                    LOG.warn("回滚此次写入, 采用每次写入一行方式提交. 因为: {} >> {}", e.getClass(), e.getMessage());
+                    connection.rollback();
+                    doOneInsert(connection, buffer);
+                } catch (Exception e) {
+                    throw DataXException.asDataXException(
+                            DBUtilErrorCode.WRITE_DATA_ERROR, e);
+                } finally {
+                    DBUtil.closeDBResources(preparedStatement, null);
+                }
+            } catch (SQLNonTransientConnectionException e) {
+                LOG.warn("连接失效，重连重试. 详情: {}", e.getMessage());
+                try {
+                    TimeUnit.SECONDS.sleep(ThreadLocalRandom.current().nextInt(3, 15));
+                } catch (InterruptedException ex) {
                     return;
                 }
-                LOG.warn("回滚此次写入, 采用每次写入一行方式提交. 因为:" + e.getMessage());
-                connection.rollback();
-                doOneInsert(connection, buffer);
-            } catch (Exception e) {
-                throw DataXException.asDataXException(
-                        DBUtilErrorCode.WRITE_DATA_ERROR, e);
-            } finally {
-                DBUtil.closeDBResources(preparedStatement, null);
+                Connection connection2 = DBUtil.getConnection(this.dataBaseType,
+                        this.jdbcUrl, username, password);
+                doBatchInsert(connection2, buffer, retryStackLevel + 1);
             }
         }
 
