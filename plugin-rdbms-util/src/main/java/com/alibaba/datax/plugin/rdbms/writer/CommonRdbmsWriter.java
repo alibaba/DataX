@@ -303,26 +303,40 @@ public class CommonRdbmsWriter {
                     bufferBytes += record.getMemorySize();
 
                     if (writeBuffer.size() >= batchSize || bufferBytes >= batchByteSize) {
-                        doBatchInsert(connection, writeBuffer);
+                        try {
+                            doBatchInsert(connection, writeBuffer);
+                        } catch (SQLNonTransientConnectionException e) {
+                            LOG.warn("连接失效，重连重试. 详情: {}", e.getMessage());
+                            try {
+                                TimeUnit.SECONDS.sleep(ThreadLocalRandom.current().nextInt(3, 15));
+                            } catch (InterruptedException ex) {
+                                return;
+                            }
+                            connection = DBUtil.getConnection(this.dataBaseType,
+                                    this.jdbcUrl, username, password);
+                            doBatchInsert(connection, writeBuffer);
+                        }
                         writeBuffer.clear();
                         bufferBytes = 0;
                     }
                 }
                 if (!writeBuffer.isEmpty()) {
-                    doBatchInsert(connection, writeBuffer);
+                    try {
+                        doBatchInsert(connection, writeBuffer);
+                    } catch (SQLNonTransientConnectionException e) {
+                        LOG.warn("连接失效，重连重试. 详情: {}", e.getMessage());
+                        try {
+                            TimeUnit.SECONDS.sleep(ThreadLocalRandom.current().nextInt(3, 15));
+                        } catch (InterruptedException ex) {
+                            return;
+                        }
+                        connection = DBUtil.getConnection(this.dataBaseType,
+                                this.jdbcUrl, username, password);
+                        doBatchInsert(connection, writeBuffer);
+                    }
                     writeBuffer.clear();
                     bufferBytes = 0;
                 }
-            } catch (SQLNonTransientConnectionException e) {
-                LOG.warn("连接失效，重连重试. 详情: {}", e.getMessage());
-                try {
-                    TimeUnit.SECONDS.sleep(ThreadLocalRandom.current().nextInt(3, 15));
-                } catch (InterruptedException ex) {
-                    return;
-                }
-                Connection connection2 = DBUtil.getConnection(this.dataBaseType,
-                        this.jdbcUrl, username, password);
-                startWriteWithConnection(recordReceiver, taskPluginCollector, connection2, retryStackLevel + 1);
             } catch (Exception e) {
                 throw DataXException.asDataXException(
                         DBUtilErrorCode.WRITE_DATA_ERROR, e);
