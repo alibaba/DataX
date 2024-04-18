@@ -12,22 +12,21 @@ import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
 import com.alibaba.datax.plugin.rdbms.util.RdbmsException;
 import com.alibaba.datax.plugin.rdbms.writer.util.OriginalConfPretreatmentUtil;
 import com.alibaba.datax.plugin.rdbms.writer.util.WriterUtil;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Triple;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.SQLNonTransientConnectionException;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Triple;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class CommonRdbmsWriter {
 
@@ -373,34 +372,23 @@ public class CommonRdbmsWriter {
                 }
                 preparedStatement.executeBatch();
                 connection.commit();
-            } catch (SQLNonTransientConnectionException e) {
-                LOG.warn("连接失效，重连重试. 详情: {}" , e.getMessage());
-                try {
-                    TimeUnit.SECONDS.sleep(ThreadLocalRandom.current().nextInt(3,15));
-                } catch (InterruptedException ex) {
-                    return;
-                }
-                Connection connection2 = DBUtil.getConnection(this.dataBaseType,
-                        this.jdbcUrl, username, password);
-                doBatchInsert(connection2,  buffer, (retryStackLevel + 1));
             } catch (SQLException e) {
-                LOG.warn("回滚此次写入, 采用每次写入一行方式提交. 因为:" + e.getMessage());
-                connection.rollback();
-                doOneInsert(connection, buffer);
-            } catch (Exception e) {
                 if (e instanceof SQLNonTransientConnectionException) {
-                    // 上面匹配不到。。。
-                    LOG.warn("连接失效，重连重试. 详情: {}" , e.getMessage());
+                    LOG.warn("连接失效，重连重试. 详情: {}", e.getMessage());
                     try {
-                        TimeUnit.SECONDS.sleep(ThreadLocalRandom.current().nextInt(3,15));
+                        TimeUnit.SECONDS.sleep(ThreadLocalRandom.current().nextInt(3, 15));
                     } catch (InterruptedException ex) {
                         return;
                     }
                     Connection connection2 = DBUtil.getConnection(this.dataBaseType,
                             this.jdbcUrl, username, password);
-                    doBatchInsert(connection2,  buffer, (retryStackLevel + 1));
+                    doBatchInsert(connection2, buffer, (retryStackLevel + 1));
                     return;
                 }
+                LOG.warn("回滚此次写入, 采用每次写入一行方式提交. 因为:" + e.getMessage());
+                connection.rollback();
+                doOneInsert(connection, buffer);
+            } catch (Exception e) {
                 throw DataXException.asDataXException(
                         DBUtilErrorCode.WRITE_DATA_ERROR, e);
             } finally {
