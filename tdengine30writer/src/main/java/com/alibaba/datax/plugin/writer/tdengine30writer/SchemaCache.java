@@ -114,13 +114,16 @@ public final class SchemaCache {
 
     private Object getTagValue(String tableName, String tagName) {
         String sql = "select " + tagName + " from " + tableName;
+        Object tagValue = null;
         try (Statement stmt = conn.createStatement()) {
             ResultSet rs = stmt.executeQuery(sql);
             rs.next();
-            return rs.getObject(tagName);
+            tagValue = rs.getObject(tagName);
         } catch (SQLException e) {
-            throw DataXException.asDataXException("failed to get tag value, cause: {" + e.getMessage() + "}");
+            log.error("failed to get tag value, use NULL, cause: {" + e.getMessage() + "}");
         }
+
+        return tagValue;
     }
 
     private ColumnMeta buildColumnMeta(ResultSet rs, boolean isPrimaryKey) throws SQLException {
