@@ -78,8 +78,10 @@ public final class SchemaCache {
             synchronized (SchemaCache.class) {
                 if (columnMetas.get(tbname).isEmpty()) {
                     List<String> column_name = config.getList(Key.COLUMN, String.class);
+
                     List<ColumnMeta> colMetaList = getColumnMetaListFromDb(tbname,
                             (colMeta) -> column_name.contains(colMeta.field));
+
                     columnMetas.get(tbname).addAll(colMetaList);
                 }
             }
@@ -88,7 +90,7 @@ public final class SchemaCache {
     }
 
     private List<ColumnMeta> getColumnMetaListFromDb(String tableName, Predicate<ColumnMeta> filter) {
-        List<ColumnMeta> columnMetaList = columnMetas.get(tableName);
+        List<ColumnMeta> columnMetaList = new ArrayList<>();
 
         try (Statement stmt = conn.createStatement()) {
             ResultSet rs = stmt.executeQuery("describe " + tableName);
@@ -98,6 +100,7 @@ public final class SchemaCache {
                 if (filter.test(columnMeta))
                     columnMetaList.add(columnMeta);
             }
+            rs.close();
         } catch (SQLException e) {
             throw DataXException.asDataXException(TDengineWriterErrorCode.RUNTIME_EXCEPTION, e.getMessage());
         }
@@ -117,8 +120,10 @@ public final class SchemaCache {
         Object tagValue = null;
         try (Statement stmt = conn.createStatement()) {
             ResultSet rs = stmt.executeQuery(sql);
-            rs.next();
-            tagValue = rs.getObject(tagName);
+
+            while (rs.next()) {
+                tagValue = rs.getObject(tagName);
+            }
         } catch (SQLException e) {
             log.error("failed to get tag value, use NULL, cause: {" + e.getMessage() + "}");
         }
