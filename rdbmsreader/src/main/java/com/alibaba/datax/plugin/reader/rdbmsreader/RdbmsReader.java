@@ -13,10 +13,12 @@ import java.util.List;
 
 public class RdbmsReader extends Reader {
     private static final DataBaseType DATABASE_TYPE = DataBaseType.RDBMS;
+
     static {
-    	//加载插件下面配置的驱动类
+        //加载插件下面配置的驱动类
         DBUtil.loadDriverClass("reader", "rdbms");
     }
+
     public static class Job extends Reader.Job {
 
         private Configuration originalConfig;
@@ -25,30 +27,21 @@ public class RdbmsReader extends Reader {
         @Override
         public void init() {
             this.originalConfig = super.getPluginJobConf();
-            int fetchSize = this.originalConfig.getInt(
-                    com.alibaba.datax.plugin.rdbms.reader.Constant.FETCH_SIZE,
+            int fetchSize = this.originalConfig.getInt(com.alibaba.datax.plugin.rdbms.reader.Constant.FETCH_SIZE,
                     Constant.DEFAULT_FETCH_SIZE);
             if (fetchSize < 1) {
-                throw DataXException
-                        .asDataXException(
-                                DBUtilErrorCode.REQUIRED_VALUE,
-                                String.format(
-                                        "您配置的fetchSize有误，根据DataX的设计，fetchSize : [%d] 设置值不能小于 1.",
-                                        fetchSize));
+                throw DataXException.asDataXException(DBUtilErrorCode.REQUIRED_VALUE, String.format("您配置的fetchSize" +
+                        "有误，根据DataX的设计，fetchSize : [%d] 设置值不能小于 1.", fetchSize));
             }
-            this.originalConfig.set(
-                    com.alibaba.datax.plugin.rdbms.reader.Constant.FETCH_SIZE,
-                    fetchSize);
+            this.originalConfig.set(com.alibaba.datax.plugin.rdbms.reader.Constant.FETCH_SIZE, fetchSize);
 
-            this.commonRdbmsReaderMaster = new SubCommonRdbmsReader.Job(
-                    DATABASE_TYPE);
+            this.commonRdbmsReaderMaster = new SubCommonRdbmsReader.Job(DATABASE_TYPE);
             this.commonRdbmsReaderMaster.init(this.originalConfig);
         }
 
         @Override
         public List<Configuration> split(int adviceNumber) {
-            return this.commonRdbmsReaderMaster.split(this.originalConfig,
-                    adviceNumber);
+            return this.commonRdbmsReaderMaster.split(this.originalConfig, adviceNumber);
         }
 
         @Override
@@ -71,18 +64,16 @@ public class RdbmsReader extends Reader {
         @Override
         public void init() {
             this.readerSliceConfig = super.getPluginJobConf();
-            this.commonRdbmsReaderSlave = new SubCommonRdbmsReader.Task(
-                    DATABASE_TYPE);
+            this.commonRdbmsReaderSlave = new SubCommonRdbmsReader.Task(DATABASE_TYPE);
             this.commonRdbmsReaderSlave.init(this.readerSliceConfig);
         }
 
         @Override
         public void startRead(RecordSender recordSender) {
-            int fetchSize = this.readerSliceConfig
-                    .getInt(com.alibaba.datax.plugin.rdbms.reader.Constant.FETCH_SIZE);
+            int fetchSize = this.readerSliceConfig.getInt(com.alibaba.datax.plugin.rdbms.reader.Constant.FETCH_SIZE);
 
-            this.commonRdbmsReaderSlave.startRead(this.readerSliceConfig,
-                    recordSender, super.getTaskPluginCollector(), fetchSize);
+            this.commonRdbmsReaderSlave.startRead(this.readerSliceConfig, recordSender,
+                    super.getTaskPluginCollector(), fetchSize);
         }
 
         @Override
