@@ -22,6 +22,8 @@ public final class SchemaCache {
 
     private static Configuration config;
     private static Connection conn;
+    private static String dbname;
+
     // table name -> TableMeta
     private static final Map<String, TableMeta> tableMetas = new LinkedHashMap<>();
     // table name ->List<ColumnMeta>
@@ -44,7 +46,7 @@ public final class SchemaCache {
                     "failed to connect to url: " + url + ", cause: {" + e.getMessage() + "}");
         }
 
-        final String dbname = TDengineWriter.parseDatabaseFromJdbcUrl(url);
+        dbname = TDengineWriter.parseDatabaseFromJdbcUrl(url);
         SchemaManager schemaManager = new Schema3_0Manager(SchemaCache.conn, dbname);
 
         // init table meta cache and load
@@ -70,6 +72,24 @@ public final class SchemaCache {
     }
 
     public TableMeta getTableMeta(String table_name) {
+        //if (tableMetas.get(table_name) == null) {
+        //    synchronized (SchemaCache.class) {
+        //        if (tableMetas.get(table_name) == null) {
+        //            SchemaManager schemaManager = new Schema3_0Manager(SchemaCache.conn, dbname);
+        //
+        //            List<String> tables = new ArrayList<>();
+        //            tables.add(table_name);
+        //            Map<String, TableMeta> metas = schemaManager.loadTableMeta(tables);
+        //
+        //            tableMetas.putAll(metas);
+        //        }
+        //    }
+        //}
+        if (!tableMetas.containsKey(table_name)) {
+            throw DataXException.asDataXException(TDengineWriterErrorCode.RUNTIME_EXCEPTION,
+                    "table metadata of " + table_name + " is empty!");
+        }
+
         return tableMetas.get(table_name);
     }
 
