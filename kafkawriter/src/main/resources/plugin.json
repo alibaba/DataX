@@ -1,0 +1,6 @@
+{
+  "name": "kafkawriter",
+  "class": "com.alibaba.datax.plugin.writer.kafkawriter.KafkaWriter",
+  "description": "将数据通过Kafka生产者写入指定topic",
+  "developer": "LZC"
+}

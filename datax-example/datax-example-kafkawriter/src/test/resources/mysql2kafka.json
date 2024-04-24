@@ -1,0 +1,43 @@
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "name": "mysqlreader",
+          "parameter": {
+            "username": "root",
+            "password": "reformer@123",
+            "splitPk": "id",
+            "connection": [
+              {
+                "querySql": [
+                  "SELECT id, name from student_test"
+                ],
+                "jdbcUrl": [
+                  "jdbc:mysql://192.168.11.100:7006/lzc_test"
+                ]
+              }
+            ],
+            "where": "1 = 1"
+          }
+        },
+        "writer": {
+          "name": "kafkawriter",
+          "parameter": {
+            "bootstrapServers": "kafka01:9380,kafka02:9381,kafka03:9382",
+            "topic": "test_lu",
+            "keys": [
+              "id",
+              "name"
+            ]
+          }
+        }
+      }
+    ],
+    "setting": {
+      "speed": {
+        "channel": 3
+      }
+    }
+  }
+}
