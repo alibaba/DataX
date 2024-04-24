@@ -2,6 +2,7 @@
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
     <id></id>
+
     <formats>
         <format>dir</format>
     </formats>
@@ -13,21 +14,21 @@
                 <include>plugin.json</include>
                 <include>plugin_job_template.json</include>
             </includes>
-            <outputDirectory>plugin/writer/mysqlwriter</outputDirectory>
+            <outputDirectory>plugin/writer/kafkawriter</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>target/</directory>
             <includes>
-                <include>mysqlwriter-0.0.1-SNAPSHOT.jar</include>
+                <include>kafkawriter-0.0.1-SNAPSHOT.jar</include>
             </includes>
-            <outputDirectory>plugin/writer/mysqlwriter</outputDirectory>
+            <outputDirectory>plugin/writer/kafkawriter</outputDirectory>
         </fileSet>
     </fileSets>
 
     <dependencySets>
         <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
-            <outputDirectory>plugin/writer/mysqlwriter/libs</outputDirectory>
+            <outputDirectory>plugin/writer/kafkawriter/libs</outputDirectory>
             <scope>runtime</scope>
         </dependencySet>
     </dependencySets>

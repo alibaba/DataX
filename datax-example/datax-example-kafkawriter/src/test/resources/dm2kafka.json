@@ -1,0 +1,42 @@
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "name": "rdbmsreader",
+          "parameter": {
+            "username": "rf_supervision",
+            "password": "reformer@123",
+            "fetchSize": 1024,
+            "connection": [
+              {
+                "querySql": [
+                  "SELECT id, name from T_REGION"
+                ],
+                "jdbcUrl": [
+                  "jdbc:dm://192.168.11.201:7237?schema=rf_supervision"
+                ]
+              }
+            ]
+          }
+        },
+        "writer": {
+          "name": "kafkawriter",
+          "parameter": {
+            "bootstrapServers": "kafka01:9380,kafka02:9381,kafka03:9382",
+            "topic": "test_lu",
+            "keys": [
+              "id",
+              "name"
+            ]
+          }
+        }
+      }
+    ],
+    "setting": {
+      "speed": {
+        "channel": 3
+      }
+    }
+  }
+}

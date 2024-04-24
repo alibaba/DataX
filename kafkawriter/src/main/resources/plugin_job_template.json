@@ -1,0 +1,11 @@
+{
+  "name": "kafkawriter",
+  "parameter": {
+    "bootstrapServers": "this is bootstrapServers",
+    "topic": "this is send topic",
+    "keys": [
+      "id",
+      "name"
+    ]
+  }
+}

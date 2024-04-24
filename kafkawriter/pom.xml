@@ -1,15 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.alibaba.datax</groupId>
         <artifactId>datax-all</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
-    <artifactId>mysqlreader</artifactId>
-    <name>mysqlreader</name>
-    <packaging>jar</packaging>
+    <artifactId>kafkawriter</artifactId>
+    <modelVersion>4.0.0</modelVersion>
+
+    <properties>
+        <jdk-version>8</jdk-version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -24,6 +28,11 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>com.alibaba.datax</groupId>
+            <artifactId>plugin-unstructured-storage-util</artifactId>
+            <version>${datax-project-version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
@@ -32,17 +41,13 @@
             <artifactId>logback-classic</artifactId>
         </dependency>
 
+        <!-- kafka 依赖 -->
         <dependency>
-            <groupId>com.alibaba.datax</groupId>
-            <artifactId>plugin-rdbms-util</artifactId>
-            <version>${datax-project-version}</version>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>2.5.1</version>
+            <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>${mysql.driver.version}</version>
-        </dependency>
-
 
     </dependencies>
 
