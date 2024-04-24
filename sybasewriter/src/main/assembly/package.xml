@@ -17,18 +17,25 @@
             <outputDirectory>plugin/reader/sybasewriter</outputDirectory>
         </fileSet>
         <fileSet>
+            <directory>src/main/libs</directory>
+            <includes>
+                <include>*.*</include>
+            </includes>
+            <outputDirectory>plugin/writer/sybasewriter/libs</outputDirectory>
+        </fileSet>
+        <fileSet>
             <directory>target/</directory>
             <includes>
                 <include>sybasewriter-0.0.1-SNAPSHOT.jar</include>
             </includes>
-            <outputDirectory>plugin/reader/sybasewriter</outputDirectory>
+            <outputDirectory>plugin/writer/sybasewriter</outputDirectory>
         </fileSet>
     </fileSets>
 
     <dependencySets>
         <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
-            <outputDirectory>plugin/reader/sybasewriter/libs</outputDirectory>
+            <outputDirectory>plugin/writer/sybasewriter/libs</outputDirectory>
             <scope>runtime</scope>
         </dependencySet>
     </dependencySets>
