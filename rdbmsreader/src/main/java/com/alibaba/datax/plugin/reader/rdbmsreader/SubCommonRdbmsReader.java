@@ -126,7 +126,13 @@ public class SubCommonRdbmsReader extends CommonRdbmsReader {
                     case Types.BIT:
                         record.addColumn(new BoolColumn(rs.getBoolean(i)));
                         break;
-
+                    case Types.SQLXML:
+                        String xmlData = null;
+                        if (rs.getSQLXML(i) != null) {
+                            xmlData = rs.getSQLXML(i).getString();
+                        }
+                        record.addColumn(new StringColumn(xmlData));
+                        break;
                     case Types.NULL:
                         String stringData = null;
                         if (rs.getObject(i) != null) {
