@@ -264,9 +264,6 @@ public class DefaultDataHandler implements DataHandler {
      */
     private int writeBatchToSupTableBySQL(Connection conn, String table, List<Record> recordBatch) throws SQLException {
         List<ColumnMeta> columnMetas = this.schemaCache.getColumnMetaList(table);
-        if (columnMetas.isEmpty()) {
-            throw DataXException.asDataXException("table: " + table + " metadata is empty!");
-        }
 
         StringBuilder sb = new StringBuilder("insert into");
         for (Record record : recordBatch) {

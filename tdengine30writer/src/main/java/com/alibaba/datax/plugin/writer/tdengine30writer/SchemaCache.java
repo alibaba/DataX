@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Schema cache for TDengine 3.X
@@ -97,28 +98,33 @@ public final class SchemaCache {
         if (columnMetas.get(tbname).isEmpty()) {
             synchronized (SchemaCache.class) {
                 if (columnMetas.get(tbname).isEmpty()) {
-                    List<String> column_name = config.getList(Key.COLUMN, String.class);
-
-                    List<ColumnMeta> colMetaList = getColumnMetaListFromDb(tbname,
-                            (colMeta) -> column_name.contains(colMeta.field));
-
+                    List<ColumnMeta> colMetaList = getColumnMetaListFromDb(tbname);
+                    if (colMetaList.isEmpty()) {
+                        throw DataXException.asDataXException("column metadata of table: " + tbname + " is empty!");
+                    }
                     columnMetas.get(tbname).addAll(colMetaList);
                 }
             }
         }
+
         return columnMetas.get(tbname);
     }
 
-    private List<ColumnMeta> getColumnMetaListFromDb(String tableName, Predicate<ColumnMeta> filter) {
+    private List<ColumnMeta> getColumnMetaListFromDb(String tableName) {
         List<ColumnMeta> columnMetaList = new ArrayList<>();
+
+        List<String> column_name = config.getList(Key.COLUMN, String.class)
+                                         .stream()
+                                         .map(String::toLowerCase)
+                                         .collect(Collectors.toList());
 
         try (Statement stmt = conn.createStatement()) {
             ResultSet rs = stmt.executeQuery("describe " + tableName);
             for (int i = 0; rs.next(); i++) {
                 ColumnMeta columnMeta = buildColumnMeta(rs, i == 0);
-
-                if (filter.test(columnMeta))
+                if (column_name.contains(columnMeta.field.toLowerCase())) {
                     columnMetaList.add(columnMeta);
+                }
             }
             rs.close();
         } catch (SQLException e) {
