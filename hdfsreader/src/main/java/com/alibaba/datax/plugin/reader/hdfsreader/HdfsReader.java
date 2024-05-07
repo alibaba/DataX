@@ -43,6 +43,7 @@ public class HdfsReader extends Reader {
         private List<String> path = null;
         private boolean skipEmptyOrcFile = false;
         private Integer orcFileEmptySize = null;
+        private Boolean skipEmptyDir=null;
 
         @Override
         public void init() {
@@ -58,6 +59,7 @@ public class HdfsReader extends Reader {
         public void validate(){
             this.readerOriginConfig.getNecessaryValue(Key.DEFAULT_FS,
                     HdfsReaderErrorCode.DEFAULT_FS_NOT_FIND_ERROR);
+            skipEmptyDir = this.readerOriginConfig.getBool(Key.SKIP_EMPTY_DIR,true);
 
             // path check
             String pathInString = this.readerOriginConfig.getNecessaryValue(Key.PATH, HdfsReaderErrorCode.REQUIRED_VALUE);
@@ -193,9 +195,18 @@ public class HdfsReader extends Reader {
             // warn:每个slice拖且仅拖一个文件,
             // int splitNumber = adviceNumber;
             int splitNumber = this.sourceFiles.size();
+            LOG.info("split number:" + splitNumber);
+
             if (0 == splitNumber) {
-                throw DataXException.asDataXException(HdfsReaderErrorCode.EMPTY_DIR_EXCEPTION,
-                        String.format("未能找到待读取的文件,请确认您的配置项path: %s", this.readerOriginConfig.getString(Key.PATH)));
+                String message = String.format("未能找到待读取的文件,请确认您的配置项path: %s",
+                        this.readerOriginConfig.getString(Key.PATH));
+                if(skipEmptyDir){
+                    LOG.warn(message);
+                    LOG.info("Task exited with return code 0");
+                    System.exit(0);
+                }else {
+                    throw DataXException.asDataXException(HdfsReaderErrorCode.EMPTY_DIR_EXCEPTION,message);
+                }
             }
 
             List<List<String>> splitedSourceFiles = this.splitSourceFiles(new ArrayList<String>(this.sourceFiles), splitNumber);
