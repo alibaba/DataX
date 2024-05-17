@@ -27,6 +27,7 @@ public enum DataBaseType {
     StarRocks("starrocks", "com.mysql.jdbc.Driver"),
     Sybase("sybase", "com.sybase.jdbc4.jdbc.SybDriver"),
     GaussDB("gaussdb", "org.opengauss.Driver"),
+    GaussDWS("gaussdws", "org.postgresql.Driver"),
     Databend("databend", "com.databend.jdbc.DatabendDriver"),
     Doris("doris","com.mysql.jdbc.Driver");
 
@@ -143,6 +144,8 @@ public enum DataBaseType {
                 break;
             case GaussDB:
                 break;
+            case GaussDWS:
+                break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type.");
         }
@@ -171,6 +174,7 @@ public enum DataBaseType {
             case Oscar:
                 break;
             case GaussDB:
+            case GaussDWS:
                 break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type.");
@@ -198,6 +202,7 @@ public enum DataBaseType {
             case Oscar:
                 break;
             case GaussDB:
+            case GaussDWS:
                 break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type");
@@ -226,6 +231,7 @@ public enum DataBaseType {
             case Oscar:
                 break;
             case GaussDB:
+            case GaussDWS:
                 break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type");

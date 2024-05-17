@@ -243,7 +243,7 @@ public class CommonRdbmsWriter {
             emptyAsNull = writerSliceConfig.getBool(Key.EMPTY_AS_NULL, true);
             INSERT_OR_REPLACE_TEMPLATE = writerSliceConfig.getString(Constant.INSERT_OR_REPLACE_TEMPLATE_MARK);
             this.writeRecordSql = String.format(INSERT_OR_REPLACE_TEMPLATE, this.table);
-
+            LOG.debug("this.writeRecordSql : [{}]", this.writeRecordSql);
             BASIC_MESSAGE = String.format("jdbcUrl:[%s], table:[%s]",
                     this.jdbcUrl, this.table);
         }
