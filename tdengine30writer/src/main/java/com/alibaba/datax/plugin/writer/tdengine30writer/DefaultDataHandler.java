@@ -183,7 +183,7 @@ public class DefaultDataHandler implements DataHandler {
 
     private int writeBatchToSupTableWithoutTbname(Connection conn, String table, List<Record> recordBatch,
             Map<String, String> tag2Tbname) throws SQLException {
-        List<ColumnMeta> columnMetas = schemaCache.getColumnMetaList(table);
+        List<ColumnMeta> columnMetas = schemaCache.getColumnMetaList(table, TableType.SUP_TABLE);
         List<Record> subTableExist = filterSubTableExistRecords(recordBatch, columnMetas, tag2Tbname);
         List<Record> subTableNotExist = filterSubTableNotExistRecords(recordBatch, columnMetas, tag2Tbname);
 
@@ -263,7 +263,7 @@ public class DefaultDataHandler implements DataHandler {
      * record[idx(tbname)] using table tags(record[idx(t1)]) (ts, f1, f2, f3) values(record[idx(ts)], record[idx(f1)], )
      */
     private int writeBatchToSupTableBySQL(Connection conn, String table, List<Record> recordBatch) throws SQLException {
-        List<ColumnMeta> columnMetas = this.schemaCache.getColumnMetaList(table);
+        List<ColumnMeta> columnMetas = this.schemaCache.getColumnMetaList(table, TableType.SUP_TABLE);
 
         StringBuilder sb = new StringBuilder("insert into");
         for (Record record : recordBatch) {
@@ -356,7 +356,7 @@ public class DefaultDataHandler implements DataHandler {
         int count = 0;
         TimestampPrecision timestampPrecision = schemaManager.loadDatabasePrecision();
 
-        List<ColumnMeta> columnMetaList = this.schemaCache.getColumnMetaList(table);
+        List<ColumnMeta> columnMetaList = this.schemaCache.getColumnMetaList(table, TableType.SUP_TABLE);
         ColumnMeta ts = columnMetaList.stream().filter(colMeta -> colMeta.isPrimaryKey).findFirst().get();
 
         List<String> lines = new ArrayList<>();
@@ -494,7 +494,7 @@ public class DefaultDataHandler implements DataHandler {
      * insert into tb1 (ts, f1, f2) values( record[idx(ts)], record[idx(f1)], record[idx(f2)])
      */
     private int writeBatchToSubTable(Connection conn, String table, List<Record> recordBatch) throws SQLException {
-        List<ColumnMeta> columnMetas = this.schemaCache.getColumnMetaList(table);
+        List<ColumnMeta> columnMetas = this.schemaCache.getColumnMetaList(table, TableType.SUB_TABLE);
 
         StringBuilder sb = new StringBuilder();
         sb.append("insert into `")
@@ -569,7 +569,7 @@ public class DefaultDataHandler implements DataHandler {
      * sql: insert into weather (ts, f1, f2, f3, t1, t2) values( record[idx(ts), record[idx(f1)], ...)
      */
     private int writeBatchToNormalTable(Connection conn, String table, List<Record> recordBatch) throws SQLException {
-        List<ColumnMeta> columnMetas = this.schemaCache.getColumnMetaList(table);
+        List<ColumnMeta> columnMetas = this.schemaCache.getColumnMetaList(table, TableType.NML_TABLE);
 
         StringBuilder sb = new StringBuilder();
         sb.append("insert into `")

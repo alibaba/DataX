@@ -12,7 +12,7 @@ import java.sql.Statement;
 @Ignore
 public class Csv2TDengineTest {
 
-    private static final String host = "192.168.56.105";
+    private static final String host = "192.168.0.201";
 
     @Test
     public void case01() throws Throwable {
