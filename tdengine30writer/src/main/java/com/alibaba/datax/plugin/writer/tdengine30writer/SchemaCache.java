@@ -73,19 +73,6 @@ public final class SchemaCache {
     }
 
     public TableMeta getTableMeta(String table_name) {
-        //if (tableMetas.get(table_name) == null) {
-        //    synchronized (SchemaCache.class) {
-        //        if (tableMetas.get(table_name) == null) {
-        //            SchemaManager schemaManager = new Schema3_0Manager(SchemaCache.conn, dbname);
-        //
-        //            List<String> tables = new ArrayList<>();
-        //            tables.add(table_name);
-        //            Map<String, TableMeta> metas = schemaManager.loadTableMeta(tables);
-        //
-        //            tableMetas.putAll(metas);
-        //        }
-        //    }
-        //}
         if (!tableMetas.containsKey(table_name)) {
             throw DataXException.asDataXException(TDengineWriterErrorCode.RUNTIME_EXCEPTION,
                     "table metadata of " + table_name + " is empty!");
@@ -94,11 +81,11 @@ public final class SchemaCache {
         return tableMetas.get(table_name);
     }
 
-    public List<ColumnMeta> getColumnMetaList(String tbname) {
+    public List<ColumnMeta> getColumnMetaList(String tbname, TableType tableType) {
         if (columnMetas.get(tbname).isEmpty()) {
             synchronized (SchemaCache.class) {
                 if (columnMetas.get(tbname).isEmpty()) {
-                    List<ColumnMeta> colMetaList = getColumnMetaListFromDb(tbname);
+                    List<ColumnMeta> colMetaList = getColumnMetaListFromDb(tbname, tableType);
                     if (colMetaList.isEmpty()) {
                         throw DataXException.asDataXException("column metadata of table: " + tbname + " is empty!");
                     }
@@ -110,7 +97,7 @@ public final class SchemaCache {
         return columnMetas.get(tbname);
     }
 
-    private List<ColumnMeta> getColumnMetaListFromDb(String tableName) {
+    private List<ColumnMeta> getColumnMetaListFromDb(String tableName, TableType tableType) {
         List<ColumnMeta> columnMetaList = new ArrayList<>();
 
         List<String> column_name = config.getList(Key.COLUMN, String.class)
@@ -131,18 +118,21 @@ public final class SchemaCache {
             throw DataXException.asDataXException(TDengineWriterErrorCode.RUNTIME_EXCEPTION, e.getMessage());
         }
 
-        for (ColumnMeta colMeta : columnMetaList) {
-            if (!colMeta.isTag)
-                continue;
-            Object tagValue = getTagValue(tableName, colMeta.field);
-            colMeta.value = tagValue;
+        // 如果是子表，才需要获取 tag 值
+        if (tableType == TableType.SUB_TABLE) {
+            for (ColumnMeta colMeta : columnMetaList) {
+                if (!colMeta.isTag)
+                    continue;
+                Object tagValue = getTagValue(tableName, colMeta.field);
+                colMeta.value = tagValue;
+            }
         }
 
         return columnMetaList;
     }
 
     private Object getTagValue(String tableName, String tagName) {
-        String sql = "select " + tagName + " from " + tableName;
+        String sql = "select " + tagName + " from " + tableName + " limit 1";
         Object tagValue = null;
         try (Statement stmt = conn.createStatement()) {
             ResultSet rs = stmt.executeQuery(sql);

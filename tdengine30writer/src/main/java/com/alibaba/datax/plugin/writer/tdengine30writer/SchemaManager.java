@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 public class SchemaManager {
     private static final Logger LOG = LoggerFactory.getLogger(SchemaManager.class);
-//    private static final String TAG_TABLE_NAME_MAP_KEY_SPLITTER = "_";
+    //    private static final String TAG_TABLE_NAME_MAP_KEY_SPLITTER = "_";
     protected static final String TAG_TABLE_NAME_MAP_KEY_SPLITTER = "";
 
     protected final Connection conn;
@@ -82,7 +82,8 @@ public class SchemaManager {
 
             for (String tbname : tables) {
                 if (!tableMetas.containsKey(tbname)) {
-                    throw DataXException.asDataXException(TDengineWriterErrorCode.RUNTIME_EXCEPTION, "table metadata of " + tbname + " is empty!");
+                    throw DataXException.asDataXException(TDengineWriterErrorCode.RUNTIME_EXCEPTION,
+                            "table metadata of " + tbname + " is empty!");
                 }
             }
         } catch (SQLException e) {
@@ -91,6 +92,7 @@ public class SchemaManager {
         return tableMetas;
     }
 
+    @Deprecated
     public Map<String, List<ColumnMeta>> loadColumnMetas(List<String> tables) throws DataXException {
         Map<String, List<ColumnMeta>> ret = new HashMap<>();
 

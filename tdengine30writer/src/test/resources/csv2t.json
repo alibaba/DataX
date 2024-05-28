@@ -62,7 +62,7 @@
                 "table": [
                   "weather"
                 ],
-                "jdbcUrl": "jdbc:TAOS-RS://192.168.56.105:6041/test"
+                "jdbcUrl": "jdbc:TAOS-RS://192.168.0.201:6041/test"
               }
             ],
             "batchSize": 100,
