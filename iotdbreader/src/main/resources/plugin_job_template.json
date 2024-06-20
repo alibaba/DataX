@@ -1,0 +1,23 @@
+{
+  "name": "iotdbreader",
+  "parameter": {
+    "user": "",
+    "password": "",
+    "connection": [
+      {
+        "table": [
+          ""
+        ],
+        "sessionUrl": [
+          ""
+        ]
+      }
+    ],
+    "column": [
+      ""
+    ],
+    "beginDateTime": "",
+    "endDateTime": "",
+    "where": ""
+  }
+}

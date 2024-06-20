@@ -1,0 +1,20 @@
+{
+  "name": "iotdbwriter",
+  "parameter": {
+    "username": "root",
+    "password": "toy123",
+    "column": [
+      ""
+    ],
+    "connection": [
+      {
+        "table": [
+          ""
+        ],
+        "jdbcUrl": ""
+      }
+    ],
+    "batchSize": 1000,
+    "ignoreTagsUnmatched": true
+  }
+}
