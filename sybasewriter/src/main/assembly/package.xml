@@ -14,7 +14,7 @@
                 <include>plugin.json</include>
                 <include>plugin_job_template.json</include>
             </includes>
-            <outputDirectory>plugin/reader/sybasewriter</outputDirectory>
+            <outputDirectory>plugin/writer/sybasewriter</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>src/main/libs</directory>
