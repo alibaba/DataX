@@ -2,11 +2,17 @@ package com.alibaba.datax.plugin.reader.iotdbreader;
 
 import com.alibaba.datax.common.spi.ErrorCode;
 
-public class IoTDBReaderErrorCode implements ErrorCode {
+public enum IoTDBReaderErrorCode implements ErrorCode {
+
+    REQUIRED_VALUE("IoTDBReader-00", "parameter value is missing"),
+    ILLEGAL_VALUE("IoTDBReader-01", "invalid parameter value"),
+    CONNECTION_FAILED("IoTDBReader-02", "connection error"),
+    RUNTIME_EXCEPTION("IoTDBWriter-03", "runtime exception");
+
     private final String code;
     private final String description;
 
-    public IoTDBReaderErrorCode(String code, String description) {
+    IoTDBReaderErrorCode(String code, String description) {
         this.code = code;
         this.description = description;
     }

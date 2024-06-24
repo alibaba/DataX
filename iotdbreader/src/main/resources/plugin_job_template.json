@@ -1,23 +1,25 @@
 {
   "name": "iotdbreader",
   "parameter": {
-    "user": "",
-    "password": "",
-    "connection": [
-      {
-        "table": [
-          ""
-        ],
-        "sessionUrl": [
-          ""
-        ]
-      }
+    "username": "root",
+    "password": "root",
+    "host": "192.168.150.100",
+    "port": 6667,
+    "fetchSize": 10000,
+    "version": "V_1_0",
+    "timeColumnPosition": 0,
+    "finalSqls": [
+      "写了这个默认下面全部参数失效，适合开发人员, 多个session并行执行多条SQL语句",
+      "select * from root.cgn.device",
+      "select * from root.cgn.device",
+      "select * from root.cgn.device",
+      "select * from root.cgn.device",
+      "select * from root.cgn.device"
     ],
-    "column": [
-      ""
-    ],
-    "beginDateTime": "",
-    "endDateTime": "",
+    "device": "root.cgn.device",
+    "measurements": "A5STD,L2RIS014MD,L2VVP003SM5,D1RIS001MD,D1KRT003EU",
+    "beginDateTime": "2023-03-07 12:00:00",
+    "endDateTime": "2024-03-07 19:00:00",
     "where": ""
   }
 }
