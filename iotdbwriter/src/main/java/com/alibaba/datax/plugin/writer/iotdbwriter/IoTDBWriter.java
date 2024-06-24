@@ -45,10 +45,6 @@ public class IoTDBWriter extends Writer {
             if (port == null || port.isEmpty()) {
                 throw DataXException.asDataXException(IoTDBWriterErrorCode.REQUIRED_VALUE, "The parameter [" + Key.PORT + "] is not set.");
             }
-            String fetchSize = this.jobConf.getString(Key.FETCH_SIZE);
-            if (fetchSize == null || fetchSize.isEmpty()) {
-                throw DataXException.asDataXException(IoTDBWriterErrorCode.REQUIRED_VALUE, "The parameter [" + Key.FETCH_SIZE + "] is not set.");
-            }
             // 还有一部分参数没检查，没必要了。
         }
 
@@ -119,9 +115,6 @@ public class IoTDBWriter extends Writer {
                 throw new RuntimeException(e);
             }
 
-            // set session fetchSize
-            session.setFetchSize(taskConf.getInt(Key.FETCH_SIZE));
-
             // 获取参数，否则默认值
             insertBatchSize = (taskConf.getInt(Key.INSERT_BATCH_SIZE) == null) ? 1000 : taskConf.getInt(Key.INSERT_BATCH_SIZE);
             timeColumnPosition = (taskConf.getInt(Key.TIME_COLUMN_POSITION) == null) ? 0 : taskConf.getInt(Key.TIME_COLUMN_POSITION);
@@ -144,7 +137,7 @@ public class IoTDBWriter extends Writer {
                 throw new RuntimeException(e);
             }
 
-            // TODO 是否创建测点时间序列？
+            // 是否创建测点时间序列？不需要，IoTDB会自动创建时间序列。
         }
 
         @Override
