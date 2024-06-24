@@ -1,0 +1,44 @@
+{
+  "job": {
+    "setting": {
+      "speed": {
+        "channel": 3
+      },
+      "errorLimit": {
+        "record": 0,
+        "percentage": 0.02
+      }
+    },
+    "content": [
+      {
+        "reader": {
+          "name": "iotdbreader",
+          "parameter": {
+            "username": "root",
+            "password": "root",
+            "host": "192.168.150.100",
+            "port": 6667,
+            "fetchSize": 10000,
+            "version": "V_1_0",
+            "timeColumnPosition": 0,
+            "finalSqls":[
+
+            ],
+            "device": "root.cgn.device",
+            "measurements": "A5STD,L2RIS014MD,L2VVP003SM5,D1RIS001MD,D1KRT003EU",
+            "beginDateTime": "2023-03-07 12:00:00",
+            "endDateTime": "2024-03-07 19:00:00",
+            "where": ""
+          }
+        },
+        "writer": {
+          "name": "streamwriter",
+          "parameter": {
+            "print":true
+          }
+        }
+      }
+    ]
+  }
+}
+

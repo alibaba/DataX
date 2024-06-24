@@ -2,12 +2,14 @@ package com.alibaba.datax.plugin.writer.iotdbwriter;
 
 import com.alibaba.datax.common.spi.ErrorCode;
 
-public class IoTDBWriterErrorCode implements ErrorCode {
+public enum IoTDBWriterErrorCode implements ErrorCode {
+
+    REQUIRED_VALUE("IoTDBWriter-00", "parameter value is missing");
 
     private final String code;
     private final String description;
 
-    public IoTDBWriterErrorCode(String code, String description) {
+    IoTDBWriterErrorCode(String code, String description) {
         this.code = code;
         this.description = description;
     }

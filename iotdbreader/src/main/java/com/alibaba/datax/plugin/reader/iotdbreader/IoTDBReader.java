@@ -74,7 +74,7 @@ public class IoTDBReader extends Reader {
                 Configuration clone = this.jobConf.clone();
                 // TODO 同时读取多个设备？有没有必要？
                 String device = this.jobConf.getString(Key.DEVICE);
-                // 测点是一个逗号分隔的字符串或"*"
+                // 测点是一个逗号分隔的测点字符串或"*"
                 String measurements = this.jobConf.getString(Key.MEASUREMENTS);
                 String beginDateTime = this.jobConf.getString(Key.BEGIN_DATETIME);
                 String endDateTime = this.jobConf.getString(Key.END_DATETIME);
@@ -130,8 +130,7 @@ public class IoTDBReader extends Reader {
     public static class Task extends Reader.Task {
         private static final Logger LOG = LoggerFactory.getLogger(Task.class);
 
-        private Configuration readerSliceConfig;
-        private String mandatoryEncoding;
+        private Configuration taskConf;
 
         /**
          * IoTDB原生读写工具
@@ -149,7 +148,7 @@ public class IoTDBReader extends Reader {
         @Override
         public void init() {
             // 获取与本Task相关的配置，是Job的split方法返回的配置列表中的其中一个。
-            Configuration taskConf = super.getPluginJobConf();
+            taskConf = super.getPluginJobConf();
 
             // session init
             session =

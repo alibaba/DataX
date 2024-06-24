@@ -6,8 +6,7 @@ public enum IoTDBReaderErrorCode implements ErrorCode {
 
     REQUIRED_VALUE("IoTDBReader-00", "parameter value is missing"),
     ILLEGAL_VALUE("IoTDBReader-01", "invalid parameter value"),
-    CONNECTION_FAILED("IoTDBReader-02", "connection error"),
-    RUNTIME_EXCEPTION("IoTDBWriter-03", "runtime exception");
+    CONNECTION_FAILED("IoTDBReader-02", "connection error");
 
     private final String code;
     private final String description;
