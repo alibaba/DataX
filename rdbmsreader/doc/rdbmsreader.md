@@ -136,7 +136,7 @@ RDBMSReader插件实现了从RDBMS读取数据。在底层实现上，RDBMSReade
 	- db2格式 jdbc:db2://ip:port/database
 	- PPAS格式 jdbc:edb://ip:port/database
   
-	**rdbmswriter如何增加新的数据库支持:**  
+	**rdbmsreader如何增加新的数据库支持:**  
 	
 	- 进入rdbmsreader对应目录，这里${DATAX_HOME}为DataX主目录，即: ${DATAX_HOME}/plugin/reader/rdbmsreader
 	- 在rdbmsreader插件目录下有plugin.json配置文件，在此文件中注册您具体的数据库驱动，具体放在drivers数组中。rdbmsreader插件在任务执行时会动态选择合适的数据库驱动连接数据库。
