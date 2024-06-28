@@ -183,9 +183,9 @@
 
 ```
 {"value": "1.1.1.1", "type": "string"},
-{"value": 19890604.0, "type": "double"},
-{"value": 19890604, "type": "long"},
-{"value": 19890604, "type": "long"},
+{"value": 19491001.0, "type": "double"},
+{"value": 19491001, "type": "long"},
+{"value": 19491001, "type": "long"},
 {"value": "hello world", "type": "string"},
 {"value": "hello world", "type": "string"},
 {"value": "41.12,-71.34", "type": "string"},

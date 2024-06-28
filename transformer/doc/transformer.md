@@ -145,11 +145,11 @@ String code3 = "Column column = record.getColumn(1);\n" +
                                 "type": "string"
                             },
                             {
-                                "value": 19890604,
+                                "value": 19491001,
                                 "type": "long"
                             },
                             {
-                                "value": "1989-06-04 00:00:00",
+                                "value": "1949-10-01 00:00:00",
                                 "type": "date"
                             },
                             {
