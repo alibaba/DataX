@@ -58,7 +58,7 @@ public class TaskGroupContainer extends AbstractContainer {
      */
     private String taskCollectorClass;
 
-    private TaskMonitor taskMonitor = TaskMonitor.getInstance();
+    private TaskMonitor taskMonitor = new TaskMonitor();
 
     public TaskGroupContainer(Configuration configuration) {
         super(configuration);
