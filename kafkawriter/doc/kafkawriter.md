@@ -1,4 +1,4 @@
-### Datax MongoDBWriter
+### Datax KafkaWriter
 
 #### 1 快速介绍
 
@@ -11,7 +11,7 @@ KafkaWriter 插件利用java kafka-clients创建消息生产者Producer<String, 
 
 #### 3 功能说明
 
-* 该示例从Mysql读一份数据发送到Kafka的配置。
+* 该示例从streamreader生成10行数据发送到Kafka的配置。
 
 ```json
 {
@@ -70,6 +70,7 @@ KafkaWriter 插件利用java kafka-clients创建消息生产者Producer<String, 
 * bootstrapServers： kafka中心bootstrapServers地址。【必填】【默认值：无】
 * topic：发送消息的主题。【必填】【默认值：无】
 * column： 组装json数据的属性字段。【必填】【默认值：无】
+* props： Kafka自定义参数。【选填】【默认值：无】
 
 #### 5 类型转换
 
