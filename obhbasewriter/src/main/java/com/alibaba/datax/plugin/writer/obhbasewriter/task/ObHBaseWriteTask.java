@@ -16,15 +16,9 @@ import com.alibaba.datax.plugin.writer.obhbasewriter.Constant;
 import com.alibaba.datax.plugin.writer.obhbasewriter.NullModeType;
 import com.alibaba.datax.plugin.writer.obhbasewriter.ObHTableInfo;
 import com.alibaba.datax.plugin.writer.obhbasewriter.ext.ServerConnectInfo;
-import com.alipay.oceanbase.hbase.OHTable;
-import com.alipay.oceanbase.hbase.constants.OHConstants;
-import com.alipay.oceanbase.rpc.property.Property;
 import com.google.common.collect.Lists;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -34,7 +28,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import org.apache.hadoop.hbase.client.HTableInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,6 +104,8 @@ public class ObHBaseWriteTask extends CommonRdbmsWriter.Task {
         } else {
             this.sysUsername = configuration.getString(ConfigKey.OB_SYS_USER);
             this.sysPassword = configuration.getString(ConfigKey.OB_SYS_PASSWORD);
+            connectInfo.setSysUser(sysUsername);
+            connectInfo.setSysPass(sysPassword);
             if (!configUrl.contains("ObRegion")) {
                 if (configUrl.contains("?")) {
                     configUrl += "&ObRegion=" + clusterName;
@@ -174,7 +169,7 @@ public class ObHBaseWriteTask extends CommonRdbmsWriter.Task {
         lock.lock();
         try {
             while (!concurrentWriter.checkFinish()) {
-                condition.await(15, TimeUnit.SECONDS);
+                condition.await(50, TimeUnit.MILLISECONDS);
                 // print statistic
                 LOG.debug("Statistic total task {}, finished {}, queue Size {}",
                         concurrentWriter.getTotalTaskCount(),
@@ -267,9 +262,8 @@ public class ObHBaseWriteTask extends CommonRdbmsWriter.Task {
         public synchronized void start() {
             for (int i = 0; i < threadCount; ++i) {
                 LOG.info("start {} insert task.", (i + 1));
-                PutTask putTask = new PutTask(threadName, queue, config, connectInfo, obHTableInfo);
+                PutTask putTask = new PutTask(threadName, queue, config, connectInfo, obHTableInfo, ObHBaseWriteTask.this);
                 putTask.setWriter(this);
-                putTask.setWriterTask(ObHBaseWriteTask.this);
                 putTasks.add(putTask);
             }
             for (PutTask task : putTasks) {
@@ -295,7 +289,7 @@ public class ObHBaseWriteTask extends CommonRdbmsWriter.Task {
         public void addBatchRecords(final List<Record> records) throws InterruptedException {
             boolean isSucc = false;
             while (!isSucc) {
-                isSucc = queue.offer(records, 5, TimeUnit.SECONDS);
+                isSucc = queue.offer(records, 5, TimeUnit.MILLISECONDS);
             }
             totalTaskCount.incrementAndGet();
         }

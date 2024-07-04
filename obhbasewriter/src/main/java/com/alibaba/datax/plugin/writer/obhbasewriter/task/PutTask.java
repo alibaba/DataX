@@ -81,12 +81,13 @@ public class PutTask implements Runnable {
     private final SimpleDateFormat df_second = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private final SimpleDateFormat df_ms = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss SSS");
 
-    public PutTask(String parentThreadName, Queue<List<Record>> recordsQueue, Configuration config, ServerConnectInfo connectInfo, ObHTableInfo obHTableInfo) {
+    public PutTask(String parentThreadName, Queue<List<Record>> recordsQueue, Configuration config, ServerConnectInfo connectInfo, ObHTableInfo obHTableInfo, ObHBaseWriteTask writerTask) {
         this.parentThreadName = parentThreadName;
         this.queue = recordsQueue;
         this.config = config;
         this.connInfo = connectInfo;
         this.obHTableInfo = obHTableInfo;
+        this.writerTask = writerTask;
         this.versionColumn = config.getConfiguration(ConfigKey.VERSION_COLUMN);
         this.failTryCount = config.getInt(Config.FAIL_TRY_COUNT, Config.DEFAULT_FAIL_TRY_COUNT);
         this.isStop = false;

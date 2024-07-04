@@ -4,6 +4,7 @@ import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.plugin.rdbms.reader.Constant;
 import com.alibaba.datax.plugin.rdbms.util.DBUtil;
 import com.alibaba.datax.plugin.rdbms.util.DBUtilErrorCode;
+import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
 import com.alibaba.datax.plugin.rdbms.util.SplitedSlice;
 import com.alibaba.datax.plugin.reader.obhbasereader.Key;
 import com.alibaba.datax.plugin.reader.oceanbasev10reader.util.ExecutorTemplate;
@@ -124,7 +125,7 @@ public class SqlReaderSplitUtil {
         List<Configuration> pluginParams = new ArrayList<>();
         // set ob_query_timeout and ob_trx_timeout to a large time in case timeout
         int queryTimeoutSeconds = 60 * 60 * 48;
-        try (Connection conn = ObReaderUtils.getConnection(jdbcURL, username, password, configuration)) {
+        try (Connection conn = DBUtil.getConnection(DataBaseType.MySql, jdbcURL, username, password)) {
             String setQueryTimeout = "set ob_query_timeout=" + (queryTimeoutSeconds * 1000 * 1000L);
             String setTrxTimeout = "set ob_trx_timeout=" + ((queryTimeoutSeconds + 5) * 1000 * 1000L);
             try (Statement stmt = conn.createStatement()) {
