@@ -52,24 +52,14 @@
        -->
 
         <dependency>
-            <groupId>com.alipay.oceanbase</groupId>
-            <artifactId>oceanbase-connector-java</artifactId>
-            <version>3.2.0</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/src/main/libs/oceanbase-connector-java-3.2.0.jar</systemPath>
-            <exclusions>
-            <exclusion>
-                <groupId>com.alipay.oceanbase</groupId>
-                <artifactId>oceanbase-client</artifactId>
-            </exclusion>
-            </exclusions>
+            <groupId>com.oceanbase</groupId>
+            <artifactId>oceanbase-client</artifactId>
+            <version>2.4.11</version>
         </dependency>
         <dependency>
             <groupId>com.oceanbase</groupId>
-            <artifactId>shade-ob-partition-calculator</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${pom.basedir}/src/main/libs/shade-ob-partition-calculator-1.0-SNAPSHOT.jar</systemPath>
+            <artifactId>ob-partition-calculator</artifactId>
+            <version>1.8.0-RELEASE</version>
         </dependency>
 
 

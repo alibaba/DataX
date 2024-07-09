@@ -102,7 +102,7 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
         }
 
         if (config.getBool(Config.USE_PART_CALCULATOR, Config.DEFAULT_USE_PART_CALCULATOR)) {
-            this.obPartCalculator = createPartitionCalculator(connectInfo, ObServerMode.from(config.getString(Config.OB_COMPATIBLE_MODE), config.getString(Config.OB_VERSION)));
+            this.obPartCalculator = createPartitionCalculator(connectInfo, ObServerMode.from(config.getString(Config.OB_COMPATIBLE_MODE), config.getString(Config.OB_VERSION)),isOracleCompatibleMode);
         } else {
             LOG.info("Disable partition calculation feature.");
         }
@@ -123,14 +123,14 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
      * @param connectInfo
      * @return
      */
-    private IObPartCalculator createPartitionCalculator(ServerConnectInfo connectInfo, ObServerMode obServerMode) {
+    private IObPartCalculator createPartitionCalculator(ServerConnectInfo connectInfo, ObServerMode obServerMode,Boolean isOracleCompatibleMode) {
         if (obServerMode.isSubsequentFrom("3.0.0.0")) {
             LOG.info("oceanbase version is {}, use ob-partition-calculator to calculate partition Id.", obServerMode.getVersion());
             return new ObPartitionCalculatorV2(connectInfo, table, obServerMode, columns);
         }
 
         LOG.info("oceanbase version is {}, use ocj to calculate partition Id.", obServerMode.getVersion());
-        return new ObPartitionCalculatorV1(connectInfo, table, columns);
+        return new ObPartitionCalculatorV1(connectInfo,table, columns,isOracleCompatibleMode);
     }
 
 	public boolean isFinished() {

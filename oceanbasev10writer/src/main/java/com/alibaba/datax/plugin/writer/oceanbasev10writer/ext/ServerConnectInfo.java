@@ -58,7 +58,7 @@ public class ServerConnectInfo {
 		} else if (!publicCloud || tenantIndex < 0) {
 			this.userName = tenantIndex < 0 ? fullUserName : fullUserName.substring(0, tenantIndex);
 			this.clusterName = clusterIndex < 0 ? EMPTY : fullUserName.substring(clusterIndex + 1);
-			this.tenantName = tenantIndex < 0 ? EMPTY : fullUserName.substring(tenantIndex + 1, clusterIndex);
+			this.tenantName = tenantIndex < 0 ? EMPTY : fullUserName.substring(tenantIndex + 1, clusterIndex>0?clusterIndex:fullUserName.length());
 		} else {
 			// If in public cloud, the username with format user@tenant#cluster should be parsed, otherwise, connection can't be created.
 			this.userName = fullUserName.substring(0, tenantIndex);
