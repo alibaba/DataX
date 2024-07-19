@@ -417,6 +417,8 @@ public class ObHbaseReader extends Reader {
         public void startRead(RecordSender recordSender) {
             Record record = recordSender.createRecord();
             boolean fetchOK;
+            int retryTimes = 0;
+            int maxRetryTimes = 3;
             while (true) {
                 try {
                     // TODO check exception
@@ -424,6 +426,9 @@ public class ObHbaseReader extends Reader {
                 } catch (Exception e) {
                     LOG.info("fetch record failed. reason: {}.", e.getMessage(), e);
                     super.getTaskPluginCollector().collectDirtyRecord(record, e);
+                    if (retryTimes++ > maxRetryTimes) {
+                        throw DataXException.asDataXException(HbaseReaderErrorCode.READ_ERROR, "read from obhbase failed", e);
+                    }
                     record = recordSender.createRecord();
                     continue;
                 }

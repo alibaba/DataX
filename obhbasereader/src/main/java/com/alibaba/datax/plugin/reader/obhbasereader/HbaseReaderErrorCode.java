@@ -3,12 +3,13 @@ package com.alibaba.datax.plugin.reader.obhbasereader;
 import com.alibaba.datax.common.spi.ErrorCode;
 
 public enum HbaseReaderErrorCode implements ErrorCode {
-    REQUIRED_VALUE("HbaseReader-00", "Missing required parameters."),
-    ILLEGAL_VALUE("HbaseReader-01", "Illegal configuration."),
-    PREPAR_READ_ERROR("HbaseReader-02", "Preparing to read HBase error."),
-    SPLIT_ERROR("HbaseReader-03", "Splitting HBase table error."),
-    INIT_TABLE_ERROR("HbaseReader-04", "Initializing HBase extraction table error"),
-    PARSE_COLUMN_ERROR("HbaseReader-05", "Parse column failed.");
+    REQUIRED_VALUE("ObHbaseReader-00", "Missing required parameters."),
+    ILLEGAL_VALUE("ObHbaseReader-01", "Illegal configuration."),
+    PREPAR_READ_ERROR("ObHbaseReader-02", "Preparing to read ObHBase error."),
+    SPLIT_ERROR("ObHbaseReader-03", "Splitting ObHBase table error."),
+    INIT_TABLE_ERROR("ObHbaseReader-04", "Initializing ObHBase extraction table error"),
+    PARSE_COLUMN_ERROR("ObHbaseReader-05", "Parse column failed."),
+    READ_ERROR("ObHbaseReader-06", "Read ObHBase error.");
 
     private final String code;
     private final String description;

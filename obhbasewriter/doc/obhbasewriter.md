@@ -1,8 +1,8 @@
-ob的table api为应用提供了ObHBase的访问接口，因此，ob table api的reader与HBase writer的结构和配置方法类似。
+OceanBase的table api为应用提供了ObHBase的访问接口，因此，OceanBase table api的reader与HBase writer的结构和配置方法类似。
 1 快速介绍
 obhbaseWriter 插件实现了从向ObHbase中写取数据。在底层实现上，obhbaseWriter 通过 HBase 的 Java 客户端连接远程 HBase 服务，并通过 put 方式写入obHbase。
 1.1支持功能
-1、目前obhbasewriter支持的obHbase版本为ob3.x以及4.x版本。
+1、目前obhbasewriter支持的obHbase版本为OceanBase3.x以及4.x版本。
 2、目前obhbasewriter支持源端多个字段拼接作为ObHbase 表的 rowkey，具体配置参考：rowkeyColumn配置；
 3、写入obhbase的时间戳（版本）支持：用当前时间作为版本，指定源端列作为版本，指定一个时间 三种方式作为版本；
 #### 脚本配置
@@ -157,17 +157,19 @@ obhbaseWriter 插件实现了从向ObHbase中写取数据。在底层实现上�
     - 必须：是
     - 默认值：无
 - **jdbcUrl**
-    - 描述：连接ob使用的jdbc url，支持如下格式：
-        - ||_dsc_ob10_dsc_||集群名:租户名||_dsc_ob10_dsc_||jdbc:mysql://obproxyIp:obproxyPort/db
-            - 此格式下username仅填写用户名本身，无需三段式写法
-    - 必选：是
+    - 描述：连接ob使用的jdbc url，支持如下两种格式：
+      - jdbc:mysql://obproxyIp:obproxyPort/db
+        - 此格式下username需要写成三段式格式
+      - ||_dsc_ob10_dsc_||集群名:租户名||_dsc_ob10_dsc_||jdbc:mysql://obproxyIp:obproxyPort/db
+        - 此格式下username仅填写用户名本身，无需三段式写法
+   - 必选：是
    - 默认值：无
 - **table**
     - 描述：所选取的需要同步的表。无需增加列族信息。
     - 必选：是
    - 默认值：无
 - **username**
-    - 描述：访问oceanbase的用户名
+    - 描述：访问OceanBase的用户名
     - 必选：是
    - 默认值：无
 - **useOdpMode**

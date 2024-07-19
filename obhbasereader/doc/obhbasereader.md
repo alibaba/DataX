@@ -1,4 +1,4 @@
-ob的table api为应用提供了ObHBase的访问接口，因此，ob table api的reader与HBase Reader的结构和配置方法类似。
+OceanBase的table api为应用提供了ObHBase的访问接口，因此，OceanBase的table api的reader与HBase Reader的结构和配置方法类似。
 obhbasereader插件支持sql和hbase api两种读取方式，两种方式存在如下区别：
 
 1. sql方式可以按照分区或者K值进行数据切片，而hbase api方式的数据切片需要用户手动设置。
@@ -28,22 +28,18 @@ obhbasereader插件支持sql和hbase api两种读取方式，两种方式存在�
             "encoding": "utf8",
             "column": [
               {
-                "index": 0,
                 "name": "f1:column1_1",
                 "type": "string"
               },
               {
-                "index": 1,
                 "name": "f1:column2_2",
                 "type": "string"
               },
               {
-                "index": 2,
                 "name": "f1:column1_1",
                 "type": "string"
               },
               {
-                "index": 3,
                 "name": "f1:column2_2",
                 "type": "string"
               }
@@ -83,7 +79,7 @@ obhbasereader插件支持sql和hbase api两种读取方式，两种方式存在�
                   "htable2"
                 ],
                 "jdbcUrl": [
-                  "||_dsc_ob10_dsc_||集群:租户||_dsc_ob10_dsc_||jdbc:mysql://ip:port/dbName2"
+                  "jdbc:mysql://ip:port/database"
                 ]
               }
             ]
@@ -112,9 +108,12 @@ obhbasereader插件支持sql和hbase api两种读取方式，两种方式存在�
    - 必须：是
    - 默认值：无
 - **jdbcUrl**
-   - 描述：连接ob使用的jdbc url，仅支持如下格式：
-      - ||_dsc_ob10_dsc_||集群名:租户名||_dsc_ob10_dsc_||jdbc:mysql://obproxyIp:obproxyPort/db
-         - 此格式下username仅填写用户名本身，无需三段式写法
+   - 描述：连接ob使用的jdbc url，支持如下两种格式：
+     - jdbc:mysql://obproxyIp:obproxyPort/db
+       - 此格式下username需要写成三段式格式
+     - ||_dsc_ob10_dsc_||集群名:租户名||_dsc_ob10_dsc_||jdbc:mysql://obproxyIp:obproxyPort/db
+       - 此格式下username仅填写用户名本身，无需三段式写法
+      
    - 必选：是
    - 默认值：无
 - **table**
@@ -159,7 +158,7 @@ obhbasereader插件支持sql和hbase api两种读取方式，两种方式存在�
    - 必须：否
    - 默认值：无
 - **username**
-   - 描述：访问oceanbase的用户名
+   - 描述：访问OceanBase的用户名
    - 必选：是
    - 默认值：无
 - **mode**
