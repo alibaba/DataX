@@ -1,0 +1,6 @@
+{
+    "name": "obhbasereader",
+    "class": "com.alibaba.datax.plugin.reader.obhbasereader.ObHbaseReader",
+    "description": "useScene: prod. mechanism: Scan to read data.",
+    "developer": "alibaba"
+}
