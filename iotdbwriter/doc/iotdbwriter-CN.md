@@ -75,6 +75,16 @@ IoTDB中设备与列的概念见IoTDB官方文档。
 }
 ```
 
+注意：mysqlreader插件，在src/main/java/com/alibaba/datax/plugin/rdbms/reader/CommonRdbmsReader.java 中270行左右，修改了代码，将mysql中的tinyint(1)转为boolean类型
+case Types.SMALLINT:
+case Types.TINYINT:
+  // 将mysql中的tinyint(1)转为boolean类型
+  if (metaData.getPrecision(i) <= 3){
+    record.addColumn(new BoolColumn(rs.getBoolean(i)));
+    break;
+  }
+
+
 ### 3.2 参数说明
 
 * username
