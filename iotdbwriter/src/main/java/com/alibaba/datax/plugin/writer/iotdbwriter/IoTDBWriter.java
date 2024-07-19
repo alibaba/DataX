@@ -15,6 +15,7 @@ import org.apache.tsfile.enums.TSDataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Date;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -61,7 +62,7 @@ public class IoTDBWriter extends Writer {
                 Configuration clone = this.jobConf.clone();
                 configs.add(clone);
             }
-            LOG.info("configs: {}", configs);
+            // LOG.info("configs: {}", configs);
             return configs;
         }
 
@@ -74,25 +75,25 @@ public class IoTDBWriter extends Writer {
     public static class Task extends Writer.Task {
         private static final Logger LOG = LoggerFactory.getLogger(Task.class);
         private Configuration taskConf;
-        /**
-         * IoTDB原生读写工具
-         */
+
+        // IoTDB原生读写工具
         private Session session;
 
-        /**
-         * 是否在插入前删除已有的时间序列？默认false
-         */
-        private boolean deleteExistTimeseries;
+        // 是否在插入前删除已有的时间序列，为""表示不执行
+        // private String deleteBeforeInsert;
 
-        /**
-         * 插入批次大小
-         */
+        // 插入批次大小
         private int insertBatchSize;
 
-        /**
-         * IoTDB中的时间列插入的位置，默认为0，即第一列。
-         */
+        // IoTDB中的时间列插入的位置，默认为0，即第一列。
         private int timeColumnPosition;
+
+        // 处理脏数据
+        private TaskPluginCollector taskPluginCollector;
+
+        // 预先执行的SQL语句
+        private List<String> preSqls;
+
 
         @Override
         public void init() {
@@ -116,28 +117,27 @@ public class IoTDBWriter extends Writer {
             }
 
             // 获取参数，否则默认值
-            insertBatchSize = (taskConf.getInt(Key.INSERT_BATCH_SIZE) == null) ? 1000 : taskConf.getInt(Key.INSERT_BATCH_SIZE);
+            insertBatchSize = (taskConf.getInt(Key.BATCH_SIZE) == null) ? 1000 : taskConf.getInt(Key.BATCH_SIZE);
             timeColumnPosition = (taskConf.getInt(Key.TIME_COLUMN_POSITION) == null) ? 0 : taskConf.getInt(Key.TIME_COLUMN_POSITION);
-            deleteExistTimeseries = (taskConf.getBool(Key.DELETE_EXIST_TIMESERIES) == null) ? false : taskConf.getBool(Key.DELETE_EXIST_TIMESERIES);
+            preSqls = (taskConf.getList(Key.PRE_SQL, String.class) == null) ? new ArrayList<>() : taskConf.getList(Key.PRE_SQL, String.class);
+            taskPluginCollector = super.getTaskPluginCollector();
         }
 
         @Override
         public void prepare() {
-            // 是否先删除已有的时间序列
-            try {
-                if (deleteExistTimeseries){
-                    if (session.checkTimeseriesExists(taskConf.getString(Key.DEVICE) + ".**")) {
-                        session.deleteTimeseries(taskConf.getString(Key.DEVICE) + ".**");
-                        LOG.info("===========删除已有的时间序列完成==============");
-                    }else {
-                        LOG.info("===========不存在已有时间序列==============");
+            if (preSqls.size() != 0){
+                for (String sql : preSqls) {
+                    try {
+                        session.executeNonQueryStatement(sql);
+
+                    } catch (IoTDBConnectionException | StatementExecutionException e) {
+                        throw new RuntimeException(e);
                     }
                 }
-            } catch (IoTDBConnectionException | StatementExecutionException e) {
-                throw new RuntimeException(e);
+                LOG.info("=======Complated preSqls=======");
             }
 
-            // 是否创建测点时间序列？不需要，IoTDB会自动创建时间序列。
+            // IoTDB会自动创建时间序列，无需提前创建
         }
 
         @Override
@@ -147,7 +147,7 @@ public class IoTDBWriter extends Writer {
                     session.close();
                 }
             } catch (IoTDBConnectionException e) {
-                throw new RuntimeException(e);
+                LOG.info(e.getMessage());
             }
         }
 
@@ -170,68 +170,74 @@ public class IoTDBWriter extends Writer {
                 // 获取Record记录，传输结束返回null
                 int count;  // 统计插入记录数
                 for (count = 0; (record = lineReceiver.getFromReader()) != null; count++) {
-                    // LOG.info("record:" + record);
                     // 处理时间列
                     timestamps.add(record.getColumn(timeColumnPosition).asLong());
                     // 处理测点
-                    List<String> measurements = Arrays.asList(taskConf.getString(Key.MEASUREMENTS).split(","));
+                    List<String> measurements = taskConf.getList(Key.MEASUREMENTS, String.class);
                     measurementsList.add(measurements);
                     // 处理类型和值
                     List<TSDataType> types = new ArrayList<>();
                     List<Object> values = new ArrayList<>();
-                    // List<String> values = new ArrayList<>();
-                    for (int i = 0; i < record.getColumnNumber(); i++) {
-                        if (i == timeColumnPosition){
-                            continue;  // 跳过时间列
+                    try{
+                        for (int i = 0; i < record.getColumnNumber(); i++) {
+                            if (i == timeColumnPosition){
+                                continue;  // 跳过时间列
+                            }
+                            Column col = record.getColumn(i);
+                            switch (col.getType()) {
+                                case BOOL:
+                                    types.add(TSDataType.BOOLEAN);
+                                    values.add(col.asBoolean());
+                                    break;
+                                case INT:
+                                    types.add(TSDataType.INT32);
+                                    values.add((Integer) col.getRawData());
+                                    break;
+                                case LONG:
+                                    types.add(TSDataType.INT64);
+                                    values.add(col.asLong());
+                                    break;
+                                case DOUBLE:
+                                    types.add(TSDataType.DOUBLE);
+                                    values.add(col.asDouble());
+                                    break;
+                                case NULL:
+                                    // IoTDB可以处理null
+                                    types.add(null);
+                                    values.add(null);
+                                    break;
+                                case STRING:
+                                    types.add(TSDataType.STRING);
+                                    values.add(col.asString());
+                                    break;
+                                case DATE:
+                                    types.add(TSDataType.DATE);
+                                    values.add(col.asDate());
+                                    break;
+                                case BAD:
+                                default:
+                                    throw new RuntimeException("unsupported type:" + col.getType());
+                            }
                         }
-                        Column col = record.getColumn(i);
-                        switch (col.getType()) {
-                            case BOOL:
-                                types.add(TSDataType.BOOLEAN);
-                                values.add(col.asBoolean());
-                                break;
-                            case INT:
-                                types.add(TSDataType.INT32);
-                                values.add((Integer) col.getRawData());
-                                break;
-                            case LONG:
-                                types.add(TSDataType.INT64);
-                                values.add(col.asLong());
-                                break;
-                            case DOUBLE:
-                                types.add(TSDataType.DOUBLE);
-                                values.add(col.asDouble());
-                                break;
-                            case STRING:
-                                types.add(TSDataType.STRING);
-                                values.add(col.asString());
-                                break;
-                            case DATE:
-                                types.add(TSDataType.DATE);
-                                values.add(col.asDate());
-                                break;
-                            default:
-                                throw new RuntimeException("unsupported type:" + col.getType());
-                        }
+                        typesList.add(types);
+                        valuesList.add(values);
+                    }catch (RuntimeException e){
+                        LOG.info(e.getMessage());
+                        taskPluginCollector.collectDirtyRecord(record, e);
                     }
-                    typesList.add(types);
-                    valuesList.add(values);
 
                     if (count != 0 && count % insertBatchSize == 0) {
                         session.insertRecordsOfOneDevice(device, timestamps, measurementsList, typesList, valuesList);
-                        LOG.info("已插入"+count+"条数据");
-                        measurementsList.clear();
-                        valuesList.clear();
-                        typesList.clear();
                         timestamps.clear();
+                        measurementsList.clear();
+                        typesList.clear();
                         valuesList.clear();
                     }
                 }
                 if (!timestamps.isEmpty()){
                     session.insertRecordsOfOneDevice(device, timestamps, measurementsList, typesList, valuesList);
-                    LOG.info("已插入剩余数据：" + timestamps.size() + "条");
                 }
-                LOG.info("已插入所有数据：" + (count-1) + "条");
+                LOG.info("========= task all data inserted, total record: " + (count-1));
             }catch (IoTDBConnectionException | StatementExecutionException e) {
                 throw new RuntimeException(e);
             }

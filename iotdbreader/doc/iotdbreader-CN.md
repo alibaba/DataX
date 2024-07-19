@@ -33,14 +33,15 @@ IoTDBReader 通过 IoTDB 的 原生java session 查询获取数据。
             "port": 6667,
             "fetchSize": 10000,
             "version": "V_1_0",
+            "##": "时间列插入DataX的Record中的位置，默认第0列",
             "timeColumnPosition": 0,
-            "finalSqls":[
+            "##":"写了querySqls 默认下面全部参数失效，适合开发人员, 多个session并行执行多条SQL语句",
+            "querySqls":[
             ],
             "device": "root.cgn.device",
-            "measurements": "A5STD,L2RIS014MD,L2VVP003SM5,D1RIS001MD,D1KRT003EU",
-            "beginDateTime": "2023-03-07 12:00:00",
-            "endDateTime": "2024-03-07 19:00:00",
-            "where": ""
+            "##":"时间列不属于测点",
+            "measurements": ["A5STD","L2RIS014MD","L2VVP003SM5","D1RIS001MD","D1KRT003EU"],
+            "where": "time > 2023-03-07 12:00:00 and time < 2024-03-07 19:00:00"
           }
         },
         "writer": {
@@ -49,7 +50,7 @@ IoTDBReader 通过 IoTDB 的 原生java session 查询获取数据。
             "username": "root",
             "password": "toy123",
             "writeMode": "insert",
-            "#需要提前建表": "CREATE TABLE device (`time` BIGINT,`A5STD` DOUBLE,`L2RIS014MD` DOUBLE,`L2VVP003SM5` BOOLEAN,`D1RIS001MD` DOUBLE,`D1KRT003EU` DOUBLE);",
+            "#需要提前建表": "CREATE TABLE device (`time` DATETIME,`A5STD` DOUBLE,`L2RIS014MD` DOUBLE,`L2VVP003SM5` BOOLEAN,`D1RIS001MD` DOUBLE,`D1KRT003EU` DOUBLE);",
             "column": ["time","A5STD","L2RIS014MD","L2VVP003SM5","D1RIS001MD","D1KRT003EU"],
             "session": [
               "set session sql_mode='ANSI'"
@@ -96,14 +97,13 @@ IoTDBReader 通过 IoTDB 的 原生java session 查询获取数据。
             "fetchSize": 10000,
             "version": "V_1_0",
             "timeColumnPosition": 0,
-            "finalSqls":[
+            "##":"写了querySqls 默认下面全部参数失效，适合开发人员, 多个session并行执行多条SQL语句",
+            "querySqls":[
               "select * from root.cgn.device",
               "select A5STD,L2RIS014MD,L2VVP003SM5,D1RIS001MD,D1KRT003EU from root.cgn.device"
             ],
             "device": "",
             "measurements": "",
-            "beginDateTime": "",
-            "endDateTime": "",
             "where": ""
           }
         },
@@ -147,42 +147,34 @@ IoTDBReader 通过 IoTDB 的 原生java session 查询获取数据。
   * 描述：时间列在Record中列的位置
   * 必选：否
   * 默认值：0
-* finalSqls
+* querySqls
   * 描述：直接写多行SQL，可以并行读取，此时下面的参数失效。
   * 必选：否
   * 默认值：
 * device
   * 描述：IoTDB中的概念，可理解为mysql中的表。
-  * 必选：finalSqls为空时必选
+  * 必选：querySqls为空时必选
   * 默认值：无
 * measurements
   * 描述：IoTDB中的概念，可理解为mysql中的字段。
-  * 必选：finalSqls为空时必选
-  * 默认值：无
-* beginDateTime
-  * 描述：SQL查询时的数据的开始时间
-  * 必选：finalSqls为空时必选
-  * 默认值：无
-* measurements
-  * 描述：SQL查询时的数据的结束时间
-  * 必选：否
+  * 必选：querySqls为空时必选
   * 默认值：无
 * where
-  * 描述：额外的条件
+  * 描述：查询条件
   * 必选：否
   * 默认值：无 
 
 ### 3.3 类型转换
 
 | IoTDB 数据类型      | DataX 内部类型 |
-|-----------------|------------|
-| INT32           | Int        |
-| INT64,TIMESTAMP | Long       |
-| FLOAT           | FLOAT      |
-| DOUBLE          | Double     |
-| BOOLEAN         | Bool       |
-| DATE            | Date       |
-| STRING,TEXT     | String     |
+|-----------------|--------|
+| INT32           | Int    |
+| INT64,TIMESTAMP | Long   |
+| FLOAT           | FLOAT  |
+| DOUBLE          | Double |
+| BOOLEAN         | Bool   |
+| DATE            | Date   |
+| STRING,TEXT     | String |
 
 ## 4 性能报告
 

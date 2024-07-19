@@ -57,10 +57,11 @@ IoTDB中设备与列的概念见IoTDB官方文档。
             "version": "V_1_0",
             "##": "Reader中时间列的位置，默认0列",
             "timeColumnPosition": 0,
-            "insertBatchSize": 1000,
+            "batchSize": 1000,
             "device": "root.cgn.device",
-            "measurements": "A5STD,L2RIS014MD,L2VVP003SM5,D1RIS001MD,D1KRT003EU",
-            "deleteExistTimeseries": false
+            "measurements": ["A5STD","L2RIS014MD","L2VVP003SM5","D1RIS001MD","D1KRT003EU"],
+            "###": "在插入之前，预先执行的SQL，默认为空",
+            "preSql": []
           }
         }
       }
@@ -112,10 +113,10 @@ IoTDB中设备与列的概念见IoTDB官方文档。
     * 描述：每batchSize条record为一个batch进行写入
     * 必选：否
     * 默认值：1000
-* deleteExistTimeseries
-  * 描述：插入前是否删除该device下的所有数据
+* preSql
+  * 描述：插入前是否预先执行SQL
   * 必选：否
-  * 默认值：false
+  * 默认值：无
 
 ### 3.3 类型转换
 

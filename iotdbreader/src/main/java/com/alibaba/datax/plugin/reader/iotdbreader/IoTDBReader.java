@@ -2,7 +2,9 @@ package com.alibaba.datax.plugin.reader.iotdbreader;
 
 import com.alibaba.datax.common.element.*;
 import com.alibaba.datax.common.exception.DataXException;
+import com.alibaba.datax.common.plugin.AbstractTaskPlugin;
 import com.alibaba.datax.common.plugin.RecordSender;
+import com.alibaba.datax.common.plugin.TaskPluginCollector;
 import com.alibaba.datax.common.spi.Reader;
 import com.alibaba.datax.common.util.Configuration;
 import org.apache.iotdb.isession.SessionDataSet;
@@ -13,6 +15,7 @@ import org.apache.iotdb.session.Session;
 import org.apache.tsfile.enums.TSDataType;
 import org.apache.tsfile.read.common.Field;
 import org.apache.tsfile.read.common.RowRecord;
+import org.apache.tsfile.read.common.block.column.NullColumn;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,42 +72,31 @@ public class IoTDBReader extends Reader {
         public List<Configuration> split(int adviceNumber) {
             // 每个config对应一个task
             List<Configuration> configs = new ArrayList<>();
-            List<String> queryList = this.jobConf.getList(Key.FINAL_SQLS, String.class);
+            List<String> queryList = this.jobConf.getList(Key.QUERY_SQLS, String.class);
             if (queryList == null || queryList.size() == 0){
                 Configuration clone = this.jobConf.clone();
-                // TODO 同时读取多个设备？有没有必要？
                 String device = this.jobConf.getString(Key.DEVICE);
-                // 测点是一个逗号分隔的测点字符串或"*"
-                String measurements = this.jobConf.getString(Key.MEASUREMENTS);
-                String beginDateTime = this.jobConf.getString(Key.BEGIN_DATETIME);
-                String endDateTime = this.jobConf.getString(Key.END_DATETIME);
+                List<String> measurements = this.jobConf.getList(Key.MEASUREMENTS, String.class);
                 String where = this.jobConf.getString(Key.WHERE);
                 StringBuilder sb = new StringBuilder();
-                sb.append("select ").append(measurements);
+                sb.append("select ").append(String.join(",", measurements));
                 sb.append(" from ").append(device);
-                sb.append(" where ");
-                if (beginDateTime != null && !beginDateTime.isEmpty()){
-                    sb.append("time >= ").append(beginDateTime);
-                }
-                if (endDateTime != null && !endDateTime.isEmpty()){
-                    sb.append(" and time <= ").append(endDateTime);
-                }
                 if (where != null && !where.isEmpty()){
-                    sb.append(" and ").append(where);
+                    sb.append(" where ").append(where);
                 }
                 clone.set(Key.QUERY_SQL, sb.toString());
                 configs.add(clone);
-                //TODO DataX中是单线程，实际上底层session中是多线程读取。根据什么条件切分多线程？
+                //DataX中一个查询是单线程，实际上底层session中是多线程读取。
             }else{
                 // 直接读取最终SQL
                 for (String query : queryList) {
                     Configuration clone = this.jobConf.clone();
-                    clone.remove(Key.FINAL_SQLS);
+                    clone.remove(Key.QUERY_SQLS);
                     clone.set(Key.QUERY_SQL, query);
                     configs.add(clone);
                 }
             }
-            LOG.info("configs: {}", configs);
+            // LOG.info("configs: {}", configs);
             return configs;
         }
 
@@ -144,6 +136,7 @@ public class IoTDBReader extends Reader {
          * 最终的查询SQL，交给session执行。
          */
         private String querySql;
+        private TaskPluginCollector taskPluginCollector;
 
         @Override
         public void init() {
@@ -171,6 +164,7 @@ public class IoTDBReader extends Reader {
 
             this.timeColumnPosition = (taskConf.getInt(Key.TIME_COLUMN_POSITION) == null) ? 0 : taskConf.getInt(Key.TIME_COLUMN_POSITION);
             this.querySql = taskConf.getString(Key.QUERY_SQL);
+            taskPluginCollector = super.getTaskPluginCollector();
         }
 
         @Override
@@ -181,7 +175,7 @@ public class IoTDBReader extends Reader {
                     session.close();
                 }
             } catch (IoTDBConnectionException e) {
-                throw new RuntimeException(e);
+                LOG.info(e.getMessage());
             }
         }
 
@@ -199,58 +193,60 @@ public class IoTDBReader extends Reader {
                     // IoTDB中的行
                     RowRecord rowRecord = dataSet.next();
                     List<Field> fields = rowRecord.getFields();
-                    // 除time列外的其他列遍历类型后转换
-                    for (int i = 0; i < fields.size(); i++) {
-                        if (i == timeColumnPosition){
-                            // time列插入指定位置
-                            long timestamp = rowRecord.getTimestamp();
-                            record.addColumn(new LongColumn(timestamp));
+                    try {
+                        // 除time列外的其他列遍历类型后转换
+                        for (int i = 0; i < fields.size(); i++) {
+                            if (i == timeColumnPosition){
+                                // time列插入指定位置，时间列不在fields中，需要单独处理。不能为null
+                                long timestamp = rowRecord.getTimestamp();
+                                record.addColumn(new DateColumn(timestamp));
+                            }
+                            Field field = fields.get(i);
+                            TSDataType dataType = field.getDataType();
+                            if (dataType == null) {
+                                // 需要写插件支持处理null数据，否则会空指向异常，这里先当成脏数据
+                                // record.addColumn(null);
+                                // continue;
+                                throw new RuntimeException("null datatype");
+                            }
+                            switch (dataType) {
+                                case BOOLEAN:
+                                    record.addColumn(new BoolColumn(field.getBoolV()));
+                                    break;
+                                case INT32:
+                                    record.addColumn(new LongColumn(field.getIntV()));
+                                    break;
+                                case INT64:
+                                case TIMESTAMP:
+                                    record.addColumn(new LongColumn(field.getLongV()));
+                                    break;
+                                case FLOAT:
+                                    record.addColumn(new DoubleColumn(field.getFloatV()));
+                                    break;
+                                case DOUBLE:
+                                    record.addColumn(new DoubleColumn(field.getDoubleV()));
+                                    break;
+                                case STRING:
+                                case TEXT:
+                                    record.addColumn(new StringColumn(field.getStringValue()));
+                                    break;
+                                case DATE:
+                                    record.addColumn(new DateColumn(Date.valueOf(field.getDateV())));
+                                    break;
+                                default:
+                                    throw new RuntimeException("Unsupported data type: " + dataType);
+                            }
                         }
-                        Field field = fields.get(i);
-                        TSDataType dataType = field.getDataType();
-                        // null类型暂时转为字符串 TODO 有没有其他处理方式？
-                        if (dataType == null) {
-                            record.addColumn(new StringColumn("null"));
-                            continue;
-                        }
-                        switch (dataType) {
-                            // TODO 把所有数据类型都测一遍
-                            case BOOLEAN:
-                                record.addColumn(new BoolColumn(field.getBoolV()));
-                                break;
-                            case INT32:
-                                record.addColumn(new LongColumn(field.getIntV()));
-                                break;
-                            case INT64:
-                            case TIMESTAMP:
-                                record.addColumn(new LongColumn(field.getLongV()));
-                                break;
-                            case FLOAT:
-                                record.addColumn(new DoubleColumn(field.getFloatV()));
-                                break;
-                            case DOUBLE:
-                                // TODO 为什么DataX推荐用String？区别是什么？
-                                record.addColumn(new DoubleColumn(field.getDoubleV()));
-                                break;
-                            case STRING:
-                            case TEXT:
-                                record.addColumn(new StringColumn(field.getStringValue()));
-                                break;
-                            case DATE:
-                                record.addColumn(new DateColumn(Date.valueOf(field.getDateV())));
-                                break;
-                            default:
-                                // TODO 其他类型怎么处理？
-                                LOG.info("类型错误："+ field.getDataType());
-                        }
+                        // 发送
+                        recordSender.sendToWriter(record);
+                    }catch (RuntimeException e){
+                        LOG.info(e.getMessage());
+                        this.taskPluginCollector.collectDirtyRecord(record, e);
                     }
-                    // 发送
-                    recordSender.sendToWriter(record);
                 }
             } catch (StatementExecutionException | IoTDBConnectionException e) {
                 throw new RuntimeException(e);
             }
         }
     }
-
 }

@@ -5,6 +5,6 @@
         "useScene": "data migration to iotdb",
         "mechanism": "use iotdb-java-session to write data."
     },
-    "developer": "lihaoran-Timecho"
+    "developer": "timecho.com"
 }
 

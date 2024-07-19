@@ -9,6 +9,6 @@ public class Key {
     public static final String TIME_COLUMN_POSITION = "timeColumnPosition";
     public static final String DEVICE = "device";
     public static final String MEASUREMENTS = "measurements";
-    public static final String DELETE_EXIST_TIMESERIES = "deleteExistTimeseries";
-    public static final String INSERT_BATCH_SIZE = "insertBatchSize";
+    public static final String PRE_SQL = "preSql";
+    public static final String BATCH_SIZE = "batchSize";
 }

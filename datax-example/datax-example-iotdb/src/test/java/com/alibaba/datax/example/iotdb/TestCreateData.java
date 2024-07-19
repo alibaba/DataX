@@ -28,8 +28,8 @@ public class TestCreateData {
         // session init
         session =
                 new Session.Builder()
-                        .host("192.168.150.100")
-                        // .host("172.20.31.6")
+                        // .host("192.168.150.100")
+                        .host("172.20.31.61")
                         .port(6667)
                         .username("root")
                         .password("root")
