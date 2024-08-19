@@ -40,6 +40,13 @@
             <outputDirectory>datax</outputDirectory>
         </fileSet>
         <fileSet>
+            <directory>obhbasereader/target/datax/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>datax</outputDirectory>
+        </fileSet>
+        <fileSet>
             <directory>drdsreader/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
@@ -471,6 +478,13 @@
         </fileSet>
         <fileSet>
             <directory>oceanbasev10writer/target/datax/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>datax</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>obhbasewriter/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
             </includes>
