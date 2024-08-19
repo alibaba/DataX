@@ -36,8 +36,6 @@ DorisWriter 通过Doris原生支持Stream load方式导入数据， DorisWriter�
                     "name": "doriswriter",
                     "parameter": {
                         "loadUrl": ["172.16.0.13:8030"],
-                        "loadProps": {
-                        },
                         "column": ["emp_no", "birth_date", "first_name","last_name","gender","hire_date"],
                         "username": "root",
                         "password": "xxxxxx",
