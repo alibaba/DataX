@@ -12,8 +12,8 @@ import com.alibaba.datax.core.taskgroup.runner.WriterRunner;
 import com.alibaba.datax.core.util.FrameworkErrorCode;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by jingxing on 14-8-24.
@@ -44,12 +44,12 @@ public class LoadUtil {
      * 所有插件配置放置在pluginRegisterCenter中，为区别reader、transformer和writer，还能区别
      * 具体pluginName，故使用pluginType.pluginName作为key放置在该map中
      */
-    private static Configuration pluginRegisterCenter;
+    private static ThreadLocal<Configuration> pluginRegisterCenter = new InheritableThreadLocal<>();
 
     /**
      * jarLoader的缓冲
      */
-    private static Map<String, JarLoader> jarLoaderCenter = new HashMap();
+    private static Map<String, JarLoader> jarLoaderCenter = new ConcurrentHashMap();
 
     /**
      * 设置pluginConfigs，方便后面插件来获取
@@ -57,7 +57,7 @@ public class LoadUtil {
      * @param pluginConfigs
      */
     public static void bind(Configuration pluginConfigs) {
-        pluginRegisterCenter = pluginConfigs;
+        pluginRegisterCenter.set(pluginConfigs);
     }
 
     private static String generatePluginKey(PluginType pluginType,
@@ -68,7 +68,7 @@ public class LoadUtil {
 
     private static Configuration getPluginConf(PluginType pluginType,
                                                String pluginName) {
-        Configuration pluginConf = pluginRegisterCenter
+        Configuration pluginConf = pluginRegisterCenter.get()
                 .getConfiguration(generatePluginKey(pluginType, pluginName));
 
         if (null == pluginConf) {
