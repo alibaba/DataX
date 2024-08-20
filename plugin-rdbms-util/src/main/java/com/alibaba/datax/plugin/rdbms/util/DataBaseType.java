@@ -28,6 +28,7 @@ public enum DataBaseType {
     Sybase("sybase", "com.sybase.jdbc4.jdbc.SybDriver"),
     GaussDB("gaussdb", "org.opengauss.Driver"),
     Databend("databend", "com.databend.jdbc.DatabendDriver"),
+    HANA("hana", "com.sap.db.jdbc.Driver"),
     Doris("doris","com.mysql.jdbc.Driver");
 
     private String typeName;
@@ -75,6 +76,8 @@ public enum DataBaseType {
             case StarRocks:
                 break;
             case GaussDB:
+                break;
+            case HANA:
                 break;
             case Doris:
                 break;
@@ -142,6 +145,8 @@ public enum DataBaseType {
             case Sybase:
                 break;
             case GaussDB:
+                break;
+            case HANA:
                 break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type.");
