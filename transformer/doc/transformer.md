@@ -47,7 +47,7 @@ dx_replace(1,"5","10","****")  column 1的value为“dataxTest”=>"datax****"
 4. dx_filter （关联filter暂不支持，即多个字段的联合判断，函参太过复杂，用户难以使用。）
   * 参数：
       * 第一个参数：字段编号，对应record中第几个字段。
-      * 第二个参数：运算符，支持一下运算符：like, not like, >, =, <, >=, !=, <=
+      * 第二个参数：运算符，支持以下运算符：like, not like, >, =, <, >=, !=, <=
       * 第三个参数：正则表达式（java正则表达式）、值。 
   * 返回：
       * 如果匹配正则表达式，返回Null，表示过滤该行。不匹配表达式时，表示保留该行。（注意是该行）。对于>=<都是对字段直接compare的结果.
@@ -145,11 +145,11 @@ String code3 = "Column column = record.getColumn(1);\n" +
                                 "type": "string"
                             },
                             {
-                                "value": 19890604,
+                                "value": 1724154616370,
                                 "type": "long"
                             },
                             {
-                                "value": "1989-06-04 00:00:00",
+                                "value": "2024-01-01 00:00:00",
                                 "type": "date"
                             },
                             {
@@ -157,11 +157,11 @@ String code3 = "Column column = record.getColumn(1);\n" +
                                 "type": "bool"
                             },
                             {
-                                "value": "test",
+                                "value": "TestRawData",
                                 "type": "bytes"
                             }
                         ],
-                        "sliceRecordCount": 100000
+                        "sliceRecordCount": 100
                     }
                 },
                 "writer": {
@@ -174,38 +174,44 @@ String code3 = "Column column = record.getColumn(1);\n" +
                 "transformer": [
                     {
                         "name": "dx_substr",
-                        "parameter": 
-                            {
-                            "columnIndex":5,
-                            "paras":["1","3"]
-                            }  
+                        "parameter": {
+                            "columnIndex": 5,
+                            "paras": [
+                                "1",
+                                "3"
+                            ]
+                        }
                     },
                     {
                         "name": "dx_replace",
-                        "parameter": 
-                            {
-                            "columnIndex":4,
-                            "paras":["3","4","****"]
-                            }  
+                        "parameter": {
+                            "columnIndex": 4,
+                            "paras": [
+                                "3",
+                                "4",
+                                "****"
+                            ]
+                        }
                     },
                     {
                         "name": "dx_digest",
-                        "parameter": 
-                            {
-                            "columnIndex":3,
-                            "paras":["md5", "toLowerCase"]
-                            }  
+                        "parameter": {
+                            "columnIndex": 3,
+                            "paras": [
+                                "md5",
+                                "toLowerCase"
+                            ]
+                        }
                     },
                     {
                         "name": "dx_groovy",
-                          "parameter": 
-                            {
-                               "code": "//groovy code//",  
-                               "extraPackage":[
-                               "import somePackage1;", 
-                               "import somePackage2;"
-                               ]                      
-                            }  
+                        "parameter": {
+                            "code": "//groovy code//",
+                            "extraPackage": [
+                                "import somePackage1;",
+                                "import somePackage2;"
+                            ]
+                        }
                     }
                 ]
             }
