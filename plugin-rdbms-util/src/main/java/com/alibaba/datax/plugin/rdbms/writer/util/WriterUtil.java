@@ -118,6 +118,8 @@ public final class WriterUtil {
                     String.format("您所配置的 writeMode:%s 错误. 因为DataX 目前仅支持replace,update 或 insert 方式. 请检查您的配置并作出修改.", writeMode));
         }
         // && writeMode.trim().toLowerCase().startsWith("replace")
+        String quoteColumnFormat = dataBaseType.buildQuoteColumnFormat(columnHolders);
+
         String writeDataSqlTemplate;
         if (forceUseUpdate ||
                 ((dataBaseType == DataBaseType.MySql || dataBaseType == DataBaseType.Tddl) && writeMode.trim().toLowerCase().startsWith("update"))
@@ -125,7 +127,7 @@ public final class WriterUtil {
             //update只在mysql下使用
 
             writeDataSqlTemplate = new StringBuilder()
-                    .append("INSERT INTO %s (").append(StringUtils.join(columnHolders, ","))
+                    .append("INSERT INTO %s (").append(quoteColumnFormat)
                     .append(") VALUES(").append(StringUtils.join(valueHolders, ","))
                     .append(")")
                     .append(onDuplicateKeyUpdateString(columnHolders))
@@ -137,7 +139,7 @@ public final class WriterUtil {
                 writeMode = "replace";
             }
             writeDataSqlTemplate = new StringBuilder().append(writeMode)
-                    .append(" INTO %s (").append(StringUtils.join(columnHolders, ","))
+                    .append(" INTO %s (").append(quoteColumnFormat)
                     .append(") VALUES(").append(StringUtils.join(valueHolders, ","))
                     .append(")").toString();
         }
