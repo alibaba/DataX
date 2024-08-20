@@ -135,7 +135,7 @@
         <module>gaussdbreader</module>
         <module>gaussdbwriter</module>
         <module>datax-example</module>
-
+        <module>gaussdwswriter</module>
     </modules>
 
     <dependencyManagement>

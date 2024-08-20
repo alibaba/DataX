@@ -12,7 +12,6 @@ import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
 import com.alibaba.datax.plugin.rdbms.util.RdbmsException;
 import com.alibaba.datax.plugin.rdbms.writer.util.OriginalConfPretreatmentUtil;
 import com.alibaba.datax.plugin.rdbms.writer.util.WriterUtil;
-import java.util.concurrent.atomic.AtomicLong;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
@@ -21,9 +20,13 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.SQLNonTransientConnectionException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class CommonRdbmsWriter {
 
@@ -240,7 +243,7 @@ public class CommonRdbmsWriter {
             emptyAsNull = writerSliceConfig.getBool(Key.EMPTY_AS_NULL, true);
             INSERT_OR_REPLACE_TEMPLATE = writerSliceConfig.getString(Constant.INSERT_OR_REPLACE_TEMPLATE_MARK);
             this.writeRecordSql = String.format(INSERT_OR_REPLACE_TEMPLATE, this.table);
-
+            LOG.debug("this.writeRecordSql : [{}]", this.writeRecordSql);
             BASIC_MESSAGE = String.format("jdbcUrl:[%s], table:[%s]",
                     this.jdbcUrl, this.table);
         }
@@ -262,8 +265,8 @@ public class CommonRdbmsWriter {
 
             DBUtil.closeDBResources(null, null, connection);
         }
-
         public void startWriteWithConnection(RecordReceiver recordReceiver, TaskPluginCollector taskPluginCollector, Connection connection) {
+
             this.taskPluginCollector = taskPluginCollector;
 
             // 用于写入数据的时候的类型根据目的表字段类型转换
@@ -292,13 +295,37 @@ public class CommonRdbmsWriter {
                     bufferBytes += record.getMemorySize();
 
                     if (writeBuffer.size() >= batchSize || bufferBytes >= batchByteSize) {
-                        doBatchInsert(connection, writeBuffer);
+                        try {
+                            doBatchInsert(connection, writeBuffer);
+                        } catch (SQLNonTransientConnectionException e) {
+                            LOG.warn("连接失效，重连重试. 详情: {}", e.getMessage());
+                            try {
+                                TimeUnit.SECONDS.sleep(ThreadLocalRandom.current().nextInt(3, 15));
+                            } catch (InterruptedException ex) {
+                                return;
+                            }
+                            connection = DBUtil.getConnection(this.dataBaseType,
+                                    this.jdbcUrl, username, password);
+                            doBatchInsert(connection, writeBuffer);
+                        }
                         writeBuffer.clear();
                         bufferBytes = 0;
                     }
                 }
                 if (!writeBuffer.isEmpty()) {
-                    doBatchInsert(connection, writeBuffer);
+                    try {
+                        doBatchInsert(connection, writeBuffer);
+                    } catch (SQLNonTransientConnectionException e) {
+                        LOG.warn("连接失效，重连重试. 详情: {}", e.getMessage());
+                        try {
+                            TimeUnit.SECONDS.sleep(ThreadLocalRandom.current().nextInt(3, 15));
+                        } catch (InterruptedException ex) {
+                            return;
+                        }
+                        connection = DBUtil.getConnection(this.dataBaseType,
+                                this.jdbcUrl, username, password);
+                        doBatchInsert(connection, writeBuffer);
+                    }
                     writeBuffer.clear();
                     bufferBytes = 0;
                 }
@@ -361,7 +388,7 @@ public class CommonRdbmsWriter {
                 preparedStatement.executeBatch();
                 connection.commit();
             } catch (SQLException e) {
-                LOG.warn("回滚此次写入, 采用每次写入一行方式提交. 因为:" + e.getMessage());
+                LOG.warn("回滚此次写入, 采用每次写入一行方式提交. 因为: {} >> {}", e.getClass(), e.getMessage());
                 connection.rollback();
                 doOneInsert(connection, buffer);
             } catch (Exception e) {
@@ -397,7 +424,12 @@ public class CommonRdbmsWriter {
                         this.taskPluginCollector.collectDirtyRecord(record, e);
                     } finally {
                         // 最后不要忘了关闭 preparedStatement
-                        preparedStatement.clearParameters();
+                        try {
+                            preparedStatement.clearParameters();
+                        } catch (SQLException e) {
+                            LOG.warn("关闭 PreparedStatement 时发生异常, ignore. MSG: {}", e.getMessage());
+                        }
+
                     }
                 }
             } catch (Exception e) {
