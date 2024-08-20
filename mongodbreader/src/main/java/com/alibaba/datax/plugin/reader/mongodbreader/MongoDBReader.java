@@ -47,6 +47,8 @@ public class MongoDBReader extends Reader {
         private String userName = null;
         private String password = null;
 
+        private String mongoDBUrl = null;
+
         @Override
         public List<Configuration> split(int adviceNumber) {
             return CollectionSplitUtil.doSplit(originalConfig,adviceNumber,mongoClient);
@@ -57,9 +59,12 @@ public class MongoDBReader extends Reader {
             this.originalConfig = super.getPluginJobConf();
             this.userName = originalConfig.getString(KeyConstant.MONGO_USER_NAME, originalConfig.getString(KeyConstant.MONGO_USERNAME));
             this.password = originalConfig.getString(KeyConstant.MONGO_USER_PASSWORD, originalConfig.getString(KeyConstant.MONGO_PASSWORD));
+            this.mongoDBUrl = originalConfig.getString(KeyConstant.MONGO_URL);
             String database =  originalConfig.getString(KeyConstant.MONGO_DB_NAME, originalConfig.getString(KeyConstant.MONGO_DATABASE));
             String authDb =  originalConfig.getString(KeyConstant.MONGO_AUTHDB, database);
-            if(!Strings.isNullOrEmpty(this.userName) && !Strings.isNullOrEmpty(this.password)) {
+            if (!Strings.isNullOrEmpty(mongoDBUrl)) {
+                this.mongoClient = MongoUtil.initMongoClientByURL(mongoDBUrl);
+            }else if(!Strings.isNullOrEmpty(this.userName) && !Strings.isNullOrEmpty(this.password)) {
                 this.mongoClient = MongoUtil.initCredentialMongoClient(originalConfig,userName,password,authDb);
             } else {
                 this.mongoClient = MongoUtil.initMongoClient(originalConfig);
@@ -92,6 +97,8 @@ public class MongoDBReader extends Reader {
         private Object lowerBound = null;
         private Object upperBound = null;
         private boolean isObjectId = true;
+
+        private String mongoDBUrl = null;
 
         @Override
         public void startRead(RecordSender recordSender) {
@@ -189,7 +196,10 @@ public class MongoDBReader extends Reader {
             this.password = readerSliceConfig.getString(KeyConstant.MONGO_USER_PASSWORD, readerSliceConfig.getString(KeyConstant.MONGO_PASSWORD));
             this.database = readerSliceConfig.getString(KeyConstant.MONGO_DB_NAME, readerSliceConfig.getString(KeyConstant.MONGO_DATABASE));
             this.authDb = readerSliceConfig.getString(KeyConstant.MONGO_AUTHDB, this.database);
-            if(!Strings.isNullOrEmpty(userName) && !Strings.isNullOrEmpty(password)) {
+            this.mongoDBUrl = readerSliceConfig.getString(KeyConstant.MONGO_URL);
+            if (!Strings.isNullOrEmpty(mongoDBUrl)) {
+                this.mongoClient = MongoUtil.initMongoClientByURL(mongoDBUrl);
+            } else if(!Strings.isNullOrEmpty(userName) && !Strings.isNullOrEmpty(password)) {
                 mongoClient = MongoUtil.initCredentialMongoClient(readerSliceConfig,userName,password,authDb);
             } else {
                 mongoClient = MongoUtil.initMongoClient(readerSliceConfig);
