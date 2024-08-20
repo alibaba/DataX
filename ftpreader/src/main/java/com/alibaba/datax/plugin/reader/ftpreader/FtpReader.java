@@ -244,6 +244,11 @@ public class FtpReader extends Reader {
 				UnstructuredStorageReaderUtil.readFromStream(inputStream, fileName, this.readerSliceConfig,
 						recordSender, this.getTaskPluginCollector());
 				recordSender.flush();
+				// 如果deletesrc为true，则删除源文件
+				if(readerSliceConfig.getBool(Key.DELETESRC,Constant.DEFAULT_FTP_DELETE_SRC)){
+					ftpHelper.deleteFile(fileName);
+					LOG.info(String.format("deleted src file : [%s]", fileName));
+				}
 			}
 
 			LOG.debug("end read source files...");
