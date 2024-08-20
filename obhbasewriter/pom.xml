@@ -44,18 +44,13 @@
             <artifactId>logback-classic</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.alibaba.datax</groupId>
-            <artifactId>simulator</artifactId>
-            <version>${datax-project-version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
             <version>4.0.4.RELEASE</version>
             <scope>test</scope>
         </dependency>
-         <dependency>
+	<!--
+	<dependency>
             <groupId>com.taobao.tddl</groupId>
             <artifactId>tddl-client</artifactId>
             <exclusions>
@@ -68,7 +63,7 @@
                     <artifactId>diamond-client</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
+	</dependency>-->
 
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -76,22 +71,23 @@
             <version>33.1.0-jre</version>
         </dependency>
 
-        <dependency>
+	<!--<dependency>
             <groupId>com.alipay.oceanbase</groupId>
             <artifactId>oceanbase-connector-java</artifactId>
             <version>3.2.0</version>
-        </dependency>
+	</dependency>-->
 
         <dependency>
           <groupId>log4j</groupId>
           <artifactId>log4j</artifactId>
           <version>1.2.16</version>
         </dependency>
-        <dependency>
+	<!--
+	<dependency>
             <groupId>com.alibaba.toolkit.common</groupId>
             <artifactId>toolkit-common-logging</artifactId>
             <version>1.10</version>
-        </dependency>
+	</dependency> -->
         <dependency>
               <groupId>org.json</groupId>
               <artifactId>json</artifactId>

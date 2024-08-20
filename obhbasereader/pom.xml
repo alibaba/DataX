@@ -69,12 +69,14 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>${guava-version}</version>
-        </dependency>
+    </dependency>
+    <!--
         <dependency>
             <groupId>com.alibaba.toolkit.common</groupId>
             <artifactId>toolkit-common-logging</artifactId>
             <version>1.14</version>
-        </dependency>
+	</dependency>
+    -->
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
