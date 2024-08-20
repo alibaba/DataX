@@ -129,6 +129,9 @@
         <module>adbmysqlwriter</module>
         <module>sybasewriter</module>
         <module>neo4jwriter</module>
+
+        <module>kafkawriter</module>
+
         <!-- common support module -->
         <module>plugin-rdbms-util</module>
         <module>plugin-unstructured-storage-util</module>
