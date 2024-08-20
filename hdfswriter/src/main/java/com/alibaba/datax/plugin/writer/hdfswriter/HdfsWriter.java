@@ -311,7 +311,9 @@ public class HdfsWriter extends Writer {
             }else if("/".equals(userPath)){
                 tmpFilePath = String.format("%s__%s%s", userPath, tmpSuffix, IOUtils.DIR_SEPARATOR);
             }else{
-                tmpFilePath = String.format("%s__%s%s", userPath.substring(0,userPath.length()-1), tmpSuffix, IOUtils.DIR_SEPARATOR);
+//                tmpFilePath = String.format("%s__%s%s", userPath.substring(0,userPath.length()-1), tmpSuffix, IOUtils.DIR_SEPARATOR);
+                // 适配window系统目录拼接
+                tmpFilePath = String.format("%s__%s%s", userPath, tmpSuffix, IOUtils.DIR_SEPARATOR_UNIX);
             }
             while(hdfsHelper.isPathexists(tmpFilePath)){
                 tmpSuffix = UUID.randomUUID().toString().replace('-', '_');
@@ -320,7 +322,9 @@ public class HdfsWriter extends Writer {
                 }else if("/".equals(userPath)){
                     tmpFilePath = String.format("%s__%s%s", userPath, tmpSuffix, IOUtils.DIR_SEPARATOR);
                 }else{
-                    tmpFilePath = String.format("%s__%s%s", userPath.substring(0,userPath.length()-1), tmpSuffix, IOUtils.DIR_SEPARATOR);
+//                    tmpFilePath = String.format("%s__%s%s", userPath.substring(0,userPath.length()-1), tmpSuffix, IOUtils.DIR_SEPARATOR);
+                    // 适配window系统目录拼接
+                    tmpFilePath = String.format("%s__%s%s", userPath, tmpSuffix, IOUtils.DIR_SEPARATOR_UNIX);
                 }
             }
             return tmpFilePath;
