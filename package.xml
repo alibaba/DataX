@@ -132,7 +132,14 @@
             <outputDirectory>datax</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>tdenginereader/target/datax/</directory>
+            <directory>tdengine20reader/target/datax/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>datax</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>tdengine30reader/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
             </includes>
@@ -267,7 +274,14 @@
             <outputDirectory>datax</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>tdenginewriter/target/datax/</directory>
+            <directory>tdengine20writer/target/datax/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>datax</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>tdengine30writer/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
             </includes>
