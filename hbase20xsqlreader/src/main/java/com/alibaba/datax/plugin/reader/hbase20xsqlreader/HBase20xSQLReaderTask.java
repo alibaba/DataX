@@ -86,16 +86,18 @@ public class HBase20xSQLReaderTask {
                 column = new LongColumn((Integer) value);
                 break;
             case Types.TINYINT:
-                column = new LongColumn(((Byte) value).longValue());
+                Byte aByte = (Byte) value;
+                column = new LongColumn(null == aByte ? null : aByte.longValue());
                 break;
             case Types.SMALLINT:
-                column = new LongColumn(((Short) value).longValue());
+                Short aShort = (Short) value;
+                column = new LongColumn(null == aShort ? null : aShort.longValue());
                 break;
             case Types.BIGINT:
                 column = new LongColumn((Long) value);
                 break;
             case Types.FLOAT:
-                column = new DoubleColumn((Float.valueOf(value.toString())));
+                column = new DoubleColumn(null == value ? null : (Float.valueOf(value.toString())));
                 break;
             case Types.DECIMAL:
                 column = new DoubleColumn((BigDecimal)value);
