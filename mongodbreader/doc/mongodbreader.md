@@ -130,7 +130,7 @@ MongoDBReader通过Datax框架从MongoDB并行的读取数据，通过主控的J
 * collectionName： MonogoDB的集合名。【必填】
 * column：MongoDB的文档列名。【必填】
 * name：Column的名字。【必填】
-* type：Column的类型。【选填】
+* type：Column的类型。值为json时会转为json字符串，适用于转化object列，用于hive查询。【选填】
 * splitter：因为MongoDB支持数组类型，但是Datax框架本身不支持数组类型，所以mongoDB读出来的数组类型要通过这个分隔符合并成字符串。【选填】
 * query: MongoDB的额外查询条件。【选填】
 
