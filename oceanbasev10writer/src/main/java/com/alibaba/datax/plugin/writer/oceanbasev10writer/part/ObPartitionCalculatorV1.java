@@ -2,12 +2,21 @@ package com.alibaba.datax.plugin.writer.oceanbasev10writer.part;
 
 import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.plugin.writer.oceanbasev10writer.ext.ServerConnectInfo;
-import com.alipay.oceanbase.obproxy.data.TableEntryKey;
-import com.alipay.oceanbase.obproxy.util.ObPartitionIdCalculator;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+
+import com.oceanbase.partition.calculator.ObPartIdCalculator;
+import com.oceanbase.partition.calculator.enums.ObServerMode;
+import com.oceanbase.partition.calculator.helper.TableEntryExtractor;
+import com.oceanbase.partition.calculator.model.TableEntry;
+import com.oceanbase.partition.calculator.model.TableEntryKey;
+import com.oceanbase.partition.metadata.desc.ObPartColumn;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,16 +44,19 @@ public class ObPartitionCalculatorV1 implements IObPartCalculator {
     /**
      * ocj partition calculator
      */
-    private ObPartitionIdCalculator calculator;
+    private ObPartIdCalculator calculator;
+
+    TableEntry tableEntry=null;
 
     /**
      * @param connectInfo
      * @param table
      * @param columns
+     * @param isOracleCompatibleMode
      */
-    public ObPartitionCalculatorV1(ServerConnectInfo connectInfo, String table, List<String> columns) {
+    public ObPartitionCalculatorV1(ServerConnectInfo connectInfo, String table, List<String> columns,Boolean isOracleCompatibleMode) {
 
-        initCalculator(connectInfo, table);
+        initCalculator(connectInfo, table,isOracleCompatibleMode);
 
         if (Objects.isNull(calculator)) {
             LOG.warn("partCalculator is null");
@@ -56,7 +68,7 @@ public class ObPartitionCalculatorV1 implements IObPartCalculator {
 
         for (int i = 0; i < columns.size(); ++i) {
             String columnName = columns.get(i);
-            if (calculator.isPartitionKeyColumn(columnName)) {
+            if (isPartitionKeyColumn(columnName)) {
                 LOG.info(columnName + " is partition key.");
                 partIndexes.add(i);
             }
@@ -72,23 +84,31 @@ public class ObPartitionCalculatorV1 implements IObPartCalculator {
         if (Objects.isNull(calculator)) {
             return null;
         }
-
+        List<Object> records = new ArrayList<>();
         for (Integer i : partIndexes) {
-            calculator.addColumn(columnNames.get(i), record.getColumn(i).asString());
+            calculator.addRefColumn(columnNames.get(i), record.getColumn(i).asString());
+            records.add(record.getColumn(i).asString());
         }
-        return calculator.calculate();
+        return calculator.calculatePartId(records.toArray());
     }
 
     /**
      * @param connectInfo
      * @param table
+     * @param isOracleCompatibleMode
      */
-    private void initCalculator(ServerConnectInfo connectInfo, String table) {
+    private void initCalculator(ServerConnectInfo connectInfo, String table, Boolean isOracleCompatibleMode) {
 
         LOG.info(String.format("create tableEntryKey with clusterName %s, tenantName %s, databaseName %s, tableName %s",
-            connectInfo.clusterName, connectInfo.tenantName, connectInfo.databaseName, table));
-        TableEntryKey tableEntryKey = new TableEntryKey(connectInfo.clusterName, connectInfo.tenantName,
-            connectInfo.databaseName, table);
+                connectInfo.clusterName, connectInfo.tenantName, connectInfo.databaseName, table));
+        TableEntryKey tableEntryKey=null;
+        if (isOracleCompatibleMode){
+            tableEntryKey=new TableEntryKey(connectInfo.clusterName, connectInfo.tenantName,
+                    connectInfo.databaseName, table, ObServerMode.fromOracle("3.2.3.3"));
+        }else {
+            tableEntryKey=new TableEntryKey(connectInfo.clusterName, connectInfo.tenantName,
+                    connectInfo.databaseName, table, ObServerMode.fromMySql("3.2.3.3"));
+        }
 
         int retry = 0;
 
@@ -99,11 +119,52 @@ public class ObPartitionCalculatorV1 implements IObPartCalculator {
                     LOG.info("retry create new part calculator {} times", retry);
                 }
                 LOG.info("create partCalculator with address: " + connectInfo.ipPort);
-                calculator = new ObPartitionIdCalculator(connectInfo.ipPort, tableEntryKey);
+                Connection conn = DriverManager.getConnection(connectInfo.jdbcUrl, connectInfo.userName, connectInfo.password);
+                TableEntry entry = new TableEntryExtractor().queryTableEntry(conn, tableEntryKey, false);
+                calculator = new ObPartIdCalculator(entry);
             } catch (Exception ex) {
                 ++retry;
                 LOG.warn("create new part calculator failed, retry: {}", ex.getMessage());
             }
         } while (calculator == null && retry < 3);
     }
+
+    /**
+     * @param name
+     * @return
+     */
+    public boolean isPartitionKeyColumn(String name) {
+        if (tableEntry.isNonPartitionTable()) {
+            return false;
+        } else {
+            String realName = getRealColumnName(name);
+            Iterator partColumnIterator = this.tableEntry.getTablePart().getPartColumns().iterator();
+
+            ObPartColumn column;
+            do {
+                if (!partColumnIterator.hasNext()) {
+                    return false;
+                }
+
+                column = (ObPartColumn) partColumnIterator.next();
+            } while(!column.getColumnName().equalsIgnoreCase(realName));
+
+            return true;
+        }
+    }
+
+    /**
+     * @param name
+     * @return
+     */
+    private static String getRealColumnName(String name) {
+        String realColumnName = name;
+        if (name != null && name.length() > 2 && name.startsWith("`") && name.endsWith("`")) {
+            realColumnName = name.substring(1, name.length() - 1);
+        }
+
+        return realColumnName;
+    }
+
+
 }
