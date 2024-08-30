@@ -123,7 +123,7 @@ TxtFileWriter实现了从DataX协议转为本地TXT文件功能，本地文件�
 
 * **fieldDelimiter**
 
-	* 描述：读取的字段分隔符 <br />
+	* 描述：写入的字段分隔符；支持ASCII码以实体编码的方式配置为分隔符，例如"&#30;"，表示ASCII码为30的字符(https://baike.baidu.com/item/ASCII/309296?fr=aladdin) <br />
 
 	* 必选：否 <br />
 
