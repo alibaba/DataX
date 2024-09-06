@@ -173,7 +173,6 @@ public class ExampleConfigParser {
      */
     private static void registerTransformerConfig(List<Configuration> transformers) {
 
-        //Configuration from = Configuration.from(transformer);
         if (transformers == null || transformers.size() == 0) {
             return;
         }
@@ -244,6 +243,12 @@ public class ExampleConfigParser {
         }
     }
 
+    /**
+     * 验证Transformer 是否已经加载过了
+     * @param transformerName
+     * @param transFormerClass
+     * @return
+     */
     private static Boolean verfiyExist(String transformerName,String transFormerClass){
         TransformerInfo transformer = TransformerRegistry.getTransformer(transformerName);
         if(transformer==null){
