@@ -12,7 +12,7 @@
 		供TxtFileReader/Writer, OSSReader/Writer ,FtpReader/Writer, HdfsReader/Writer使用。</description>
 	<packaging>jar</packaging>
 	<properties>
-		<hadoop.version>2.7.1</hadoop.version>
+		<hadoop.version>3.4.0</hadoop.version>
 	</properties>
 	<dependencies>
 		<dependency>
