@@ -29,7 +29,7 @@
         <!--slf4j 1.7.10 和 logback-classic 1.0.13 是好基友 -->
         <slf4j-api-version>1.7.10</slf4j-api-version>
         <logback-classic-version>1.0.13</logback-classic-version>
-        <commons-io-version>2.4</commons-io-version>
+        <commons-io-version>2.14.0</commons-io-version>
         <junit-version>4.13.1</junit-version>
         <tddl.version>5.1.22-1</tddl.version>
         <swift-version>1.0.0</swift-version>
