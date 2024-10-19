@@ -76,7 +76,7 @@ DorisWriter 通过Doris原生支持Stream load方式导入数据， DorisWriter�
 
 * **loadUrl**
 
-  - 描述：作为 Stream Load 的连接目标。格式为 "ip:port"。其中 IP 是 FE 节点 IP，port 是 FE 节点的 http_port。可以填写多个，多个之间使用英文状态的分号隔开:`;`，doriswriter 将以轮询的方式访问。
+  - 描述：作为 Stream Load 的连接目标。格式为 "ip:port"。其中 IP 是 FE 节点 IP，port 是 FE 节点的 http_port。可以填写多个"ip:port"，多个"ip:port"之间使用英文状态的逗号`,`隔开，doriswriter 将以轮询的方式访问。例如："loadUrl": ["172.202.34.44:8030","172.202.34.55:8030","172.202.34.66:8030"]。
   - 必选：是
   - 默认值：无
 
