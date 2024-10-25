@@ -630,7 +630,14 @@ public  class HdfsHelper {
         MessageType messageType = null;
         ParquetFileProccessor proccessor = null;
         Path outputPath = new Path(fileName);
-        String schema = config.getString(Key.PARQUET_SCHEMA);
+        String schema = config.getString(Key.PARQUET_SCHEMA, null);
+        if (schema == null) {
+            List<Configuration> columns = config.getListConfiguration(Key.COLUMN);
+            if (columns == null || columns.isEmpty()) {
+                throw DataXException.asDataXException("parquetSchema or column can't be blank!");
+            }
+            schema = HdfsHelper.generateParquetSchemaFromColumnAndType(columns);
+        }
         try {
             messageType = MessageTypeParser.parseMessageType(schema);
         } catch (Exception e) {
