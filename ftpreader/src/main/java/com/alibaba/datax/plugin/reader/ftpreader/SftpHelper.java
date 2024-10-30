@@ -3,7 +3,6 @@ package com.alibaba.datax.plugin.reader.ftpreader;
 import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.Vector;
 

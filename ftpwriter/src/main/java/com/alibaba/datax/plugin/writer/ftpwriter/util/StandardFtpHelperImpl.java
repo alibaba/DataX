@@ -29,7 +29,7 @@ public class StandardFtpHelperImpl implements IFtpHelper {
 
     @Override
     public void loginFtpServer(String host, String username, String password,
-            int port, int timeout， Map<String, Object> extendParams) {
+            int port, int timeout, Map<String, Object> extendParams) {
         this.ftpClient = new FTPClient();
         try {
             this.ftpClient.setControlEncoding("UTF-8");
