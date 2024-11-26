@@ -31,6 +31,7 @@ import parquet.hadoop.metadata.CompressionCodecName;
 import parquet.schema.*;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -440,7 +441,7 @@ public  class HdfsHelper {
                     objectInspector = ObjectInspectorFactory.getReflectionObjectInspector(Double.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
                     break;
                 case TIMESTAMP:
-                    objectInspector = ObjectInspectorFactory.getReflectionObjectInspector(java.sql.Timestamp.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+                    objectInspector = ObjectInspectorFactory.getReflectionObjectInspector(org.apache.hadoop.hive.common.type.Timestamp.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
                     break;
                 case DATE:
                     objectInspector = ObjectInspectorFactory.getReflectionObjectInspector(java.sql.Date.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
@@ -533,7 +534,13 @@ public  class HdfsHelper {
                                 recordList.add(new java.sql.Date(column.asDate().getTime()));
                                 break;
                             case TIMESTAMP:
-                                recordList.add(new java.sql.Timestamp(column.asDate().getTime()));
+                                Date date = column.asDate();
+                                if (date == null) {
+                                    recordList.add(null);
+                                } else {
+                                    Timestamp ts = new Timestamp(date.getTime());
+                                    recordList.add(org.apache.hadoop.hive.common.type.Timestamp.ofEpochMilli(ts.getTime(), ts.getNanos()));
+                                }
                                 break;
                             default:
                                 throw DataXException
