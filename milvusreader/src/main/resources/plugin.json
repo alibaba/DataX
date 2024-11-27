@@ -1,0 +1,6 @@
+{
+    "name": "milvusreader",
+    "class": "com.alibaba.datax.plugin.reader.milvusreader.MilvusReader",
+    "description": "useScene: prod. mechanism: via milvusclient connect milvus read data concurrent.",
+    "developer": "nianliuu"
+}

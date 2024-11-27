@@ -5,6 +5,7 @@ public class KeyConstant {
     public static final String TOKEN = "token";
     public static final String DATABASE = "database";
     public static final String COLLECTION = "collection";
+    public static final String PARTITION = "partition";
     public static final String AUTO_ID = "autoId";
     public static final String ENABLE_DYNAMIC_SCHEMA = "enableDynamicSchema";
     public static final String BATCH_SIZE = "batchSize";
@@ -17,4 +18,7 @@ public class KeyConstant {
     public static final String schemaCreateMode = "schemaCreateMode";
     public static final String IS_PARTITION_KEY = "isPartitionKey";
     public static final String MAX_LENGTH = "maxLength";
+    public static final String ELEMENT_TYPE = "elementType";
+    public static final String MAX_CAPACITY = "maxCapacity";
+    public static final String IS_AUTO_INCREMENT = "autoId";
 }

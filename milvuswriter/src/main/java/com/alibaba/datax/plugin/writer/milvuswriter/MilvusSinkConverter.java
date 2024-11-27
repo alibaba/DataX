@@ -5,13 +5,16 @@ import com.alibaba.fastjson2.JSONArray;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
 import io.milvus.v2.common.DataType;
 import static io.milvus.v2.common.DataType.*;
 import io.milvus.v2.service.collection.request.AddFieldReq;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 
+import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class MilvusSinkConverter {
@@ -31,6 +34,10 @@ public class MilvusSinkConverter {
     private Object convertToMilvusField(String type, Object rawData) {
         Gson gson = new Gson();
         switch (valueOf(type)) {
+            case Int8:
+                return Byte.parseByte(rawData.toString());
+            case Int16:
+                return Short.parseShort(rawData.toString());
             case Int32:
                 return Integer.parseInt(rawData.toString());
             case Int64:
@@ -42,11 +49,16 @@ public class MilvusSinkConverter {
                 return rawData.toString();
             case Bool:
                 return Boolean.parseBoolean(rawData.toString());
+            case JSON:
+                return gson.fromJson(rawData.toString(), JsonObject.class);
+            case Array:
+                Type listType = new TypeToken<List<Object>>() {}.getType();
+                return gson.fromJson(rawData.toString(), listType);
             case FloatVector:
-                java.lang.Float[] floats = Arrays.stream(rawData.toString().split(",")).map(java.lang.Float::parseFloat).toArray(java.lang.Float[]::new);
+                java.lang.Float[] floats = Arrays.stream(processVectorString(rawData)).map(java.lang.Float::parseFloat).toArray(java.lang.Float[]::new);
                 return Arrays.stream(floats).collect(Collectors.toList());
             case BinaryVector:
-                java.lang.Integer[] binarys = Arrays.stream(rawData.toString().split(",")).map(java.lang.Integer::parseInt).toArray(java.lang.Integer[]::new);
+                java.lang.Integer[] binarys = Arrays.stream(processVectorString(rawData)).map(java.lang.Integer::parseInt).toArray(java.lang.Integer[]::new);
                 return BufferUtils.toByteBuffer(binarys);
             case Float16Vector:
             case BFloat16Vector:
@@ -56,8 +68,24 @@ public class MilvusSinkConverter {
             case SparseFloatVector:
                 return JsonParser.parseString(gson.toJson(rawData)).getAsJsonObject();
             default:
-                throw new RuntimeException("Unsupported data type");
+                throw new RuntimeException("Unsupported data type: " + type);
         }
+    }
+
+    private String[] processArrayString(Object rawData) {
+        // Step 1: Remove square brackets
+        String cleanedInput = rawData.toString().replace("[", "").replace("]", "");
+
+        // Step 2: Split the string into an array of string numbers
+        return cleanedInput.split(",\\s*");
+    }
+
+    private String[] processVectorString(Object rawData) {
+        // Step 1: Remove square brackets
+        String cleanedInput = rawData.toString().replace("[", "").replace("]", "");
+
+        // Step 2: Split the string into an array of string numbers
+        return cleanedInput.split(",\\s*");
     }
 
     public CreateCollectionReq.CollectionSchema prepareCollectionSchema(JSONArray milvusColumnMeta) {
@@ -78,6 +106,13 @@ public class MilvusSinkConverter {
             }
             if(milvusColumnMeta.getJSONObject(i).containsKey(KeyConstant.MAX_LENGTH)) {
                 addFieldReq.setMaxLength(milvusColumnMeta.getJSONObject(i).getInteger(KeyConstant.MAX_LENGTH));
+            }
+            if(milvusColumnMeta.getJSONObject(i).containsKey(KeyConstant.ELEMENT_TYPE)) {
+                addFieldReq.setElementType(DataType.valueOf(milvusColumnMeta.getJSONObject(i).getString(KeyConstant.ELEMENT_TYPE)));
+                addFieldReq.setMaxLength(milvusColumnMeta.getJSONObject(i).getInteger(KeyConstant.MAX_LENGTH));
+            }
+            if(milvusColumnMeta.getJSONObject(i).containsKey(KeyConstant.MAX_CAPACITY)) {
+                addFieldReq.setMaxCapacity(milvusColumnMeta.getJSONObject(i).getInteger(KeyConstant.MAX_CAPACITY));
             }
             collectionSchema.addField(addFieldReq);
         }

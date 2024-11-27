@@ -1,15 +1,49 @@
 {
-    "name": "mongodbwriter",
+    "name": "milvuswriter",
     "parameter": {
-        "address": [],
-        "userName": "",
-        "userPassword": "",
-        "dbName": "",
-        "collectionName": "",
-        "column": [],
-        "upsertInfo": {
-            "isUpsert": "",
-            "upsertKey": ""
-        }
+        "uri": "https://*****.aws-us-west-2.vectordb.zillizcloud.com:19530",
+        "token": "*****",
+        "collection": "medium_articles",
+        "batchSize": 10,
+        "schemaCreateMode": "createWhenTableNotExit",
+        "column": [
+            {
+                "name": "id",
+                "type": "Int64",
+                "isPrimaryKey": true
+            },
+            {
+                "name": "title_vector",
+                "type": "FloatVector",
+                "dimension": 768
+            },
+            {
+                "name": "title",
+                "type": "VarChar",
+                "maxLength": 1000
+            },
+            {
+                "name": "link",
+                "type": "VarChar",
+                "maxLength": 1000
+            },
+            {
+                "name": "reading_time",
+                "type": "Int64"
+            },
+            {
+                "name": "publication",
+                "type": "VarChar",
+                "maxLength": 1000
+            },
+            {
+                "name": "claps",
+                "type": "Int64"
+            },
+            {
+                "name": "responses",
+                "type": "Int64"
+            }
+        ]
     }
 }
