@@ -1,0 +1,6 @@
+{
+    "name": "bytehousewriter",
+    "class": "com.alibaba.datax.plugin.writer.bytehousewriter.BytehouseWriter",
+    "description": "useScene: prod. mechanism: Jdbc connection using the database, execute insert sql.",
+    "developer": "penggan(1466927252@qq.com)"
+}
