@@ -128,7 +128,7 @@ public class BytehouseWriter extends Writer {
 										preparedStatement.setInt(columnIndex + 1, column.asBigInteger().intValue());
 									}
 								} else {
-									java.sql.Date sqlDate = null;
+									Date sqlDate = null;
 									try {
 										utilDate = column.asDate();
 									} catch (DataXException e) {
@@ -137,14 +137,14 @@ public class BytehouseWriter extends Writer {
 									}
 
 									if (null != utilDate) {
-										sqlDate = new java.sql.Date(utilDate.getTime());
+										sqlDate = new Date(utilDate.getTime());
 									}
 									preparedStatement.setDate(columnIndex + 1, sqlDate);
 								}
 								break;
 
 							case Types.TIME:
-								java.sql.Time sqlTime = null;
+								Time sqlTime = null;
 								try {
 									utilDate = column.asDate();
 								} catch (DataXException e) {
@@ -153,7 +153,7 @@ public class BytehouseWriter extends Writer {
 								}
 
 								if (null != utilDate) {
-									sqlTime = new java.sql.Time(utilDate.getTime());
+									sqlTime = new Time(utilDate.getTime());
 								}
 								preparedStatement.setTime(columnIndex + 1, sqlTime);
 								break;
