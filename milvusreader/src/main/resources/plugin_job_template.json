@@ -1,0 +1,9 @@
+{
+    "name": "milvusreader",
+    "parameter": {
+        "uri": "https://*****.aws-us-west-2.vectordb.zillizcloud.com:19532",
+        "token": "*****",
+        "collection": "medium_articles",
+        "batchSize": 10
+    }
+}
