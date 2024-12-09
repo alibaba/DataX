@@ -266,6 +266,7 @@
         <plugins>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.2-beta-3</version>
                 <configuration>
                     <finalName>datax</finalName>
                     <descriptors>

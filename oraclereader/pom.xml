@@ -40,10 +40,16 @@
             <version>${datax-project-version}</version>
         </dependency>
 
-        <dependency>
+      <!--  <dependency>
             <groupId>oracle</groupId>
             <artifactId>ojdbc6</artifactId>
             <version>11.2.0.3</version>
+            <scope>provided</scope>
+        </dependency>-->
+        <dependency>
+            <groupId>com.oracle.database.jdbc</groupId>
+            <artifactId>ojdbc8</artifactId>
+            <version>21.5.0.0</version>
         </dependency>
 
     </dependencies>

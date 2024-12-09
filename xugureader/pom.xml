@@ -44,7 +44,7 @@
             <artifactId>xugu-jdbc</artifactId>
             <version>12.0.0</version>
             <scope>system</scope>
-            <systemPath>${basedir}/src/main/libs/xugu-jdbc-12.0.0.jar</systemPath>
+            <systemPath>${basedir}/src/main/resources/libs/xugu-jdbc-12.3.2.jar</systemPath>
         </dependency>
 
 
