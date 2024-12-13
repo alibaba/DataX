@@ -25,10 +25,9 @@ public enum DataBaseType {
     Oscar("oscar", "com.oscar.Driver"),
     OceanBase("oceanbase", "com.alipay.oceanbase.jdbc.Driver"),
     StarRocks("starrocks", "com.mysql.jdbc.Driver"),
-    Sybase("sybase", "com.sybase.jdbc4.jdbc.SybDriver"),
-    GaussDB("gaussdb", "org.opengauss.Driver"),
     Databend("databend", "com.databend.jdbc.DatabendDriver"),
-    Doris("doris","com.mysql.jdbc.Driver");
+    Qcubic("qcubic","Qcubic.jdbc.driver.QcubicDriver"),
+    QcubicShard("qcubicShard","QcubicShard.jdbc.driver.QcubicDriver");
 
     private String typeName;
     private String driverClassName;
@@ -74,9 +73,9 @@ public enum DataBaseType {
                 break;
             case StarRocks:
                 break;
-            case GaussDB:
+            case Qcubic:
                 break;
-            case Doris:
+            case QcubicShard:
                 break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type.");
@@ -139,9 +138,9 @@ public enum DataBaseType {
                     result = jdbc + "?" + suffix;
                 }
                 break;
-            case Sybase:
+            case Qcubic:
                 break;
-            case GaussDB:
+            case QcubicShard:
                 break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type.");
@@ -170,7 +169,9 @@ public enum DataBaseType {
             case KingbaseES:
             case Oscar:
                 break;
-            case GaussDB:
+            case Qcubic:
+                break;
+            case QcubicShard:
                 break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type.");
@@ -197,7 +198,9 @@ public enum DataBaseType {
             case KingbaseES:
             case Oscar:
                 break;
-            case GaussDB:
+            case Qcubic:
+                break;
+            case QcubicShard:
                 break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type");
@@ -225,7 +228,9 @@ public enum DataBaseType {
                 break;
             case Oscar:
                 break;
-            case GaussDB:
+            case Qcubic:
+                break;
+            case QcubicShard:
                 break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type");

@@ -87,7 +87,4 @@ public class Key {
 	public static final String TAR_FILE_FILTER_PATTERN = "tarFileFilterPattern";
 	public static final String ENABLE_INNER_SPLIT = "enableInnerSplit";
 
-    public static final String HIVE_PARTION_COLUMN = "hivePartitionColumn";
-
-
 }
