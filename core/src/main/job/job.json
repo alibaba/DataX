@@ -2,10 +2,11 @@
     "job": {
         "setting": {
             "speed": {
-                "channel": 2
+                "channel":1
             },
             "errorLimit": {
-                "record": 0
+                "record": 0,
+                "percentage": 0.02
             }
         },
         "content": [
@@ -13,17 +14,17 @@
                 "reader": {
                     "name": "streamreader",
                     "parameter": {
-                        "column": [
+                        "column" : [
                             {
                                 "value": "DataX",
                                 "type": "string"
                             },
                             {
-                                "value": 1724154616370,
+                                "value": 19890604,
                                 "type": "long"
                             },
                             {
-                                "value": "2024-01-01 00:00:00",
+                                "value": "1989-06-04 00:00:00",
                                 "type": "date"
                             },
                             {
@@ -31,11 +32,11 @@
                                 "type": "bool"
                             },
                             {
-                                "value": "TestRawData",
+                                "value": "test",
                                 "type": "bytes"
                             }
                         ],
-                        "sliceRecordCount": 100
+                        "sliceRecordCount": 100000
                     }
                 },
                 "writer": {
