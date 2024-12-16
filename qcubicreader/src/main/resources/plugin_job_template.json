@@ -1,0 +1,13 @@
+{
+    "name": "qcubicreader",
+    "parameter": {
+        "username": "",
+        "password": "",
+        "connection": [
+            {
+                "jdbcUrl": [],
+                "table": []
+            }
+        ]
+    }
+}

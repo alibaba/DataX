@@ -40,13 +40,6 @@
             <outputDirectory>datax</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>obhbasereader/target/datax/</directory>
-            <includes>
-                <include>**/*.*</include>
-            </includes>
-            <outputDirectory>datax</outputDirectory>
-        </fileSet>
-        <fileSet>
             <directory>drdsreader/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
@@ -117,13 +110,13 @@
             </includes>
             <outputDirectory>datax</outputDirectory>
         </fileSet>
-        <fileSet>
-            <directory>ossreader/target/datax/</directory>
-            <includes>
-                <include>**/*.*</include>
-            </includes>
-            <outputDirectory>datax</outputDirectory>
-        </fileSet>
+<!--        <fileSet>-->
+<!--            <directory>ossreader/target/datax/</directory>-->
+<!--            <includes>-->
+<!--                <include>**/*.*</include>-->
+<!--            </includes>-->
+<!--            <outputDirectory>datax</outputDirectory>-->
+<!--        </fileSet>-->
         <fileSet>
             <directory>mongodbreader/target/datax/</directory>
             <includes>
@@ -159,13 +152,13 @@
             </includes>
             <outputDirectory>datax</outputDirectory>
         </fileSet>
-        <fileSet>
-            <directory>hdfsreader/target/datax/</directory>
-            <includes>
-                <include>**/*.*</include>
-            </includes>
-            <outputDirectory>datax</outputDirectory>
-        </fileSet>
+<!--        <fileSet>-->
+<!--            <directory>hdfsreader/target/datax/</directory>-->
+<!--            <includes>-->
+<!--                <include>**/*.*</include>-->
+<!--            </includes>-->
+<!--            <outputDirectory>datax</outputDirectory>-->
+<!--        </fileSet>-->
         <fileSet>
             <directory>hbase11xreader/target/datax/</directory>
             <includes>
@@ -244,14 +237,7 @@
             <outputDirectory>datax</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>dorisreader/target/datax/</directory>
-            <includes>
-                <include>**/*.*</include>
-            </includes>
-            <outputDirectory>datax</outputDirectory>
-        </fileSet>
-        <fileSet>
-            <directory>sybasereader/target/datax/</directory>
+            <directory>qcubicreader/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
             </includes>
@@ -315,13 +301,13 @@
             </includes>
             <outputDirectory>datax</outputDirectory>
         </fileSet>
-        <fileSet>
-            <directory>osswriter/target/datax/</directory>
-            <includes>
-                <include>**/*.*</include>
-            </includes>
-            <outputDirectory>datax</outputDirectory>
-        </fileSet>
+<!--        <fileSet>-->
+<!--            <directory>osswriter/target/datax/</directory>-->
+<!--            <includes>-->
+<!--                <include>**/*.*</include>-->
+<!--            </includes>-->
+<!--            <outputDirectory>datax</outputDirectory>-->
+<!--        </fileSet>-->
         <fileSet>
             <directory>adswriter/target/datax/</directory>
             <includes>
@@ -392,13 +378,13 @@
             </includes>
             <outputDirectory>datax</outputDirectory>
         </fileSet>
-        <fileSet>
-            <directory>hdfswriter/target/datax/</directory>
-            <includes>
-                <include>**/*.*</include>
-            </includes>
-            <outputDirectory>datax</outputDirectory>
-        </fileSet>
+<!--        <fileSet>-->
+<!--            <directory>hdfswriter/target/datax/</directory>-->
+<!--            <includes>-->
+<!--                <include>**/*.*</include>-->
+<!--            </includes>-->
+<!--            <outputDirectory>datax</outputDirectory>-->
+<!--        </fileSet>-->
         <fileSet>
             <directory>hbase11xwriter/target/datax/</directory>
             <includes>
@@ -484,13 +470,6 @@
             <outputDirectory>datax</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>obhbasewriter/target/datax/</directory>
-            <includes>
-                <include>**/*.*</include>
-            </includes>
-            <outputDirectory>datax</outputDirectory>
-        </fileSet>
-        <fileSet>
             <directory>gdbwriter/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
@@ -539,12 +518,12 @@
             </includes>
             <outputDirectory>datax</outputDirectory>
         </fileSet>
-        <fileSet>
-            <directory>sybasewriter/target/datax/</directory>
-            <includes>
-                <include>**/*.*</include>
-            </includes>
-            <outputDirectory>datax</outputDirectory>
-        </fileSet>
+<!--        <fileSet>-->
+<!--            <directory>qcubicwriter/target/datax/</directory>-->
+<!--            <includes>-->
+<!--                <include>**/*.*</include>-->
+<!--            </includes>-->
+<!--            <outputDirectory>datax</outputDirectory>-->
+<!--        </fileSet>-->
     </fileSets>
 </assembly>

@@ -244,6 +244,7 @@ public class CommonRdbmsReader {
 
             try {
                 for (int i = 1; i <= columnNumber; i++) {
+
                     switch (metaData.getColumnType(i)) {
 
                     case Types.CHAR:

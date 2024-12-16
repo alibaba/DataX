@@ -12,7 +12,6 @@ import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
 import com.alibaba.datax.plugin.rdbms.util.RdbmsException;
 import com.alibaba.datax.plugin.rdbms.writer.util.OriginalConfPretreatmentUtil;
 import com.alibaba.datax.plugin.rdbms.writer.util.WriterUtil;
-import java.util.concurrent.atomic.AtomicLong;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
@@ -200,9 +199,6 @@ public class CommonRdbmsWriter {
         protected boolean emptyAsNull;
         protected Triple<List<String>, List<Integer>, List<String>> resultSetMetaData;
 
-        private int dumpRecordLimit = Constant.DEFAULT_DUMP_RECORD_LIMIT;
-        private AtomicLong dumpRecordCount = new AtomicLong(0);
-
         public Task(DataBaseType dataBaseType) {
             this.dataBaseType = dataBaseType;
         }
@@ -213,7 +209,7 @@ public class CommonRdbmsWriter {
             this.jdbcUrl = writerSliceConfig.getString(Key.JDBC_URL);
 
             //ob10的处理
-            if (this.jdbcUrl.startsWith(Constant.OB10_SPLIT_STRING)) {
+            if (this.jdbcUrl.startsWith(Constant.OB10_SPLIT_STRING) && this.dataBaseType == DataBaseType.MySql) {
                 String[] ss = this.jdbcUrl.split(Constant.OB10_SPLIT_STRING_PATTERN);
                 if (ss.length != 3) {
                     throw DataXException
@@ -372,11 +368,7 @@ public class CommonRdbmsWriter {
             }
         }
 
-        public boolean needToDumpRecord() {
-            return dumpRecordCount.incrementAndGet() <= dumpRecordLimit;
-        }
-
-        public void doOneInsert(Connection connection, List<Record> buffer) {
+        protected void doOneInsert(Connection connection, List<Record> buffer) {
             PreparedStatement preparedStatement = null;
             try {
                 connection.setAutoCommit(true);
@@ -389,10 +381,7 @@ public class CommonRdbmsWriter {
                                 preparedStatement, record);
                         preparedStatement.execute();
                     } catch (SQLException e) {
-                        if (needToDumpRecord()) {
-                            LOG.warn("ERROR : record {}", record);
-                            LOG.warn("Insert fatal error SqlState ={}, errorCode = {}, {}", e.getSQLState(), e.getErrorCode(), e);
-                        }
+                        LOG.debug(e.toString());
 
                         this.taskPluginCollector.collectDirtyRecord(record, e);
                     } finally {
@@ -423,6 +412,7 @@ public class CommonRdbmsWriter {
         protected PreparedStatement fillPreparedStatementColumnType(PreparedStatement preparedStatement, int columnIndex,
                                                                     int columnSqltype, String typeName, Column column) throws SQLException {
             java.util.Date utilDate;
+
             switch (columnSqltype) {
                 case Types.CHAR:
                 case Types.NCHAR:
