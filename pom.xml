@@ -55,7 +55,6 @@
         <module>oraclereader</module>
         <module>cassandrareader</module>
         <module>oceanbasev10reader</module>
-        <module>obhbasereader</module>
         <module>rdbmsreader</module>
 
         <module>odpsreader</module>
@@ -66,12 +65,12 @@
         <module>hbase11xsqlreader</module>
         <module>hbase20xsqlreader</module>
 
-        <module>ossreader</module>
-        <module>hdfsreader</module>
+<!--        <module>ossreader</module>-->
+<!--        <module>hdfsreader</module>-->
         <module>ftpreader</module>
         <module>txtfilereader</module>
         <module>streamreader</module>
-        <module>clickhousereader</module>
+<!--        <module>clickhousereader</module>-->
 
         <module>mongodbreader</module>
         <module>tdenginereader</module>
@@ -81,8 +80,9 @@
         <module>loghubreader</module>
         <module>datahubreader</module>
         <module>starrocksreader</module>
-        <module>sybasereader</module>
-        <module>dorisreader</module>
+
+        <module>qcubicreader</module>
+
         <!-- writer -->
         <module>mysqlwriter</module>
         <module>starrockswriter</module>
@@ -94,14 +94,13 @@
         <module>kingbaseeswriter</module>
         <module>adswriter</module>
         <module>oceanbasev10writer</module>
-        <module>obhbasewriter</module>
         <module>adbpgwriter</module>
         <module>hologresjdbcwriter</module>
         <module>rdbmswriter</module>
 
 
         <module>odpswriter</module>
-        <module>osswriter</module>
+<!--        <module>osswriter</module>-->
         <module>otswriter</module>
         <module>hbase11xwriter</module>
         <module>hbase094xwriter</module>
@@ -109,7 +108,7 @@
         <module>hbase20xsqlwriter</module>
         <module>kuduwriter</module>
         <module>ftpwriter</module>
-        <module>hdfswriter</module>
+<!--        <module>hdfswriter</module>-->
         <module>txtfilewriter</module>
         <module>streamwriter</module>
 
@@ -123,19 +122,18 @@
         <module>loghubwriter</module>
         <module>datahubwriter</module>
         <module>cassandrawriter</module>
-        <module>clickhousewriter</module>
+<!--        <module>clickhousewriter</module>-->
         <module>doriswriter</module>
         <module>selectdbwriter</module>
         <module>adbmysqlwriter</module>
-        <module>sybasewriter</module>
         <module>neo4jwriter</module>
+
+<!--        <module>qcubicwriter</module>-->
+
         <!-- common support module -->
         <module>plugin-rdbms-util</module>
         <module>plugin-unstructured-storage-util</module>
-        <module>gaussdbreader</module>
-        <module>gaussdbwriter</module>
-        <module>datax-example</module>
-
+       
     </modules>
 
     <dependencyManagement>
