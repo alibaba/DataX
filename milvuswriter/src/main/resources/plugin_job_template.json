@@ -1,15 +1,12 @@
 {
-    "name": "mongodbwriter",
+    "name": "milvuswriter",
     "parameter": {
-        "address": [],
-        "userName": "",
-        "userPassword": "",
-        "dbName": "",
-        "collectionName": "",
+        "endpoint": "",
+        "username": "",
+        "password": "",
+        "database": "",
+        "collection": "",
         "column": [],
-        "upsertInfo": {
-            "isUpsert": "",
-            "upsertKey": ""
-        }
+        "enableDynamicSchema": ""
     }
 }

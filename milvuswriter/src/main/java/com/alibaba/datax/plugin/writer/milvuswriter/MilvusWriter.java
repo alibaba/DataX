@@ -1,29 +1,49 @@
 package com.alibaba.datax.plugin.writer.milvuswriter;
 
 import com.alibaba.datax.common.element.Record;
+import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordReceiver;
 import com.alibaba.datax.common.spi.Writer;
 import com.alibaba.datax.common.util.Configuration;
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONArray;
-import com.google.gson.JsonObject;
-import io.milvus.v2.client.ConnectConfig;
-import io.milvus.v2.client.MilvusClientV2;
-import io.milvus.v2.common.DataType;
-import io.milvus.v2.service.collection.request.AddFieldReq;
-import io.milvus.v2.service.collection.request.CreateCollectionReq;
-import io.milvus.v2.service.collection.request.HasCollectionReq;
-import io.milvus.v2.service.vector.request.UpsertReq;
+
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Slf4j
 public class MilvusWriter extends Writer {
     public static class Job extends Writer.Job {
         private Configuration originalConfig = null;
+
+        @Override
+        public void init() {
+            this.originalConfig = super.getPluginJobConf();
+            originalConfig.getNecessaryValue(KeyConstant.ENDPOINT, MilvusWriterErrorCode.REQUIRED_VALUE);
+            originalConfig.getNecessaryValue(KeyConstant.COLUMN, MilvusWriterErrorCode.REQUIRED_VALUE);
+            originalConfig.getNecessaryValue(KeyConstant.COLLECTION, MilvusWriterErrorCode.REQUIRED_VALUE);
+        }
+
+        @Override
+        public void prepare() {
+            //collection create process
+            MilvusClient milvusClient = new MilvusClient(originalConfig);
+            try {
+                MilvusCreateCollection milvusCreateCollection = new MilvusCreateCollection(originalConfig);
+                milvusCreateCollection.createCollectionByMode(milvusClient);
+                String collection = originalConfig.getString(KeyConstant.COLLECTION);
+                String partition = originalConfig.getString(KeyConstant.PARTITION);
+                if (partition != null && !milvusClient.hasPartition(collection, partition)) {
+                    log.info("collection[{}] not contain partition[{}],try to create partition", collection, partition);
+                    milvusClient.createPartition(collection, partition);
+                }
+            } catch (Exception e) {
+                throw DataXException.asDataXException(MilvusWriterErrorCode.MILVUS_COLLECTION, e.getMessage(), e);
+            } finally {
+                milvusClient.close();
+            }
+        }
+
         /**
          * 切分任务。<br>
          *
@@ -31,16 +51,11 @@ public class MilvusWriter extends Writer {
          */
         @Override
         public List<Configuration> split(int mandatoryNumber) {
-            List<Configuration> configList = new ArrayList<Configuration>();
-            for(int i = 0; i < mandatoryNumber; i++) {
+            List<Configuration> configList = new ArrayList<>();
+            for (int i = 0; i < mandatoryNumber; i++) {
                 configList.add(this.originalConfig.clone());
             }
             return configList;
-        }
-
-        @Override
-        public void init() {
-            this.originalConfig = super.getPluginJobConf();
         }
 
         @Override
@@ -48,83 +63,48 @@ public class MilvusWriter extends Writer {
 
         }
     }
+
     public static class Task extends Writer.Task {
 
-        private MilvusClientV2 milvusClientV2;
-
-        private MilvusSinkConverter milvusSinkConverter;
         private MilvusBufferWriter milvusBufferWriter;
-
-        private String collection = null;
-        private JSONArray milvusColumnMeta;
-
-        private String schemaCreateMode = "createWhenTableNotExit";
-
-        @Override
-        public void startWrite(RecordReceiver lineReceiver) {
-            Record record = lineReceiver.getFromReader();
-            JsonObject data = milvusSinkConverter.convertByType(milvusColumnMeta, record);
-            milvusBufferWriter.write(data);
-            if(milvusBufferWriter.needCommit()){
-                log.info("Reached buffer limit, Committing data");
-                milvusBufferWriter.commit();
-                log.info("Data committed");
-            }
-        }
+        MilvusClient milvusClient;
 
         @Override
         public void init() {
             log.info("Initializing Milvus writer");
             // get configuration
             Configuration writerSliceConfig = this.getPluginJobConf();
-            this.collection = writerSliceConfig.getString(KeyConstant.COLLECTION);
-            this.milvusColumnMeta = JSON.parseArray(writerSliceConfig.getString(KeyConstant.COLUMN));
-            this.schemaCreateMode = writerSliceConfig.getString(KeyConstant.schemaCreateMode) == null ?
-                    "createWhenTableNotExit" : writerSliceConfig.getString(KeyConstant.schemaCreateMode);
-            int batchSize = writerSliceConfig.getInt(KeyConstant.BATCH_SIZE, 100);
-            log.info("Collection:{}", this.collection);
-            // connect to milvus
-            ConnectConfig connectConfig = ConnectConfig.builder()
-                    .uri(writerSliceConfig.getString(KeyConstant.URI))
-                    .token(writerSliceConfig.getString(KeyConstant.TOKEN))
-                    .build();
-            if(writerSliceConfig.getString(KeyConstant.DATABASE) == null) {
-                log.warn("Database is set, using database{}", writerSliceConfig.getString(KeyConstant.DATABASE));
-                connectConfig.setDbName(writerSliceConfig.getString(KeyConstant.DATABASE));
-            }
-            this.milvusClientV2 = new MilvusClientV2(connectConfig);
-            this.milvusSinkConverter = new MilvusSinkConverter();
-            this.milvusBufferWriter = new MilvusBufferWriter(milvusClientV2, collection, batchSize);
+            this.milvusClient = new MilvusClient(writerSliceConfig);
+            this.milvusBufferWriter = new MilvusBufferWriter(this.milvusClient, writerSliceConfig);
             log.info("Milvus writer initialized");
         }
+
+        @Override
+        public void startWrite(RecordReceiver lineReceiver) {
+            Record record = null;
+            while ((record = lineReceiver.getFromReader()) != null) {
+                milvusBufferWriter.add(record, this.getTaskPluginCollector());
+                if (milvusBufferWriter.needCommit()) {
+                    log.info("begin committing data size[{}]", milvusBufferWriter.getDataCacheSize());
+                    milvusBufferWriter.commit();
+                }
+            }
+            if (milvusBufferWriter.getDataCacheSize() > 0) {
+                log.info("begin committing data size[{}]", milvusBufferWriter.getDataCacheSize());
+                milvusBufferWriter.commit();
+            }
+        }
+
         @Override
         public void prepare() {
             super.prepare();
-            Boolean hasCollection = milvusClientV2.hasCollection(HasCollectionReq.builder().collectionName(collection).build());
-            if (!hasCollection) {
-                log.info("Collection not exist");
-                if (schemaCreateMode.equals("createWhenTableNotExit")) {
-                    // create collection
-                    log.info("Creating collection:{}", this.collection);
-                    CreateCollectionReq.CollectionSchema collectionSchema = milvusSinkConverter.prepareCollectionSchema(milvusColumnMeta);
-
-                    CreateCollectionReq createCollectionReq = CreateCollectionReq.builder()
-                            .collectionName(collection)
-                            .collectionSchema(collectionSchema)
-                            .build();
-                    milvusClientV2.createCollection(createCollectionReq);
-                } else if (schemaCreateMode.equals("exception")) {
-                    log.error("Collection not exist, throw exception");
-                    throw new RuntimeException("Collection not exist");
-                }
-            }
         }
 
         @Override
         public void destroy() {
-            log.info("Closing Milvus writer, committing data and closing connection");
-            this.milvusBufferWriter.commit();
-            this.milvusClientV2.close();
+            if (this.milvusClient != null) {
+                this.milvusClient.close();
+            }
         }
     }
 }
