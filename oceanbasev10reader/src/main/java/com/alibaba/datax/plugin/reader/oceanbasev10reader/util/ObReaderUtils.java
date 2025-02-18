@@ -731,7 +731,8 @@ public class ObReaderUtils {
             } else if (c instanceof DateColumn) {
                 ps.setTimestamp(i + 1, new Timestamp(((DateColumn) c).asDate().getTime()));
             } else if (c instanceof DoubleColumn) {
-                ps.setDouble(i + 1, ((DoubleColumn) c).asDouble());
+                // If the byte length is larger than the size that the double can bear, use BigDecimal to ensure accuracy
+                ps.setBigDecimal(i + 1, ((DoubleColumn) c).asBigDecimal());
             } else if (c instanceof LongColumn) {
                 ps.setLong(i + 1, ((LongColumn) c).asLong());
             } else if (c instanceof StringColumn) {
