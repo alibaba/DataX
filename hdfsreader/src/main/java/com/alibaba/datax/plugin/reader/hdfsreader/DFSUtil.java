@@ -471,6 +471,14 @@ public class DFSUtil {
                         case STRING:
                             columnGenerated = new StringColumn(columnValue);
                             break;
+                        case BINARY:
+                            String [] array = columnValue.split("\\s");
+                            byte[] bytes = new byte[array.length];
+                            for (int i = 0; i<array.length;i++){
+                                bytes[i] = (byte) Integer.parseInt(array[i], 16);
+                            }
+                            columnGenerated = new BytesColumn(bytes);
+                            break;
                         case LONG:
                             try {
                                 columnGenerated = new LongColumn(columnValue);
@@ -583,7 +591,7 @@ public class DFSUtil {
     }
 
     private enum Type {
-        STRING, LONG, BOOLEAN, DOUBLE, DATE,
+        STRING, LONG, BOOLEAN, DOUBLE, DATE, BINARY
     }
 
     public boolean checkHdfsFileType(String filepath, String specifiedFileType) {
