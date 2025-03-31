@@ -228,6 +228,12 @@ public class HdfsWriter extends Writer {
                 String endFullFileName = null;
 
                 fileSuffix = UUID.randomUUID().toString().replace('-', '_');
+                if (fileType.equalsIgnoreCase("PARQUET")) {
+                    if (StringUtils.isNotBlank(this.compress)) {
+                        fileSuffix += "." + this.compress.toLowerCase();
+                    }
+                    fileSuffix += ".parquet";
+                }
 
                 fullFileName = String.format("%s%s%s__%s", defaultFS, storePath, filePrefix, fileSuffix);
                 endFullFileName = String.format("%s%s%s__%s", defaultFS, endStorePath, filePrefix, fileSuffix);
