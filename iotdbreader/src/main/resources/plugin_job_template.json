@@ -1,0 +1,25 @@
+{
+  "name": "iotdbreader",
+  "parameter": {
+    "username": "root",
+    "password": "root",
+    "host": "192.168.150.100",
+    "port": 6667,
+    "fetchSize": 10000,
+    "version": "V_1_0",
+    "##": "时间列插入DataX的Record中的位置，默认第0列",
+    "timeColumnPosition": 0,
+    "##":"写了querySqls 默认下面全部参数失效，适合开发人员, 多个session并行执行多条SQL语句",
+    "querySqls": [
+      "select * from root.cgn.device",
+      "select * from root.cgn.device",
+      "select * from root.cgn.device",
+      "select * from root.cgn.device",
+      "select * from root.cgn.device"
+    ],
+    "device": "root.cgn.device",
+    "##":"时间列不属于测点",
+    "measurements": ["A5STD","L2RIS014MD","L2VVP003SM5","D1RIS001MD","D1KRT003EU"],
+    "where": "time > 2023-03-07 12:00:00 and time < 2024-03-07 19:00:00"
+  }
+}
