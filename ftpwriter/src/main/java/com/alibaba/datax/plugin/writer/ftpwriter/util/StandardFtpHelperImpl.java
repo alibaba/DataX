@@ -7,6 +7,7 @@ import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
@@ -181,8 +182,7 @@ public class StandardFtpHelperImpl implements IFtpHelper {
     public OutputStream getOutputStream(String filePath) {
         try {
             this.printWorkingDirectory();
-            String parentDir = filePath.substring(0,
-                    StringUtils.lastIndexOf(filePath, IOUtils.DIR_SEPARATOR));
+            String parentDir = FilenameUtils.getFullPathNoEndSeparator(filePath);
             this.ftpClient.changeWorkingDirectory(parentDir);
             this.printWorkingDirectory();
             OutputStream writeOutputStream = this.ftpClient
