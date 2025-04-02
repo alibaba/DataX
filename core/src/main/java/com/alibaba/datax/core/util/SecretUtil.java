@@ -437,4 +437,13 @@ public class SecretUtil {
         }
         return versionKeyMap;
     }
+
+    public static void main(String[] args) {
+        String key="1qaz2wsx";
+        String passwd="BrPN#dEzqm";
+        String encrypt= SecretUtil.encrypt3DES(passwd,key);
+        System.out.println("encrypt = " + encrypt);
+        System.out.println(SecretUtil.decrypt3DES(encrypt,key));
+
+    }
 }
