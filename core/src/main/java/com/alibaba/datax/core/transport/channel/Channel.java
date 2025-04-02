@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * Created by jingxing on 14-8-25.
@@ -141,14 +142,25 @@ public abstract class Channel {
 
     public Record pull() {
         Record record = this.doPull();
-        this.statPull(1L, record.getByteSize());
+        if (!(record instanceof TerminateRecord)) {
+            this.statPull(1L, record.getByteSize());
+        }
         return record;
     }
 
     public void pullAll(final Collection<Record> rs) {
         Validate.notNull(rs);
         this.doPullAll(rs);
-        this.statPull(rs.size(), this.getByteSize(rs));
+        LongAdder terminateRecords = new LongAdder();
+        LongAdder terminateBytes = new LongAdder();
+        rs.forEach( record -> {
+            if (record instanceof TerminateRecord) {
+                terminateRecords.increment();
+                terminateBytes.add(record.getByteSize());
+            }
+        } );
+        this.statPull(rs.size() - terminateRecords.intValue(),
+                this.getByteSize(rs) - terminateBytes.intValue());
     }
 
     protected abstract void doPush(Record r);
