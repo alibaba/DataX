@@ -1,0 +1,17 @@
+{
+    "name": "mysqlreader4graph",
+    "parameter": {
+        "username": "",
+        "password": "",
+        "phase": "",
+        "schemaUri": "",
+        "column": [],
+        "connection": [
+            {
+            "jdbcUrl": [],
+            "table": []
+            }
+        ],
+        "where": ""
+    }
+}
