@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-public class InsertTask implements Runnable {
+public class InsertTask extends AbstractInsertTask implements Runnable {
 
     private static final Logger LOG = LoggerFactory.getLogger(InsertTask.class);
 
@@ -49,6 +49,7 @@ public class InsertTask implements Runnable {
             Configuration config,
             ServerConnectInfo connectInfo,
             String writeRecordSql) {
+        super(taskId, recordsQueue, config, connectInfo);
         this.taskId = taskId;
         this.queue = recordsQueue;
         this.connInfo = connectInfo;
@@ -62,11 +63,15 @@ public class InsertTask implements Runnable {
         connHolder.initConnection();
     }
 
-    void setWriterTask(ConcurrentTableWriterTask writerTask) {
+    protected void initConnHolder() {
+
+    }
+
+    public void setWriterTask(ConcurrentTableWriterTask writerTask) {
         this.writerTask = writerTask;
     }
 
-    void setWriter(ConcurrentTableWriter writer) {
+    public void setWriter(ConcurrentTableWriter writer) {
         this.writer = writer;
     }
 
@@ -107,6 +112,10 @@ public class InsertTask implements Runnable {
             }
         }
         LOG.debug("Thread exist...");
+    }
+
+    protected void write(List<Record> records) {
+
     }
 
     public void destroy() {
