@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,8 +30,8 @@ public class WriterThreadPool {
 		executorService.execute(task);
 	}
 	
-	public static synchronized void executeBatch(List<InsertTask> tasks) {
-		for (InsertTask task : tasks) {
+	public static synchronized void executeBatch(List<AbstractInsertTask> tasks) {
+		for (AbstractInsertTask task : tasks) {
 			executorService.execute(task);
 		}
 	}
