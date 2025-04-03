@@ -343,7 +343,9 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
                 print();
                 checkMemStore();
             }
-            concurrentWriter.doCommit();
+            if (directPath){
+                concurrentWriter.doCommit();
+            }
         } catch (InterruptedException e) {
             LOG.warn("Concurrent table writer wait task finish interrupt");
         } finally {
