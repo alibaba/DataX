@@ -21,7 +21,7 @@
         <commons-lang3.version>3.3.2</commons-lang3.version>
 
         <!-- http -->
-        <httpclient.version>4.5</httpclient.version>
+        <httpclient.version>4.5.13</httpclient.version>
         <commons-io.version>2.4</commons-io.version>
 
         <!-- opentsdb -->
