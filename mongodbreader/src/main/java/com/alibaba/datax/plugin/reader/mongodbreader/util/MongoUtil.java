@@ -11,6 +11,7 @@ import com.alibaba.datax.plugin.reader.mongodbreader.KeyConstant;
 import com.alibaba.datax.plugin.reader.mongodbreader.MongoDBReaderErrorCode;
 
 import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 
@@ -86,5 +87,18 @@ public class MongoUtil {
             }
         }
         return addressList;
+    }
+
+    public static MongoClient initMongoClientByURL(String mongoUrl) {
+
+        try {
+            return new MongoClient(new MongoClientURI(mongoUrl));
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+            throw DataXException.asDataXException(MongoDBReaderErrorCode.ILLEGAL_VALUE, "不合法参数");
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw DataXException.asDataXException(MongoDBReaderErrorCode.UNEXCEPT_EXCEPTION, "未知异常");
+        }
     }
 }
