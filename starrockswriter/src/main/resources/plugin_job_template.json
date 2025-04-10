@@ -1,5 +1,5 @@
 {
-    "name": "starrockswriter",
+    "name": "dualstarrockswriter",
     "parameter": {
         "username": "",
         "password": "",
@@ -8,6 +8,11 @@
         "postSql": [], 
         "loadUrl": [],
         "connection": [
+            {
+                "jdbcUrl": "",
+                "selectedDatabase": "",
+                "table": []
+            },
             {
                 "jdbcUrl": "",
                 "selectedDatabase": "",
