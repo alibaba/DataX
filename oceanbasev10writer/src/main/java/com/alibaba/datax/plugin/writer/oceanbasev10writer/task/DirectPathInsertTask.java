@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Queue;
 
+import com.alibaba.datax.common.element.Column;
+import com.alibaba.datax.common.element.Column.Type;
 import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.plugin.writer.oceanbasev10writer.common.Table;
@@ -44,7 +46,13 @@ public class DirectPathInsertTask extends AbstractInsertTask {
                 Object[] values = new Object[columnNumber];
                 for (Record record : records) {
                     for (int i = 0; i < columnNumber; i++) {
-                        values[i] = record.getColumn(i).getRawData();
+                        Column column = record.getColumn(i);
+                        //处理一下时间类型
+                        if (column.getType().equals(Type.DATE)) {
+                            values[i] = record.getColumn(i).asString();
+                        } else {
+                            values[i] = record.getColumn(i).getRawData();
+                        }
                     }
                     stmt.addBatch(values);
                 }
