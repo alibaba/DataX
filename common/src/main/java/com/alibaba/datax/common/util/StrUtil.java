@@ -58,9 +58,14 @@ public class StrUtil {
         Matcher matcher = VARIABLE_PATTERN.matcher(param);
         while (matcher.find()) {
             String variable = matcher.group(2);
-            String value = System.getProperty(variable);
-            if (StringUtils.isBlank(value)) {
-                value = matcher.group();
+            String value = matcher.group();
+            String valueFromEnv = System.getenv(variable);
+            String valueFromProp = System.getProperty(variable);
+            if (StringUtils.isNotBlank(valueFromEnv)) {
+                value = valueFromEnv;
+            }
+            if (StringUtils.isNotBlank(valueFromProp)) {
+                value = valueFromProp;
             }
             mapping.put(matcher.group(), value);
         }
