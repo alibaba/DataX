@@ -1,0 +1,9 @@
+{
+    "name": "iotdbwriter",
+    "class": "com.alibaba.datax.plugin.writer.iotdbwriter.IoTDBWriter",
+    "description": {
+        "useScene": "data migration to iotdb",
+        "mechanism": "use iotdb-java-session to write data."
+    },
+    "developer": "timecho.com"
+}
