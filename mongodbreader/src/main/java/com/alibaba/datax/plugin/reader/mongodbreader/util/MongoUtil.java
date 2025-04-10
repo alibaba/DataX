@@ -1,6 +1,11 @@
 package com.alibaba.datax.plugin.reader.mongodbreader.util;
 
+import java.io.FileInputStream;
 import java.net.UnknownHostException;
+import java.security.KeyStore;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -11,8 +16,11 @@ import com.alibaba.datax.plugin.reader.mongodbreader.KeyConstant;
 import com.alibaba.datax.plugin.reader.mongodbreader.MongoDBReaderErrorCode;
 
 import com.mongodb.MongoClient;
+import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
+
+import javax.net.ssl.*;
 
 /**
  * Created by jianying.wcj on 2015/3/17 0017.
@@ -55,6 +63,143 @@ public class MongoUtil {
             throw DataXException.asDataXException(MongoDBReaderErrorCode.UNEXCEPT_EXCEPTION,"未知异常");
         }
     }
+
+    /**
+     * two-way 双向SSL验证, DO NOT Use System.setProperty to set javax.net.ssl.trustStore, javax.net.ssl.keyStore
+     * @param conf
+     * @param userName
+     * @param password
+     * @param database
+     * @param trustStorePath 信赖的证书库
+     * @param trustStorePwd
+     * @param keyStorePath client端keystore,用于server端验证client身份
+     * @param keyStorePwd
+     * @return
+     */
+    public static MongoClient initCredentialSSLMongoClient(Configuration conf,String userName,String password,
+                                                           String database,String trustStorePath,String trustStorePwd,String keyStorePath,String keyStorePwd) {
+        List<Object> addressList = conf.getList(KeyConstant.MONGO_ADDRESS);
+        if(!isHostPortPattern(addressList)) {
+            throw DataXException.asDataXException(MongoDBReaderErrorCode.ILLEGAL_VALUE,"不合法参数");
+        }
+        try {
+            SSLContext sslContext = SSLContext.getInstance("SSL");
+            // set up a KeyManager for validation of server side if required
+            KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType()); // usually is jks
+            FileInputStream myKeyStore = new FileInputStream(keyStorePath);
+            keyStore.load(myKeyStore,keyStorePwd.toCharArray());
+            myKeyStore.close();
+            KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory
+              .getDefaultAlgorithm()); // default SunX509
+            kmf.init(keyStore, keyStorePwd.toCharArray());
+            // set up a TrustManager that trusts everything
+            KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+            TrustManagerFactory tmf = TrustManagerFactory
+              .getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            FileInputStream myTrustStore = new FileInputStream(trustStorePath);
+            trustStore.load(myTrustStore,trustStorePwd.toCharArray());
+            myTrustStore.close();
+            tmf.init(trustStore);
+            sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), new SecureRandom());
+            // set opts
+            MongoCredential credential = MongoCredential.createCredential(userName, database, password.toCharArray());
+            MongoClientOptions opts = MongoClientOptions.builder().
+              sslEnabled(true).socketFactory(sslContext.getSocketFactory()).sslInvalidHostNameAllowed(true).build();
+            return new MongoClient(parseServerAddress(addressList), Arrays.asList(credential), opts);
+        } catch (UnknownHostException e) {
+            throw DataXException.asDataXException(MongoDBReaderErrorCode.ILLEGAL_ADDRESS,"不合法的地址");
+        } catch (NumberFormatException e) {
+            throw DataXException.asDataXException(MongoDBReaderErrorCode.ILLEGAL_VALUE,"不合法参数");
+        } catch (Exception e) {
+            throw DataXException.asDataXException(MongoDBReaderErrorCode.UNEXCEPT_EXCEPTION,"未知异常");
+        }
+    }
+
+    /**
+     * client-authentication 单向验证，始终相信服务端
+     * @param conf
+     * @param userName
+     * @param password
+     * @param database
+     * @param keyStorePath
+     * @param keyStorePwd
+     * @return
+     */
+    public static MongoClient initCredentialClientAuthenticationMongoClient(Configuration conf,String userName,
+                                                                            String password,String database,String keyStorePath,String keyStorePwd) {
+        List<Object> addressList = conf.getList(KeyConstant.MONGO_ADDRESS);
+        if(!isHostPortPattern(addressList)) {
+            throw DataXException.asDataXException(MongoDBReaderErrorCode.ILLEGAL_VALUE,"不合法参数");
+        }
+        try {
+            SSLContext sslContext = SSLContext.getInstance("SSL");
+            // set up a KeyManager for validation of server side if required
+            KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType()); // usually is jks
+            FileInputStream myKeyStore = new FileInputStream(keyStorePath);
+            keyStore.load(myKeyStore,keyStorePwd.toCharArray());
+            myKeyStore.close();
+            KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory
+              .getDefaultAlgorithm()); // default SunX509
+            kmf.init(keyStore, keyStorePwd.toCharArray());
+            // set up a TrustManager that trusts everything
+            sslContext.init(kmf.getKeyManagers(), new TrustManager[] { new X509TrustManager() {
+                @Override
+                public void checkClientTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {}
+                @Override
+                public void checkServerTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {}
+                @Override
+                public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
+            }}, new SecureRandom());
+            MongoCredential credential = MongoCredential.createCredential(userName, database, password.toCharArray());
+            MongoClientOptions opts = MongoClientOptions.builder().
+              sslEnabled(true).socketFactory(sslContext.getSocketFactory()).sslInvalidHostNameAllowed(true).build();
+            return new MongoClient(parseServerAddress(addressList), Arrays.asList(credential), opts);
+        } catch (UnknownHostException e) {
+            throw DataXException.asDataXException(MongoDBReaderErrorCode.ILLEGAL_ADDRESS,"不合法的地址");
+        } catch (NumberFormatException e) {
+            throw DataXException.asDataXException(MongoDBReaderErrorCode.ILLEGAL_VALUE,"不合法参数");
+        } catch (Exception e) {
+            throw DataXException.asDataXException(MongoDBReaderErrorCode.UNEXCEPT_EXCEPTION,"未知异常");
+        }
+    }
+
+    /**
+     * ssl通信，双向都不验证。不推荐。
+     * @param conf
+     * @param userName
+     * @param password
+     * @param database
+     * @return
+     */
+    public static MongoClient initCredentialNoAuthenticationMongoClient(Configuration conf,String userName,String password,
+                                                                        String database) {
+        List<Object> addressList = conf.getList(KeyConstant.MONGO_ADDRESS);
+        if(!isHostPortPattern(addressList)) {
+            throw DataXException.asDataXException(MongoDBReaderErrorCode.ILLEGAL_VALUE,"不合法参数");
+        }
+        try {
+            SSLContext sslContext = SSLContext.getInstance("SSL");
+            sslContext.init(null, new TrustManager[] { new X509TrustManager() {
+                @Override
+                public void checkClientTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {}
+                @Override
+                public void checkServerTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {}
+                @Override
+                public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
+            }}, new SecureRandom());
+            MongoCredential credential = MongoCredential.createCredential(userName, database, password.toCharArray());
+            MongoClientOptions opts = MongoClientOptions.builder().
+              sslEnabled(true).socketFactory(sslContext.getSocketFactory()).sslInvalidHostNameAllowed(true).build();
+            return new MongoClient(parseServerAddress(addressList), Arrays.asList(credential), opts);
+        } catch (UnknownHostException e) {
+            throw DataXException.asDataXException(MongoDBReaderErrorCode.ILLEGAL_ADDRESS,"不合法的地址");
+        } catch (NumberFormatException e) {
+            throw DataXException.asDataXException(MongoDBReaderErrorCode.ILLEGAL_VALUE,"不合法参数");
+        } catch (Exception e) {
+            throw DataXException.asDataXException(MongoDBReaderErrorCode.UNEXCEPT_EXCEPTION,"未知异常");
+        }
+    }
+
     /**
      * 判断地址类型是否符合要求
      * @param addressList
