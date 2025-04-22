@@ -1,0 +1,12 @@
+{
+    "name": "milvuswriter",
+    "parameter": {
+        "endpoint": "",
+        "username": "",
+        "password": "",
+        "database": "",
+        "collection": "",
+        "column": [],
+        "enableDynamicSchema": ""
+    }
+}

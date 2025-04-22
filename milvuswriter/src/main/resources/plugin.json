@@ -1,0 +1,6 @@
+{
+    "name": "milvuswriter",
+    "class": "com.alibaba.datax.plugin.writer.milvuswriter.MilvusWriter",
+    "description": "useScene: prod. mechanism: via milvusclient connect milvus write data concurrent.",
+    "developer": "nianliuu"
+}
