@@ -55,4 +55,7 @@ public final class Key {
     public final static String REUSE_CONN = "reuseConn";
 
     public final static String PARTITION_NAME = "partitionName";
+
+    //增加优化参数
+    public final static String NETWORK_TIMEOUT="networkTimeout";
 }
