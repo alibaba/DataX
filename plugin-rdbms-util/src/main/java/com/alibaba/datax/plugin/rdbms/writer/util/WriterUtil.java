@@ -108,7 +108,7 @@ public final class WriterUtil {
         }
     }
 
-    public static String getWriteTemplate(List<String> columnHolders, List<String> valueHolders, String writeMode, DataBaseType dataBaseType, boolean forceUseUpdate) {
+    public static String getWriteTemplate(List<String> columnHolders, List<String> valueHolders, String writeMode, DataBaseType dataBaseType, boolean forceUseUpdate, List<String> primaryColumns) {
         boolean isWriteModeLegal = writeMode.trim().toLowerCase().startsWith("insert")
                 || writeMode.trim().toLowerCase().startsWith("replace")
                 || writeMode.trim().toLowerCase().startsWith("update");
@@ -129,6 +129,23 @@ public final class WriterUtil {
                     .append(") VALUES(").append(StringUtils.join(valueHolders, ","))
                     .append(")")
                     .append(onDuplicateKeyUpdateString(columnHolders))
+                    .toString();
+        } else if (dataBaseType == DataBaseType.PostgreSQL && primaryColumns != null && !primaryColumns.isEmpty() && writeMode.trim().toLowerCase().startsWith("update")) {
+
+            List<String> columnAndValueHolder = new ArrayList<>();
+            for (int i = 0; i < columnHolders.size(); i++) {
+                String columnHolder = columnHolders.get(i);
+                String valueHolder = valueHolders.get(i);
+                columnAndValueHolder.add(columnHolder + "=" + valueHolder);
+            }
+            writeDataSqlTemplate = new StringBuilder()
+                    .append("INSERT INTO %s (").append(StringUtils.join(columnHolders, ","))
+                    .append(") VALUES(").append(StringUtils.join(valueHolders, ","))
+                    .append(")")
+                    .append(" ON CONFLICT (")
+                    .append(StringUtils.join(primaryColumns, ","))
+                    .append(" ) DO UPDATE SET ")
+                    .append(StringUtils.join(columnAndValueHolder, ","))
                     .toString();
         } else {
 
