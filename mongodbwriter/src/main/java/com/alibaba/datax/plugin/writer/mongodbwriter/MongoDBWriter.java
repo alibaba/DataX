@@ -66,11 +66,12 @@ public class MongoDBWriter extends Writer{
         private String password = null;
 
         private String database = null;
+        private String authDb = null;
         private String collection = null;
         private Integer batchSize = null;
         private JSONArray mongodbColumnMeta = null;
         private JSONObject writeMode = null;
-        private static int BATCH_SIZE = 1000;
+        private static final int BATCH_SIZE = 1000;
 
         @Override
         public void prepare() {
@@ -320,8 +321,11 @@ public class MongoDBWriter extends Writer{
             this.userName = writerSliceConfig.getString(KeyConstant.MONGO_USER_NAME);
             this.password = writerSliceConfig.getString(KeyConstant.MONGO_USER_PASSWORD);
             this.database = writerSliceConfig.getString(KeyConstant.MONGO_DB_NAME);
+            this.authDb = writerSliceConfig.getString(KeyConstant.MONGO_AUTHDB);
+            // 认证源
+            String authSource = Strings.isNullOrEmpty(authDb) ? database : authDb;
             if(!Strings.isNullOrEmpty(userName) && !Strings.isNullOrEmpty(password)) {
-                this.mongoClient = MongoUtil.initCredentialMongoClient(this.writerSliceConfig,userName,password,database);
+                this.mongoClient = MongoUtil.initCredentialMongoClient(this.writerSliceConfig,userName,password,authSource);
             } else {
                 this.mongoClient = MongoUtil.initMongoClient(this.writerSliceConfig);
             }
