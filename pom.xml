@@ -74,6 +74,7 @@
         <module>clickhousereader</module>
 
         <module>mongodbreader</module>
+        <module>iotdbreader</module>
         <module>tdenginereader</module>
         <module>gdbreader</module>
         <module>tsdbreader</module>
@@ -116,6 +117,7 @@
         <module>elasticsearchwriter</module>
         <module>mongodbwriter</module>
         <module>tdenginewriter</module>
+        <module>iotdbwriter</module>
         <module>ocswriter</module>
         <module>tsdbwriter</module>
         <module>gdbwriter</module>

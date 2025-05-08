@@ -269,6 +269,11 @@ public class CommonRdbmsReader {
 
                     case Types.SMALLINT:
                     case Types.TINYINT:
+                        // 将mysql中的tinyint(1)转为boolean类型
+                        if (metaData.getPrecision(i) <= 3){
+                            record.addColumn(new BoolColumn(rs.getBoolean(i)));
+                            break;
+                        }
                     case Types.INTEGER:
                     case Types.BIGINT:
                         record.addColumn(new LongColumn(rs.getString(i)));
