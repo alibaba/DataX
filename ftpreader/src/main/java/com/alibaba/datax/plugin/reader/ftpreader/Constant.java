@@ -9,6 +9,6 @@ public class Constant {
 	public static final int DEFAULT_TIMEOUT = 60000;
 	public static final int DEFAULT_MAX_TRAVERSAL_LEVEL = 100;
 	public static final String  DEFAULT_FTP_CONNECT_PATTERN = "PASV";
-	
+	public static final boolean DEFAULT_FTP_DELETE_SRC = false;
 
 }
