@@ -94,4 +94,28 @@ public class KeyConstant {
     public static boolean isDocumentType(String type) {
         return type.startsWith(DOCUMENT_TYPE);
     }
+
+    /**
+     * sslMode: two-way | client-authentication | no-authentication
+     */
+    public static final String SSL_MODE = "sslMode";
+    /**
+     * trustStore path
+     */
+    public static final String TRUST_STORE_PATH = "trustStorePath";
+    /**
+     * trustStore password
+     */
+    public static final String TRUST_STORE_PWD = "trustStorePwd";
+    /**
+     * keyStore path
+     */
+    public static final String KEY_STORE_PATH = "keyStorePath";
+    /**
+     * keyStore password
+     */
+    public static final String KEY_STORE_PWD = "keyStorePwd";
+    public static boolean isValueTrue(String value){
+        return "true".equals(value);
+    }
 }
