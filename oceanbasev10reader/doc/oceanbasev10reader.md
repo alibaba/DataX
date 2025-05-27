@@ -228,4 +228,17 @@ OceanbaseV10Reader插件实现了从Oceanbase V1.0读取数据。在底层实现
 | 4 | 55862 | 17.60 |
 | 5 | 70860 | 22.31 |
 
-# 
+## 5常见问题
+### 
+4.1 oracle模式下报错Invalid fatch size
+```
+Caused by: java.sql.SQLSyntaxErrorException: (conn=2498) invalid fetch size. in Oracle mode, extendOracleResultSetClass is ineffective if useOraclePrepareExecute is set to true or usePieceData is set to true
+	at com.oceanbase.jdbc.internal.util.exceptions.ExceptionFactory.createException(ExceptionFactory.java:110)
+	at com.oceanbase.jdbc.internal.util.exceptions.ExceptionFactory.create(ExceptionFactory.java:211)
+	at com.oceanbase.jdbc.OceanBaseStatement.setFetchSize(OceanBaseStatement.java:1599)
+	at com.alibaba.datax.plugin.reader.oceanbasev10reader.ext.ReaderTask.doRead(ReaderTask.java:270)
+	... 5 more
+```
+该错误常发生更换了高版本的oceanbase-client.jar驱动，高版本的驱动未来提高效率，增加了oracle预处理语句行为。这个机制和setFetchSize冲突。
+#### 解决方案
+在jdbcUrl中配置extendOracleResultSetClass=true可解决这个冲突。

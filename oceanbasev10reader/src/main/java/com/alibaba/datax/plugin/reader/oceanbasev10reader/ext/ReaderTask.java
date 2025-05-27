@@ -30,9 +30,6 @@ import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-
-import static com.alibaba.datax.plugin.reader.oceanbasev10reader.ext.Constant.ORACLE_DEFAULT_FETCH_SIZE;
 
 public class ReaderTask extends CommonRdbmsReader.Task {
     private static final Logger LOG = LoggerFactory.getLogger(ReaderTask.class);
@@ -259,14 +256,7 @@ public class ReaderTask extends CommonRdbmsReader.Task {
                 }
             }
             // 打开流式接口
-            //oceanbase的oracle模式FetchSize同oracle插件的设置，否则会报错。invalid fetch size. in Oracle mode,
-            // 具体请看com.oceanbase.jdbc.OceanBaseStatement#setFetchSize
-            if (context.getFetchSize()==Integer.MIN_VALUE
-                    && Objects.equals(compatibleMode, ObReaderUtils.OB_COMPATIBLE_MODE_ORACLE)){
-                ps.setFetchSize(ORACLE_DEFAULT_FETCH_SIZE);
-            }else {
-                ps.setFetchSize(context.getFetchSize());
-            }
+            ps.setFetchSize(context.getFetchSize());
             rs = ps.executeQuery();
             ResultSetMetaData metaData = rs.getMetaData();
             int columnNumber = metaData.getColumnCount();
