@@ -4,10 +4,12 @@ import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.plugin.writer.mongodbwriter.KeyConstant;
 import com.alibaba.datax.plugin.writer.mongodbwriter.MongoDBWriterErrorCode;
+import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 
+import javax.annotation.Nonnull;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -81,6 +83,59 @@ public class MongoUtil {
             }
         }
         return addressList;
+    }
+
+
+    /**
+     *  put mongo document with SubDocument support
+     *
+     * patch submit by Created by changhua.wch on 2018/11/5
+     *
+     * @param recordData 最上层父节点的记录
+     * @param fullFieldName 字段全名，包含父节点->自节点的全路径 例如： "aa.bb.cc"
+     * @param value  子节点的值
+     */
+    public static void putValueWithSubDocumentSupport(
+        @Nonnull BasicDBObject recordData,
+        @Nonnull String fullFieldName,
+        Object value
+    ) {
+
+        if(fullFieldName.contains(".")) {
+            String[] fieldLayers = fullFieldName.split("\\.");
+
+            if(fieldLayers.length > 1) {
+
+                BasicDBObject currentLayerData = recordData;
+
+                // check-exists and add all parent layer
+                for(int i =0; i< fieldLayers.length - 1; ++i) {
+                    String layer = fieldLayers[ i ];
+                    if(currentLayerData.containsField(layer)) {
+                        currentLayerData = (BasicDBObject)currentLayerData.get(layer);
+                    } else {
+                        BasicDBObject subLayerDoc = new BasicDBObject();
+                        currentLayerData.put(layer, subLayerDoc);
+                        currentLayerData = subLayerDoc;
+                    }
+                }
+
+                // add last layer's value
+                String childFieldName = fieldLayers[ fieldLayers.length - 1 ];
+                currentLayerData.put(childFieldName, value);
+            } else {
+                throw DataXException.asDataXException(MongoDBWriterErrorCode.ILLEGAL_VALUE,
+                    MongoDBWriterErrorCode.ILLEGAL_VALUE.getDescription() + " column: " + fullFieldName);
+            }
+
+
+        } else {
+
+            // simple behavior, directly add field-value pair
+            recordData.put(fullFieldName, value);
+
+        }
+
     }
 
     public static void main(String[] args) {
