@@ -391,6 +391,21 @@ public final class DBUtil {
                                                    String url, Properties prop) {
         try {
             Class.forName(dataBaseType.getDriverClassName());
+            try {
+                Enumeration<Driver> drivers = DriverManager.getDrivers();
+                while (drivers.hasMoreElements()) {
+                    Driver driver = drivers.nextElement();
+                    if (StringUtils.equals(driver.getClass().getName(), dataBaseType.getDriverClassName())) {
+                        try {
+                            return driver.connect(url, prop);
+                        } catch (Exception e) {
+                            LOG.info("try connector failed", e);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                LOG.info("find driver error, back to DriverManager.getConnection", e);
+            }
             DriverManager.setLoginTimeout(Constant.TIMEOUT_SECONDS);
             return DriverManager.getConnection(url, prop);
         } catch (Exception e) {
