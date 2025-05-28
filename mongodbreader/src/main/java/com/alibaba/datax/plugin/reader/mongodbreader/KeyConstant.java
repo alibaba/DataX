@@ -94,4 +94,9 @@ public class KeyConstant {
     public static boolean isDocumentType(String type) {
         return type.startsWith(DOCUMENT_TYPE);
     }
+
+    /**
+     * mongodb url
+     */
+    public static final String MONGO_URL="mongoUrl";
 }
