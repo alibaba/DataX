@@ -1,4 +1,4 @@
-package com.alibaba.datax.plugin.reader.rdbmsreader;
+package com.alibaba.datax.plugin.reader.postgresqlreader;
 
 import com.alibaba.datax.common.element.*;
 import com.alibaba.datax.common.exception.DataXException;
@@ -7,6 +7,7 @@ import com.alibaba.datax.common.plugin.TaskPluginCollector;
 import com.alibaba.datax.plugin.rdbms.reader.CommonRdbmsReader;
 import com.alibaba.datax.plugin.rdbms.util.DBUtilErrorCode;
 import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
+import com.alibaba.datax.plugin.reader.rdbmsreader.SubCommonRdbmsReader;
 import com.alibaba.fastjson2.JSON;
 import org.apache.commons.lang3.StringUtils;
 import org.postgis.PGgeometry;
@@ -21,10 +22,6 @@ import java.sql.Types;
 import java.util.Objects;
 
 public class PostgisRdbmsReader extends CommonRdbmsReader {
-
-//    static {
-//        DBUtil.loadDriverClass("reader", "rdbms");
-//    }
 
     public static class Job extends CommonRdbmsReader.Job {
 

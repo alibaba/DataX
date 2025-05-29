@@ -1,4 +1,4 @@
-package com.alibaba.datax.plugin.reader.rdbmswriter;
+package com.alibaba.datax.plugin.writer.postgresqlwriter;
 
 import com.alibaba.datax.common.element.Column;
 import com.alibaba.datax.common.element.PostgisWrapper;
