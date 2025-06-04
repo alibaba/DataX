@@ -1,0 +1,6 @@
+{
+    "name": "influxdb2writer",
+    "class": "com.alibaba.datax.plugin.writer.influxdb2writer.Influxdb2Writer",
+    "description": "向influxdb2中写入数据",
+    "developer": "changl"
+}

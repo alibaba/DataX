@@ -47,6 +47,7 @@
         <module>transformer</module>
 
         <!-- reader -->
+        <module>influxdb2writer</module>
         <module>mysqlreader</module>
         <module>drdsreader</module>
         <module>sqlserverreader</module>

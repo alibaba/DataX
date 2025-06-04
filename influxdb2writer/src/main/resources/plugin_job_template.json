@@ -1,0 +1,15 @@
+{
+    "name": "influxdb2writer",
+    "parameter": {
+        "url": "",
+        "token": "",
+        "org": "",
+        "bucket": "",
+        "measurement":  "",
+        "tags": [],
+        "fields": [],
+        "hasTs": true,
+        "tsFormat": "yyyy-MM-dd HH:mm:ss",
+        "batchSize": 1000
+    }
+}
