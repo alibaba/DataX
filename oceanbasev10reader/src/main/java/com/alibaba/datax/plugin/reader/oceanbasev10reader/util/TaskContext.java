@@ -80,8 +80,10 @@ public class TaskContext {
     }
 
     public String getQuerySql() {
-        if (readBatchSize == -1 || ObReaderUtils.isOracleMode(compatibleMode)) {
+        if (readBatchSize == -1) {
             return querySql;
+        } else if (ObReaderUtils.isOracleMode(compatibleMode)) {
+            return String.format("select * from (%s) where rownum <= %d", querySql, readBatchSize);
         } else {
             return querySql + " limit " + readBatchSize;
         }
