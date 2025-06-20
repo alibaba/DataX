@@ -269,7 +269,6 @@ public class ObReaderUtils {
         String[] pkColumns = context.getPkColumns();
         StringBuilder whereClause = new StringBuilder();
 
-        // 无论 MySQL 还是 Oracle 都统一使用 OR 条件链
         if (pkColumns != null && pkColumns.length > 0) {
             whereClause.append(" (");
             for (int i = 0; i < pkColumns.length; i++) {
