@@ -7,6 +7,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.Vector;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -195,8 +196,7 @@ public class SftpHelperImpl implements IFtpHelper {
     public OutputStream getOutputStream(String filePath) {
         try {
             this.printWorkingDirectory();
-            String parentDir = filePath.substring(0,
-                    StringUtils.lastIndexOf(filePath, IOUtils.DIR_SEPARATOR));
+            String parentDir = FilenameUtils.getFullPathNoEndSeparator(filePath);
             this.channelSftp.cd(parentDir);
             this.printWorkingDirectory();
             OutputStream writeOutputStream = this.channelSftp.put(filePath,
