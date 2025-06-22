@@ -2,9 +2,12 @@ package com.alibaba.datax.plugin.reader.ftpreader;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +33,8 @@ public class FtpReader extends Reader {
 		private int port;
 		private String username;
 		private String password;
+		private String privateKey;
+		private String keyPassword;
 		private int timeout;
 		private String connectPattern;
 		private int maxTraversalLevel;
@@ -44,6 +49,9 @@ public class FtpReader extends Reader {
 			this.validateParameter();
 			UnstructuredStorageReaderUtil.validateParameter(this.originConfig);
 			
+			Map<String, Object> extendParams = new HashMap<String, Object>();
+			extendParams.put(Key.PRIVATEKEY, privateKey);
+			extendParams.put(Key.KEYPASSWORD, keyPassword);
 			if ("sftp".equals(protocol)) {
 				//sftp协议
 				this.port = originConfig.getInt(Key.PORT, Constant.DEFAULT_SFTP_PORT);
@@ -53,7 +61,7 @@ public class FtpReader extends Reader {
 				this.port = originConfig.getInt(Key.PORT, Constant.DEFAULT_FTP_PORT);
 				this.ftpHelper = new StandardFtpHelper();
 			}		
-			ftpHelper.loginFtpServer(host, username, password, port, timeout, connectPattern);
+			ftpHelper.loginFtpServer(host, username, password, port, timeout, connectPattern, extendParams);
 
 		}
 
@@ -67,7 +75,12 @@ public class FtpReader extends Reader {
 			}
 			this.host = this.originConfig.getNecessaryValue(Key.HOST, FtpReaderErrorCode.REQUIRED_VALUE);
 			this.username = this.originConfig.getNecessaryValue(Key.USERNAME, FtpReaderErrorCode.REQUIRED_VALUE);
-			this.password = this.originConfig.getNecessaryValue(Key.PASSWORD, FtpReaderErrorCode.REQUIRED_VALUE);
+			this.password = this.originConfig.getString(Key.PASSWORD);
+			this.privateKey = this.originConfig.getString(Key.PRIVATEKEY);
+			this.keyPassword = this.originConfig.getString(Key.KEYPASSWORD);
+			if (StringUtils.isBlank(this.password) && StringUtils.isBlank(this.privateKey)) {
+				throw DataXException.asDataXException(FtpReaderErrorCode.REQUIRED_VALUE, "密码和私钥路径至少需配置一项");
+			}
 			this.timeout = originConfig.getInt(Key.TIMEOUT, Constant.DEFAULT_TIMEOUT);
 			this.maxTraversalLevel = originConfig.getInt(Key.MAXTRAVERSALLEVEL, Constant.DEFAULT_MAX_TRAVERSAL_LEVEL);
 			
@@ -175,6 +188,8 @@ public class FtpReader extends Reader {
 		private int port;
 		private String username;
 		private String password;
+		private String privateKey;
+		private String keyPassword;
 		private String protocol;
 		private int timeout;
 		private String connectPattern;
@@ -192,10 +207,15 @@ public class FtpReader extends Reader {
 			this.protocol = readerSliceConfig.getString(Key.PROTOCOL);
 			this.username = readerSliceConfig.getString(Key.USERNAME);
 			this.password = readerSliceConfig.getString(Key.PASSWORD);
+			this.privateKey = readerSliceConfig.getString(Key.PRIVATEKEY);
+			this.keyPassword = readerSliceConfig.getString(Key.KEYPASSWORD);
 			this.timeout = readerSliceConfig.getInt(Key.TIMEOUT, Constant.DEFAULT_TIMEOUT);
 
 			this.sourceFiles = this.readerSliceConfig.getList(Constant.SOURCE_FILES, String.class);
 
+			Map<String, Object> extendParams = new HashMap<String, Object>();
+			extendParams.put(Key.PRIVATEKEY, privateKey);
+			extendParams.put(Key.KEYPASSWORD, keyPassword);
 			if ("sftp".equals(protocol)) {
 				//sftp协议
 				this.port = readerSliceConfig.getInt(Key.PORT, Constant.DEFAULT_SFTP_PORT);
@@ -206,7 +226,7 @@ public class FtpReader extends Reader {
 				this.connectPattern = readerSliceConfig.getString(Key.CONNECTPATTERN, Constant.DEFAULT_FTP_CONNECT_PATTERN);// 默认为被动模式
 				this.ftpHelper = new StandardFtpHelper();
 			}	
-			ftpHelper.loginFtpServer(host, username, password, port, timeout, connectPattern);
+			ftpHelper.loginFtpServer(host, username, password, port, timeout, connectPattern, extendParams);
 
 		}
 
