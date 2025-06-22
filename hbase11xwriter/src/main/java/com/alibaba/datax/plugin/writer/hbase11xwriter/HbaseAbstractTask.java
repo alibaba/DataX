@@ -90,22 +90,22 @@ public abstract class HbaseAbstractTask {
         if(column.getRawData() != null){
             switch (columnType) {
                 case INT:
-                    bytes = Bytes.toBytes(column.asLong().intValue());
+                    bytes = Bytes.toBytes(String.valueOf(column.asLong().intValue()));
                     break;
                 case LONG:
-                    bytes = Bytes.toBytes(column.asLong());
+                    bytes = Bytes.toBytes(String.valueOf(column.asLong()));
                     break;
                 case DOUBLE:
-                    bytes = Bytes.toBytes(column.asDouble());
+                    bytes = Bytes.toBytes(String.valueOf(column.asDouble()));
                     break;
                 case FLOAT:
-                    bytes = Bytes.toBytes(column.asDouble().floatValue());
+                    bytes = Bytes.toBytes(String.valueOf(column.asDouble().floatValue()));
                     break;
                 case SHORT:
-                    bytes = Bytes.toBytes(column.asLong().shortValue());
+                    bytes = Bytes.toBytes(String.valueOf(column.asLong().shortValue()));
                     break;
                 case BOOLEAN:
-                    bytes = Bytes.toBytes(column.asBoolean());
+                    bytes = Bytes.toBytes(String.valueOf(column.asBoolean()));
                     break;
                 case STRING:
                     bytes = this.getValueByte(columnType,column.asString());
