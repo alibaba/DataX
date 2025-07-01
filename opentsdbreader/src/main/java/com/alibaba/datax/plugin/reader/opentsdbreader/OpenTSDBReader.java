@@ -140,11 +140,12 @@ public class OpenTSDBReader extends Reader {
             if (TimeUtils.isSecond(endTime)) {
                 endTime *= 1000;
             }
-            DateTime startDateTime = new DateTime(TimeUtils.getTimeInHour(startTime));
+            
             DateTime endDateTime = new DateTime(TimeUtils.getTimeInHour(endTime));
 
             // split by metric
             for (String column : columns) {
+                DateTime startDateTime = new DateTime(TimeUtils.getTimeInHour(startTime));
                 // split by time in hour
                 while (startDateTime.isBefore(endDateTime)) {
                     Configuration clone = this.originalConfig.clone();
