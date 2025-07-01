@@ -63,4 +63,9 @@ public final class Key {
     public static final String CDH_3_X_HIVE_VERSION = "3.1.3-cdh";
 
     public static final String SUPPORT_ADD_MIDDLE_COLUMN = "supportAddMiddleColumn";
+
+    /**
+     * 是否跳过空目录异常
+     */
+    public static final String  SKIP_EMPTY_DIR="skipEmptyDir";
 }
