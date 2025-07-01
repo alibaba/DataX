@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.UnknownHostException;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
@@ -28,7 +29,7 @@ public class StandardFtpHelperImpl implements IFtpHelper {
 
     @Override
     public void loginFtpServer(String host, String username, String password,
-            int port, int timeout) {
+            int port, int timeout, Map<String, Object> extendParams) {
         this.ftpClient = new FTPClient();
         try {
             this.ftpClient.setControlEncoding("UTF-8");

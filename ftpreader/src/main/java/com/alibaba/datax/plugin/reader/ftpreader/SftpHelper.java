@@ -2,10 +2,12 @@ package com.alibaba.datax.plugin.reader.ftpreader;
 
 import java.io.InputStream;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Vector;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,11 +26,21 @@ public class SftpHelper extends FtpHelper {
 
 	Session session = null;
 	ChannelSftp channelSftp = null;
-	@Override
+
+    @Override
 	public void loginFtpServer(String host, String username, String password, int port, int timeout,
-			String connectMode) {
+			String connectMode, Map<String, Object> extendParams) {
 		JSch jsch = new JSch(); // 创建JSch对象
 		try {
+			String privateKey = (String)extendParams.get(Key.PRIVATEKEY);
+			String keyPassword = (String)extendParams.get(Key.KEYPASSWORD);
+			if (!StringUtils.isBlank(privateKey)) {
+				if (!StringUtils.isBlank(keyPassword)) {
+					jsch.addIdentity(privateKey, keyPassword);
+				} else {
+					jsch.addIdentity(privateKey);
+				}
+			}
 			session = jsch.getSession(username, host, port);
 			// 根据用户名，主机ip，端口获取一个Session对象
 			// 如果服务器连接不上，则抛出异常
@@ -37,7 +49,9 @@ public class SftpHelper extends FtpHelper {
 						"session is null,无法通过sftp与服务器建立链接，请检查主机名和用户名是否正确.");
 			}
 
-			session.setPassword(password); // 设置密码
+			if (StringUtils.isBlank(privateKey)) {
+				session.setPassword(password); // 设置密码
+			}
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
 			session.setConfig(config); // 为Session对象设置properties
