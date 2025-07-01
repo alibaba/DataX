@@ -98,6 +98,7 @@ public class DateColumn extends Column {
 	 * */
 	public DateColumn(final java.sql.Timestamp ts) {
 		this(ts == null ? null : ts.getTime());
+		this.setRawNano(ts == null ? 0 : ts.getNanos());
 		this.setSubType(DateType.DATETIME);
 	}
 
@@ -123,8 +124,10 @@ public class DateColumn extends Column {
 		if (null == this.getRawData()) {
 			return null;
 		}
-
-		return new Date((Long)this.getRawData());
+		java.sql.Timestamp myts = new java.sql.Timestamp((Long) this.getRawData());
+		myts.setNanos(this.getRawNano());
+		return myts;
+		// return new Date((Long)this.getRawData());
 	}
 	
 	@Override
@@ -169,4 +172,14 @@ public class DateColumn extends Column {
 	public void setSubType(DateType subType) {
 		this.subType = subType;
 	}
+
+	public int getRawNano(){
+		return rawNano;
+	}
+
+	public void setRawNano(int rawNano){
+		this.rawNano = rawNano;
+	}
+}
+
 }
