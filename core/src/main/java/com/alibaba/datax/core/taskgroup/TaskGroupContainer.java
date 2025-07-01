@@ -187,8 +187,15 @@ public class TaskGroupContainer extends AbstractContainer {
                     }
             	}
             	
-                // 2.发现该taskGroup下taskExecutor的总状态失败则汇报错误
+                // 2.发现该taskGroup下taskExecutor的总状态失败则汇报错误，同时关闭失败的taskExecutor
                 if (failedOrKilled) {
+
+                    taskFailedExecutorMap.forEach((taskId, taskExecutor) -> {
+                        if (!taskExecutor.isShutdown()) {
+                            taskExecutor.shutdown();
+                        }
+                    });
+
                     lastTaskGroupContainerCommunication = reportTaskGroupCommunication(
                             lastTaskGroupContainerCommunication, taskCountInThisTaskGroup);
 
