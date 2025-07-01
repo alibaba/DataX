@@ -18,10 +18,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Types;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -183,6 +180,7 @@ public class CommonRdbmsWriter {
         protected String jdbcUrl;
         protected String table;
         protected List<String> columns;
+        protected List<String> primaryColumns;
         protected List<String> preSqls;
         protected List<String> postSqls;
         protected int batchSize;
@@ -269,6 +267,23 @@ public class CommonRdbmsWriter {
             // 用于写入数据的时候的类型根据目的表字段类型转换
             this.resultSetMetaData = DBUtil.getColumnMetaData(connection,
                     this.table, StringUtils.join(this.columns, ","));
+
+
+            //PostgreSQL采用update时需要获取主键
+            if (dataBaseType.equals(DataBaseType.PostgreSQL) && writeMode.trim().toLowerCase().startsWith("update") ) {
+                this.primaryColumns = new ArrayList<>();
+                String[] schemaAndTable = this.table.split("\\.");
+                try(ResultSet primaryKeys = connection.getMetaData().getPrimaryKeys(null, schemaAndTable[0], schemaAndTable[1])) {
+                    while(primaryKeys.next()) {
+                        String pkColumnName = primaryKeys.getString("COLUMN_NAME");
+                        this.primaryColumns.add(pkColumnName);
+                    }
+                } catch (Exception e) {
+                    throw DataXException.asDataXException(
+                            DBUtilErrorCode.WRITE_DATA_ERROR, e);
+                }
+            }
+
             // 写数据库的SQL语句
             calcWriteRecordSql();
 
@@ -542,6 +557,33 @@ public class CommonRdbmsWriter {
                         preparedStatement.setString(columnIndex + 1, column.asString());
                     }
                     break;
+                case Types.OTHER:
+                    preparedStatement.setString(columnIndex + 1, column.asString());
+                    break;
+                case Types.ARRAY:
+                    Object rawData = column.getRawData();
+                    if (rawData == null)  {
+                        preparedStatement.setArray(columnIndex + 1,null);
+                        break;
+                    }
+                    String wType = this.resultSetMetaData.getRight()
+                            .get(columnIndex);
+                    Array data;
+                    switch (wType) {
+                        case "_varchar":
+                            data = preparedStatement.getConnection().createArrayOf("VARCHAR", (String[])rawData);
+                            break;
+                        case "_int8":
+                            data = preparedStatement.getConnection().createArrayOf("LONG", (Long[])rawData);
+                            break;
+                        case "_int4":
+                            data = preparedStatement.getConnection().createArrayOf("INTEGER", (Integer[])rawData);
+                            break;
+                        default:
+                            data = preparedStatement.getConnection().createArrayOf("VARCHAR", (String[])rawData);
+                    }
+                    preparedStatement.setArray(columnIndex + 1,data);
+                    break;
                 default:
                     throw DataXException
                             .asDataXException(
@@ -572,7 +614,7 @@ public class CommonRdbmsWriter {
                     forceUseUpdate = true;
                 }
 
-                INSERT_OR_REPLACE_TEMPLATE = WriterUtil.getWriteTemplate(columns, valueHolders, writeMode, dataBaseType, forceUseUpdate);
+                INSERT_OR_REPLACE_TEMPLATE = WriterUtil.getWriteTemplate(columns, valueHolders, writeMode, dataBaseType, forceUseUpdate,this.primaryColumns);
                 writeRecordSql = String.format(INSERT_OR_REPLACE_TEMPLATE, this.table);
             }
         }
