@@ -148,6 +148,8 @@ public class CoreConstant {
 	public static final String CURRENT_SERVICE_USERNAME = "current.service.username";
     
 	public static final String CURRENT_SERVICE_PASSWORD = "current.service.password";
+	public static final String DATAX_JOB_CONTENT_WRITER_PARAMETER_JOBID = "job.content[0].writer.parameter.jobid";
+	public static final String DATAX_JOB_CONTENT_READER_PARAMETER_JOBID = "job.content[0].reader.parameter.jobid";
 
 	// ----------------------------- 环境变量 ---------------------------------
 
