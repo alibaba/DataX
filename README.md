@@ -37,6 +37,7 @@ DataX本身作为数据同步框架，将不同数据源的同步抽象为从源
 
 DataX目前已经有了比较全面的插件体系，主流的RDBMS数据库、NOSQL、大数据计算系统都已经接入，目前支持数据如下图，详情请点击：[DataX数据源参考指南](https://github.com/alibaba/DataX/wiki/DataX-all-data-channels)
 
+
 | 类型               | 数据源                          | Reader(读) | Writer(写) |                                                                                                                       文档                                                                                                                       |
 |--------------|---------------------------|:---------:|:---------:|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
 | RDBMS 关系型数据库 | MySQL                           |     √      |     √      |                                       [读](https://github.com/alibaba/DataX/blob/master/mysqlreader/doc/mysqlreader.md) 、[写](https://github.com/alibaba/DataX/blob/master/mysqlwriter/doc/mysqlwriter.md)                                       |
