@@ -1,0 +1,50 @@
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "name": "mysqlreader",
+          "parameter": {
+            "username": "root",
+            "password": "toy123",
+            "column": ["time","A5STD","L2RIS014MD","L2VVP003SM5","D1RIS001MD","D1KRT003EU"],
+            "splitPk": "",
+            "connection": [
+              {
+                "table": [
+                  "device"
+                ],
+                "jdbcUrl": [
+                  "jdbc:mysql://localhost:3306/demodb?useUnicode=true&allowPublicKeyRetrieval=true&characterEncoding=utf-8"
+                ]
+              }
+            ]
+          }
+        },
+        "writer": {
+          "name": "iotdbwriter",
+          "parameter": {
+            "username": "root",
+            "password": "root",
+            "host": "172.20.31.61",
+            "port": 6667,
+            "fetchSize": 10000,
+            "version": "V_1_0",
+            "timeColumnPosition": 0,
+            "insertBatchSize": 1000,
+            "device": "root.cgn.device",
+            "measurements": ["A5STD","L2RIS014MD","L2VVP003SM5","D1RIS001MD","D1KRT003EU"],
+            "preSql": [
+               "delete timeseries root.cgn.device.**"
+            ]
+          }
+        }
+      }
+    ],
+    "setting": {
+      "speed": {
+        "channel": 3
+      }
+    }
+  }
+}

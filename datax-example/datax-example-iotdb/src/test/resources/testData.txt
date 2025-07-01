@@ -1,0 +1,39 @@
+AX        L2KRT008MA        测试性描述        %        0        1.00E+02
+AX        L2ETY101MP        测试性描述        %        0        1.00E+02
+AX        L2SEC002MD        测试性描述        %        0        1.00E+02
+AX        L1ETY103MP        测试性描述        %        0        1.00E+02
+AX        D1KRT003EU        测试性描述        %        0        1.00E+02
+AX        L4EAS008MDX_XQ01        测试性描述        %        0        1.00E+02
+AX        L3RIC039KMX_XQ01        测试性描述        %        0        1.00E+02
+AX        L2VVP008MP        测试性描述        %        0        1.00E+02
+AX        D2RCV039MD        测试性描述        %        0        1.00E+02
+DX        D2RPA063EC        测试性描述                0        2.00E+00
+AX        L4KRT022MAK_XP01        测试性描述        %        0        1.00E+02
+AX        L3SEC002MPX_XQ01        测试性描述        %        0        1.00E+02
+DX        L4RCP651KSX_XG52        测试性描述                0        2.00E+00
+AX        L2RRI082MT        测试性描述        %        0        1.00E+02
+AX        A5STD        测试性描述        %        0        1.00E+02
+DX        D2RRI003PO        测试性描述                0        2.00E+00
+AX        L4RCP091MT_XQ01        测试性描述        %        0        1.00E+02
+DX        L1GCT132SM5        测试性描述                0        2.00E+00
+DX        L1GCT132SM3        测试性描述                0        2.00E+00
+AX        L2RIC035MT        测试性描述        %        0        1.00E+02
+AX        L1RGL018QM        测试性描述        %        0        1.00E+02
+AX        L1RIC037MT        测试性描述        %        0        1.00E+02
+AX        D2RCP042MD        测试性描述        %        0        1.00E+02
+AX        D2RGL001QM        测试性描述        %        0        1.00E+02
+AX        D2RIC020MT        测试性描述        %        0        1.00E+02
+AX        D1RIC022MT        测试性描述        %        0        1.00E+02
+AX        D1RGL003QM        测试性描述        %        0        1.00E+02
+AX        L3LGE005TU_XQ01        测试性描述        %        0        1.00E+02
+DX        D2RCP517EC        测试性描述                0        2.00E+00
+AX        D1RCP054MD        测试性描述        %        0        1.00E+02
+AX        L2RIS014MD        测试性描述        %        0        1.00E+02
+DX        D1LGE001JA        测试性描述                0        2.00E+00
+DX        D2SEC001PO        测试性描述                0        2.00E+00
+DX        D1SEC003PO        测试性描述                0        2.00E+00
+AX        D1RIS001MD        测试性描述        %        0        1.00E+02
+AX        L1RCP090MT        测试性描述        %        0        1.00E+02
+DX        L2VVP003SM5        测试性描述                0        2.00E+00
+AX        L3RIC022KMX_XQ01        测试性描述        %        0        1.00E+02
+DX        L1GCT501EC        测试性描述                0        2.00E+00

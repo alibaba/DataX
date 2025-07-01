@@ -15,6 +15,7 @@
         <module>datax-example-core</module>
         <module>datax-example-streamreader</module>
         <module>datax-example-neo4j</module>
+        <module>datax-example-iotdb</module>
     </modules>
 
     <properties>
