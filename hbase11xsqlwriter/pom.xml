@@ -17,7 +17,7 @@
     <properties>
         <phoenix.version>4.11.0-HBase-1.1</phoenix.version>
         <hadoop.version>2.7.1</hadoop.version>
-        <commons-codec.version>1.8</commons-codec.version>
+        <commons-codec.version>1.13</commons-codec.version>
         <protobuf.version>3.2.0</protobuf.version>
         <httpclient.version>4.4.1</httpclient.version>
     </properties>
