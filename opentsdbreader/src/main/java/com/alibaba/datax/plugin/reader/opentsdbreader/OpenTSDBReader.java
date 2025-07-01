@@ -140,12 +140,13 @@ public class OpenTSDBReader extends Reader {
             if (TimeUtils.isSecond(endTime)) {
                 endTime *= 1000;
             }
-            DateTime startDateTime = new DateTime(TimeUtils.getTimeInHour(startTime));
-            DateTime endDateTime = new DateTime(TimeUtils.getTimeInHour(endTime));
-
+            DateTime startDateTime=null;
+            DateTime endDateTime=new DateTime(TimeUtils.getTimeInHour(endTime));
             // split by metric
             for (String column : columns) {
                 // split by time in hour
+                //When the metric is multiple, the startDateTime needs to be reset
+                startDateTime = new DateTime(TimeUtils.getTimeInHour(startTime));
                 while (startDateTime.isBefore(endDateTime)) {
                     Configuration clone = this.originalConfig.clone();
                     clone.set(Key.COLUMN, Collections.singletonList(column));
@@ -204,7 +205,12 @@ public class OpenTSDBReader extends Reader {
         public void startRead(RecordSender recordSender) {
             try {
                 for (String column : columns) {
-                    conn.sendDPs(column, this.startTime, this.endTime, recordSender);
+                    //If some metric does not exist, it is not a fatal error. Just log it and do not affect other jobs.
+                    try {
+                        conn.sendDPs(column, this.startTime, this.endTime, recordSender);
+                    }catch(net.opentsdb.uid.NoSuchUniqueName e){
+                        LOG.warn("在时间段{}-{}无{}指标", this.startTime,this.endTime,column);
+                    }
                 }
             } catch (Exception e) {
                 throw DataXException.asDataXException(
