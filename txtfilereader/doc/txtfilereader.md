@@ -228,7 +228,6 @@ boolean captureRawRecord = true;
 
 | DataX 内部类型| 本地文件 数据类型    |
 | -------- | -----  |
-|
 | Long     |Long |
 | Double   |Double|
 | String   |String|
