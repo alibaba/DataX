@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -128,6 +129,15 @@ public class Engine {
         String jobIdString = cl.getOptionValue("jobid");
         RUNTIME_MODE = cl.getOptionValue("mode");
 
+        Configuration tmpConfiguration = ConfigParser.parse(jobPath);
+        List<Object> list = tmpConfiguration.getList("job.content");
+        Iterator<Object> iterator = list.iterator();
+        while (iterator.hasNext()) {
+            doEntry(jobPath, jobIdString, iterator.next());
+        }
+    }
+
+    private static void doEntry(String jobPath, String jobIdString, Object firstObj) {
         Configuration configuration = ConfigParser.parse(jobPath);
         // 绑定i18n信息
         MessageSource.init(configuration);
@@ -163,6 +173,8 @@ public class Engine {
 
         LOG.debug(configuration.toJSON());
 
+        // mumu 2023/8/25 将任务添加至第一个(engine中默认取content中第一个任务进行处理，不太熟悉代码，而且改的话改动量太大，所以在入口处调整)
+        configuration.getList("job.content").add(0, firstObj);
         ConfigurationValidate.doValidate(configuration);
         Engine engine = new Engine();
         engine.start(configuration);
@@ -198,6 +210,7 @@ public class Engine {
     public static void main(String[] args) throws Exception {
         int exitCode = 0;
         try {
+//            System.setProperty("datax.home", "/Users/mumu/workSpace/tools/datax");
             Engine.entry(args);
         } catch (Throwable e) {
             exitCode = 1;
