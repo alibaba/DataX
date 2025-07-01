@@ -136,6 +136,8 @@
         <module>gaussdbreader</module>
         <module>gaussdbwriter</module>
         <module>datax-example</module>
+        <module>bytehousewriter</module>
+        <module>bytehousereader</module>
 
     </modules>
 
@@ -248,6 +250,12 @@
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
+        </repository>
+        <repository>
+            <!--火山引擎bytehouse-->
+            <id>bytedance</id>
+            <name>ByteDance Public Repository</name>
+            <url>https://artifact.bytedance.com/repository/releases</url>
         </repository>
     </repositories>
 
