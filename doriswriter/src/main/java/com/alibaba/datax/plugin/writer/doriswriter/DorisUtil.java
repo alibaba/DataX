@@ -5,16 +5,26 @@ import com.alibaba.datax.plugin.rdbms.util.DataBaseType;
 import com.alibaba.datax.plugin.rdbms.util.RdbmsException;
 import com.alibaba.datax.plugin.rdbms.writer.Constant;
 import com.alibaba.druid.sql.parser.ParserException;
+import com.alibaba.fastjson2.JSON;
 import com.google.common.base.Strings;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * jdbc util
@@ -101,5 +111,97 @@ public class DorisUtil {
                 }
             }
         }
+    }
+
+    public static <T> T checkNotNull(T reference) {
+        if (reference == null) {
+            throw new NullPointerException();
+        } else {
+            return reference;
+        }
+    }
+
+    public static String getLoadHost(Keys options) throws IOException {
+        List<String> hostList = options.getLoadUrlList();
+        for (int i = 0; i < hostList.size(); i++) {
+            String host = new StringBuilder("http://").append(hostList.get((i))).toString();
+            if (checkConnection(host)) {
+                return host;
+            }
+            continue;
+        }
+        throw new IOException ("load_url cannot be empty, or the host cannot connect.Please check your configuration.");
+    }
+
+
+    private static boolean checkConnection(String host) {
+        try {
+            URL url = new URL(host);
+            HttpURLConnection co = (HttpURLConnection) url.openConnection();
+            co.setConnectTimeout(5000);
+            co.connect();
+            co.disconnect();
+            return true;
+        } catch (Exception e1) {
+            LOG.error("The connection failed, host is {}", host);
+            return false;
+        }
+    }
+
+
+    public static boolean checkIsStreamLoad(Keys options) {
+        final HttpClientBuilder httpClientBuilder = HttpClients
+                .custom()
+                .disableRedirectHandling();
+        try (CloseableHttpClient httpclient = httpClientBuilder.build()) {
+            String url = getLoadHost(options) + "/copy/query";
+            HttpPost httpPost = new HttpPost(url);
+            try (CloseableHttpResponse resp = httpclient.execute(httpPost)) {
+                if (resp.getStatusLine().getStatusCode() == 200) {
+                    Map<String, Object> result = (Map<String, Object>) JSON.parse(EntityUtils.toString(resp.getEntity()));
+                    if (result != null && (int) result.get("code") == 401) {
+                        return false;
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+
+    public static byte[] addRows(Keys options, List<byte[]> rows, int totalBytes) {
+        if (Keys.StreamLoadFormat.CSV.equals(options.getStreamLoadFormat())) {
+            Map<String, Object> props = (options.getLoadProps() == null ? new HashMap<>() : options.getLoadProps());
+            byte[] lineDelimiter = DelimiterParser.parse((String) props.get("line_delimiter"), "\n").getBytes(StandardCharsets.UTF_8);
+            ByteBuffer bos = ByteBuffer.allocate(totalBytes + rows.size() * lineDelimiter.length);
+            for (byte[] row : rows) {
+                bos.put(row);
+                bos.put(lineDelimiter);
+            }
+            return bos.array();
+        }
+
+        if (Keys.StreamLoadFormat.JSON.equals(options.getStreamLoadFormat())) {
+            ByteBuffer bos = ByteBuffer.allocate(totalBytes + (rows.isEmpty() ? 2 : rows.size() + 1));
+            bos.put("[".getBytes(StandardCharsets.UTF_8));
+            byte[] jsonDelimiter = ",".getBytes(StandardCharsets.UTF_8);
+            boolean isFirstElement = true;
+            for (byte[] row : rows) {
+                if (!isFirstElement) {
+                    bos.put(jsonDelimiter);
+                }
+                bos.put(row);
+                isFirstElement = false;
+            }
+            bos.put("]".getBytes(StandardCharsets.UTF_8));
+            return bos.array();
+        }
+        throw new RuntimeException("Failed to join rows data, unsupported `format` from stream load properties:");
+    }
+
+    public static boolean isNullOrEmpty(Map<?, ?> map) {
+        return map == null || map.isEmpty();
     }
 }
