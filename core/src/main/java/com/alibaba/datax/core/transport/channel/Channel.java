@@ -141,14 +141,24 @@ public abstract class Channel {
 
     public Record pull() {
         Record record = this.doPull();
-        this.statPull(1L, record.getByteSize());
+        if (!(record instanceof TerminateRecord)) {
+            this.statPull(1L, record.getByteSize());
+        }
         return record;
     }
 
     public void pullAll(final Collection<Record> rs) {
         Validate.notNull(rs);
         this.doPullAll(rs);
-        this.statPull(rs.size(), this.getByteSize(rs));
+        if (rs.size() > 0) {
+            Record record = (Record) rs.toArray()[rs.size() - 1];
+            //TerminateRecord的bytesize=0，无需特殊处理
+            if (record instanceof TerminateRecord) {
+                this.statPull(rs.size() - 1, this.getByteSize(rs));
+            } else{
+                this.statPull(rs.size(), this.getByteSize(rs));
+            }
+        }
     }
 
     protected abstract void doPush(Record r);
