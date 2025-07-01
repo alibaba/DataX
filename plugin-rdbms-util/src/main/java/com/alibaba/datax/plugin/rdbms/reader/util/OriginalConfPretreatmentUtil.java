@@ -172,7 +172,7 @@ public final class OriginalConfPretreatmentUtil {
                                     "您的配置文件中的列配置信息有误. 因为根据您的配置，数据库表的列中存在多个*. 请检查您的配置并作出修改. ");
                         }
 
-                        quotedColumns.add(column);
+                        quotedColumns.add(String.format("`%s`", column));
                         //以下判断没有任何意义
 //                        if (null == column) {
 //                            quotedColumns.add(null);
