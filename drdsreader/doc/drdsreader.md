@@ -187,6 +187,15 @@ DRDS的插件目前DataX只适配了Mysql引擎的场景，DRDS对于DataX而言
 
 	* 描述：暂时不支持配置querySql模式 <br />
 
+* **networkTimeout**
+
+	* 描述：当同步DRDS时，如果数据量过大，可能会超过数据库设置的DRDS的net_write_timeout,导致任务失败 目前默认
+	  是8h 可根据实际数据量进行设置。
+
+	* 必选：否 <br />
+
+	* 默认值：28800000 <br />	
+
 
 ### 3.3 类型转换
 
