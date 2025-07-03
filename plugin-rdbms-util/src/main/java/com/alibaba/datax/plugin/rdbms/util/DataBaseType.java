@@ -78,6 +78,8 @@ public enum DataBaseType {
                 break;
             case Doris:
                 break;
+            case Sybase:
+                break;
             default:
                 throw DataXException.asDataXException(DBUtilErrorCode.UNSUPPORTED_TYPE, "unsupported database type.");
         }
