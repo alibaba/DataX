@@ -94,7 +94,8 @@ public class UnstructuredStorageWriterUtil {
         }
         if (!Constant.FILE_FORMAT_CSV.equals(fileFormat)
                 && !Constant.FILE_FORMAT_TEXT.equals(fileFormat)
-                && !Constant.FILE_FORMAT_SQL.equals(fileFormat)) {
+                && !Constant.FILE_FORMAT_SQL.equals(fileFormat)
+                && !Constant.FILE_FORMAT_JSONL.equals(fileFormat)) {
             throw DataXException.asDataXException(
                     UnstructuredStorageWriterErrorCode.ILLEGAL_VALUE, String.format("unsupported fileFormat  %s ", fileFormat));
         }
@@ -111,6 +112,14 @@ public class UnstructuredStorageWriterUtil {
         if (null == delimiterInStr) {
             delimiterInStr = String.valueOf(Constant.DEFAULT_FIELD_DELIMITER);
             writerConfiguration.set(Key.FIELD_DELIMITER, delimiterInStr);
+        }
+
+        // header check
+        if (StringUtils.equalsIgnoreCase(fileFormat, Constant.FILE_FORMAT_JSONL) &&
+                writerConfiguration.getList(Key.HEADER, String.class).isEmpty()) {
+            throw DataXException.asDataXException(
+                    UnstructuredStorageWriterErrorCode.REQUIRED_VALUE,
+                    String.format("header is required when fileFormat is %s", Constant.FILE_FORMAT_JSONL));
         }
     }
 
@@ -237,11 +246,12 @@ public class UnstructuredStorageWriterUtil {
         // warn: default false
         String fileFormat = config.getString(Key.FILE_FORMAT, Constant.FILE_FORMAT_TEXT);
         boolean isSqlFormat = Constant.FILE_FORMAT_SQL.equalsIgnoreCase(fileFormat);
+        boolean isJsonlFormat = Constant.FILE_FORMAT_JSONL.equalsIgnoreCase(fileFormat);
         int commitSize = config.getInt(Key.COMMIT_SIZE, Constant.DEFAULT_COMMIT_SIZE);
         UnstructuredWriter unstructuredWriter = produceUnstructuredWriter(fileFormat, config, writer);
 
         List<String> headers = config.getList(Key.HEADER, String.class);
-        if (null != headers && !headers.isEmpty() && !isSqlFormat) {
+        if (null != headers && !headers.isEmpty() && !isSqlFormat && !isJsonlFormat) {
             unstructuredWriter.writeOneRecord(headers);
         }
 
@@ -285,6 +295,10 @@ public class UnstructuredStorageWriterUtil {
             Preconditions.checkArgument(CollectionUtils.isNotEmpty(headers), "column names are empty");
             String nullFormat = config.getString(Key.NULL_FORMAT, Constant.DEFAULT_NULL_FORMAT);
             unstructuredWriter = new SqlWriter(writer, quoteChar, tableName, lineSeparator, headers, nullFormat);
+        } else if (StringUtils.equalsIgnoreCase(fileFormat, Constant.FILE_FORMAT_JSONL)){
+            List<String> headers = config.getList(Key.HEADER, String.class);
+            Preconditions.checkArgument(CollectionUtils.isNotEmpty(headers), "column names are empty");
+            unstructuredWriter = TextCsvWriterManager.produceJsonlWriter(writer,headers, config);
         }
 
         return unstructuredWriter;

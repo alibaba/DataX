@@ -26,6 +26,10 @@ public class TextCsvWriterManager {
     public static UnstructuredWriter produceCsvWriter( Writer writer, char fieldDelimiter, Configuration config) {
         return new CsvWriterImpl(writer, fieldDelimiter, config);
     }
+
+    public static UnstructuredWriter produceJsonlWriter( Writer writer,  List<String> columnNames, Configuration config) {
+        return new JsonlWriterImpl(writer, columnNames, config);
+    }
 }
 
 class CsvWriterImpl implements UnstructuredWriter {
@@ -121,6 +125,57 @@ class TextWriterImpl implements UnstructuredWriter {
     @Override
     public void close() throws IOException {
         this.textWriter.close();
+    }
+
+}
+
+
+class JsonlWriterImpl implements UnstructuredWriter {
+    private static final Logger LOG = LoggerFactory
+            .getLogger(JsonlWriterImpl.class);
+    // csv 严格符合csv语法, 有标准的转义等处理
+    private String lineDelimiter;
+    private Writer jsonlWriter;
+    private List<String> columnNames;
+
+    public JsonlWriterImpl(Writer writer, List<String> columnNames,Configuration config) {
+        this.jsonlWriter = writer;
+        this.columnNames = columnNames;
+        this.lineDelimiter = config.getString(Key.LINE_DELIMITER, IOUtils.LINE_SEPARATOR);
+    }
+
+    @Override
+    public void writeOneRecord(List<String> splitedRows) throws IOException {
+        if (splitedRows.isEmpty()) {
+            LOG.info("Found one record line which is empty.");
+        }
+        // 检查列数是否一致
+        if (splitedRows.size() != this.columnNames.size()) {
+            throw new IOException(String.format("The number of columns in the record (%d) does not match the expected number of columns (%d).",
+                    splitedRows.size(), this.columnNames.size()));
+        }
+        // 将每一列数据进行json化，先定义一个hashmap，然后赋值，再进行json化
+        HashMap<String, String> recordMap = new HashMap<>(splitedRows.size());
+        for (int i = 0; i < splitedRows.size(); i++) {
+            String columnName = this.columnNames.get(i);
+            String columnValue = splitedRows.get(i);
+            recordMap.put(columnName, columnValue);
+        }
+        // 将recordMap进行json化
+        String jsonRecord = JSON.toJSONString(recordMap);
+        // 写入jsonl文件
+        this.jsonlWriter.write(String.format("%s%s", jsonRecord, this.lineDelimiter));
+
+    }
+
+    @Override
+    public void flush() throws IOException {
+        this.jsonlWriter.flush();
+    }
+
+    @Override
+    public void close() throws IOException {
+        this.jsonlWriter.close();
     }
 
 }

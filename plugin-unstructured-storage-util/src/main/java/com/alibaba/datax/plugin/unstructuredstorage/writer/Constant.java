@@ -14,6 +14,8 @@ public class Constant {
 
 	public static final String FILE_FORMAT_SQL = "sql";
 
+	public static final String FILE_FORMAT_JSONL = "jsonl";
+
 	//每个分块10MB，最大10000个分块, MAX_FILE_SIZE 单位: MB
 	public static final Long MAX_FILE_SIZE = 10 * 10000L;
 
