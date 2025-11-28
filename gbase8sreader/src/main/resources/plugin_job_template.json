@@ -1,0 +1,13 @@
+{
+    "name": "gbase8sreader",
+    "parameter": {
+        "username": "",
+        "password": "",
+        "connection": [
+            {
+                "table": [],
+                "jdbcUrl": []
+            }
+        ]
+    }
+}
