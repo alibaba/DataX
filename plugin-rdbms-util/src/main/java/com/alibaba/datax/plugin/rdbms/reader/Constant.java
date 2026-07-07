@@ -27,4 +27,7 @@ public final class Constant {
 
     public static Integer SPLIT_FACTOR = 5;
 
+    //增加优化参数
+    public final static Integer NETWORK_TIMEOUT_DEFAULT=28800000;
+
 }
