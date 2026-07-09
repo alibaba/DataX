@@ -97,6 +97,8 @@ public class CoreConstant {
 
     public static final String DATAX_JOB_SETTING_DRYRUN = "job.setting.dryRun";
 
+	public static final String DATAX_JOB_SETTING_PASSWD_ENCRYPT = "job.setting.passwdEncrypt";
+
     public static final String DATAX_JOB_PREHANDLER_PLUGINTYPE = "job.preHandler.pluginType";
 
     public static final String DATAX_JOB_PREHANDLER_PLUGINNAME = "job.preHandler.pluginName";
@@ -104,6 +106,13 @@ public class CoreConstant {
     public static final String DATAX_JOB_POSTHANDLER_PLUGINTYPE = "job.postHandler.pluginType";
 
     public static final String DATAX_JOB_POSTHANDLER_PLUGINNAME = "job.postHandler.pluginName";
+
+	public static final String DATA_JOB_READER_PARAMETER_PASSWORD="job.content[0].reader.parameter.password";
+
+    public static final String DATA_JOB_WRITER_PARAMETER_PASSWORD="job.content[0].writer.parameter.password";
+
+
+
     // ----------------------------- 局部使用的变量
     public static final String JOB_WRITER = "writer";
 
@@ -148,6 +157,8 @@ public class CoreConstant {
 	public static final String CURRENT_SERVICE_USERNAME = "current.service.username";
     
 	public static final String CURRENT_SERVICE_PASSWORD = "current.service.password";
+
+    public static final String DB_ENCRYPT_KEY = "db.encrypt.key";
 
 	// ----------------------------- 环境变量 ---------------------------------
 
