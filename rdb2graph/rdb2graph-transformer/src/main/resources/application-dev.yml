@@ -1,0 +1,37 @@
+spring:
+ application:
+  name: rdb2graph-transformer
+
+setl:
+  scanner:
+   type: oracle
+   serializer: # 序列化
+    type: xml
+   ds:
+    db: WC
+    url: jdbc:oracle:thin:@192.168.4.126:1521:wcc
+    tbs: # filter table
+    username: wc
+    password: wc
+    driverClass: oracle.jdbc.driver.OracleDriver
+    filters: stat
+    maxActive: 20
+    initialSize: 1
+    maxWait: 60000
+    minIdle: 1
+    timeBetweenEvictionRunsMillis: 60000
+    minEvictableIdleTimeMillis: 300000
+    validationQuery: select 'x' from dual
+    testWhileIdle: true
+    testOnBorrow: false
+    testOnReturn: false
+    poolPreparedStatements: true
+    maxOpenPreparedStatements: 20
+
+org:
+ neo4j: 
+  driver: 
+   uri: bolt://34.201.15.62:7687
+   authentication:
+    username: neo4j
+    password: relay-accomplishment-mover

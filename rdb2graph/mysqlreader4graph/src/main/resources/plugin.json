@@ -1,0 +1,6 @@
+{
+    "name": "mysqlreader4graph",
+    "class": "com.leehom.arch.datax.plugin.rdb2graph.reader.mysqlreader.MysqlReader4Graph",
+    "description": "",
+    "developer": "leehom"
+}
