@@ -222,9 +222,11 @@ public class StreamReader extends Reader {
 		public void startRead(RecordSender recordSender) {
 			Record oneRecord = buildOneRecord(recordSender, this.columns);
 			while (this.sliceRecordCount > 0) {
-                if (this.haveMixupFunction) {
+		// 如果用户配置了transformer会造成对同一个记录重复操作的问题，除非用户在不使用随机函数的情况下配置了"hasMixupFunction" : true
+		// recordSender.sendToWriter(oneRecord)这个方法可能对oneRecord的数据进行修改，所以使用前需要先复制一下，或者每次都重新生成
+                // if (this.haveMixupFunction) {
                     oneRecord = buildOneRecord(recordSender, this.columns);
-                }
+                // }
 				recordSender.sendToWriter(oneRecord);
 				this.sliceRecordCount--;
 			}
