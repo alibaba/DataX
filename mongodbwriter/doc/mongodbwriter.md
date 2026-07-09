@@ -55,6 +55,12 @@ MongoDBWriter通过Datax框架获取Reader生成的数据，然后将Datax支持
                         "userPassword": "",
                         "dbName": "tag_per_data",
                         "collectionName": "tag_data",
+                        "authDb": "authDb",
+                        "sslMode": "two-way",
+                        "trustStorePath": "/path/to/trustStore",
+                        "trustStorePwd": "",
+                        "keyStorePath": "/path/to/keyStore",
+                        "keyStorePwd": "",
                         "column": [
                             {
                                 "name": "unique_id",
@@ -133,6 +139,12 @@ MongoDBWriter通过Datax框架获取Reader生成的数据，然后将Datax支持
 * userName：MongoDB的用户名。【选填】
 * userPassword： MongoDB的密码。【选填】
 * collectionName： MonogoDB的集合名。【必填】
+* authDb: MongoDB用户的鉴权数据库。【选填】
+* sslMode: MongoDB ssl/tls 加密访问选项，支持 two-way(双向验证) | client-authentication(服务端确认客服端身份，客服端直接信赖服务端) | no-authentication(双方均不验证证书，直接新任) 【选填】
+* trustStorePath: 信赖的证书库路径，client-authentication时不需要。【选填】
+* trustStorePwd: 信赖的证书库密码。【选填】
+* keyStorePath: client端证书和密钥库。【选填】
+* keyStorePwd: client端证书和密钥库密码。【选填】
 * column：MongoDB的文档列名。【必填】
 * name：Column的名字。【必填】
 * type：Column的类型。【必填】

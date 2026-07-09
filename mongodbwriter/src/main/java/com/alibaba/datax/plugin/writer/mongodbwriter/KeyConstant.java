@@ -25,6 +25,7 @@ public class KeyConstant {
      * mongodb 数据库名
      */
     public static final String MONGO_DB_NAME = "dbName";
+    public static final String MONGO_AUTHDB = "authDb";
     /**
      * mongodb 集合名
      */
@@ -61,6 +62,26 @@ public class KeyConstant {
      * 指定用来判断是否覆盖的 业务主键
      */
     public static final String UNIQUE_KEY = "replaceKey";
+    /**
+     * sslMode: two-way | client-authentication | no-authentication
+     */
+    public static final String SSL_MODE = "sslMode";
+    /**
+     * trustStore path
+     */
+    public static final String TRUST_STORE_PATH = "trustStorePath";
+    /**
+     * trustStore password
+     */
+    public static final String TRUST_STORE_PWD = "trustStorePwd";
+    /**
+     * keyStore path
+     */
+    public static final String KEY_STORE_PATH = "keyStorePath";
+    /**
+     * keyStore password
+     */
+    public static final String KEY_STORE_PWD = "keyStorePwd";
     /**
      * 判断是否为数组类型
      * @param type 数据类型
