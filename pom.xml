@@ -74,7 +74,8 @@
         <module>clickhousereader</module>
 
         <module>mongodbreader</module>
-        <module>tdenginereader</module>
+        <module>tdengine20reader</module>
+        <module>tdengine30reader</module>
         <module>gdbreader</module>
         <module>tsdbreader</module>
         <module>opentsdbreader</module>
@@ -115,7 +116,8 @@
 
         <module>elasticsearchwriter</module>
         <module>mongodbwriter</module>
-        <module>tdenginewriter</module>
+        <module>tdengine20writer</module>
+        <module>tdengine30writer</module>
         <module>ocswriter</module>
         <module>tsdbwriter</module>
         <module>gdbwriter</module>

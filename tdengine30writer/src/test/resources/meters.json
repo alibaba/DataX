@@ -1,0 +1,76 @@
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "name": "streamreader",
+          "parameter": {
+            "column": [
+              {
+                "type": "string",
+                "value": "d1"
+              },
+              {
+                "type": "date",
+                "value": "2024-04-19 01:02:03.456",
+                "dateFormat": "yyyy-MM-dd HH:mm:ss.SSS"
+              },
+              {
+                "type": "double",
+                "value": 220.23
+              },
+              {
+                "type": "long",
+                "value": 15
+              },
+              {
+                "type": "long",
+                "value": 90.5
+              },
+              {
+                "type": "long",
+                "value": 1
+              },
+              {
+                "type": "string",
+                "value": "北京朝阳望京"
+              }
+            ],
+            "sliceRecordCount": 10
+          }
+        },
+        "writer": {
+          "name": "tdengine30writer",
+          "parameter": {
+            "username": "root",
+            "password": "taosdata",
+            "column": [
+              "tbname",
+              "ts",
+              "current",
+              "voltage",
+              "phase",
+              "groupid",
+              "location"
+            ],
+            "connection": [
+              {
+                "table": [
+                  "meters"
+                ],
+                "jdbcUrl": "jdbc:TAOS-RS://192.168.0.201:6041/zyyang"
+              }
+            ],
+            "batchSize": 100,
+            "ignoreTagsUnmatched": true
+          }
+        }
+      }
+    ],
+    "setting": {
+      "speed": {
+        "channel": 1
+      }
+    }
+  }
+}

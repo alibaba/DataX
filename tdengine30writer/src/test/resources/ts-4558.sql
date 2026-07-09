@@ -1,0 +1,2 @@
+create stable sinktest.cnpp_ads_wmct_d (`event_time` timestamp,`twoutfan1` float,`twoutfan2` float,`twoutfan3` float)
+TAGS (`device_name` NCHAR(30),`device_code` NCHAR(30) ,`station_id` NCHAR(30),`station_name` NCHAR(30),`project_id` NCHAR(30),`project_name` NCHAR(30))
