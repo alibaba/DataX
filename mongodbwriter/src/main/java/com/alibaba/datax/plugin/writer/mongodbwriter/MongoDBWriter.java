@@ -29,6 +29,9 @@ public class MongoDBWriter extends Writer{
     public static class Job extends Writer.Job {
 
         private Configuration originalConfig = null;
+        private MongoClient mongoClient;
+        private String userName = null;
+        private String password = null;
 
         @Override
         public List<Configuration> split(int mandatoryNumber) {
@@ -42,6 +45,15 @@ public class MongoDBWriter extends Writer{
         @Override
         public void init() {
             this.originalConfig = super.getPluginJobConf();
+            this.userName = originalConfig.getString(KeyConstant.MONGO_USER_NAME);
+            this.password = originalConfig.getString(KeyConstant.MONGO_USER_PASSWORD);
+            String database = originalConfig.getString(KeyConstant.MONGO_DB_NAME);
+            String authDb = originalConfig.getString(KeyConstant.MONGO_AUTHDB, database);
+            if(!Strings.isNullOrEmpty(userName) && !Strings.isNullOrEmpty(password)) {
+                this.mongoClient = MongoUtil.initCredentialMongoClient(this.originalConfig,userName,password,authDb);
+            } else {
+                this.mongoClient = MongoUtil.initMongoClient(this.originalConfig);
+            }
         }
 
         @Override
@@ -64,6 +76,7 @@ public class MongoDBWriter extends Writer{
 
         private String userName = null;
         private String password = null;
+        private String authDb = null;
 
         private String database = null;
         private String collection = null;
@@ -126,7 +139,7 @@ public class MongoDBWriter extends Writer{
             if(Strings.isNullOrEmpty(database) || Strings.isNullOrEmpty(collection)
                     || mongoClient == null || mongodbColumnMeta == null || batchSize == null) {
                 throw DataXException.asDataXException(MongoDBWriterErrorCode.ILLEGAL_VALUE,
-                                                MongoDBWriterErrorCode.ILLEGAL_VALUE.getDescription());
+                        MongoDBWriterErrorCode.ILLEGAL_VALUE.getDescription());
             }
             MongoDatabase db = mongoClient.getDatabase(database);
             MongoCollection<BasicDBObject> col = db.getCollection(this.collection, BasicDBObject.class);
@@ -179,7 +192,7 @@ public class MongoDBWriter extends Writer{
                         try {
                             if (KeyConstant.isObjectIdType(type.toLowerCase())) {
                                 data.put(columnMeta.getJSONObject(i).getString(KeyConstant.COLUMN_NAME),
-                                    new ObjectId(record.getColumn(i).asString()));
+                                        new ObjectId(record.getColumn(i).asString()));
                             } else if (KeyConstant.isArrayType(type.toLowerCase())) {
                                 String splitter = columnMeta.getJSONObject(i).getString(KeyConstant.COLUMN_SPLITTER);
                                 if (Strings.isNullOrEmpty(splitter)) {
@@ -320,8 +333,9 @@ public class MongoDBWriter extends Writer{
             this.userName = writerSliceConfig.getString(KeyConstant.MONGO_USER_NAME);
             this.password = writerSliceConfig.getString(KeyConstant.MONGO_USER_PASSWORD);
             this.database = writerSliceConfig.getString(KeyConstant.MONGO_DB_NAME);
+            this.authDb = writerSliceConfig.getString(KeyConstant.MONGO_AUTHDB, database);
             if(!Strings.isNullOrEmpty(userName) && !Strings.isNullOrEmpty(password)) {
-                this.mongoClient = MongoUtil.initCredentialMongoClient(this.writerSliceConfig,userName,password,database);
+                this.mongoClient = MongoUtil.initCredentialMongoClient(this.writerSliceConfig,userName,password,authDb);
             } else {
                 this.mongoClient = MongoUtil.initMongoClient(this.writerSliceConfig);
             }
