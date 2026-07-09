@@ -26,6 +26,13 @@
 
         <!-- reader -->
         <fileSet>
+            <directory>bytehousereader/target/datax/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>datax</outputDirectory>
+        </fileSet>
+        <fileSet>
             <directory>mysqlreader/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
@@ -266,6 +273,13 @@
         </fileSet>
 
         <!-- writer -->
+        <fileSet>
+            <directory>bytehousewriter/target/datax/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>datax</outputDirectory>
+        </fileSet>
         <fileSet>
             <directory>mysqlwriter/target/datax/</directory>
             <includes>
