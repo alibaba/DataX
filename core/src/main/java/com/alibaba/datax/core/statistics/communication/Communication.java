@@ -40,6 +40,8 @@ public class Communication extends BaseObject implements Cloneable {
      */
     Map<String, List<String>> message;
 
+    private Long jobId;
+
     public Communication() {
         this.init();
     }
@@ -277,5 +279,12 @@ public class Communication extends BaseObject implements Cloneable {
     	return this.state == State.SUCCEEDED || this.state == State.FAILED	
     			|| this.state == State.KILLED;
     }
-    
+
+    public Long getJobId() {
+        return jobId;
+    }
+
+    public void setJobId(Long jobId) {
+        this.jobId = jobId;
+    }
 }
