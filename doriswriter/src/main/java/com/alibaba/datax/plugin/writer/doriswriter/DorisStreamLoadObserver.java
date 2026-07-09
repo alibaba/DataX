@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
@@ -48,6 +49,18 @@ public class DorisStreamLoadObserver {
         this.options = options;
     }
 
+    public String urlDecode(String outBuffer) {
+        String data = outBuffer;
+        try {
+            data = data.replaceAll("%(?![0-9a-fA-F]{2})", "%25");
+            data = data.replaceAll("\\+", "%2B");
+            data = URLDecoder.decode(data, "utf-8");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return data;
+    }
+
     public void streamLoad(WriterTuple data) throws Exception {
         String host = getLoadHost();
         if(host == null){
@@ -61,6 +74,7 @@ public class DorisStreamLoadObserver {
                 .append("/_stream_load")
                 .toString();
         LOG.info("Start to join batch data: rows[{}] bytes[{}] label[{}].", data.getRows().size(), data.getBytes(), data.getLabel());
+        loadUrl = urlDecode(loadUrl);
         Map<String, Object> loadResult = put(loadUrl, data.getLabel(), addRows(data.getRows(), data.getBytes().intValue()));
         LOG.info("StreamLoad response :{}",JSON.toJSONString(loadResult));
         final String keyStatus = "Status";
