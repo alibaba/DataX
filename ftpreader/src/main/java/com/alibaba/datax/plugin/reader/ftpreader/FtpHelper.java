@@ -3,6 +3,7 @@ package com.alibaba.datax.plugin.reader.ftpreader;
 import java.io.InputStream;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 public abstract class FtpHelper {
 	/**
@@ -18,7 +19,7 @@ public abstract class FtpHelper {
 	* @return void 
 	* @throws
 	 */
-	public abstract void loginFtpServer(String host, String username, String password, int port, int timeout,String connectMode) ;
+	public abstract void loginFtpServer(String host, String username, String password, int port, int timeout, String connectMode, Map<String, Object> extendParams) ;
 	/**
 	 * 
 	* @Title: LogoutFtpServer 

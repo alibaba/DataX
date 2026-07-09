@@ -53,6 +53,8 @@ FtpWriter实现了从DataX协议转为FTP文件功能，FTP文件本身是无结
                         "port": 22,
                         "username": "xxx",
                         "password": "xxx",
+						"privateKey": "/path_to_private_key",
+						"keyPassword": "xxx",
                         "timeout": "60000",
                         "connectPattern": "PASV",
                         "path": "/tmp/data/",
@@ -117,9 +119,25 @@ FtpWriter实现了从DataX协议转为FTP文件功能，FTP文件本身是无结
 
 * **password**
 
-	* 描述：ftp服务器访问密码。 <br />
+	* 描述：ftp服务器访问密码。密码和私钥必须配置一项。 <br />
  
-	* 必选：是 <br />
+	* 必选：否 <br />
+ 
+	* 默认值：无 <br />
+
+* **privateKey**
+
+	* 描述：ftp服务器访问私钥。密码和私钥必须配置一项。 <br />
+ 
+	* 必选：否 <br />
+ 
+	* 默认值：无 <br />
+
+* **keyPassword**
+
+	* 描述：私钥密码密码。 <br />
+ 
+	* 必选：否 <br />
  
 	* 默认值：无 <br />
 

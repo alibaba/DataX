@@ -1,12 +1,13 @@
 package com.alibaba.datax.plugin.writer.ftpwriter.util;
 
 import java.io.OutputStream;
+import java.util.Map;
 import java.util.Set;
 
 public interface IFtpHelper {
 
     //使用被动方式
-    public void loginFtpServer(String host, String username, String password, int port, int timeout);
+    public void loginFtpServer(String host, String username, String password, int port, int timeout, Map<String, Object> extendParams);
 
     public void logoutFtpServer();
 

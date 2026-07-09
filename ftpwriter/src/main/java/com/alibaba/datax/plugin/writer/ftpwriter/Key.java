@@ -8,6 +8,10 @@ public class Key {
     public static final String USERNAME = "username";
     
     public static final String PASSWORD = "password";
+
+    public static final String PRIVATEKEY = "privateKey";
+
+    public static final String KEYPASSWORD = "keyPassword";
     
     public static final String PORT = "port";   
     
