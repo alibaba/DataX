@@ -1,0 +1,99 @@
+{
+    "job": {
+        "setting": {
+            "speed": {
+                "channel": 2
+            }
+        },
+        "content": [
+            {
+                "reader": {
+                    "name": "mysqlreader",
+                    "parameter": {
+                        "column": [
+                            "id",
+                            "name",
+                            "age",
+                            "score",
+                            "create_at",
+                            "update_at",
+                            "dt"
+                        ],
+                        "connection": [
+                            {
+                                "jdbcUrl": [
+                                    "jdbc:mysql://127.0.0.1:3306/demo?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai"
+                                ],
+                                "table": [
+                                    "user"
+                                ]
+                            }
+                        ],
+                        "password": "root1234",
+                        "username": "root",
+                        "where": ""
+                    }
+                },
+                "writer": {
+                    "name": "paimonwriter",
+                    "parameter": {
+                        "tableName": "test",
+                        "databaseName": "paimon",
+                        "catalogPath": "/app/hive/warehouse",
+                        "metastoreUri": "thrift://127.0.0.1:9083",
+                        "catalogType": "hive",
+                        "hiveConfDir": "/your/path",
+                        "hadoopConfDir": "/your/path",
+                        "tableBucket": 2,
+                        "primaryKey": "dt,id",
+                        "partitionFields": "dt",
+                        "writeOption": "stream_insert",
+                        "batchSize": 100,
+                        "hadoopConfig": {
+                            "hdfsUser": "hdfs",
+                            "coreSitePath": "/your/path/core-site.xml",
+                            "hdfsSitePath": "/your/path/hdfs-site.xml"
+                        },
+                        "paimonConfig": {
+                            "compaction.min.file-num": "3",
+                            "compaction.max.file-num": "6",
+                            "snapshot.time-retained": "2h",
+                            "snapshot.num-retained.min": "5",
+                            "hive.table.owner": "zhangsan",
+                            "hive.storage.format": "ORC"
+                        },
+                        "column": [
+                            {
+                                "name": "id",
+                                "type": "int"
+                            },
+                            {
+                                "name": "name",
+                                "type": "string"
+                            },
+                            {
+                                "name": "age",
+                                "type": "int"
+                            },
+                            {
+                                "name": "score",
+                                "type": "double"
+                            },
+                            {
+                                "name": "create_at",
+                                "type": "string"
+                            },
+                            {
+                                "name": "update_at",
+                                "type": "string"
+                            },{
+                                "name": "dt",
+                                "type": "string"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}
