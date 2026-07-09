@@ -70,6 +70,15 @@
             <outputDirectory>/job</outputDirectory>
         </fileSet>
 
+        <!-- for custom transformer udf -->
+        <fileSet>
+            <directory>src/main/local_storage</directory>
+            <includes>
+                <include>**/*</include>
+            </includes>
+            <outputDirectory>/local_storage</outputDirectory>
+        </fileSet>
+
         <fileSet>
             <directory>src/main/tools/</directory>
             <includes>
