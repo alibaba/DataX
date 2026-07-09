@@ -22,7 +22,7 @@
 
         <!-- http -->
         <httpclient.version>4.5</httpclient.version>
-        <commons-io.version>2.4</commons-io.version>
+        <commons-io.version>2.14.0</commons-io.version>
 
         <!-- opentsdb -->
         <opentsdb.version>2.3.2</opentsdb.version>
