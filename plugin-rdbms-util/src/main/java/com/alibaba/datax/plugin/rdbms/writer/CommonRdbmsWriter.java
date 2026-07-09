@@ -267,8 +267,9 @@ public class CommonRdbmsWriter {
             this.taskPluginCollector = taskPluginCollector;
 
             // 用于写入数据的时候的类型根据目的表字段类型转换
+            String quoteColumnFormat = this.dataBaseType.buildQuoteColumnFormat(this.columns);
             this.resultSetMetaData = DBUtil.getColumnMetaData(connection,
-                    this.table, StringUtils.join(this.columns, ","));
+                    this.table, quoteColumnFormat);
             // 写数据库的SQL语句
             calcWriteRecordSql();
 

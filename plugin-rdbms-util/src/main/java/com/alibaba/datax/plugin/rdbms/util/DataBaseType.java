@@ -1,7 +1,9 @@
 package com.alibaba.datax.plugin.rdbms.util;
 
 import com.alibaba.datax.common.exception.DataXException;
+import org.apache.commons.lang3.StringUtils;
 
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -204,6 +206,17 @@ public enum DataBaseType {
         }
 
         return result;
+    }
+
+    public String buildQuoteColumnFormat(List<String> columnName) {
+        if (null == columnName || columnName.isEmpty()) {
+            return StringUtils.EMPTY;
+        }
+        StringBuilder builder = new StringBuilder();
+        for (String column : columnName) {
+            builder.append(column.contains("`") ? column : quoteColumnName(column)).append(",");
+        }
+        return builder.substring(0, builder.length() - 1);
     }
 
     public String quoteTableName(String tableName) {
