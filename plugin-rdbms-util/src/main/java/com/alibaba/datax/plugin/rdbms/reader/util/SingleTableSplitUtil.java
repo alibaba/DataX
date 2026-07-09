@@ -305,8 +305,8 @@ public class SingleTableSplitUtil {
         String pkRangeSQL = String.format(minMaxTemplate, splitPK, splitPK,
                 table);
         if (StringUtils.isNotBlank(where)) {
-            pkRangeSQL = String.format("%s WHERE (%s AND %s IS NOT NULL)",
-                    pkRangeSQL, where, splitPK);
+            pkRangeSQL = String.format("%s WHERE (%s)",
+                    pkRangeSQL, where);
         }
         return pkRangeSQL;
     }
