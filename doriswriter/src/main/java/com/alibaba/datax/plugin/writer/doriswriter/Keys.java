@@ -36,6 +36,8 @@ public class Keys implements Serializable {
     private static final String LOAD_URL = "loadUrl";
     private static final String FLUSH_QUEUE_LENGTH = "flushQueueLength";
     private static final String LOAD_PROPS = "loadProps";
+    private static final String CLUSTER_NAME = "clusterName";
+
 
     private static final String DEFAULT_LABEL_PREFIX = "datax_doris_writer_";
 
@@ -87,6 +89,10 @@ public class Keys implements Serializable {
 
     public List<String> getLoadUrlList() {
         return options.getList(LOAD_URL, String.class);
+    }
+
+    public String getClusterName() {
+        return options.getString(CLUSTER_NAME);
     }
 
     public List<String> getColumns() {
