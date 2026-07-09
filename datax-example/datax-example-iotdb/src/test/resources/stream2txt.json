@@ -1,0 +1,38 @@
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "name": "streamreader",
+          "parameter": {
+            "sliceRecordCount": 10,
+            "column": [
+              {
+                "type": "long",
+                "value": "10"
+              },
+              {
+                "type": "string",
+                "value": "hello，你好，世界-DataX"
+              }
+            ]
+          }
+        },
+        "writer": {
+          "name": "txtfilewriter",
+          "parameter": {
+            "path": "D:/下载",
+            "fileName": "txtText",
+            "writeMode": "truncate",
+            "dateFormat": "yyyy-MM-dd"
+          }
+        }
+      }
+    ],
+    "setting": {
+      "speed": {
+        "channel": 5
+      }
+    }
+  }
+}

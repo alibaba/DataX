@@ -1,0 +1,41 @@
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "name": "mysqlreader",
+          "parameter": {
+            "username": "root",
+            "password": "toy123",
+            "column": ["time","A5STD","L2RIS014MD","L2VVP003SM5","D1RIS001MD","D1KRT003EU"],
+            "splitPk": "",
+            "connection": [
+              {
+                "table": [
+                  "device"
+                ],
+                "jdbcUrl": [
+                  "jdbc:mysql://localhost:3306/demodb?useUnicode=true&allowPublicKeyRetrieval=true&characterEncoding=utf-8"
+                ]
+              }
+            ]
+          }
+        },
+        "writer": {
+          "name": "txtfilewriter",
+          "parameter": {
+            "path": "D:/下载",
+            "fileName": "txtText",
+            "writeMode": "truncate",
+            "dateFormat": "yyyy-MM-dd"
+          }
+        }
+      }
+    ],
+    "setting": {
+      "speed": {
+        "channel": 5
+      }
+    }
+  }
+}

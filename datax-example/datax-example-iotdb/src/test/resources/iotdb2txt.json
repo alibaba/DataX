@@ -1,0 +1,42 @@
+{
+  "job": {
+    "setting": {
+      "speed": {
+        "channel": 3
+      }
+    },
+    "content": [
+      {
+        "reader": {
+          "name": "iotdbreader",
+          "parameter": {
+            "username": "root",
+            "password": "root",
+            "host": "172.20.31.61",
+            "port": 6667,
+            "fetchSize": 10000,
+            "version": "V_1_0",
+            "timeColumnPosition": 0,
+            "querySqls":[
+              "select * from root.cgn.device",
+              "select A5STD,L2RIS014MD,L2VVP003SM5,D1RIS001MD,D1KRT003EU from root.cgn.device"
+            ],
+            "device": "root.cgn.device",
+            "measurements": ["A5STD","L2RIS014MD","L2VVP003SM5","D1RIS001MD","D1KRT003EU"],
+            "where": "time > 2023-03-07 12:00:00 and time < 2024-03-07 19:00:00"
+          }
+        },
+        "writer": {
+          "name": "txtfilewriter",
+          "parameter": {
+            "path": "D:/下载",
+            "fileName": "txtText",
+            "writeMode": "truncate",
+            "dateFormat": "yyyy-MM-dd"
+          }
+        }
+      }
+    ]
+  }
+}
+

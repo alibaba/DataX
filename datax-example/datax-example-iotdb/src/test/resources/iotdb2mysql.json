@@ -1,0 +1,56 @@
+{
+  "job": {
+    "setting": {
+      "speed": {
+        "channel": 3
+      }
+    },
+    "content": [
+      {
+        "reader": {
+          "name": "iotdbreader",
+          "parameter": {
+            "username": "root",
+            "password": "root",
+            "host": "172.20.31.61",
+            "port": 6667,
+            "fetchSize": 10000,
+            "version": "V_1_0",
+            "timeColumnPosition": 0,
+            "querySqls":[
+            ],
+            "device": "root.cgn.device",
+            "measurements": ["A5STD","L2RIS014MD","L2VVP003SM5","D1RIS001MD","D1KRT003EU"],
+            "where": "time > 2023-03-07 12:00:00 and time < 2024-03-07 19:00:00"
+          }
+        },
+        "writer": {
+          "name": "mysqlwriter",
+          "parameter": {
+            "username": "root",
+            "password": "toy123",
+            "writeMode": "insert",
+            "#需要提前建表": "CREATE TABLE device (`time` DATETIME,`A5STD` DOUBLE,`L2RIS014MD` DOUBLE,`L2VVP003SM5` BOOLEAN,`D1RIS001MD` DOUBLE,`D1KRT003EU` DOUBLE);",
+            "column": ["time","A5STD","L2RIS014MD","L2VVP003SM5","D1RIS001MD","D1KRT003EU"],
+            "session": [
+              "set session sql_mode='ANSI'"
+            ],
+            "preSql": [
+              "delete from device"
+            ],
+            "connection": [
+              {
+                "table": [
+                  "device"
+                ],
+                "#": "下面的URL需要把中括号去掉，否则报错，mysqlwriter的bug，未修改",
+                "jdbcUrl": "jdbc:mysql://localhost:3306/demodb?useUnicode=true&allowPublicKeyRetrieval=true&characterEncoding=utf-8"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}
+
