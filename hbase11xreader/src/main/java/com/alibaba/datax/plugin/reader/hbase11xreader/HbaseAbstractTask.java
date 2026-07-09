@@ -9,10 +9,15 @@ import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.hadoop.yarn.webapp.hamlet.Hamlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.util.Date;
 
 public abstract class HbaseAbstractTask {
     private final static Logger LOG = LoggerFactory.getLogger(HbaseAbstractTask.class);
@@ -23,7 +28,7 @@ public abstract class HbaseAbstractTask {
     protected Table htable;
     protected String encoding;
     protected int scanCacheSize;
-    protected int  scanBatchSize;
+    protected int scanBatchSize;
 
     protected Result lastResult = null;
     protected Scan scan;
@@ -34,11 +39,11 @@ public abstract class HbaseAbstractTask {
 
         this.htable = Hbase11xHelper.getTable(configuration);
 
-        this.encoding = configuration.getString(Key.ENCODING,Constant.DEFAULT_ENCODING);
+        this.encoding = configuration.getString(Key.ENCODING, Constant.DEFAULT_ENCODING);
         this.startKey = Hbase11xHelper.convertInnerStartRowkey(configuration);
-        this.endKey =  Hbase11xHelper.convertInnerEndRowkey(configuration);
-        this.scanCacheSize = configuration.getInt(Key.SCAN_CACHE_SIZE,Constant.DEFAULT_SCAN_CACHE_SIZE);
-        this.scanBatchSize = configuration.getInt(Key.SCAN_BATCH_SIZE,Constant.DEFAULT_SCAN_BATCH_SIZE);
+        this.endKey = Hbase11xHelper.convertInnerEndRowkey(configuration);
+        this.scanCacheSize = configuration.getInt(Key.SCAN_CACHE_SIZE, Constant.DEFAULT_SCAN_CACHE_SIZE);
+        this.scanBatchSize = configuration.getInt(Key.SCAN_BATCH_SIZE, Constant.DEFAULT_SCAN_BATCH_SIZE);
     }
 
     public abstract boolean fetchLine(Record record) throws Exception;
@@ -64,7 +69,7 @@ public abstract class HbaseAbstractTask {
         this.resultScanner = this.htable.getScanner(this.scan);
     }
 
-    public void close()  {
+    public void close() {
         Hbase11xHelper.closeResultScanner(this.resultScanner);
         Hbase11xHelper.closeTable(this.htable);
     }
@@ -88,7 +93,7 @@ public abstract class HbaseAbstractTask {
         return result;
     }
 
-    public Column convertBytesToAssignType(ColumnType columnType, byte[] byteArray,String dateformat) throws Exception {
+    public Column convertBytesToAssignType(ColumnType columnType, byte[] byteArray, String dateformat) throws Exception {
         Column column;
         switch (columnType) {
             case BOOLEAN:
@@ -119,13 +124,82 @@ public abstract class HbaseAbstractTask {
                 String dateValue = Bytes.toStringBinary(byteArray);
                 column = new DateColumn(ArrayUtils.isEmpty(byteArray) ? null : DateUtils.parseDate(dateValue, new String[]{dateformat}));
                 break;
+            case $UNSIGNED_INT:
+            case $INTEGER:
+                column = new LongColumn((Integer) PhoenixTypeUtil.toObject(byteArray, columnType));
+                break;
+            case $UNSIGNED_LONG:
+            case $BIGINT:
+                column = new LongColumn((Long) PhoenixTypeUtil.toObject(byteArray, columnType));
+                break;
+            case $UNSIGNED_TINYINT:
+            case $TINYINT: {
+                Byte v = (Byte) PhoenixTypeUtil.toObject(byteArray, columnType);
+                if (v != null) {
+                    column = new LongColumn(v.intValue());
+                } else {
+                    column = null;
+                }
+                break;
+            }
+            case $UNSIGNED_SMALLINT:
+            case $SMALLINT: {
+                Short v = (Short) PhoenixTypeUtil.toObject(byteArray, columnType);
+                if (v != null) {
+                    column = new LongColumn(v.intValue());
+                } else {
+                    column = null;
+                }
+                break;
+            }
+            case $UNSIGNED_FLOAT:
+            case $FLOAT: {
+                Float v = (Float) PhoenixTypeUtil.toObject(byteArray, columnType);
+                if (v != null) {
+                    column = new DoubleColumn(v.doubleValue());
+                } else {
+                    column = null;
+                }
+                break;
+            }
+            case $UNSIGNED_DOUBLE:
+            case $DOUBLE:
+                column = new DoubleColumn((Double) PhoenixTypeUtil.toObject(byteArray, columnType));
+                break;
+            case $DECIMAL: {
+                column = new DoubleColumn((BigDecimal) PhoenixTypeUtil.toObject(byteArray, columnType));
+                break;
+            }
+            case $BOOLEAN:
+                column = new BoolColumn((Boolean) PhoenixTypeUtil.toObject(byteArray, columnType));
+                break;
+            case $UNSIGNED_TIME:
+            case $UNSIGNED_DATE:
+                column = new DateColumn((Date) PhoenixTypeUtil.toObject(byteArray, columnType));
+                break;
+            case $UNSIGNED_TIMESTAMP:
+            case $TIMESTAMP:
+                column = new DateColumn((Timestamp) PhoenixTypeUtil.toObject(byteArray, columnType));
+                break;
+            case $TIME:
+                column = new DateColumn((Time) PhoenixTypeUtil.toObject(byteArray, columnType));
+                break;
+            case $DATE:
+                column = new DateColumn((java.sql.Date) PhoenixTypeUtil.toObject(byteArray, columnType));
+                break;
+            case $VARBINARY:
+                column = new BytesColumn((byte[]) PhoenixTypeUtil.toObject(byteArray, columnType));
+                break;
+            case $VARCHAR:
+                column = new StringColumn((String) PhoenixTypeUtil.toObject(byteArray, columnType));
+                break;
             default:
                 throw DataXException.asDataXException(Hbase11xReaderErrorCode.ILLEGAL_VALUE, "Hbasereader 不支持您配置的列类型:" + columnType);
         }
         return column;
     }
 
-    public Column convertValueToAssignType(ColumnType columnType, String constantValue,String dateformat) throws Exception {
+    public Column convertValueToAssignType(ColumnType columnType, String constantValue, String dateformat) throws Exception {
         Column column;
         switch (columnType) {
             case BOOLEAN:
