@@ -1,0 +1,1 @@
+/Users/fei/Applications/"IntelliJ IDEA.app"/Contents/plugins/maven/lib/maven3/bin/mvn -U clean package assembly:assembly -Dmaven.test.skip=true

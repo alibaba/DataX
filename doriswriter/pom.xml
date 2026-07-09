@@ -65,7 +65,17 @@ under the License.
         </dependency>
     </dependencies>
     <build>
+
+
+
         <plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+<version>2.2-beta-3</version>
+
+
+
+            </plugin>
             <!-- compiler plugin -->
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -78,6 +88,8 @@ under the License.
             <!-- assembly plugin -->
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
+<version>2.2-beta-3</version>
+
                 <configuration>
                     <descriptors>
                         <descriptor>src/main/assembly/package.xml</descriptor>

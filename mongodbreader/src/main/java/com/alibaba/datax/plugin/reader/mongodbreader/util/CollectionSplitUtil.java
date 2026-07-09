@@ -50,6 +50,20 @@ public class CollectionSplitUtil {
         return confList;
     }
 
+    /**
+     * 安全地将 _id 值转为可序列化的分片点字符串。
+     * ObjectId → hex 字符串；其他类型 → toString()；null → null。
+     * 不再使用 (ObjectId) 强转，避免 schemaless 集合中 _id 类型不一致导致 ClassCastException。
+     */
+    private static Object idToSplitPoint(Object id) {
+        if (id == null) {
+            return null;
+        }
+        if (id instanceof ObjectId) {
+            return ((ObjectId) id).toHexString();
+        }
+        return id.toString();
+    }
 
     private static boolean isPrimaryIdObjectId(MongoClient mongoClient, String dbName, String collName) {
         MongoDatabase database = mongoClient.getDatabase(dbName);
@@ -126,12 +140,8 @@ public class CollectionSplitUtil {
             for (int i = 0; i < splitKeys.size(); i++) {
                 Document splitKey = splitKeys.get(i);
                 Object id = splitKey.get(KeyConstant.MONGO_PRIMARY_ID);
-                if (isObjectId) {
-                    ObjectId oid = (ObjectId)id;
-                    splitPoints.add(oid.toHexString());
-                } else {
-                    splitPoints.add(id);
-                }
+                // 安全转换：不再强转 (ObjectId)，用 instanceof 判断
+                splitPoints.add(idToSplitPoint(id));
             }
         } else {
             int skipCount = chunkDocCount;
@@ -140,12 +150,8 @@ public class CollectionSplitUtil {
             for (int i = 0; i < splitPointCount; i++) {
                 Document doc = col.find().skip(skipCount).limit(chunkDocCount).first();
                 Object id = doc.get(KeyConstant.MONGO_PRIMARY_ID);
-                if (isObjectId) {
-                    ObjectId oid = (ObjectId)id;
-                    splitPoints.add(oid.toHexString());
-                } else {
-                    splitPoints.add(id);
-                }
+                 // 安全转换：不再强转 (ObjectId)，用 instanceof 判断
+                splitPoints.add(idToSplitPoint(id));
                 skipCount += chunkDocCount;
             }
         }
