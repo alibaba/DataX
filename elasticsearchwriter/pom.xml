@@ -12,6 +12,10 @@
     <groupId>com.alibaba.datax</groupId>
     <version>0.0.1-SNAPSHOT</version>
 
+    <properties>
+        <httpclient.version>4.4.1</httpclient.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.alibaba.datax</groupId>
@@ -53,6 +57,13 @@
             <version>4.13.1</version>
             <scope>test</scope>
         </dependency>
+         <!-- httpclient begin -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>${httpclient.version}</version>
+        </dependency>
+        <!-- httpclient end -->
     </dependencies>
     <build>
         <plugins>
