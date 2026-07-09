@@ -3,4 +3,10 @@
     "class": "com.starrocks.connector.datax.plugin.writer.starrockswriter.StarRocksWriter",
     "description": "useScene: prod. mechanism: StarRocksStreamLoad. warn: The more you know about the database, the less problems you encounter.",
     "developer": "starrocks"
+},
+{
+    "name": "dualstarrockswriter",
+    "class": "com.starrocks.connector.datax.plugin.writer.starrockswriter.DualStarRocksWriter",
+    "description": "useScene: prod. mechanism: DualStarRocksStreamLoad. warn: The more you know about the database, the less problems you encounter. Supports dual-writing to two StarRocks clusters for cross-room data disaster recovery.",
+    "developer": "starrocks"
 }
