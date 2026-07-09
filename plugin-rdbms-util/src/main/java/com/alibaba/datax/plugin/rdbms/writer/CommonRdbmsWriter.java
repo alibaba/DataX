@@ -538,6 +538,13 @@ public class CommonRdbmsWriter {
                 case Types.BIT:
                     if (this.dataBaseType == DataBaseType.MySql) {
                         preparedStatement.setBoolean(columnIndex + 1, column.asBoolean());
+                    } else if (this.dataBaseType == DataBaseType.PostgreSQL) {
+                        Boolean booleanValue = column.asBoolean();
+                        if (booleanValue) {
+                            preparedStatement.setString(columnIndex + 1, "1");
+                        } else {
+                            preparedStatement.setString(columnIndex + 1, "0");
+                        }
                     } else {
                         preparedStatement.setString(columnIndex + 1, column.asString());
                     }
