@@ -3,6 +3,7 @@ package com.alibaba.datax.common.element;
 import com.alibaba.datax.common.exception.CommonErrorCode;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.util.Configuration;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
 
@@ -22,7 +23,7 @@ public final class ColumnCast {
 			throws ParseException {
 		return StringCast.asDate(column);
 	}
-	
+
 	public static Date string2Date(final StringColumn column, String dateFormat)
 			throws ParseException {
 		return StringCast.asDate(column, dateFormat);
@@ -90,7 +91,7 @@ class StringCast {
 	}
 
 	static Date asDate(final StringColumn column) throws ParseException {
-		if (null == column.asString()) {
+		if (StringUtils.isBlank(column.asString())) {
 			return null;
 		}
 
@@ -120,7 +121,7 @@ class StringCast {
 		}
 		throw e;
 	}
-	
+
 	static Date asDate(final StringColumn column, String dateFormat) throws ParseException {
 		ParseException e;
 		try {
@@ -143,7 +144,7 @@ class StringCast {
 
 /**
  * 后续为了可维护性，可以考虑直接使用 apache 的DateFormatUtils.
- * 
+ *
  * 迟南已经修复了该问题，但是为了维护性，还是直接使用apache的内置函数
  */
 class DateCast {
