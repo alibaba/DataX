@@ -458,7 +458,7 @@ public class BaseWriter {
 				case Types.DATE:
 					if (column.getByteSize() > 0) {
 						if (column instanceof LongColumn || column instanceof DateColumn) {
-							data.setObject(index, column.asLong());
+							data.setObject(index, new java.sql.Date(column.asLong()));
 						} else {
 							data.setObject(index, column.asString());
 						}
