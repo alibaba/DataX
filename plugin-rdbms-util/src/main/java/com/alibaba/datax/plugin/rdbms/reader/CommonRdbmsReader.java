@@ -8,6 +8,7 @@ import com.alibaba.datax.common.element.LongColumn;
 import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.element.StringColumn;
 import com.alibaba.datax.common.exception.DataXException;
+import com.alibaba.datax.common.exception.ExceptionTracker;
 import com.alibaba.datax.common.plugin.RecordSender;
 import com.alibaba.datax.common.plugin.TaskPluginCollector;
 import com.alibaba.datax.common.statistics.PerfRecord;
@@ -27,10 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.Types;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -131,6 +129,11 @@ public class CommonRdbmsReader {
         // 作为日志显示信息时，需要附带的通用信息。比如信息所对应的数据库连接等信息，针对哪个表做的操作
         private String basicMsg;
 
+        // 目前
+        private Integer netWorkTimeOut;
+
+        private ExecutorService executorService;
+
         public Task(DataBaseType dataBaseType) {
             this(dataBaseType, -1, -1);
         }
@@ -148,6 +151,7 @@ public class CommonRdbmsReader {
             this.username = readerSliceConfig.getString(Key.USERNAME);
             this.password = readerSliceConfig.getString(Key.PASSWORD);
             this.jdbcUrl = readerSliceConfig.getString(Key.JDBC_URL);
+            this.netWorkTimeOut=readerSliceConfig.getInt(Key.NETWORK_TIMEOUT,Constant.NETWORK_TIMEOUT_DEFAULT);
 
             //ob10的处理
             if (this.jdbcUrl.startsWith(com.alibaba.datax.plugin.rdbms.writer.Constant.OB10_SPLIT_STRING) && this.dataBaseType == DataBaseType.MySql) {
@@ -166,6 +170,8 @@ public class CommonRdbmsReader {
             this.mandatoryEncoding = readerSliceConfig.getString(Key.MANDATORY_ENCODING, "");
 
             basicMsg = String.format("jdbcUrl:[%s]", this.jdbcUrl);
+
+            executorService = Executors.newSingleThreadExecutor();
 
         }
 
@@ -188,6 +194,18 @@ public class CommonRdbmsReader {
             // session config .etc related
             DBUtil.dealWithSessionConfig(conn, readerSliceConfig,
                     this.dataBaseType, basicMsg);
+
+            //deal with drds big data error net_write_timeout
+            if (DataBaseType.DRDS.equals(dataBaseType)){
+                LOG.info("start DRDS  setNetWorkTimeOut...");
+                try {
+                    conn.setNetworkTimeout(executorService, netWorkTimeOut);
+                    LOG.info("end DRDS  setNetWorkTimeOut...");
+                } catch (SQLException throwables) {
+                    LOG.warn("setNetWorkTimeOut error  ["+throwables.getMessage()+"]");
+                    LOG.warn(ExceptionTracker.trace(throwables));
+                }
+            }
 
             int columnNumber = 0;
             ResultSet rs = null;
@@ -219,6 +237,7 @@ public class CommonRdbmsReader {
             }catch (Exception e) {
                 throw RdbmsException.asQueryException(this.dataBaseType, e, querySql, table, username);
             } finally {
+                executorService.shutdown();
                 DBUtil.closeDBResources(null, conn);
             }
         }
@@ -228,7 +247,8 @@ public class CommonRdbmsReader {
         }
 
         public void destroy(Configuration originalConfig) {
-            // do nothing
+            // 关闭连接池
+            executorService.shutdown();
         }
         
         protected Record transportOneRecord(RecordSender recordSender, ResultSet rs, 
