@@ -31,7 +31,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
- 
+
 public class StarRocksStreamLoadVisitor {
 
     private static final Logger LOG = LoggerFactory.getLogger(StarRocksStreamLoadVisitor.class);
@@ -104,7 +104,8 @@ public class StarRocksStreamLoadVisitor {
         List<String> hostList = writerOptions.getLoadUrlList();
         long tmp = pos + hostList.size();
         for (; pos < tmp; pos++) {
-            String host = new StringBuilder("http://").append(hostList.get((int) (pos % hostList.size()))).toString();
+            String rawHost = hostList.get((int) (pos % hostList.size()));
+            String host = normalizeHostScheme(rawHost);
             if (tryHttpConnection(host)) {
                 return host;
             }
@@ -112,8 +113,26 @@ public class StarRocksStreamLoadVisitor {
         return null;
     }
 
+    private String normalizeHostScheme(String host) {
+        if (host == null) {
+            return null;
+        }
+        String trimmed = host.trim();
+        if (trimmed.isEmpty()) {
+            return trimmed;
+        }
+        if (hasScheme(trimmed)) {
+            return trimmed;
+        }
+        return "http://" + trimmed;
+    }
+
+    private boolean hasScheme(String host) {
+        return host.matches("^[a-zA-Z][a-zA-Z0-9+\\-.]*://.*");
+    }
+
     private boolean tryHttpConnection(String host) {
-        try {  
+        try {
             URL url = new URL(host);
             HttpURLConnection co =  (HttpURLConnection) url.openConnection();
             co.setConnectTimeout(1000);
@@ -137,7 +156,7 @@ public class StarRocksStreamLoadVisitor {
             }
             return bos.array();
         }
-       
+
         if (StarRocksWriterOptions.StreamLoadFormat.JSON.equals(writerOptions.getStreamLoadFormat())) {
             ByteBuffer bos = ByteBuffer.allocate(totalBytes + (rows.isEmpty() ? 2 : rows.size() + 1));
             bos.put("[".getBytes(StandardCharsets.UTF_8));
@@ -274,7 +293,7 @@ public class StarRocksStreamLoadVisitor {
         }
         return respEntity;
     }
-	
+
     private String doHttpGet(String getUrl) throws IOException {
         LOG.info("Executing GET from {}.", getUrl);
         try (CloseableHttpClient httpclient = buildHttpClient()) {
