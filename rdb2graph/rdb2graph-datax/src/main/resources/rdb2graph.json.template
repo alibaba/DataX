@@ -1,0 +1,57 @@
+{
+    "job": {
+        "setting": {
+            "speed": {
+            	"channel": 5
+            }
+        },
+        "content": [
+            {
+                "reader": {
+                    "name": "oraclereader4graph",
+                    "phase": "table" // rel
+                    "parameter": {
+                        "username": "root",
+                        "password": "root",
+						//*******多url支持分库分表******
+						"connection": [ 
+                            {
+                                "table": [
+                                    "table"
+                                ],
+                                "jdbcUrl": [
+     								"jdbc:oracle:thin:@[HOST_NAME]:PORT:[DATABASE_NAME]"
+                                ]
+                            }
+                        ] 或
+                        "connection": [
+                            {
+                                "querySql": [
+                                    
+                                ],
+                                "relFrom": [], 
+                                "relFk": [],
+                                "jdbcUrl": [
+                                    "jdbc:oracle:thin:@[HOST_NAME]:PORT:[DATABASE_NAME]"
+                                ]
+                            }
+                        ]
+						//****************
+                    }
+                },
+                "writer": {
+                    "name": "neo4jwriter",
+                    "parameter": {
+                        "username": "root",
+                        "password": "root",
+                        "phase":  # table/rel
+                        "database": 
+                        "uri": "",
+                        "schemaUri": ""
+                        "writemode": "insert" // replace，update 
+                    }
+                }
+            }
+        ]
+    }
+}

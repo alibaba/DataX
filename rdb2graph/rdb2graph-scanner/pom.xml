@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+		<groupId>com.leehom.arch.datax.plugin</groupId>
+		<artifactId>rdb2graph-parent</artifactId>
+        <version>${revision}</version>
+    </parent>
+    <artifactId>rdb2graph-scanner</artifactId>
+    <packaging>jar</packaging>
+
+	<properties>
+		<!-- <neo4j-java-driver.version>4.3.6</neo4j-java-driver.version> -->
+		<neo4j-java-driver.version>4.0.2</neo4j-java-driver.version>
+	</properties>
+    
+    <dependencies>
+    	<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>druid</artifactId>
+		 </dependency>
+		<dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>${mysql.driver.version}</version>
+        </dependency>
+		<!-- neo4j -->
+			<dependency>
+				<groupId>org.neo4j.driver</groupId>
+				<artifactId>neo4j-java-driver</artifactId>
+				<version>${neo4j-java-driver.version}</version>
+			</dependency>
+		<!-- tools -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<!--  -->
+		<dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+		<dependency>
+            <groupId>com.oracle</groupId>
+            <artifactId>ojdbc6</artifactId>
+            <version>11.2.0.3</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/src/main/lib/ojdbc6-11.2.0.3.jar</systemPath>
+        </dependency>
+        <!--  -->
+        <dependency>
+			<groupId>com.leehom.arch.datax.plugin</groupId>
+			<artifactId>rdb2graph-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	    <!-- test -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<!-- for test -->
+		<dependency>
+				<groupId>com.alibaba</groupId>
+				<artifactId>fastjson</artifactId>
+				<scope>test</scope>
+		</dependency>
+    </dependencies>
+
+
+
+</project>

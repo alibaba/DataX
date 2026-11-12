@@ -1,0 +1,6 @@
+{
+    "name": "oraclereader4graph",
+    "class": "com.leehom.arch.datax.plugin.rdb2graph.reader.oraclereader.OracleReader4Graph",
+    "description": "",
+    "developer": "leehom"
+}

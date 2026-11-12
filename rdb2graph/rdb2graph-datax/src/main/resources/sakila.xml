@@ -1,0 +1,1942 @@
+<?xml version="1.0" encoding="utf-8"?><schema>
+  <name>sakila</name>
+  <tables>
+    <table>
+      <name>actor</name>
+      <fields>
+        <field>
+          <name>actor_id</name>
+          <type>SMALLINT</type>
+          <length>5</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>first_name</name>
+          <type>VARCHAR</type>
+          <length>45</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>last_name</name>
+          <type>VARCHAR</type>
+          <length>45</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>last_update</name>
+          <type>TIMESTAMP</type>
+          <length>19</length>
+          <remark></remark>
+        </field>
+      </fields>
+      <pk>
+        <tbmd reference="../.."/>
+        <fields>
+          <field reference="../../../fields/field"/>
+        </fields>
+      </pk>
+      <fks/>
+      <notNull>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field"/>
+          <nnName>ACTOR_ID_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[2]"/>
+          <nnName>FIRST_NAME_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[3]"/>
+          <nnName>LAST_NAME_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[4]"/>
+          <nnName>LAST_UPDATE_NN</nnName>
+        </nn>
+      </notNull>
+      <unique>
+        <uq>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field"/>
+          </fields>
+          <unqName>PRIMARY</unqName>
+        </uq>
+      </unique>
+      <indexes>
+        <index>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field[3]"/>
+          </fields>
+          <name>idx_actor_last_name</name>
+          <type>OTHER</type>
+        </index>
+      </indexes>
+      <isLinkTable>false</isLinkTable>
+    </table>
+    <table>
+      <name>address</name>
+      <fields>
+        <field>
+          <name>address_id</name>
+          <type>SMALLINT</type>
+          <length>5</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>address</name>
+          <type>VARCHAR</type>
+          <length>50</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>address2</name>
+          <type>VARCHAR</type>
+          <length>50</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>district</name>
+          <type>VARCHAR</type>
+          <length>20</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>city_id</name>
+          <type>SMALLINT</type>
+          <length>5</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>postal_code</name>
+          <type>VARCHAR</type>
+          <length>10</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>phone</name>
+          <type>VARCHAR</type>
+          <length>20</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>last_update</name>
+          <type>TIMESTAMP</type>
+          <length>19</length>
+          <remark></remark>
+        </field>
+      </fields>
+      <pk>
+        <tbmd reference="../.."/>
+        <fields>
+          <field reference="../../../fields/field"/>
+        </fields>
+      </pk>
+      <fks/>
+      <notNull>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field"/>
+          <nnName>ADDRESS_ID_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[2]"/>
+          <nnName>ADDRESS_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[3]"/>
+          <nnName>ADDRESS2_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[4]"/>
+          <nnName>DISTRICT_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[5]"/>
+          <nnName>CITY_ID_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[6]"/>
+          <nnName>POSTAL_CODE_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[7]"/>
+          <nnName>PHONE_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[8]"/>
+          <nnName>LAST_UPDATE_NN</nnName>
+        </nn>
+      </notNull>
+      <unique>
+        <uq>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field"/>
+          </fields>
+          <unqName>PRIMARY</unqName>
+        </uq>
+      </unique>
+      <indexes>
+        <index>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field[5]"/>
+            <field reference="../../../../fields/field"/>
+          </fields>
+          <name>fk_address_city_idx</name>
+          <type>OTHER</type>
+        </index>
+        <index>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field[5]"/>
+          </fields>
+          <name>idx_fk_city_id</name>
+          <type>OTHER</type>
+        </index>
+      </indexes>
+      <isLinkTable>false</isLinkTable>
+    </table>
+    <table>
+      <name>category</name>
+      <fields>
+        <field>
+          <name>category_id</name>
+          <type>TINYINT</type>
+          <length>3</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>name</name>
+          <type>VARCHAR</type>
+          <length>25</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>last_update</name>
+          <type>TIMESTAMP</type>
+          <length>19</length>
+          <remark></remark>
+        </field>
+      </fields>
+      <pk>
+        <tbmd reference="../.."/>
+        <fields>
+          <field reference="../../../fields/field"/>
+        </fields>
+      </pk>
+      <fks/>
+      <notNull>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field"/>
+          <nnName>CATEGORY_ID_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[2]"/>
+          <nnName>NAME_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[3]"/>
+          <nnName>LAST_UPDATE_NN</nnName>
+        </nn>
+      </notNull>
+      <unique>
+        <uq>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field"/>
+          </fields>
+          <unqName>PRIMARY</unqName>
+        </uq>
+      </unique>
+      <indexes/>
+      <isLinkTable>false</isLinkTable>
+    </table>
+    <table>
+      <name>city</name>
+      <fields>
+        <field>
+          <name>city_id</name>
+          <type>SMALLINT</type>
+          <length>5</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>city</name>
+          <type>VARCHAR</type>
+          <length>50</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>country_id</name>
+          <type>SMALLINT</type>
+          <length>5</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>last_update</name>
+          <type>TIMESTAMP</type>
+          <length>19</length>
+          <remark></remark>
+        </field>
+      </fields>
+      <pk>
+        <tbmd reference="../.."/>
+        <fields>
+          <field reference="../../../fields/field"/>
+        </fields>
+      </pk>
+      <fks>
+        <fk>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field[3]"/>
+          </fields>
+          <fkName>fk_city_country</fkName>
+          <refTable>
+            <name>country</name>
+            <fields>
+              <field>
+                <name>country_id</name>
+                <type>SMALLINT</type>
+                <length>5</length>
+                <remark></remark>
+              </field>
+              <field>
+                <name>country</name>
+                <type>VARCHAR</type>
+                <length>50</length>
+                <remark></remark>
+              </field>
+              <field>
+                <name>last_update</name>
+                <type>TIMESTAMP</type>
+                <length>19</length>
+                <remark></remark>
+              </field>
+            </fields>
+            <pk>
+              <tbmd reference="../.."/>
+              <fields>
+                <field reference="../../../fields/field"/>
+              </fields>
+            </pk>
+            <fks/>
+            <notNull>
+              <nn>
+                <tbmd reference="../../.."/>
+                <field reference="../../../fields/field"/>
+                <nnName>COUNTRY_ID_NN</nnName>
+              </nn>
+              <nn>
+                <tbmd reference="../../.."/>
+                <field reference="../../../fields/field[2]"/>
+                <nnName>COUNTRY_NN</nnName>
+              </nn>
+              <nn>
+                <tbmd reference="../../.."/>
+                <field reference="../../../fields/field[3]"/>
+                <nnName>LAST_UPDATE_NN</nnName>
+              </nn>
+            </notNull>
+            <unique>
+              <uq>
+                <tbmd reference="../../.."/>
+                <fields>
+                  <field reference="../../../../fields/field"/>
+                </fields>
+                <unqName>PRIMARY</unqName>
+              </uq>
+            </unique>
+            <indexes/>
+            <isLinkTable>false</isLinkTable>
+          </refTable>
+          <fkFields>
+            <com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+              <field reference="../../../../../fields/field[3]"/>
+              <refField reference="../../../refTable/fields/field"/>
+            </com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+          </fkFields>
+        </fk>
+      </fks>
+      <notNull>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field"/>
+          <nnName>CITY_ID_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[2]"/>
+          <nnName>CITY_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[3]"/>
+          <nnName>COUNTRY_ID_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[4]"/>
+          <nnName>LAST_UPDATE_NN</nnName>
+        </nn>
+      </notNull>
+      <unique>
+        <uq>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field"/>
+          </fields>
+          <unqName>PRIMARY</unqName>
+        </uq>
+      </unique>
+      <indexes>
+        <index>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field[3]"/>
+          </fields>
+          <name>idx_fk_country_id</name>
+          <type>OTHER</type>
+        </index>
+      </indexes>
+      <isLinkTable>false</isLinkTable>
+    </table>
+    <table reference="../table[4]/fks/fk/refTable"/>
+    <table>
+      <name>customer</name>
+      <fields>
+        <field>
+          <name>customer_id</name>
+          <type>SMALLINT</type>
+          <length>5</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>store_id</name>
+          <type>TINYINT</type>
+          <length>3</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>first_name</name>
+          <type>VARCHAR</type>
+          <length>45</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>last_name</name>
+          <type>VARCHAR</type>
+          <length>45</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>email</name>
+          <type>VARCHAR</type>
+          <length>50</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>address_id</name>
+          <type>SMALLINT</type>
+          <length>5</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>active</name>
+          <type>BIT</type>
+          <length>1</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>create_date</name>
+          <type>TIMESTAMP</type>
+          <length>19</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>last_update</name>
+          <type>TIMESTAMP</type>
+          <length>19</length>
+          <remark></remark>
+        </field>
+      </fields>
+      <pk>
+        <tbmd reference="../.."/>
+        <fields>
+          <field reference="../../../fields/field"/>
+        </fields>
+      </pk>
+      <fks>
+        <fk>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field[6]"/>
+          </fields>
+          <fkName>fk_customer_address</fkName>
+          <refTable reference="../../../../table[2]"/>
+          <fkFields>
+            <com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+              <field reference="../../../../../fields/field[6]"/>
+              <refField reference="../../../../../../table[2]/fields/field"/>
+            </com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+          </fkFields>
+        </fk>
+        <fk>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field[2]"/>
+          </fields>
+          <fkName>fk_customer_store</fkName>
+          <refTable>
+            <name>store</name>
+            <fields>
+              <field>
+                <name>store_id</name>
+                <type>TINYINT</type>
+                <length>3</length>
+                <remark></remark>
+              </field>
+              <field>
+                <name>manager_staff_id</name>
+                <type>TINYINT</type>
+                <length>3</length>
+                <remark></remark>
+              </field>
+              <field>
+                <name>address_id</name>
+                <type>SMALLINT</type>
+                <length>5</length>
+                <remark></remark>
+              </field>
+              <field>
+                <name>last_update</name>
+                <type>TIMESTAMP</type>
+                <length>19</length>
+                <remark></remark>
+              </field>
+            </fields>
+            <pk>
+              <tbmd reference="../.."/>
+              <fields>
+                <field reference="../../../fields/field"/>
+              </fields>
+            </pk>
+            <fks>
+              <fk>
+                <tbmd reference="../../.."/>
+                <fields>
+                  <field reference="../../../../fields/field[3]"/>
+                </fields>
+                <fkName>fk_store_address</fkName>
+                <refTable reference="../../../../../../../table[2]"/>
+                <fkFields>
+                  <com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+                    <field reference="../../../../../fields/field[3]"/>
+                    <refField reference="../../../../../../../../../table[2]/fields/field"/>
+                  </com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+                </fkFields>
+              </fk>
+              <fk>
+                <tbmd reference="../../.."/>
+                <fields>
+                  <field reference="../../../../fields/field[2]"/>
+                </fields>
+                <fkName>fk_store_staff</fkName>
+                <refTable>
+                  <name>staff</name>
+                  <fields>
+                    <field>
+                      <name>staff_id</name>
+                      <type>TINYINT</type>
+                      <length>3</length>
+                      <remark></remark>
+                    </field>
+                    <field>
+                      <name>first_name</name>
+                      <type>VARCHAR</type>
+                      <length>45</length>
+                      <remark></remark>
+                    </field>
+                    <field>
+                      <name>last_name</name>
+                      <type>VARCHAR</type>
+                      <length>45</length>
+                      <remark></remark>
+                    </field>
+                    <field>
+                      <name>address_id</name>
+                      <type>SMALLINT</type>
+                      <length>5</length>
+                      <remark></remark>
+                    </field>
+                    <field>
+                      <name>picture</name>
+                      <type>LONGVARBINARY</type>
+                      <length>65535</length>
+                      <remark></remark>
+                    </field>
+                    <field>
+                      <name>email</name>
+                      <type>VARCHAR</type>
+                      <length>50</length>
+                      <remark></remark>
+                    </field>
+                    <field>
+                      <name>store_id</name>
+                      <type>TINYINT</type>
+                      <length>3</length>
+                      <remark></remark>
+                    </field>
+                    <field>
+                      <name>active</name>
+                      <type>BIT</type>
+                      <length>1</length>
+                      <remark></remark>
+                    </field>
+                    <field>
+                      <name>username</name>
+                      <type>VARCHAR</type>
+                      <length>16</length>
+                      <remark></remark>
+                    </field>
+                    <field>
+                      <name>password</name>
+                      <type>VARCHAR</type>
+                      <length>40</length>
+                      <remark></remark>
+                    </field>
+                    <field>
+                      <name>last_update</name>
+                      <type>TIMESTAMP</type>
+                      <length>19</length>
+                      <remark></remark>
+                    </field>
+                  </fields>
+                  <pk>
+                    <tbmd reference="../.."/>
+                    <fields>
+                      <field reference="../../../fields/field"/>
+                    </fields>
+                  </pk>
+                  <fks>
+                    <fk>
+                      <tbmd reference="../../.."/>
+                      <fields>
+                        <field reference="../../../../fields/field[4]"/>
+                      </fields>
+                      <fkName>fk_staff_address</fkName>
+                      <refTable reference="../../../../../../../../../../table[2]"/>
+                      <fkFields>
+                        <com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+                          <field reference="../../../../../fields/field[4]"/>
+                          <refField reference="../../../../../../../../../../../../table[2]/fields/field"/>
+                        </com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+                      </fkFields>
+                    </fk>
+                    <fk>
+                      <tbmd reference="../../.."/>
+                      <fields>
+                        <field reference="../../../../fields/field[7]"/>
+                      </fields>
+                      <fkName>fk_staff_store</fkName>
+                      <refTable reference="../../../../../.."/>
+                      <fkFields>
+                        <com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+                          <field reference="../../../../../fields/field[7]"/>
+                          <refField reference="../../../../../../../../fields/field"/>
+                        </com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+                      </fkFields>
+                    </fk>
+                  </fks>
+                  <notNull>
+                    <nn>
+                      <tbmd reference="../../.."/>
+                      <field reference="../../../fields/field"/>
+                      <nnName>STAFF_ID_NN</nnName>
+                    </nn>
+                    <nn>
+                      <tbmd reference="../../.."/>
+                      <field reference="../../../fields/field[2]"/>
+                      <nnName>FIRST_NAME_NN</nnName>
+                    </nn>
+                    <nn>
+                      <tbmd reference="../../.."/>
+                      <field reference="../../../fields/field[3]"/>
+                      <nnName>LAST_NAME_NN</nnName>
+                    </nn>
+                    <nn>
+                      <tbmd reference="../../.."/>
+                      <field reference="../../../fields/field[4]"/>
+                      <nnName>ADDRESS_ID_NN</nnName>
+                    </nn>
+                    <nn>
+                      <tbmd reference="../../.."/>
+                      <field reference="../../../fields/field[5]"/>
+                      <nnName>PICTURE_NN</nnName>
+                    </nn>
+                    <nn>
+                      <tbmd reference="../../.."/>
+                      <field reference="../../../fields/field[6]"/>
+                      <nnName>EMAIL_NN</nnName>
+                    </nn>
+                    <nn>
+                      <tbmd reference="../../.."/>
+                      <field reference="../../../fields/field[7]"/>
+                      <nnName>STORE_ID_NN</nnName>
+                    </nn>
+                    <nn>
+                      <tbmd reference="../../.."/>
+                      <field reference="../../../fields/field[8]"/>
+                      <nnName>ACTIVE_NN</nnName>
+                    </nn>
+                    <nn>
+                      <tbmd reference="../../.."/>
+                      <field reference="../../../fields/field[9]"/>
+                      <nnName>USERNAME_NN</nnName>
+                    </nn>
+                    <nn>
+                      <tbmd reference="../../.."/>
+                      <field reference="../../../fields/field[10]"/>
+                      <nnName>PASSWORD_NN</nnName>
+                    </nn>
+                    <nn>
+                      <tbmd reference="../../.."/>
+                      <field reference="../../../fields/field[11]"/>
+                      <nnName>LAST_UPDATE_NN</nnName>
+                    </nn>
+                  </notNull>
+                  <unique>
+                    <uq>
+                      <tbmd reference="../../.."/>
+                      <fields>
+                        <field reference="../../../../fields/field"/>
+                      </fields>
+                      <unqName>PRIMARY</unqName>
+                    </uq>
+                  </unique>
+                  <indexes>
+                    <index>
+                      <tbmd reference="../../.."/>
+                      <fields>
+                        <field reference="../../../../fields/field[4]"/>
+                      </fields>
+                      <name>idx_fk_address_id</name>
+                      <type>OTHER</type>
+                    </index>
+                    <index>
+                      <tbmd reference="../../.."/>
+                      <fields>
+                        <field reference="../../../../fields/field[7]"/>
+                      </fields>
+                      <name>idx_fk_store_id</name>
+                      <type>OTHER</type>
+                    </index>
+                  </indexes>
+                  <isLinkTable>false</isLinkTable>
+                </refTable>
+                <fkFields>
+                  <com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+                    <field reference="../../../../../fields/field[2]"/>
+                    <refField reference="../../../refTable/fields/field"/>
+                  </com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+                </fkFields>
+              </fk>
+            </fks>
+            <notNull>
+              <nn>
+                <tbmd reference="../../.."/>
+                <field reference="../../../fields/field"/>
+                <nnName>STORE_ID_NN</nnName>
+              </nn>
+              <nn>
+                <tbmd reference="../../.."/>
+                <field reference="../../../fields/field[2]"/>
+                <nnName>MANAGER_STAFF_ID_NN</nnName>
+              </nn>
+              <nn>
+                <tbmd reference="../../.."/>
+                <field reference="../../../fields/field[3]"/>
+                <nnName>ADDRESS_ID_NN</nnName>
+              </nn>
+              <nn>
+                <tbmd reference="../../.."/>
+                <field reference="../../../fields/field[4]"/>
+                <nnName>LAST_UPDATE_NN</nnName>
+              </nn>
+            </notNull>
+            <unique>
+              <uq>
+                <tbmd reference="../../.."/>
+                <fields>
+                  <field reference="../../../../fields/field[2]"/>
+                </fields>
+                <unqName>idx_unique_manager</unqName>
+              </uq>
+              <uq>
+                <tbmd reference="../../.."/>
+                <fields>
+                  <field reference="../../../../fields/field"/>
+                </fields>
+                <unqName>PRIMARY</unqName>
+              </uq>
+            </unique>
+            <indexes>
+              <index>
+                <tbmd reference="../../.."/>
+                <fields>
+                  <field reference="../../../../fields/field[3]"/>
+                </fields>
+                <name>idx_fk_address_id</name>
+                <type>OTHER</type>
+              </index>
+            </indexes>
+            <isLinkTable>false</isLinkTable>
+          </refTable>
+          <fkFields>
+            <com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+              <field reference="../../../../../fields/field[2]"/>
+              <refField reference="../../../refTable/fields/field"/>
+            </com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+          </fkFields>
+        </fk>
+      </fks>
+      <notNull>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field"/>
+          <nnName>CUSTOMER_ID_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[2]"/>
+          <nnName>STORE_ID_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[3]"/>
+          <nnName>FIRST_NAME_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[4]"/>
+          <nnName>LAST_NAME_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[5]"/>
+          <nnName>EMAIL_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[6]"/>
+          <nnName>ADDRESS_ID_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[7]"/>
+          <nnName>ACTIVE_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[8]"/>
+          <nnName>CREATE_DATE_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[9]"/>
+          <nnName>LAST_UPDATE_NN</nnName>
+        </nn>
+      </notNull>
+      <unique>
+        <uq>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field"/>
+          </fields>
+          <unqName>PRIMARY</unqName>
+        </uq>
+      </unique>
+      <indexes>
+        <index>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field[6]"/>
+          </fields>
+          <name>idx_fk_address_id</name>
+          <type>OTHER</type>
+        </index>
+        <index>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field[2]"/>
+          </fields>
+          <name>idx_fk_store_id</name>
+          <type>OTHER</type>
+        </index>
+        <index>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field[4]"/>
+          </fields>
+          <name>idx_last_name</name>
+          <type>OTHER</type>
+        </index>
+      </indexes>
+      <isLinkTable>false</isLinkTable>
+    </table>
+    <table>
+      <name>film</name>
+      <fields>
+        <field>
+          <name>film_id</name>
+          <type>SMALLINT</type>
+          <length>5</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>title</name>
+          <type>VARCHAR</type>
+          <length>255</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>description</name>
+          <type>LONGVARCHAR</type>
+          <length>65535</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>release_year</name>
+          <type>DATE</type>
+          <length>4</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>language_id</name>
+          <type>TINYINT</type>
+          <length>3</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>original_language_id</name>
+          <type>TINYINT</type>
+          <length>3</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>rental_duration</name>
+          <type>TINYINT</type>
+          <length>3</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>rental_rate</name>
+          <type>DECIMAL</type>
+          <length>4</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>length</name>
+          <type>SMALLINT</type>
+          <length>5</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>replacement_cost</name>
+          <type>DECIMAL</type>
+          <length>5</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>rating</name>
+          <type>CHAR</type>
+          <length>5</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>special_features</name>
+          <type>CHAR</type>
+          <length>54</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>last_update</name>
+          <type>TIMESTAMP</type>
+          <length>19</length>
+          <remark></remark>
+        </field>
+      </fields>
+      <pk>
+        <tbmd reference="../.."/>
+        <fields>
+          <field reference="../../../fields/field"/>
+        </fields>
+      </pk>
+      <fks>
+        <fk>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field[5]"/>
+          </fields>
+          <fkName>fk_film_language</fkName>
+          <refTable>
+            <name>language</name>
+            <fields>
+              <field>
+                <name>language_id</name>
+                <type>TINYINT</type>
+                <length>3</length>
+                <remark></remark>
+              </field>
+              <field>
+                <name>name</name>
+                <type>CHAR</type>
+                <length>20</length>
+                <remark></remark>
+              </field>
+              <field>
+                <name>last_update</name>
+                <type>TIMESTAMP</type>
+                <length>19</length>
+                <remark></remark>
+              </field>
+            </fields>
+            <pk>
+              <tbmd reference="../.."/>
+              <fields>
+                <field reference="../../../fields/field"/>
+              </fields>
+            </pk>
+            <fks/>
+            <notNull>
+              <nn>
+                <tbmd reference="../../.."/>
+                <field reference="../../../fields/field"/>
+                <nnName>LANGUAGE_ID_NN</nnName>
+              </nn>
+              <nn>
+                <tbmd reference="../../.."/>
+                <field reference="../../../fields/field[2]"/>
+                <nnName>NAME_NN</nnName>
+              </nn>
+              <nn>
+                <tbmd reference="../../.."/>
+                <field reference="../../../fields/field[3]"/>
+                <nnName>LAST_UPDATE_NN</nnName>
+              </nn>
+            </notNull>
+            <unique>
+              <uq>
+                <tbmd reference="../../.."/>
+                <fields>
+                  <field reference="../../../../fields/field"/>
+                </fields>
+                <unqName>PRIMARY</unqName>
+              </uq>
+            </unique>
+            <indexes/>
+            <isLinkTable>false</isLinkTable>
+          </refTable>
+          <fkFields>
+            <com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+              <field reference="../../../../../fields/field[5]"/>
+              <refField reference="../../../refTable/fields/field"/>
+            </com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+          </fkFields>
+        </fk>
+        <fk>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field[6]"/>
+          </fields>
+          <fkName>fk_film_language_original</fkName>
+          <refTable reference="../../fk/refTable"/>
+          <fkFields>
+            <com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+              <field reference="../../../../../fields/field[6]"/>
+              <refField reference="../../../../fk/refTable/fields/field"/>
+            </com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+          </fkFields>
+        </fk>
+      </fks>
+      <notNull>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field"/>
+          <nnName>FILM_ID_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[2]"/>
+          <nnName>TITLE_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[3]"/>
+          <nnName>DESCRIPTION_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[4]"/>
+          <nnName>RELEASE_YEAR_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[5]"/>
+          <nnName>LANGUAGE_ID_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[6]"/>
+          <nnName>ORIGINAL_LANGUAGE_ID_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[7]"/>
+          <nnName>RENTAL_DURATION_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[8]"/>
+          <nnName>RENTAL_RATE_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[9]"/>
+          <nnName>LENGTH_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[10]"/>
+          <nnName>REPLACEMENT_COST_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[11]"/>
+          <nnName>RATING_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[12]"/>
+          <nnName>SPECIAL_FEATURES_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[13]"/>
+          <nnName>LAST_UPDATE_NN</nnName>
+        </nn>
+      </notNull>
+      <unique>
+        <uq>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field"/>
+          </fields>
+          <unqName>PRIMARY</unqName>
+        </uq>
+      </unique>
+      <indexes>
+        <index>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field[5]"/>
+          </fields>
+          <name>idx_fk_language_id</name>
+          <type>OTHER</type>
+        </index>
+        <index>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field[6]"/>
+          </fields>
+          <name>idx_fk_original_language_id</name>
+          <type>OTHER</type>
+        </index>
+        <index>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field[2]"/>
+          </fields>
+          <name>idx_title</name>
+          <type>OTHER</type>
+        </index>
+      </indexes>
+      <isLinkTable>false</isLinkTable>
+    </table>
+    <table>
+      <name>film_actor</name>
+      <fields>
+        <field>
+          <name>actor_id</name>
+          <type>SMALLINT</type>
+          <length>5</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>film_id</name>
+          <type>SMALLINT</type>
+          <length>5</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>last_update</name>
+          <type>TIMESTAMP</type>
+          <length>19</length>
+          <remark></remark>
+        </field>
+      </fields>
+      <pk>
+        <tbmd reference="../.."/>
+        <fields>
+          <field reference="../../../fields/field"/>
+          <field reference="../../../fields/field[2]"/>
+        </fields>
+      </pk>
+      <fks>
+        <fk>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field"/>
+          </fields>
+          <fkName>fk_film_actor_actor</fkName>
+          <refTable reference="../../../../table"/>
+          <fkFields>
+            <com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+              <field reference="../../../../../fields/field"/>
+              <refField reference="../../../../../../table/fields/field"/>
+            </com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+          </fkFields>
+        </fk>
+        <fk>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field[2]"/>
+          </fields>
+          <fkName>fk_film_actor_film</fkName>
+          <refTable reference="../../../../table[7]"/>
+          <fkFields>
+            <com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+              <field reference="../../../../../fields/field[2]"/>
+              <refField reference="../../../../../../table[7]/fields/field"/>
+            </com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+          </fkFields>
+        </fk>
+      </fks>
+      <notNull>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field"/>
+          <nnName>ACTOR_ID_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[2]"/>
+          <nnName>FILM_ID_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[3]"/>
+          <nnName>LAST_UPDATE_NN</nnName>
+        </nn>
+      </notNull>
+      <unique>
+        <uq>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field"/>
+          </fields>
+          <unqName>PRIMARY</unqName>
+        </uq>
+        <uq>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field[2]"/>
+          </fields>
+          <unqName>PRIMARY</unqName>
+        </uq>
+      </unique>
+      <indexes>
+        <index>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field[2]"/>
+          </fields>
+          <name>idx_fk_film_id</name>
+          <type>OTHER</type>
+        </index>
+      </indexes>
+      <isLinkTable>true</isLinkTable>
+      <linkFrom reference="../fks/fk[2]"/>
+    </table>
+    <table>
+      <name>film_category</name>
+      <fields>
+        <field>
+          <name>film_id</name>
+          <type>SMALLINT</type>
+          <length>5</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>category_id</name>
+          <type>TINYINT</type>
+          <length>3</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>last_update</name>
+          <type>TIMESTAMP</type>
+          <length>19</length>
+          <remark></remark>
+        </field>
+      </fields>
+      <pk>
+        <tbmd reference="../.."/>
+        <fields>
+          <field reference="../../../fields/field[2]"/>
+          <field reference="../../../fields/field"/>
+        </fields>
+      </pk>
+      <fks>
+        <fk>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field[2]"/>
+          </fields>
+          <fkName>fk_film_category_category</fkName>
+          <refTable reference="../../../../table[3]"/>
+          <fkFields>
+            <com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+              <field reference="../../../../../fields/field[2]"/>
+              <refField reference="../../../../../../table[3]/fields/field"/>
+            </com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+          </fkFields>
+        </fk>
+        <fk>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field"/>
+          </fields>
+          <fkName>fk_film_category_film</fkName>
+          <refTable reference="../../../../table[7]"/>
+          <fkFields>
+            <com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+              <field reference="../../../../../fields/field"/>
+              <refField reference="../../../../../../table[7]/fields/field"/>
+            </com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+          </fkFields>
+        </fk>
+      </fks>
+      <notNull>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field"/>
+          <nnName>FILM_ID_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[2]"/>
+          <nnName>CATEGORY_ID_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[3]"/>
+          <nnName>LAST_UPDATE_NN</nnName>
+        </nn>
+      </notNull>
+      <unique>
+        <uq>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field"/>
+          </fields>
+          <unqName>PRIMARY</unqName>
+        </uq>
+        <uq>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field[2]"/>
+          </fields>
+          <unqName>PRIMARY</unqName>
+        </uq>
+      </unique>
+      <indexes>
+        <index>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field[2]"/>
+          </fields>
+          <name>fk_film_category_category</name>
+          <type>OTHER</type>
+        </index>
+      </indexes>
+      <isLinkTable>true</isLinkTable>
+      <linkFrom reference="../fks/fk[2]"/>
+    </table>
+    <table>
+      <name>film_text</name>
+      <fields>
+        <field>
+          <name>film_id</name>
+          <type>SMALLINT</type>
+          <length>5</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>title</name>
+          <type>VARCHAR</type>
+          <length>255</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>description</name>
+          <type>LONGVARCHAR</type>
+          <length>65535</length>
+          <remark></remark>
+        </field>
+      </fields>
+      <pk>
+        <tbmd reference="../.."/>
+        <fields>
+          <field reference="../../../fields/field"/>
+        </fields>
+      </pk>
+      <fks/>
+      <notNull>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field"/>
+          <nnName>FILM_ID_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[2]"/>
+          <nnName>TITLE_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[3]"/>
+          <nnName>DESCRIPTION_NN</nnName>
+        </nn>
+      </notNull>
+      <unique>
+        <uq>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field"/>
+          </fields>
+          <unqName>PRIMARY</unqName>
+        </uq>
+      </unique>
+      <indexes>
+        <index>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field[2]"/>
+            <field reference="../../../../fields/field[3]"/>
+          </fields>
+          <name>idx_title_description</name>
+          <type>OTHER</type>
+        </index>
+      </indexes>
+      <isLinkTable>false</isLinkTable>
+    </table>
+    <table>
+      <name>inventory</name>
+      <fields>
+        <field>
+          <name>inventory_id</name>
+          <type>INTEGER</type>
+          <length>8</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>film_id</name>
+          <type>SMALLINT</type>
+          <length>5</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>store_id</name>
+          <type>TINYINT</type>
+          <length>3</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>last_update</name>
+          <type>TIMESTAMP</type>
+          <length>19</length>
+          <remark></remark>
+        </field>
+      </fields>
+      <pk>
+        <tbmd reference="../.."/>
+        <fields>
+          <field reference="../../../fields/field"/>
+        </fields>
+      </pk>
+      <fks>
+        <fk>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field[2]"/>
+          </fields>
+          <fkName>fk_inventory_film</fkName>
+          <refTable reference="../../../../table[7]"/>
+          <fkFields>
+            <com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+              <field reference="../../../../../fields/field[2]"/>
+              <refField reference="../../../../../../table[7]/fields/field"/>
+            </com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+          </fkFields>
+        </fk>
+        <fk>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field[3]"/>
+          </fields>
+          <fkName>fk_inventory_store</fkName>
+          <refTable reference="../../../../table[6]/fks/fk[2]/refTable"/>
+          <fkFields>
+            <com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+              <field reference="../../../../../fields/field[3]"/>
+              <refField reference="../../../../../../table[6]/fks/fk[2]/refTable/fields/field"/>
+            </com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+          </fkFields>
+        </fk>
+      </fks>
+      <notNull>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field"/>
+          <nnName>INVENTORY_ID_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[2]"/>
+          <nnName>FILM_ID_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[3]"/>
+          <nnName>STORE_ID_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[4]"/>
+          <nnName>LAST_UPDATE_NN</nnName>
+        </nn>
+      </notNull>
+      <unique>
+        <uq>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field"/>
+          </fields>
+          <unqName>PRIMARY</unqName>
+        </uq>
+      </unique>
+      <indexes>
+        <index>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field[2]"/>
+          </fields>
+          <name>idx_fk_film_id</name>
+          <type>OTHER</type>
+        </index>
+        <index>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field[3]"/>
+            <field reference="../../../../fields/field[2]"/>
+          </fields>
+          <name>idx_store_id_film_id</name>
+          <type>OTHER</type>
+        </index>
+      </indexes>
+      <isLinkTable>false</isLinkTable>
+    </table>
+    <table reference="../table[7]/fks/fk/refTable"/>
+    <table>
+      <name>payment</name>
+      <fields>
+        <field>
+          <name>payment_id</name>
+          <type>SMALLINT</type>
+          <length>5</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>customer_id</name>
+          <type>SMALLINT</type>
+          <length>5</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>staff_id</name>
+          <type>TINYINT</type>
+          <length>3</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>rental_id</name>
+          <type>INTEGER</type>
+          <length>10</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>amount</name>
+          <type>DECIMAL</type>
+          <length>5</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>payment_date</name>
+          <type>TIMESTAMP</type>
+          <length>19</length>
+          <remark></remark>
+        </field>
+        <field>
+          <name>last_update</name>
+          <type>TIMESTAMP</type>
+          <length>19</length>
+          <remark></remark>
+        </field>
+      </fields>
+      <pk>
+        <tbmd reference="../.."/>
+        <fields>
+          <field reference="../../../fields/field"/>
+        </fields>
+      </pk>
+      <fks>
+        <fk>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field[2]"/>
+          </fields>
+          <fkName>fk_payment_customer</fkName>
+          <refTable reference="../../../../table[6]"/>
+          <fkFields>
+            <com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+              <field reference="../../../../../fields/field[2]"/>
+              <refField reference="../../../../../../table[6]/fields/field"/>
+            </com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+          </fkFields>
+        </fk>
+        <fk>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field[4]"/>
+          </fields>
+          <fkName>fk_payment_rental</fkName>
+          <refTable>
+            <name>rental</name>
+            <fields>
+              <field>
+                <name>rental_id</name>
+                <type>INTEGER</type>
+                <length>10</length>
+                <remark></remark>
+              </field>
+              <field>
+                <name>rental_date</name>
+                <type>TIMESTAMP</type>
+                <length>19</length>
+                <remark></remark>
+              </field>
+              <field>
+                <name>inventory_id</name>
+                <type>INTEGER</type>
+                <length>8</length>
+                <remark></remark>
+              </field>
+              <field>
+                <name>customer_id</name>
+                <type>SMALLINT</type>
+                <length>5</length>
+                <remark></remark>
+              </field>
+              <field>
+                <name>return_date</name>
+                <type>TIMESTAMP</type>
+                <length>19</length>
+                <remark></remark>
+              </field>
+              <field>
+                <name>staff_id</name>
+                <type>TINYINT</type>
+                <length>3</length>
+                <remark></remark>
+              </field>
+              <field>
+                <name>last_update</name>
+                <type>TIMESTAMP</type>
+                <length>19</length>
+                <remark></remark>
+              </field>
+            </fields>
+            <pk>
+              <tbmd reference="../.."/>
+              <fields>
+                <field reference="../../../fields/field"/>
+              </fields>
+            </pk>
+            <fks>
+              <fk>
+                <tbmd reference="../../.."/>
+                <fields>
+                  <field reference="../../../../fields/field[4]"/>
+                </fields>
+                <fkName>fk_rental_customer</fkName>
+                <refTable reference="../../../../../../../table[6]"/>
+                <fkFields>
+                  <com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+                    <field reference="../../../../../fields/field[4]"/>
+                    <refField reference="../../../../../../../../../table[6]/fields/field"/>
+                  </com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+                </fkFields>
+              </fk>
+              <fk>
+                <tbmd reference="../../.."/>
+                <fields>
+                  <field reference="../../../../fields/field[3]"/>
+                </fields>
+                <fkName>fk_rental_inventory</fkName>
+                <refTable reference="../../../../../../../table[11]"/>
+                <fkFields>
+                  <com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+                    <field reference="../../../../../fields/field[3]"/>
+                    <refField reference="../../../../../../../../../table[11]/fields/field"/>
+                  </com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+                </fkFields>
+              </fk>
+              <fk>
+                <tbmd reference="../../.."/>
+                <fields>
+                  <field reference="../../../../fields/field[6]"/>
+                </fields>
+                <fkName>fk_rental_staff</fkName>
+                <refTable reference="../../../../../../../table[6]/fks/fk[2]/refTable/fks/fk[2]/refTable"/>
+                <fkFields>
+                  <com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+                    <field reference="../../../../../fields/field[6]"/>
+                    <refField reference="../../../../../../../../../table[6]/fks/fk[2]/refTable/fks/fk[2]/refTable/fields/field"/>
+                  </com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+                </fkFields>
+              </fk>
+            </fks>
+            <notNull>
+              <nn>
+                <tbmd reference="../../.."/>
+                <field reference="../../../fields/field"/>
+                <nnName>RENTAL_ID_NN</nnName>
+              </nn>
+              <nn>
+                <tbmd reference="../../.."/>
+                <field reference="../../../fields/field[2]"/>
+                <nnName>RENTAL_DATE_NN</nnName>
+              </nn>
+              <nn>
+                <tbmd reference="../../.."/>
+                <field reference="../../../fields/field[3]"/>
+                <nnName>INVENTORY_ID_NN</nnName>
+              </nn>
+              <nn>
+                <tbmd reference="../../.."/>
+                <field reference="../../../fields/field[4]"/>
+                <nnName>CUSTOMER_ID_NN</nnName>
+              </nn>
+              <nn>
+                <tbmd reference="../../.."/>
+                <field reference="../../../fields/field[5]"/>
+                <nnName>RETURN_DATE_NN</nnName>
+              </nn>
+              <nn>
+                <tbmd reference="../../.."/>
+                <field reference="../../../fields/field[6]"/>
+                <nnName>STAFF_ID_NN</nnName>
+              </nn>
+              <nn>
+                <tbmd reference="../../.."/>
+                <field reference="../../../fields/field[7]"/>
+                <nnName>LAST_UPDATE_NN</nnName>
+              </nn>
+            </notNull>
+            <unique>
+              <uq>
+                <tbmd reference="../../.."/>
+                <fields>
+                  <field reference="../../../../fields/field"/>
+                </fields>
+                <unqName>PRIMARY</unqName>
+              </uq>
+              <uq>
+                <tbmd reference="../../.."/>
+                <fields>
+                  <field reference="../../../../fields/field[2]"/>
+                </fields>
+                <unqName>rental_date</unqName>
+              </uq>
+              <uq>
+                <tbmd reference="../../.."/>
+                <fields>
+                  <field reference="../../../../fields/field[3]"/>
+                </fields>
+                <unqName>rental_date</unqName>
+              </uq>
+              <uq>
+                <tbmd reference="../../.."/>
+                <fields>
+                  <field reference="../../../../fields/field[4]"/>
+                </fields>
+                <unqName>rental_date</unqName>
+              </uq>
+            </unique>
+            <indexes>
+              <index>
+                <tbmd reference="../../.."/>
+                <fields>
+                  <field reference="../../../../fields/field[4]"/>
+                </fields>
+                <name>idx_fk_customer_id</name>
+                <type>OTHER</type>
+              </index>
+              <index>
+                <tbmd reference="../../.."/>
+                <fields>
+                  <field reference="../../../../fields/field[3]"/>
+                </fields>
+                <name>idx_fk_inventory_id</name>
+                <type>OTHER</type>
+              </index>
+              <index>
+                <tbmd reference="../../.."/>
+                <fields>
+                  <field reference="../../../../fields/field[6]"/>
+                </fields>
+                <name>idx_fk_staff_id</name>
+                <type>OTHER</type>
+              </index>
+            </indexes>
+            <isLinkTable>false</isLinkTable>
+          </refTable>
+          <fkFields>
+            <com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+              <field reference="../../../../../fields/field[4]"/>
+              <refField reference="../../../refTable/fields/field"/>
+            </com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+          </fkFields>
+        </fk>
+        <fk>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field[3]"/>
+          </fields>
+          <fkName>fk_payment_staff</fkName>
+          <refTable reference="../../../../table[6]/fks/fk[2]/refTable/fks/fk[2]/refTable"/>
+          <fkFields>
+            <com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+              <field reference="../../../../../fields/field[3]"/>
+              <refField reference="../../../../../../table[6]/fks/fk[2]/refTable/fks/fk[2]/refTable/fields/field"/>
+            </com.leehom.arch.datax.plugin.rdb2graph.scanner.rdb.constraint.fk.FKField>
+          </fkFields>
+        </fk>
+      </fks>
+      <notNull>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field"/>
+          <nnName>PAYMENT_ID_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[2]"/>
+          <nnName>CUSTOMER_ID_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[3]"/>
+          <nnName>STAFF_ID_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[4]"/>
+          <nnName>RENTAL_ID_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[5]"/>
+          <nnName>AMOUNT_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[6]"/>
+          <nnName>PAYMENT_DATE_NN</nnName>
+        </nn>
+        <nn>
+          <tbmd reference="../../.."/>
+          <field reference="../../../fields/field[7]"/>
+          <nnName>LAST_UPDATE_NN</nnName>
+        </nn>
+      </notNull>
+      <unique>
+        <uq>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field"/>
+          </fields>
+          <unqName>PRIMARY</unqName>
+        </uq>
+      </unique>
+      <indexes>
+        <index>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field[4]"/>
+          </fields>
+          <name>fk_payment_rental</name>
+          <type>OTHER</type>
+        </index>
+        <index>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field[2]"/>
+          </fields>
+          <name>idx_fk_customer_id</name>
+          <type>OTHER</type>
+        </index>
+        <index>
+          <tbmd reference="../../.."/>
+          <fields>
+            <field reference="../../../../fields/field[3]"/>
+          </fields>
+          <name>idx_fk_staff_id</name>
+          <type>OTHER</type>
+        </index>
+      </indexes>
+      <isLinkTable>false</isLinkTable>
+    </table>
+    <table reference="../table[13]/fks/fk[2]/refTable"/>
+    <table reference="../table[6]/fks/fk[2]/refTable/fks/fk[2]/refTable"/>
+    <table reference="../table[6]/fks/fk[2]/refTable"/>
+  </tables>
+</schema>

@@ -1,0 +1,46 @@
+{
+    "job": {
+        "setting": {
+            "speed": {
+            	"channel": 5
+            }
+        },
+        "content": [
+            {
+                "reader": {
+                    "name": "mysqlreader4graph",
+                    "parameter": {
+                        "username": "root",
+                        "password": "123456",
+                        "phase": "table",
+                        "schemaUri": "sakila.xml",
+                        "column": ["*"],
+						"connection": [ 
+                            {
+                                "table": [
+                                    
+                                ],
+                                "jdbcUrl": [
+     								"jdbc:mysql://localhost:3306/sakila?remarks=true&useInformationSchema=false&serverTimezone=Asia/Shanghai"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "writer": {
+                    "name": "neo4jwriter",
+                    "parameter": {
+                        "username": "neo4j",
+                        "password": "neo4j1234",
+                        "phase": "table",
+                        "database": "sakila",
+                        "batchSize": 100,
+                        "uri": "bolt://192.168.1.20:7687",
+                        "schemaUri": "sakila.xml",
+                        "writemode": "insert"
+                    }
+                }
+            }
+        ]
+    }
+}
