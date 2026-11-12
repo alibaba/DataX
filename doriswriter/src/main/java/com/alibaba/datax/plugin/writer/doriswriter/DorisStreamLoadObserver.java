@@ -13,223 +13,227 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-public class DorisStreamLoadObserver {
+public class DorisStreamLoadObserver implements Closeable {
     private static final Logger LOG = LoggerFactory.getLogger(DorisStreamLoadObserver.class);
 
-    private Keys options;
-
-    private long pos;
     private static final String RESULT_FAILED = "Fail";
     private static final String RESULT_LABEL_EXISTED = "Label Already Exists";
-    private static final String LAEBL_STATE_VISIBLE = "VISIBLE";
-    private static final String LAEBL_STATE_COMMITTED = "COMMITTED";
+    private static final String LABEL_STATE_VISIBLE = "VISIBLE";
+    private static final String LABEL_STATE_COMMITTED = "COMMITTED";
     private static final String RESULT_LABEL_PREPARE = "PREPARE";
     private static final String RESULT_LABEL_ABORTED = "ABORTED";
     private static final String RESULT_LABEL_UNKNOWN = "UNKNOWN";
 
+    private final Keys options;
+    private final String basicAuthHeader;
+    private final List<String> hosts;
+    private final AtomicInteger hostIndex = new AtomicInteger(0);
+    private final Map<String, Long> hostBlacklistUntil = new ConcurrentHashMap<String, Long>();
+    private final RequestConfig requestConfig;
+    private final CloseableHttpClient httpClient;
 
-    public DorisStreamLoadObserver ( Keys options){
+    public DorisStreamLoadObserver(Keys options) {
         this.options = options;
+        this.basicAuthHeader = buildBasicAuthHeader(options.getUsername(), options.getPassword());
+        this.hosts = new ArrayList<String>();
+        for (String host : options.getLoadUrlList()) {
+            if (host.startsWith("http://") || host.startsWith("https://")) {
+                this.hosts.add(host);
+            } else {
+                this.hosts.add("http://" + host);
+            }
+        }
+
+        PoolingHttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
+        connManager.setDefaultMaxPerRoute(Math.max(8, options.getFlushWorkerCount() * 4));
+        connManager.setMaxTotal(Math.max(16, options.getFlushWorkerCount() * 8));
+
+        this.requestConfig = RequestConfig.custom()
+                .setConnectTimeout(options.getConnectTimeout())
+                .setSocketTimeout(options.getSocketTimeout())
+                .setConnectionRequestTimeout(options.getConnectionRequestTimeout())
+                .setRedirectsEnabled(true)
+                .build();
+
+        HttpClientBuilder httpClientBuilder = HttpClients.custom()
+                .setConnectionManager(connManager)
+                .setDefaultRequestConfig(requestConfig)
+                .setRedirectStrategy(new DefaultRedirectStrategy() {
+                    @Override
+                    protected boolean isRedirectable(String method) {
+                        return true;
+                    }
+                })
+                .disableAutomaticRetries();
+        this.httpClient = httpClientBuilder.build();
     }
 
     public void streamLoad(WriterTuple data) throws Exception {
         String host = getLoadHost();
-        if(host == null){
-            throw new IOException ("load_url cannot be empty, or the host cannot connect.Please check your configuration.");
+        if (host == null) {
+            throw new IOException("loadUrl cannot be empty, or no Doris FE/BE host is currently available.");
         }
-        String loadUrl = new StringBuilder(host)
-                .append("/api/")
-                .append(options.getDatabase())
-                .append("/")
-                .append(options.getTable())
-                .append("/_stream_load")
-                .toString();
-        LOG.info("Start to join batch data: rows[{}] bytes[{}] label[{}].", data.getRows().size(), data.getBytes(), data.getLabel());
-        Map<String, Object> loadResult = put(loadUrl, data.getLabel(), addRows(data.getRows(), data.getBytes().intValue()));
-        LOG.info("StreamLoad response :{}",JSON.toJSONString(loadResult));
+        String loadUrl = host + "/api/" + options.getDatabase() + "/" + options.getTable() + "/_stream_load";
+        Map<String, Object> loadResult = put(loadUrl, data);
+        LOG.info("StreamLoad response: {}", JSON.toJSONString(loadResult));
         final String keyStatus = "Status";
-        if (null == loadResult || !loadResult.containsKey(keyStatus)) {
+        if (loadResult == null || !loadResult.containsKey(keyStatus)) {
+            markHostFailure(host);
             throw new IOException("Unable to flush data to Doris: unknown result status.");
         }
-        LOG.debug("StreamLoad response:{}",JSON.toJSONString(loadResult));
-        if (RESULT_FAILED.equals(loadResult.get(keyStatus))) {
-            throw new IOException(
-                    new StringBuilder("Failed to flush data to Doris.\n").append(JSON.toJSONString(loadResult)).toString()
-            );
-        } else if (RESULT_LABEL_EXISTED.equals(loadResult.get(keyStatus))) {
-            LOG.debug("StreamLoad response:{}",JSON.toJSONString(loadResult));
+        Object status = loadResult.get(keyStatus);
+        if (RESULT_FAILED.equals(status)) {
+            markHostFailure(host);
+            throw new DorisWriterExcetion("Failed to flush data to Doris. " + JSON.toJSONString(loadResult), loadResult);
+        }
+        if (RESULT_LABEL_EXISTED.equals(status)) {
             checkStreamLoadState(host, data.getLabel());
+        } else {
+            markHostSuccess(host);
         }
     }
 
     private void checkStreamLoadState(String host, String label) throws IOException {
         int idx = 0;
-        while(true) {
+        while (true) {
             try {
-                TimeUnit.SECONDS.sleep(Math.min(++idx, 5));
+                Thread.sleep(1000L * Math.min(++idx, 5));
             } catch (InterruptedException ex) {
-                break;
+                Thread.currentThread().interrupt();
+                throw new IOException("Interrupted while checking stream load label state.", ex);
             }
-            try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
-                HttpGet httpGet = new HttpGet(new StringBuilder(host).append("/api/").append(options.getDatabase()).append("/get_load_state?label=").append(label).toString());
-                httpGet.setHeader("Authorization", getBasicAuthHeader(options.getUsername(), options.getPassword()));
-                httpGet.setHeader("Connection", "close");
 
-                try (CloseableHttpResponse resp = httpclient.execute(httpGet)) {
-                    HttpEntity respEntity = getHttpEntity(resp);
-                    if (respEntity == null) {
-                        throw new IOException(String.format("Failed to flush data to Doris, Error " +
-                                "could not get the final state of label[%s].\n", label), null);
-                    }
-                    Map<String, Object> result = (Map<String, Object>)JSON.parse(EntityUtils.toString(respEntity));
-                    String labelState = (String)result.get("data");
-                    if (null == labelState) {
-                        throw new IOException(String.format("Failed to flush data to Doris, Error " +
-                                "could not get the final state of label[%s]. response[%s]\n", label, EntityUtils.toString(respEntity)), null);
-                    }
-                    LOG.info(String.format("Checking label[%s] state[%s]\n", label, labelState));
-                    switch(labelState) {
-                        case LAEBL_STATE_VISIBLE:
-                        case LAEBL_STATE_COMMITTED:
-                            return;
-                        case RESULT_LABEL_PREPARE:
-                            continue;
-                        case RESULT_LABEL_ABORTED:
-                            throw new DorisWriterExcetion (String.format("Failed to flush data to Doris, Error " +
-                                    "label[%s] state[%s]\n", label, labelState), null, true);
-                        case RESULT_LABEL_UNKNOWN:
-                        default:
-                            throw new IOException(String.format("Failed to flush data to Doris, Error " +
-                                    "label[%s] state[%s]\n", label, labelState), null);
-                    }
+            HttpGet httpGet = new HttpGet(host + "/api/" + options.getDatabase() + "/get_load_state?label=" + label);
+            httpGet.setHeader("Authorization", basicAuthHeader);
+            httpGet.setConfig(requestConfig);
+            try (CloseableHttpResponse resp = httpClient.execute(httpGet)) {
+                HttpEntity respEntity = getHttpEntity(resp);
+                if (respEntity == null) {
+                    throw new IOException(String.format("Failed to get final state for label[%s].", label));
+                }
+                Map<String, Object> result = (Map<String, Object>) JSON.parse(EntityUtils.toString(respEntity, StandardCharsets.UTF_8));
+                String labelState = result == null ? null : (String) result.get("data");
+                if (labelState == null) {
+                    throw new IOException(String.format("Failed to get final state of label[%s]. response[%s]", label, JSON.toJSONString(result)));
+                }
+                LOG.info("Checking label[{}] state[{}]", label, labelState);
+                switch (labelState) {
+                    case LABEL_STATE_VISIBLE:
+                    case LABEL_STATE_COMMITTED:
+                        markHostSuccess(host);
+                        return;
+                    case RESULT_LABEL_PREPARE:
+                        continue;
+                    case RESULT_LABEL_ABORTED:
+                        markHostFailure(host);
+                        throw new DorisWriterExcetion(String.format("Failed to flush data to Doris, label[%s] state[%s]", label, labelState), result, true);
+                    case RESULT_LABEL_UNKNOWN:
+                    default:
+                        markHostFailure(host);
+                        throw new IOException(String.format("Failed to flush data to Doris, label[%s] state[%s]", label, labelState));
                 }
             }
         }
     }
 
-    private byte[] addRows(List<byte[]> rows, int totalBytes) {
+    private Map<String, Object> put(String loadUrl, WriterTuple data) throws IOException {
+        LOG.info("Executing stream load: url='{}', rows={}, size={}, label={}", loadUrl, data.getRows(), data.getBytes(), data.getLabel());
+        HttpPut httpPut = new HttpPut(loadUrl);
+        httpPut.removeHeaders(HttpHeaders.CONTENT_LENGTH);
+        httpPut.removeHeaders(HttpHeaders.TRANSFER_ENCODING);
         if (Keys.StreamLoadFormat.CSV.equals(options.getStreamLoadFormat())) {
-            Map<String, Object> props = (options.getLoadProps() == null ? new HashMap<> () : options.getLoadProps());
-            byte[] lineDelimiter = DelimiterParser.parse((String)props.get("line_delimiter"), "\n").getBytes(StandardCharsets.UTF_8);
-            ByteBuffer bos = ByteBuffer.allocate(totalBytes + rows.size() * lineDelimiter.length);
-            for (byte[] row : rows) {
-                bos.put(row);
-                bos.put(lineDelimiter);
-            }
-            return bos.array();
-        }
-
-        if (Keys.StreamLoadFormat.JSON.equals(options.getStreamLoadFormat())) {
-            ByteBuffer bos = ByteBuffer.allocate(totalBytes + (rows.isEmpty() ? 2 : rows.size() + 1));
-            bos.put("[".getBytes(StandardCharsets.UTF_8));
-            byte[] jsonDelimiter = ",".getBytes(StandardCharsets.UTF_8);
-            boolean isFirstElement = true;
-            for (byte[] row : rows) {
-                if (!isFirstElement) {
-                    bos.put(jsonDelimiter);
-                }
-                bos.put(row);
-                isFirstElement = false;
-            }
-            bos.put("]".getBytes(StandardCharsets.UTF_8));
-            return bos.array();
-        }
-        throw new RuntimeException("Failed to join rows data, unsupported `format` from stream load properties:");
-    }
-    private Map<String, Object> put(String loadUrl, String label, byte[] data) throws IOException {
-        LOG.info(String.format("Executing stream load to: '%s', size: '%s'", loadUrl, data.length));
-        final HttpClientBuilder httpClientBuilder = HttpClients.custom()
-                .setRedirectStrategy(new DefaultRedirectStrategy () {
-                    @Override
-                    protected boolean isRedirectable(String method) {
-                        return true;
-                    }
-                });
-        try ( CloseableHttpClient httpclient = httpClientBuilder.build()) {
-            HttpPut httpPut = new HttpPut(loadUrl);
-            httpPut.removeHeaders(HttpHeaders.CONTENT_LENGTH);
-            httpPut.removeHeaders(HttpHeaders.TRANSFER_ENCODING);
             List<String> cols = options.getColumns();
-            if (null != cols && !cols.isEmpty() && Keys.StreamLoadFormat.CSV.equals(options.getStreamLoadFormat())) {
+            if (cols != null && !cols.isEmpty()) {
                 httpPut.setHeader("columns", String.join(",", cols.stream().map(f -> String.format("`%s`", f)).collect(Collectors.toList())));
             }
-            if (null != options.getLoadProps()) {
-                for (Map.Entry<String, Object> entry : options.getLoadProps().entrySet()) {
-                    httpPut.setHeader(entry.getKey(), String.valueOf(entry.getValue()));
-                }
+        }
+        Map<String, Object> loadProps = options.getLoadProps();
+        if (loadProps != null) {
+            for (Map.Entry<String, Object> entry : loadProps.entrySet()) {
+                httpPut.setHeader(entry.getKey(), String.valueOf(entry.getValue()));
             }
-            httpPut.setHeader("Expect", "100-continue");
-            httpPut.setHeader("label", label);
-            httpPut.setHeader("two_phase_commit", "false");
-            httpPut.setHeader("Authorization", getBasicAuthHeader(options.getUsername(), options.getPassword()));
-            httpPut.setEntity(new ByteArrayEntity(data));
-            httpPut.setConfig(RequestConfig.custom().setRedirectsEnabled(true).build());
-            try ( CloseableHttpResponse resp = httpclient.execute(httpPut)) {
-                HttpEntity respEntity = getHttpEntity(resp);
-                if (respEntity == null)
-                    return null;
-                return (Map<String, Object>)JSON.parse(EntityUtils.toString(respEntity));
+        }
+        httpPut.setHeader("Expect", "100-continue");
+        httpPut.setHeader("label", data.getLabel());
+        httpPut.setHeader("two_phase_commit", "false");
+        httpPut.setHeader("Authorization", basicAuthHeader);
+        httpPut.setEntity(new ByteArrayEntity(data.getData()));
+        httpPut.setConfig(requestConfig);
+        try (CloseableHttpResponse resp = httpClient.execute(httpPut)) {
+            HttpEntity respEntity = getHttpEntity(resp);
+            if (respEntity == null) {
+                return null;
             }
+            return (Map<String, Object>) JSON.parse(EntityUtils.toString(respEntity, StandardCharsets.UTF_8));
         }
     }
 
-    private String getBasicAuthHeader(String username, String password) {
-        String auth = username + ":" + password;
-        byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(StandardCharsets.UTF_8));
-        return new StringBuilder("Basic ").append(new String(encodedAuth)).toString();
-    }
-
-    private HttpEntity getHttpEntity(CloseableHttpResponse resp) {
+    private HttpEntity getHttpEntity(CloseableHttpResponse resp) throws IOException {
         int code = resp.getStatusLine().getStatusCode();
-        if (200 != code) {
-            LOG.warn("Request failed with code:{}", code);
-            return null;
+        if (code < 200 || code >= 300) {
+            String responseText = resp.getEntity() == null ? "" : EntityUtils.toString(resp.getEntity(), StandardCharsets.UTF_8);
+            throw new IOException("Request failed with code=" + code + ", response=" + responseText);
         }
         HttpEntity respEntity = resp.getEntity();
-        if (null == respEntity) {
-            LOG.warn("Request failed with empty response.");
+        if (respEntity == null) {
+            LOG.warn("Request succeeded but response body is empty.");
             return null;
         }
         return respEntity;
     }
 
     private String getLoadHost() {
-        List<String> hostList = options.getLoadUrlList();
-        Collections.shuffle(hostList);
-        String host = new StringBuilder("http://").append(hostList.get((0))).toString();
-        if (checkConnection(host)){
-            return host;
+        if (hosts.isEmpty()) {
+            return null;
         }
-        return null;
+        long now = System.currentTimeMillis();
+        int size = hosts.size();
+        int start = Math.abs(hostIndex.getAndIncrement());
+        for (int i = 0; i < size; i++) {
+            String host = hosts.get((start + i) % size);
+            Long blockedUntil = hostBlacklistUntil.get(host);
+            if (blockedUntil == null || blockedUntil <= now) {
+                return host;
+            }
+        }
+        String fallback = hosts.get(start % size);
+        LOG.warn("All Doris hosts are in cooldown; fallback to host {}", fallback);
+        return fallback;
     }
 
-    private boolean checkConnection(String host) {
-        try {
-            URL url = new URL(host);
-            HttpURLConnection co =  (HttpURLConnection) url.openConnection();
-            co.setConnectTimeout(5000);
-            co.connect();
-            co.disconnect();
-            return true;
-        } catch (Exception e1) {
-            e1.printStackTrace();
-            return false;
-        }
+    private void markHostFailure(String host) {
+        hostBlacklistUntil.put(host, System.currentTimeMillis() + options.getHostCooldownMs());
+    }
+
+    private void markHostSuccess(String host) {
+        hostBlacklistUntil.remove(host);
+    }
+
+    private String buildBasicAuthHeader(String username, String password) {
+        String auth = username + ":" + password;
+        byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(StandardCharsets.UTF_8));
+        return "Basic " + new String(encodedAuth, StandardCharsets.UTF_8);
+    }
+
+    @Override
+    public void close() throws IOException {
+        httpClient.close();
     }
 }
