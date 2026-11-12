@@ -190,7 +190,7 @@ public class ConcurrentTableWriterTask extends CommonRdbmsWriter.Task {
                     LOG.warn("getColumnMetaData of table {} failed, retry the {} times ...", this.table, retryTimes);
                 }
                 ColumnMetaCache.init(connection, this.table, this.columns);
-                this.resultSetMetaData = ColumnMetaCache.getColumnMeta();
+                this.resultSetMetaData = ColumnMetaCache.getColumnMeta(this.table);
                 needRetry = false;
             } catch (SQLException e) {
                 needRetry = true;
