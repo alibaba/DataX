@@ -40,7 +40,7 @@ public class SelectdbCopyIntoObserver {
     private CloseableHttpClient httpClient;
     private static final String UPLOAD_URL_PATTERN = "%s/copy/upload";
     private static final String COMMIT_PATTERN = "%s/copy/query";
-    private static final Pattern COMMITTED_PATTERN = Pattern.compile("errCode = 2, detailMessage = No files can be copied, matched (\\d+) files, " + "filtered (\\d+) files because files may be loading or loaded");
+    private static final Pattern COMMITTED_PATTERN = Pattern.compile("errCode = 2, detailMessage = No files can be copied.*");
 
 
     public SelectdbCopyIntoObserver(Keys options) {
@@ -188,21 +188,24 @@ public class SelectdbCopyIntoObserver {
             if(success){
                 LOG.info("commit success cost {}ms, response is {}", System.currentTimeMillis() - start, loadResult);
             }else{
-                throw new SelectdbWriterException("commit fail",true);
+                LOG.error("commit error with status {}, reason {}, response {}", statusCode, reasonPhrase, loadResult);
+                String copyErrMsg = String.format("commit error, status: %d, reason: %s, response: %s, copySQL: %s",
+                        statusCode, reasonPhrase, loadResult, copySQL);
+                throw new SelectdbWriterException(copyErrMsg,true);
             }
         }
     }
 
     public boolean handleCommitResponse(String loadResult) throws IOException {
-        BaseResponse<CopyIntoResp> baseResponse = OBJECT_MAPPER.readValue(loadResult, new TypeReference<BaseResponse<CopyIntoResp>>(){});
+        BaseResponse baseResponse = OBJECT_MAPPER.readValue(loadResult, new TypeReference<BaseResponse>(){});
         if(baseResponse.getCode() == SUCCESS){
-            CopyIntoResp dataResp = baseResponse.getData();
+            CopyIntoResp dataResp = OBJECT_MAPPER.convertValue(baseResponse.getData(), CopyIntoResp.class);
             if(FAIL.equals(dataResp.getDataCode())){
                 LOG.error("copy into execute failed, reason:{}", loadResult);
                 return false;
             }else{
                 Map<String, String> result = dataResp.getResult();
-                if(!result.get("state").equals("FINISHED") && !isCommitted(result.get("msg"))){
+                if(SelectdbUtil.isNullOrEmpty(result) || !result.get("state").equals("FINISHED") && !isCommitted(result.get("msg"))){
                     LOG.error("copy into load failed, reason:{}", loadResult);
                     return false;
                 }else{
