@@ -1,10 +1,6 @@
 package com.alibaba.datax.plugin.reader.mongodbreader;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import com.alibaba.datax.common.element.BoolColumn;
 import com.alibaba.datax.common.element.DateColumn;
@@ -59,11 +55,37 @@ public class MongoDBReader extends Reader {
             this.password = originalConfig.getString(KeyConstant.MONGO_USER_PASSWORD, originalConfig.getString(KeyConstant.MONGO_PASSWORD));
             String database =  originalConfig.getString(KeyConstant.MONGO_DB_NAME, originalConfig.getString(KeyConstant.MONGO_DATABASE));
             String authDb =  originalConfig.getString(KeyConstant.MONGO_AUTHDB, database);
-            if(!Strings.isNullOrEmpty(this.userName) && !Strings.isNullOrEmpty(this.password)) {
-                this.mongoClient = MongoUtil.initCredentialMongoClient(originalConfig,userName,password,authDb);
-            } else {
-                this.mongoClient = MongoUtil.initMongoClient(originalConfig);
+            String sslMode =  originalConfig.getString(KeyConstant.SSL_MODE);
+            String trustStorePath =  originalConfig.getString(KeyConstant.TRUST_STORE_PATH);
+            String trustStorePwd =  originalConfig.getString(KeyConstant.TRUST_STORE_PWD);
+            String keyStorePath =  originalConfig.getString(KeyConstant.KEY_STORE_PATH);
+            String keyStorePwd =  originalConfig.getString(KeyConstant.KEY_STORE_PWD);
+            Map<String,Integer> map = new HashMap<String, Integer>();
+            map.put("two-way", 1);
+            map.put("client-authentication", 2);
+            map.put("no-authentication", 3);
+            switch (map.get(sslMode)) {
+                case 1:
+                    this.mongoClient = MongoUtil.initCredentialSSLMongoClient(this.originalConfig,
+                      userName,password,authDb,trustStorePath,trustStorePwd,keyStorePath,keyStorePwd);
+                    break;
+                case 2:
+                    this.mongoClient = MongoUtil.initCredentialClientAuthenticationMongoClient(this.originalConfig,
+                      userName,password,authDb,keyStorePath,keyStorePwd);
+                    break;
+                case 3:
+                    this.mongoClient = MongoUtil.initCredentialNoAuthenticationMongoClient(this.originalConfig,
+                      userName,password,authDb);
+                    break;
+                default:
+                    if(!Strings.isNullOrEmpty(this.userName) && !Strings.isNullOrEmpty(this.password)) {
+                        this.mongoClient = MongoUtil.initCredentialMongoClient(originalConfig,userName,password,authDb);
+                    } else {
+                        this.mongoClient = MongoUtil.initMongoClient(originalConfig);
+                    }
+                    break;
             }
+
         }
 
         @Override
@@ -189,12 +211,36 @@ public class MongoDBReader extends Reader {
             this.password = readerSliceConfig.getString(KeyConstant.MONGO_USER_PASSWORD, readerSliceConfig.getString(KeyConstant.MONGO_PASSWORD));
             this.database = readerSliceConfig.getString(KeyConstant.MONGO_DB_NAME, readerSliceConfig.getString(KeyConstant.MONGO_DATABASE));
             this.authDb = readerSliceConfig.getString(KeyConstant.MONGO_AUTHDB, this.database);
-            if(!Strings.isNullOrEmpty(userName) && !Strings.isNullOrEmpty(password)) {
-                mongoClient = MongoUtil.initCredentialMongoClient(readerSliceConfig,userName,password,authDb);
-            } else {
-                mongoClient = MongoUtil.initMongoClient(readerSliceConfig);
+            String sslMode =  readerSliceConfig.getString(KeyConstant.SSL_MODE);
+            String trustStorePath =  readerSliceConfig.getString(KeyConstant.TRUST_STORE_PATH);
+            String trustStorePwd =  readerSliceConfig.getString(KeyConstant.TRUST_STORE_PWD);
+            String keyStorePath =  readerSliceConfig.getString(KeyConstant.KEY_STORE_PATH);
+            String keyStorePwd =  readerSliceConfig.getString(KeyConstant.KEY_STORE_PWD);
+            Map<String,Integer> map = new HashMap<String, Integer>();
+            map.put("two-way", 1);
+            map.put("client-authentication", 2);
+            map.put("no-authentication", 3);
+            switch (map.get(sslMode)) {
+                case 1:
+                    mongoClient = MongoUtil.initCredentialSSLMongoClient(this.readerSliceConfig,
+                      userName,password,authDb,trustStorePath,trustStorePwd,keyStorePath,keyStorePwd);
+                    break;
+                case 2:
+                    mongoClient = MongoUtil.initCredentialClientAuthenticationMongoClient(this.readerSliceConfig,
+                      userName,password,authDb,keyStorePath,keyStorePwd);
+                    break;
+                case 3:
+                    mongoClient = MongoUtil.initCredentialNoAuthenticationMongoClient(this.readerSliceConfig,
+                      userName,password,authDb);
+                    break;
+                default:
+                    if(!Strings.isNullOrEmpty(userName) && !Strings.isNullOrEmpty(password)) {
+                        mongoClient = MongoUtil.initCredentialMongoClient(readerSliceConfig,userName,password,authDb);
+                    } else {
+                        mongoClient = MongoUtil.initMongoClient(readerSliceConfig);
+                    }
+                    break;
             }
-
             this.collection = readerSliceConfig.getString(KeyConstant.MONGO_COLLECTION_NAME);
             this.query = readerSliceConfig.getString(KeyConstant.MONGO_QUERY);
             this.mongodbColumnMeta = JSON.parseArray(readerSliceConfig.getString(KeyConstant.MONGO_COLUMN));

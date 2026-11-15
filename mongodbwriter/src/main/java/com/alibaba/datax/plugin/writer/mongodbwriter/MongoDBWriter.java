@@ -22,7 +22,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MongoDBWriter extends Writer{
 
@@ -320,10 +322,40 @@ public class MongoDBWriter extends Writer{
             this.userName = writerSliceConfig.getString(KeyConstant.MONGO_USER_NAME);
             this.password = writerSliceConfig.getString(KeyConstant.MONGO_USER_PASSWORD);
             this.database = writerSliceConfig.getString(KeyConstant.MONGO_DB_NAME);
-            if(!Strings.isNullOrEmpty(userName) && !Strings.isNullOrEmpty(password)) {
-                this.mongoClient = MongoUtil.initCredentialMongoClient(this.writerSliceConfig,userName,password,database);
-            } else {
-                this.mongoClient = MongoUtil.initMongoClient(this.writerSliceConfig);
+            String authDb =  writerSliceConfig.getString(KeyConstant.MONGO_AUTHDB);
+            String sslMode =  writerSliceConfig.getString(KeyConstant.SSL_MODE);
+            String trustStorePath =  writerSliceConfig.getString(KeyConstant.TRUST_STORE_PATH);
+            String trustStorePwd =  writerSliceConfig.getString(KeyConstant.TRUST_STORE_PWD);
+            String keyStorePath =  writerSliceConfig.getString(KeyConstant.KEY_STORE_PATH);
+            String keyStorePwd =  writerSliceConfig.getString(KeyConstant.KEY_STORE_PWD);
+            if(authDb == ""){
+                authDb = this.database;
+            }
+            Map<String,Integer> map = new HashMap<String, Integer>();
+            map.put("two-way", 1);
+            map.put("client-authentication", 2);
+            map.put("no-authentication", 3);
+            switch (map.get(sslMode)) {
+                case 1:
+                    this.mongoClient = MongoUtil.initCredentialSSLMongoClient(this.writerSliceConfig,
+                      userName,password,authDb,trustStorePath,trustStorePwd,keyStorePath,keyStorePwd);
+                    break;
+                case 2:
+                    this.mongoClient = MongoUtil.initCredentialClientAuthenticationMongoClient(this.writerSliceConfig,
+                      userName,password,authDb,keyStorePath,keyStorePwd);
+                    break;
+                case 3:
+                    this.mongoClient = MongoUtil.initCredentialNoAuthenticationMongoClient(this.writerSliceConfig,
+                      userName,password,authDb);
+                    break;
+                default:
+                    if(!Strings.isNullOrEmpty(userName) && !Strings.isNullOrEmpty(password)) {
+                        this.mongoClient = MongoUtil.initCredentialMongoClient(this.writerSliceConfig,userName,password,authDb);
+                    } else {
+                        this.mongoClient = MongoUtil.initMongoClient(this.writerSliceConfig);
+                    }
+                    break;
+
             }
             this.collection = writerSliceConfig.getString(KeyConstant.MONGO_COLLECTION_NAME);
             this.batchSize = BATCH_SIZE;
