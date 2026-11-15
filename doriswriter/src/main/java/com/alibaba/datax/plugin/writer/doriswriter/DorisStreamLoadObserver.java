@@ -1,6 +1,7 @@
 package com.alibaba.datax.plugin.writer.doriswriter;
 
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONWriter;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
@@ -62,18 +63,18 @@ public class DorisStreamLoadObserver {
                 .toString();
         LOG.info("Start to join batch data: rows[{}] bytes[{}] label[{}].", data.getRows().size(), data.getBytes(), data.getLabel());
         Map<String, Object> loadResult = put(loadUrl, data.getLabel(), addRows(data.getRows(), data.getBytes().intValue()));
-        LOG.info("StreamLoad response :{}",JSON.toJSONString(loadResult));
+        LOG.info("StreamLoad response :{}",JSON.toJSONString(loadResult, JSONWriter.Feature.PrettyFormat));
         final String keyStatus = "Status";
         if (null == loadResult || !loadResult.containsKey(keyStatus)) {
             throw new IOException("Unable to flush data to Doris: unknown result status.");
         }
-        LOG.debug("StreamLoad response:{}",JSON.toJSONString(loadResult));
+        LOG.debug("StreamLoad response:{}",JSON.toJSONString(loadResult, JSONWriter.Feature.PrettyFormat));
         if (RESULT_FAILED.equals(loadResult.get(keyStatus))) {
             throw new IOException(
                     new StringBuilder("Failed to flush data to Doris.\n").append(JSON.toJSONString(loadResult)).toString()
             );
         } else if (RESULT_LABEL_EXISTED.equals(loadResult.get(keyStatus))) {
-            LOG.debug("StreamLoad response:{}",JSON.toJSONString(loadResult));
+            LOG.debug("StreamLoad response:{}",JSON.toJSONString(loadResult, JSONWriter.Feature.PrettyFormat));
             checkStreamLoadState(host, data.getLabel());
         }
     }
