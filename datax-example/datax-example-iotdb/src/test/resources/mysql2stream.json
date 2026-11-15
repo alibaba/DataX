@@ -1,0 +1,46 @@
+{
+  "job": {
+    "setting": {
+      "speed": {
+        "channel": 3
+      },
+      "errorLimit": {
+        "record": 0,
+        "percentage": 0.02
+      }
+    },
+    "content": [
+      {
+        "reader": {
+          "name": "mysqlreader",
+          "parameter": {
+            "username": "root",
+            "password": "toy123",
+            "column": [
+              "order_num",
+              "cust_id"
+            ],
+            "splitPk": "",
+            "connection": [
+              {
+                "table": [
+                  "orders"
+                ],
+                "jdbcUrl": [
+                  "jdbc:mysql://localhost:3306/demodb?useUnicode=true&allowPublicKeyRetrieval=true&characterEncoding=utf-8"
+                ]
+              }
+            ]
+          }
+        },
+        "writer": {
+          "name": "streamwriter",
+          "parameter": {
+            "print":true
+          }
+        }
+      }
+    ]
+  }
+}
+

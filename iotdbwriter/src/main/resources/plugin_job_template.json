@@ -1,0 +1,19 @@
+{
+  "name": "iotdbwriter",
+  "parameter": {
+    "username": "root",
+    "password": "root",
+    "host": "192.168.150.100",
+    "port": 6667,
+    "version": "V_1_0",
+    "##": "注意是Reader插件读取到的数据中时间列的位置，不是该插件，默认0列",
+    "timeColumnPosition": 0,
+    "batchSize": 1000,
+    "device": "root.cgn.device",
+    "measurements": ["A5STD","L2RIS014MD","L2VVP003SM5","D1RIS001MD","D1KRT003EU"],
+    "###": "在插入之前，执行删除操作，为空或不配置表示不执行",
+    "preSql": [
+      "delete timeseries root.cgn.device.**"
+    ]
+  }
+}

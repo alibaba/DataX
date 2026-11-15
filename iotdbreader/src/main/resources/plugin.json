@@ -1,0 +1,10 @@
+{
+    "name": "iotdbreader",
+    "class": "com.alibaba.datax.plugin.reader.iotdbreader.IoTDBReader",
+    "description": {
+        "useScene": "data migration to iotdb",
+        "mechanism": "use iotdb-java-session to write data."
+    },
+    "developer": "timecho.com"
+}
+
