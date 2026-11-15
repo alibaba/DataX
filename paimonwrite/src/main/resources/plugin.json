@@ -1,0 +1,6 @@
+{
+    "name": "paimonwriter",
+    "class": "com.alibaba.datax.plugin.writer.paimonwriter.PaimonWriter",
+    "description": "useScene: prod. mechanism: via FileSystem connect Paimon write data concurrent.",
+    "developer": "alibaba"
+}
