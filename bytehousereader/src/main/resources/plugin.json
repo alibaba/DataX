@@ -1,0 +1,6 @@
+{
+  "name": "bytehousereader",
+  "class": "com.alibaba.datax.plugin.reader.bytehousereader.BytehouseReader",
+  "description": "useScene: prod. mechanism: Jdbc connection using the database, execute select sql.",
+  "developer": "alibaba"
+}
