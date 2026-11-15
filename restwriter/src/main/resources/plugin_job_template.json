@@ -1,0 +1,83 @@
+{
+  "name": "restwriter",
+  "parameter": {
+    "url": "http://localhost:8080/echo",
+    "method": "post",
+    "headers": {
+      "aaa": "bbbb"
+    },
+    "query": {
+      "test": "test"
+    },
+    "maxRetries": 3,
+    "batch": true,
+    "batchSize": 1000,
+    "fields": [
+      {
+        "name": "a"
+      },
+      {
+        "name": "b"
+      },
+      {
+        "name": "c",
+        "type": "java.time.LocalDatetime"
+      },
+      {
+        "name": "d"
+      },
+      {
+        "name": "e"
+      }
+    ],
+    "debug": true,
+    "failFast": false,
+    "rate-per-task": 10,
+    "preprocess": {
+      "concurrent": true,
+      "operations": [
+        {
+          "url": "http://localhost:8080/echo",
+          "method": "post",
+          "headers": {
+            "aaa": "bbbb"
+          },
+          "body": "",
+          "debug": false
+        },
+        {
+          "url": "http://localhost:8080/echo",
+          "method": "post",
+          "headers": {
+            "aaa": "bbbb"
+          },
+          "body": "",
+          "debug": false
+        }
+      ]
+    },
+    "postprocess": {
+      "concurrent": true,
+      "operations": [
+        {
+          "url": "http://localhost:8080/echo",
+          "method": "post",
+          "headers": {
+            "aaa": "bbbb"
+          },
+          "body": "",
+          "debug": false
+        },
+        {
+          "url": "http://localhost:8080/echo",
+          "method": "post",
+          "headers": {
+            "aaa": "bbbb"
+          },
+          "body": "",
+          "debug": false
+        }
+      ]
+    }
+  }
+}

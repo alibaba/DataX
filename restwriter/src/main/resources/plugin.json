@@ -1,0 +1,6 @@
+{
+  "name": "restwriter",
+  "class": "com.alibaba.datax.plugin.writer.restwriter.RestWriter",
+  "description": "useScene: prod. mechanism: use datax framework to transport data to http sink endpoint. warn: The more you know about the data, the less problems you encounter.",
+  "developer": "zhangyongxiang"
+}
