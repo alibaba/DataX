@@ -41,12 +41,12 @@
             <artifactId>plugin-rdbms-util</artifactId>
             <version>${datax-project-version}</version>
         </dependency>
-        
+
         <dependency>
-  			<groupId>org.postgresql</groupId>
-  			<artifactId>postgresql</artifactId>
-  			<version>42.3.3</version>
-		</dependency>
+            <groupId>com.alibaba.datax</groupId>
+            <artifactId>rdbmsreader</artifactId>
+            <version>${datax-project-version}</version>
+        </dependency>
 		
     </dependencies>
 
