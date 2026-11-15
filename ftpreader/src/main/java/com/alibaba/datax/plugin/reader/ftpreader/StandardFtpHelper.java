@@ -225,5 +225,17 @@ public class StandardFtpHelper extends FtpHelper {
 			throw DataXException.asDataXException(FtpReaderErrorCode.OPEN_FILE_ERROR, message);
 		}
 	}
+	
+	@Override
+	public void deleteFile(String filePath) {
+
+		try{
+			ftpClient.deleteFile(filePath);
+		}catch(IOException e){
+			String message = String.format("删除文件 : [%s] 时出错,请确认文件：[%s]存在且配置的用户有权限读取", filePath, filePath);
+			LOG.error(message);
+			throw DataXException.asDataXException(FtpReaderErrorCode.OPEN_FILE_ERROR, message);
+		}
+	}
 
 }
