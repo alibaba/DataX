@@ -5,15 +5,20 @@ import java.util.Map;
 
 public class DorisWriterExcetion extends IOException {
 
-    private final Map<String, Object> response;
+    private Map<String, Object> response;
     private boolean reCreateLabel;
 
-    public DorisWriterExcetion ( String message, Map<String, Object> response) {
+    public DorisWriterExcetion(String message, Map<String, Object> response) {
         super(message);
         this.response = response;
     }
 
-    public DorisWriterExcetion ( String message, Map<String, Object> response, boolean reCreateLabel) {
+    public DorisWriterExcetion(String message, boolean reCreateLabel) {
+        super(message);
+        this.reCreateLabel = reCreateLabel;
+    }
+
+    public DorisWriterExcetion(String message, Map<String, Object> response, boolean reCreateLabel) {
         super(message);
         this.response = response;
         this.reCreateLabel = reCreateLabel;

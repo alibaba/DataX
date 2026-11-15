@@ -20,7 +20,8 @@ public class DorisWriterManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(DorisWriterManager.class);
 
-    private final DorisStreamLoadObserver visitor;
+    private final DorisStreamLoadObserver streamLoadObserver;
+    private final DorisCopyIntoObserver copyIntoObserver;
     private final Keys options;
     private final List<byte[]> buffer = new ArrayList<> ();
     private int batchCount = 0;
@@ -33,7 +34,8 @@ public class DorisWriterManager {
 
     public DorisWriterManager( Keys options) {
         this.options = options;
-        this.visitor = new DorisStreamLoadObserver (options);
+        this.streamLoadObserver = new DorisStreamLoadObserver (options);
+        this.copyIntoObserver = new DorisCopyIntoObserver(options);
         flushQueue = new LinkedBlockingDeque<>(options.getFlushQueueLength());
         this.startScheduler();
         this.startAsyncFlushing();
@@ -160,7 +162,11 @@ public class DorisWriterManager {
         for (int i = 0; i <= options.getMaxRetries(); i++) {
             try {
                 // flush to Doris with stream load
-                visitor.streamLoad(flushData);
+                if (DorisUtil.checkIsStreamLoad(options)) {
+                    streamLoadObserver.streamLoad(flushData);
+                } else {
+                    copyIntoObserver.streamLoad(flushData);
+                }
                 LOG.info(String.format("Async stream load finished: label[%s].", flushData.getLabel()));
                 startScheduler();
                 break;
