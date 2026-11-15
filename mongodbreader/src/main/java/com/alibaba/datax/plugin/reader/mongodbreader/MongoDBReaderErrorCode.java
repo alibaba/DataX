@@ -7,15 +7,24 @@ import com.alibaba.datax.common.spi.ErrorCode;
  */
 public enum MongoDBReaderErrorCode implements ErrorCode {
 
+    /**
+     * 参数不合法
+     */
     ILLEGAL_VALUE("ILLEGAL_PARAMETER_VALUE","参数不合法"),
+    /**
+     * 不合法的Mongo地址
+     */
     ILLEGAL_ADDRESS("ILLEGAL_ADDRESS","不合法的Mongo地址"),
-    UNEXCEPT_EXCEPTION("UNEXCEPT_EXCEPTION","未知异常");
+    /**
+     * 未知异常
+     */
+    UNEXPECTED_EXCEPTION("UNEXPECTED_EXCEPTION","未知异常");
 
     private final String code;
 
     private final String description;
 
-    private MongoDBReaderErrorCode(String code,String description) {
+    MongoDBReaderErrorCode(String code,String description) {
         this.code = code;
         this.description = description;
     }

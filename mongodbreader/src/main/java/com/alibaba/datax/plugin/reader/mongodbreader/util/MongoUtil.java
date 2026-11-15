@@ -3,6 +3,7 @@ package com.alibaba.datax.plugin.reader.mongodbreader.util;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import com.alibaba.datax.common.exception.DataXException;
@@ -33,7 +34,7 @@ public class MongoUtil {
         } catch (NumberFormatException e) {
             throw DataXException.asDataXException(MongoDBReaderErrorCode.ILLEGAL_VALUE,"不合法参数");
         } catch (Exception e) {
-            throw DataXException.asDataXException(MongoDBReaderErrorCode.UNEXCEPT_EXCEPTION,"未知异常");
+            throw DataXException.asDataXException(MongoDBReaderErrorCode.UNEXPECTED_EXCEPTION,"未知异常");
         }
     }
 
@@ -45,14 +46,14 @@ public class MongoUtil {
         }
         try {
             MongoCredential credential = MongoCredential.createCredential(userName, database, password.toCharArray());
-            return new MongoClient(parseServerAddress(addressList), Arrays.asList(credential));
+            return new MongoClient(parseServerAddress(addressList), Collections.singletonList(credential));
 
         } catch (UnknownHostException e) {
             throw DataXException.asDataXException(MongoDBReaderErrorCode.ILLEGAL_ADDRESS,"不合法的地址");
         } catch (NumberFormatException e) {
             throw DataXException.asDataXException(MongoDBReaderErrorCode.ILLEGAL_VALUE,"不合法参数");
         } catch (Exception e) {
-            throw DataXException.asDataXException(MongoDBReaderErrorCode.UNEXCEPT_EXCEPTION,"未知异常");
+            throw DataXException.asDataXException(MongoDBReaderErrorCode.UNEXPECTED_EXCEPTION,"未知异常");
         }
     }
     /**
@@ -79,7 +80,7 @@ public class MongoUtil {
         for(Object address : rawAddressList) {
             String[] tempAddress = ((String)address).split(":");
             try {
-                ServerAddress sa = new ServerAddress(tempAddress[0],Integer.valueOf(tempAddress[1]));
+                ServerAddress sa = new ServerAddress(tempAddress[0],Integer.parseInt(tempAddress[1]));
                 addressList.add(sa);
             } catch (Exception e) {
                 throw new UnknownHostException();
