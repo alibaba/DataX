@@ -92,22 +92,22 @@ public abstract class HbaseAbstractTask {
         Column column;
         switch (columnType) {
             case BOOLEAN:
-                column = new BoolColumn(ArrayUtils.isEmpty(byteArray) ? null : Bytes.toBoolean(byteArray));
+                column = new BoolColumn(ArrayUtils.isEmpty(byteArray) ? null : Boolean.valueOf(Bytes.toString(byteArray)));
                 break;
             case SHORT:
-                column = new LongColumn(ArrayUtils.isEmpty(byteArray) ? null : String.valueOf(Bytes.toShort(byteArray)));
+                column = new LongColumn(ArrayUtils.isEmpty(byteArray) ? null : Bytes.toString(byteArray));
                 break;
             case INT:
-                column = new LongColumn(ArrayUtils.isEmpty(byteArray) ? null : Bytes.toInt(byteArray));
+                column = new LongColumn(ArrayUtils.isEmpty(byteArray) ? null : Integer.valueOf(Bytes.toString(byteArray)));
                 break;
             case LONG:
-                column = new LongColumn(ArrayUtils.isEmpty(byteArray) ? null : Bytes.toLong(byteArray));
+                column = new LongColumn(ArrayUtils.isEmpty(byteArray) ? null : Long.valueOf(Bytes.toString(byteArray)));
                 break;
             case FLOAT:
-                column = new DoubleColumn(ArrayUtils.isEmpty(byteArray) ? null : Bytes.toFloat(byteArray));
+                column = new DoubleColumn(ArrayUtils.isEmpty(byteArray) ? null : Float.valueOf(Bytes.toString(byteArray)));
                 break;
             case DOUBLE:
-                column = new DoubleColumn(ArrayUtils.isEmpty(byteArray) ? null : Bytes.toDouble(byteArray));
+                column = new DoubleColumn(ArrayUtils.isEmpty(byteArray) ? null : Double.valueOf(Bytes.toString(byteArray)));
                 break;
             case STRING:
                 column = new StringColumn(ArrayUtils.isEmpty(byteArray) ? null : new String(byteArray, encoding));
