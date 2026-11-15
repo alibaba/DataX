@@ -156,6 +156,9 @@ public class MongoDBWriter extends Writer{
                 for(int i = 0; i < record.getColumnNumber(); i++) {
 
                     String type = columnMeta.getJSONObject(i).getString(KeyConstant.COLUMN_TYPE);
+                    if(type==null) {
+                        type = "string";
+                    }
                     //空记录处理
                     if (Strings.isNullOrEmpty(record.getColumn(i).asString())) {
                         if (KeyConstant.isArrayType(type.toLowerCase())) {
