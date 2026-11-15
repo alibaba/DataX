@@ -120,7 +120,7 @@ public class MongoDBReader extends Reader {
                 Document queryFilter = Document.parse(query);
                 filter = new Document("$and", Arrays.asList(filter, queryFilter));
             }
-            dbCursor = col.find(filter).iterator();
+            dbCursor = col.find(filter).noCursorTimeout(true).iterator();
             while (dbCursor.hasNext()) {
                 Document item = dbCursor.next();
                 Record record = recordSender.createRecord();
