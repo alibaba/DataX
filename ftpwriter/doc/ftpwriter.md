@@ -225,7 +225,6 @@ FTP文件本身不提供数据类型，该类型是DataX FtpWriter定义：
 
 | DataX 内部类型| FTP文件 数据类型    |
 | -------- | -----  |
-| 
 | Long     |Long -> 字符串序列化表示|
 | Double   |Double -> 字符串序列化表示|
 | String   |String -> 字符串序列化表示| 
