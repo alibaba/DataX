@@ -72,6 +72,6 @@ public abstract class Column {
 	}
 
 	public enum Type {
-		BAD, NULL, INT, LONG, DOUBLE, STRING, BOOL, DATE, BYTES
+		BAD, NULL, INT, LONG, DOUBLE, STRING, BOOL, DATE, BYTES, ARRAY
 	}
 }
