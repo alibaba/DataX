@@ -18,7 +18,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.OutputStream;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
@@ -34,6 +36,8 @@ public class FtpWriter extends Writer {
         private int port;
         private String username;
         private String password;
+        private String privateKey;
+        private String keyPassword;
         private int timeout;
 
         private IFtpHelper ftpHelper = null;
@@ -48,8 +52,11 @@ public class FtpWriter extends Writer {
                 RetryUtil.executeWithRetry(new Callable<Void>() {
                     @Override
                     public Void call() throws Exception {
+                        Map<String, Object> extendParams = new HashMap<String, Object>();
+			extendParams.put(Key.PRIVATEKEY, privateKey);
+			extendParams.put(Key.KEYPASSWORD, keyPassword);
                         ftpHelper.loginFtpServer(host, username, password,
-                                port, timeout);
+                                port, timeout, extendParams);
                         return null;
                     }
                 }, 3, 4000, true);
@@ -81,8 +88,13 @@ public class FtpWriter extends Writer {
                     FtpWriterErrorCode.REQUIRED_VALUE);
             this.username = this.writerSliceConfig.getNecessaryValue(
                     Key.USERNAME, FtpWriterErrorCode.REQUIRED_VALUE);
-            this.password = this.writerSliceConfig.getNecessaryValue(
-                    Key.PASSWORD, FtpWriterErrorCode.REQUIRED_VALUE);
+            this.password = this.writerSliceConfig.getString(Key.PASSWORD);
+            this.privateKey = this.writerSliceConfig.getString(Key.PRIVATEKEY);
+            this.keyPassword = this.writerSliceConfig.getString(Key.KEYPASSWORD);
+            if (StringUtils.isBlank(this.password) && StringUtils.isBlank(this.privateKey)) {
+                throw DataXException.asDataXException(
+                        FtpWriterErrorCode.REQUIRED_VALUE, "密码和私钥路径至少需配置一项");
+            }
             this.timeout = this.writerSliceConfig.getInt(Key.TIMEOUT,
                     Constant.DEFAULT_TIMEOUT);
 
@@ -208,6 +220,8 @@ public class FtpWriter extends Writer {
         private int port;
         private String username;
         private String password;
+        private String privateKey;
+        private String keyPassword;
         private int timeout;
 
         private IFtpHelper ftpHelper = null;
@@ -225,6 +239,8 @@ public class FtpWriter extends Writer {
             this.port = this.writerSliceConfig.getInt(Key.PORT);
             this.username = this.writerSliceConfig.getString(Key.USERNAME);
             this.password = this.writerSliceConfig.getString(Key.PASSWORD);
+            this.privateKey = this.writerSliceConfig.getString(Key.PRIVATEKEY);
+            this.keyPassword = this.writerSliceConfig.getString(Key.KEYPASSWORD);
             this.timeout = this.writerSliceConfig.getInt(Key.TIMEOUT,
                     Constant.DEFAULT_TIMEOUT);
             this.protocol = this.writerSliceConfig.getString(Key.PROTOCOL);
@@ -238,8 +254,11 @@ public class FtpWriter extends Writer {
                 RetryUtil.executeWithRetry(new Callable<Void>() {
                     @Override
                     public Void call() throws Exception {
+                        Map<String, Object> extendParams = new HashMap<String, Object>();
+			extendParams.put(Key.PRIVATEKEY, privateKey);
+			extendParams.put(Key.KEYPASSWORD, keyPassword);
                         ftpHelper.loginFtpServer(host, username, password,
-                                port, timeout);
+                                port, timeout, extendParams);
                         return null;
                     }
                 }, 3, 4000, true);

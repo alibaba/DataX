@@ -57,6 +57,8 @@ FtpReader实现了从远程FTP文件读取数据并转为DataX协议的功能，
                         "port": 22,
                         "username": "xx",
                         "password": "xxx",
+                        "privateKey": "/path_to_private_key",
+						"keyPassword": "xxx",
                         "path": [
                             "/home/hanfa.shf/ftpReaderTest/data"
                         ],
@@ -153,10 +155,26 @@ FtpReader实现了从远程FTP文件读取数据并转为DataX协议的功能，
 
 * **password**
 
-	* 描述：ftp服务器访问密码。 <br />
+	* 描述：ftp服务器访问密码。密码和私钥必须配置一项。 <br />
+ 
+	* 必选：否 <br />
+ 
+	* 默认值：无 <br />
 
-	* 必选：是 <br />
+* **privateKey**
 
+	* 描述：ftp服务器访问私钥。密码和私钥必须配置一项。 <br />
+ 
+	* 必选：否 <br />
+ 
+	* 默认值：无 <br />
+
+* **keyPassword**
+
+	* 描述：私钥密码密码。 <br />
+ 
+	* 必选：否 <br />
+ 
 	* 默认值：无 <br />
 
 * **path**

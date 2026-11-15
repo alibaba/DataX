@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.UnknownHostException;
 import java.util.HashSet;
+import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.net.ftp.FTP;
@@ -23,7 +24,7 @@ public class StandardFtpHelper extends FtpHelper {
 
 	@Override
 	public void loginFtpServer(String host, String username, String password, int port, int timeout,
-			String connectMode) {
+			String connectMode, Map<String, Object> extendParams) {
 		ftpClient = new FTPClient();
 		try {
 			// 连接

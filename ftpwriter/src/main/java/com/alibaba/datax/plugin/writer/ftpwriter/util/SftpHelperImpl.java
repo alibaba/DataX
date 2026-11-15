@@ -3,6 +3,7 @@ package com.alibaba.datax.plugin.writer.ftpwriter.util;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Vector;
@@ -13,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.datax.common.exception.DataXException;
+import com.alibaba.datax.plugin.writer.ftpwriter.Key;
 import com.alibaba.datax.plugin.writer.ftpwriter.FtpWriterErrorCode;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONWriter;
@@ -33,9 +35,18 @@ public class SftpHelperImpl implements IFtpHelper {
 
     @Override
     public void loginFtpServer(String host, String username, String password,
-            int port, int timeout) {
+            int port, int timeout, Map<String, Object> extendParams) {
         JSch jsch = new JSch();
         try {
+            String privateKey = (String)extendParams.get(Key.PRIVATEKEY);
+			String keyPassword = (String)extendParams.get(Key.KEYPASSWORD);
+            if (!StringUtils.isBlank(privateKey)) {
+				if (!StringUtils.isBlank(keyPassword)) {
+					jsch.addIdentity(privateKey, keyPassword);
+				} else {
+					jsch.addIdentity(privateKey);
+				}
+			}
             this.session = jsch.getSession(username, host, port);
             if (this.session == null) {
                 throw DataXException
@@ -43,7 +54,9 @@ public class SftpHelperImpl implements IFtpHelper {
                                 "创建ftp连接this.session失败,无法通过sftp与服务器建立链接，请检查主机名和用户名是否正确.");
             }
 
-            this.session.setPassword(password);
+            if (StringUtils.isBlank(privateKey)) {
+                this.session.setPassword(password);
+            }
             Properties config = new Properties();
             config.put("StrictHostKeyChecking", "no");
             // config.put("PreferredAuthentications", "password");
