@@ -15,6 +15,7 @@ public enum ColumnType {
     BIGINT("bigint"),
     DOUBLE("double"),
     BOOLEAN("boolean"),
+    TIMESTAMP("timestamp"),
     LONG("long");
     private String mode;
     ColumnType(String mode) {
