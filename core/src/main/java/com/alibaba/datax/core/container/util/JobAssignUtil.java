@@ -161,13 +161,19 @@ public final class JobAssignUtil {
                 }
             }
         }
-
+        Long jobId = taskGroupTemplate.getLong(CoreConstant.DATAX_CORE_CONTAINER_JOB_ID);
         Configuration tempTaskGroupConfig;
         for (int i = 0; i < taskGroupNumber; i++) {
             tempTaskGroupConfig = taskGroupTemplate.clone();
             tempTaskGroupConfig.set(CoreConstant.DATAX_JOB_CONTENT, taskGroupConfigList.get(i));
-            tempTaskGroupConfig.set(CoreConstant.DATAX_CORE_CONTAINER_TASKGROUP_ID, i);
-
+            //tempTaskGroupConfig.set(CoreConstant.DATAX_CORE_CONTAINER_TASKGROUP_ID, i);
+            /**
+             * 这里为会区分该统计信息属于哪个Jobcontiner 用字符串相连的原因是
+             * 1+3=4
+             * 2+2=4
+             * 用字符串相连可以规避这个问题
+             */
+            tempTaskGroupConfig.set(CoreConstant.DATAX_CORE_CONTAINER_TASKGROUP_ID,Integer.parseInt(jobId+ ""+ i));
             result.add(tempTaskGroupConfig);
         }
 

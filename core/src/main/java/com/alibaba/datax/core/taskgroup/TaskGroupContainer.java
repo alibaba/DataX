@@ -12,6 +12,7 @@ import com.alibaba.datax.common.util.Configuration;
 import com.alibaba.datax.core.AbstractContainer;
 import com.alibaba.datax.core.statistics.communication.Communication;
 import com.alibaba.datax.core.statistics.communication.CommunicationTool;
+import com.alibaba.datax.core.statistics.communication.LocalTGCommunicationManager;
 import com.alibaba.datax.core.statistics.container.communicator.taskgroup.StandaloneTGContainerCommunicator;
 import com.alibaba.datax.core.statistics.plugin.task.AbstractTaskPluginCollector;
 import com.alibaba.datax.core.taskgroup.runner.AbstractRunner;
@@ -118,7 +119,7 @@ public class TaskGroupContainer extends AbstractContainer {
                     CoreConstant.DATAX_CORE_CONTAINER_TASK_FAILOVER_RETRYINTERVALINMSEC, 10000);
 
             long taskMaxWaitInMsec = this.configuration.getLong(CoreConstant.DATAX_CORE_CONTAINER_TASK_FAILOVER_MAXWAITINMSEC, 60000);
-            
+
             List<Configuration> taskConfigs = this.configuration
                     .getListConfiguration(CoreConstant.DATAX_JOB_CONTENT);
 
@@ -126,12 +127,12 @@ public class TaskGroupContainer extends AbstractContainer {
                 LOG.debug("taskGroup[{}]'s task configs[{}]", this.taskGroupId,
                         JSON.toJSONString(taskConfigs));
             }
-            
+
             int taskCountInThisTaskGroup = taskConfigs.size();
             LOG.info(String.format(
                     "taskGroupId=[%d] start [%d] channels for [%d] tasks.",
                     this.taskGroupId, channelNumber, taskCountInThisTaskGroup));
-            
+
             this.containerCommunicator.registerCommunication(taskConfigs);
 
             Map<Integer, Configuration> taskConfigMap = buildTaskConfigMap(taskConfigs); //taskId与task配置
@@ -144,12 +145,12 @@ public class TaskGroupContainer extends AbstractContainer {
             Communication lastTaskGroupContainerCommunication = new Communication();
 
             while (true) {
-            	//1.判断task状态
-            	boolean failedOrKilled = false;
-            	Map<Integer, Communication> communicationMap = containerCommunicator.getCommunicationMap();
-            	for(Map.Entry<Integer, Communication> entry : communicationMap.entrySet()){
-            		Integer taskId = entry.getKey();
-            		Communication taskCommunication = entry.getValue();
+                //1.判断task状态
+                boolean failedOrKilled = false;
+                Map<Integer, Communication> communicationMap = containerCommunicator.getCommunicationMap();
+                for(Map.Entry<Integer, Communication> entry : communicationMap.entrySet()){
+                    Integer taskId = entry.getKey();
+                    Communication taskCommunication = entry.getValue();
                     if(!taskCommunication.isFinished()){
                         continue;
                     }
@@ -159,21 +160,21 @@ public class TaskGroupContainer extends AbstractContainer {
                     taskMonitor.removeTask(taskId);
 
                     //失败，看task是否支持failover，重试次数未超过最大限制
-            		if(taskCommunication.getState() == State.FAILED){
+                    if(taskCommunication.getState() == State.FAILED){
                         taskFailedExecutorMap.put(taskId, taskExecutor);
-            			if(taskExecutor.supportFailOver() && taskExecutor.getAttemptCount() < taskMaxRetryTimes){
+                        if(taskExecutor.supportFailOver() && taskExecutor.getAttemptCount() < taskMaxRetryTimes){
                             taskExecutor.shutdown(); //关闭老的executor
                             containerCommunicator.resetCommunication(taskId); //将task的状态重置
-            				Configuration taskConfig = taskConfigMap.get(taskId);
-            				taskQueue.add(taskConfig); //重新加入任务列表
-            			}else{
-            				failedOrKilled = true;
-                			break;
-            			}
-            		}else if(taskCommunication.getState() == State.KILLED){
-            			failedOrKilled = true;
-            			break;
-            		}else if(taskCommunication.getState() == State.SUCCEEDED){
+                            Configuration taskConfig = taskConfigMap.get(taskId);
+                            taskQueue.add(taskConfig); //重新加入任务列表
+                        }else{
+                            failedOrKilled = true;
+                            break;
+                        }
+                    }else if(taskCommunication.getState() == State.KILLED){
+                        failedOrKilled = true;
+                        break;
+                    }else if(taskCommunication.getState() == State.SUCCEEDED){
                         Long taskStartTime = taskStartTimeMap.get(taskId);
                         if(taskStartTime != null){
                             Long usedTime = System.currentTimeMillis() - taskStartTime;
@@ -185,8 +186,8 @@ public class TaskGroupContainer extends AbstractContainer {
                             taskConfigMap.remove(taskId);
                         }
                     }
-            	}
-            	
+                }
+
                 // 2.发现该taskGroup下taskExecutor的总状态失败则汇报错误
                 if (failedOrKilled) {
                     lastTaskGroupContainerCommunication = reportTaskGroupCommunication(
@@ -195,7 +196,7 @@ public class TaskGroupContainer extends AbstractContainer {
                     throw DataXException.asDataXException(
                             FrameworkErrorCode.PLUGIN_RUNTIME_ERROR, lastTaskGroupContainerCommunication.getThrowable());
                 }
-                
+
                 //3.有任务未执行，且正在运行的任务数小于最大通道限制
                 Iterator<Configuration> iterator = taskQueue.iterator();
                 while(iterator.hasNext() && runTasks.size() < channelNumber){
@@ -225,9 +226,9 @@ public class TaskGroupContainer extends AbstractContainer {
                         }
                     }
                     Configuration taskConfigForRun = taskMaxRetryTimes > 1 ? taskConfig.clone() : taskConfig;
-                	TaskExecutor taskExecutor = new TaskExecutor(taskConfigForRun, attemptCount);
+                    TaskExecutor taskExecutor = new TaskExecutor(taskConfigForRun, attemptCount);
                     taskStartTimeMap.put(taskId, System.currentTimeMillis());
-                	taskExecutor.doStart();
+                    taskExecutor.doStart();
 
                     iterator.remove();
                     runTasks.add(taskExecutor);
@@ -242,10 +243,9 @@ public class TaskGroupContainer extends AbstractContainer {
 
                 //4.任务列表为空，executor已结束, 搜集状态为success--->成功
                 if (taskQueue.isEmpty() && isAllTaskDone(runTasks) && containerCommunicator.collectState() == State.SUCCEEDED) {
-                	// 成功的情况下，也需要汇报一次。否则在任务结束非常快的情况下，采集的信息将会不准确
+                    // 成功的情况下，也需要汇报一次。否则在任务结束非常快的情况下，采集的信息将会不准确
                     lastTaskGroupContainerCommunication = reportTaskGroupCommunication(
                             lastTaskGroupContainerCommunication, taskCountInThisTaskGroup);
-
                     LOG.info("taskGroup[{}] completed it's tasks.", this.taskGroupId);
                     break;
                 }
@@ -293,46 +293,47 @@ public class TaskGroupContainer extends AbstractContainer {
                 }
 
                 LOG.info(PerfTrace.getInstance().summarizeNoException());
+                this.removeTaskGroup();//移除指定JobId中的统计Map
             }
         }
     }
-    
+
     private Map<Integer, Configuration> buildTaskConfigMap(List<Configuration> configurations){
-    	Map<Integer, Configuration> map = new HashMap<Integer, Configuration>();
-    	for(Configuration taskConfig : configurations){
-        	int taskId = taskConfig.getInt(CoreConstant.TASK_ID);
-        	map.put(taskId, taskConfig);
-    	}
-    	return map;
+        Map<Integer, Configuration> map = new HashMap<Integer, Configuration>();
+        for(Configuration taskConfig : configurations){
+            int taskId = taskConfig.getInt(CoreConstant.TASK_ID);
+            map.put(taskId, taskConfig);
+        }
+        return map;
     }
 
     private List<Configuration> buildRemainTasks(List<Configuration> configurations){
-    	List<Configuration> remainTasks = new LinkedList<Configuration>();
-    	for(Configuration taskConfig : configurations){
-    		remainTasks.add(taskConfig);
-    	}
-    	return remainTasks;
+        List<Configuration> remainTasks = new LinkedList<Configuration>();
+        for(Configuration taskConfig : configurations){
+            remainTasks.add(taskConfig);
+        }
+        return remainTasks;
     }
-    
+
     private TaskExecutor removeTask(List<TaskExecutor> taskList, int taskId){
-    	Iterator<TaskExecutor> iterator = taskList.iterator();
-    	while(iterator.hasNext()){
-    		TaskExecutor taskExecutor = iterator.next();
-    		if(taskExecutor.getTaskId() == taskId){
-    			iterator.remove();
-    			return taskExecutor;
-    		}
-    	}
-    	return null;
+        Iterator<TaskExecutor> iterator = taskList.iterator();
+        while(iterator.hasNext()){
+            TaskExecutor taskExecutor = iterator.next();
+            if(taskExecutor.getTaskId() == taskId){
+                iterator.remove();
+                return taskExecutor;
+            }
+        }
+        return null;
     }
-    
+
     private boolean isAllTaskDone(List<TaskExecutor> taskList){
-    	for(TaskExecutor taskExecutor : taskList){
-    		if(!taskExecutor.isTaskFinished()){
-    			return false;
-    		}
-    	}
-    	return true;
+        for(TaskExecutor taskExecutor : taskList){
+            if(!taskExecutor.isTaskFinished()){
+                return false;
+            }
+        }
+        return true;
     }
 
     private Communication reportTaskGroupCommunication(Communication lastTaskGroupContainerCommunication, int taskCount){
@@ -365,9 +366,9 @@ public class TaskGroupContainer extends AbstractContainer {
         private Thread readerThread;
 
         private Thread writerThread;
-        
+
         private ReaderRunner readerRunner;
-        
+
         private WriterRunner writerRunner;
 
         /**
@@ -417,7 +418,7 @@ public class TaskGroupContainer extends AbstractContainer {
             //通过设置thread的contextClassLoader，即可实现同步和主程序不通的加载器
             this.writerThread.setContextClassLoader(LoadUtil.getJarLoader(
                     PluginType.WRITER, this.taskConfig.getString(
-                            CoreConstant.JOB_WRITER_NAME)));
+                            CoreConstant.JOB_WRITER_NAME),getJobId()));
 
             /**
              * 生成readerThread
@@ -431,7 +432,7 @@ public class TaskGroupContainer extends AbstractContainer {
              */
             this.readerThread.setContextClassLoader(LoadUtil.getJarLoader(
                     PluginType.READER, this.taskConfig.getString(
-                            CoreConstant.JOB_READER_NAME)));
+                            CoreConstant.JOB_READER_NAME),getJobId()));
         }
 
         public void doStart() {
@@ -468,7 +469,7 @@ public class TaskGroupContainer extends AbstractContainer {
             switch (pluginType) {
                 case READER:
                     newRunner = LoadUtil.loadPluginRunner(pluginType,
-                            this.taskConfig.getString(CoreConstant.JOB_READER_NAME));
+                            this.taskConfig.getString(CoreConstant.JOB_READER_NAME),getJobId());
                     newRunner.setJobConf(this.taskConfig.getConfiguration(
                             CoreConstant.JOB_READER_PARAMETER));
 
@@ -493,7 +494,7 @@ public class TaskGroupContainer extends AbstractContainer {
                     break;
                 case WRITER:
                     newRunner = LoadUtil.loadPluginRunner(pluginType,
-                            this.taskConfig.getString(CoreConstant.JOB_WRITER_NAME));
+                            this.taskConfig.getString(CoreConstant.JOB_WRITER_NAME),getJobId());
                     newRunner.setJobConf(this.taskConfig
                             .getConfiguration(CoreConstant.JOB_WRITER_PARAMETER));
 
@@ -527,14 +528,14 @@ public class TaskGroupContainer extends AbstractContainer {
             }
 
             if(taskCommunication==null || !taskCommunication.isFinished()){
-        		return false;
-        	}
+                return false;
+            }
 
             return true;
         }
-        
+
         private int getTaskId(){
-        	return taskId;
+            return taskId;
         }
 
         private long getTimeStamp(){
@@ -544,9 +545,9 @@ public class TaskGroupContainer extends AbstractContainer {
         private int getAttemptCount(){
             return attemptCount;
         }
-        
+
         private boolean supportFailOver(){
-        	return writerRunner.supportFailOver();
+            return writerRunner.supportFailOver();
         }
 
         private void shutdown(){
@@ -563,5 +564,27 @@ public class TaskGroupContainer extends AbstractContainer {
         private boolean isShutdown(){
             return !readerThread.isAlive() && !writerThread.isAlive();
         }
+    }
+
+    public void removeTaskGroup(){
+        try {
+            /**
+             * 移除根据JOBID做的一些标记 防止内存溢出
+             */
+            LoadUtil.getConfigurationSet().remove(this.jobId);
+            Iterator<Map.Entry<Integer, Communication>> it =
+                    LocalTGCommunicationManager.getTaskGroupCommunicationMap().entrySet().iterator();
+            while(it.hasNext()){
+                Map.Entry<Integer, Communication> entry = it.next();
+                String strJobId = String.valueOf(this.jobId);
+                String key = String.valueOf(entry.getKey());
+                if (key.startsWith(strJobId)) {
+                    it.remove();
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
     }
 }
