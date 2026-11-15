@@ -1,0 +1,96 @@
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "name": "streamreader",
+          "parameter": {
+            "column": [
+              {
+                "type": "string",
+                "value": "tb20240425"
+              },
+              {
+                "type": "date",
+                "value": "2024-04-19 01:02:03.456",
+                "dateFormat": "yyyy-MM-dd HH:mm:ss.SSS"
+              },
+              {
+                "type": "string",
+                "value": "device_name:abc"
+              },
+              {
+                "type": "string",
+                "value": "device_cod:123"
+              },
+              {
+                "type": "string",
+                "value": "station_id:CN"
+              },
+              {
+                "type": "string",
+                "value": "station_name:china"
+              },
+              {
+                "type": "string",
+                "value": "project_id:1"
+              },
+              {
+                "type": "string",
+                "value": "project_name:cnpp"
+              },
+              {
+                "type": "double",
+                "value": 1.11
+              },
+              {
+                "type": "double",
+                "value": 2.22
+              },
+              {
+                "type": "double",
+                "value": 3.33
+              }
+            ],
+            "sliceRecordCount": 10
+          }
+        },
+        "writer": {
+          "name": "tdengine30writer",
+          "parameter": {
+            "username": "root",
+            "password": "taosdata",
+            "column": [
+              "tbname",
+              "event_time",
+              "device_name",
+              "device_code",
+              "station_id",
+              "station_name",
+              "project_id",
+              "project_name",
+              "twoutfan1",
+              "twoutfan2",
+              "twoutfan3"
+            ],
+            "connection": [
+              {
+                "table": [
+                  "cnpp_ads_wmct_d"
+                ],
+                "jdbcUrl": "jdbc:TAOS-RS://192.168.0.201:6041/zyyang?user=root&password=taosdata"
+              }
+            ],
+            "ignoreTagsUnmatched": true,
+            "batchSize": "8182"
+          }
+        }
+      }
+    ],
+    "setting": {
+      "speed": {
+        "channel": 1
+      }
+    }
+  }
+}
