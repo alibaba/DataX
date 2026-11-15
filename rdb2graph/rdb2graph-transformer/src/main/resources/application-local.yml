@@ -1,0 +1,37 @@
+spring:
+ application:
+  name: rdb2graph-transformer
+
+setl:
+  scanner:
+   type: mysql
+   serializer: # 序列化
+    type: xml
+   ds:
+    db: sakila
+    url: jdbc:mysql://localhost:3306?remarks=true&useInformationSchema=false&serverTimezone=Asia/Shanghai
+    tbs: 
+    ltbs: # 连接表
+    username: root
+    password: root
+    driverClass: com.mysql.cj.jdbc.Driver
+    filters: stat
+    maxActive: 20
+    initialSize: 1
+    maxWait: 60000
+    minIdle: 1
+    timeBetweenEvictionRunsMillis: 60000
+    minEvictableIdleTimeMillis: 300000
+    validationQuery: select 'x'
+    testWhileIdle: true
+    testOnBorrow: false
+    testOnReturn: false
+    poolPreparedStatements: true
+    maxOpenPreparedStatements: 20
+
+org:
+ neo4j: 
+  driver: 
+   uri: bolt://192.168.1.20:7687
+   username: neo4j
+   password: neo4j1234
