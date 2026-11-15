@@ -60,5 +60,10 @@ public class Neo4jWriter extends Writer {
                 this.neo4jClient.tryWrite(record);
             }
         }
+
+        @Override
+        public boolean supportFailOver() {
+            return this.neo4jClient.supportFailOver();
+        }
     }
 }

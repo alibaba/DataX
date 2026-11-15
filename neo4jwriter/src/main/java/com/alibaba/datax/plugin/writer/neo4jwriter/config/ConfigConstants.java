@@ -13,7 +13,6 @@ public final class ConfigConstants {
     public static final Long DEFAULT_MAX_CONNECTION_SECONDS = 30L;
 
 
-
     public static final Option<Integer> RETRY_TIMES =
             Option.<Integer>builder()
                     .key("retryTimes")
@@ -112,5 +111,12 @@ public final class ConfigConstants {
                     key("batchSize")
                     .defaultValue(1000)
                     .desc("max batch size")
+                    .build();
+
+    public static final Option<String> WRITE_MODE =
+            Option.<String>builder()
+                    .key("writeMode")
+                    .defaultValue(WriteMode.INSERT.name())
+                    .desc("The flag is either insert or update, and if it is update, a retry is performed")
                     .build();
 }
