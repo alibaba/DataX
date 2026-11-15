@@ -1,0 +1,7 @@
+{
+    "name": "kafkawriter",
+    "class": "com.alibaba.datax.plugin.writer.kafkawriter.KafkaWriter",
+    "description": "push stringify record json struct to kafka",
+    "developer": "linhdmn",
+    "contributor": "dienvt"
+}
