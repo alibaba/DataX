@@ -4,7 +4,7 @@
 ## 1 快速介绍
 
 Databend Writer 是一个 DataX 的插件，用于从 DataX 中写入数据到 Databend 表中。
-该插件基于[databend JDBC driver](https://github.com/databendcloud/databend-jdbc) ，它使用 [RESTful http protocol](https://databend.rs/doc/integrations/api/rest)
+该插件基于[databend JDBC driver](https://github.com/databendcloud/databend-jdbc) ，它使用 [RESTful http protocol](https://docs.databend.com/developer/apis/http)
 在开源的 databend 和 [databend cloud](https://app.databend.com/) 上执行查询。
 
 在每个写入批次中，databend writer 将批量数据上传到内部的 S3 stage，然后执行相应的 insert SQL 将数据上传到 databend 表中。
@@ -12,7 +12,7 @@ Databend Writer 是一个 DataX 的插件，用于从 DataX 中写入数据到 D
 为了最佳的用户体验，如果您使用的是 databend 社区版本，您应该尝试采用 [S3](https://aws.amazon.com/s3/)/[minio](https://min.io/)/[OSS](https://www.alibabacloud.com/product/object-storage-service) 作为其底层存储层，因为
 它们支持预签名上传操作，否则您可能会在数据传输上浪费不必要的成本。
 
-您可以在[文档](https://databend.rs/doc/deploy/deploying-databend)中了解更多详细信息
+您可以在[文档](https://docs.databend.com/guides/deploy)中了解更多详细信息
 
 ## 2 实现原理
 
