@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 public class MockRecord implements Record {
-    private static final int RECORD_AVERGAE_COLUMN_NUMBER = 16;
+    private static final int RECORD_AVERAGE_COLUMN_NUMBER = 16;
 
     private List<Column> columns;
 
@@ -21,7 +21,7 @@ public class MockRecord implements Record {
     private Map<String, Object> meta;
 
     public MockRecord() {
-        this.columns = new ArrayList<>(RECORD_AVERGAE_COLUMN_NUMBER);
+        this.columns = new ArrayList<>(RECORD_AVERAGE_COLUMN_NUMBER);
     }
 
     @Override
