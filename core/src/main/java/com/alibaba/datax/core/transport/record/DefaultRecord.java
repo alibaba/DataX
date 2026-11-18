@@ -18,7 +18,7 @@ import java.util.Map;
 
 public class DefaultRecord implements Record {
 
-	private static final int RECORD_AVERGAE_COLUMN_NUMBER = 16;
+	private static final int RECORD_AVERAGE_COLUMN_NUMBER = 16;
 
 	private List<Column> columns;
 
@@ -30,7 +30,7 @@ public class DefaultRecord implements Record {
 	private Map<String, String> meta;
 
 	public DefaultRecord() {
-		this.columns = new ArrayList<Column>(RECORD_AVERGAE_COLUMN_NUMBER);
+		this.columns = new ArrayList<Column>(RECORD_AVERAGE_COLUMN_NUMBER);
 	}
 
 	@Override
