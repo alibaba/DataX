@@ -1,0 +1,17 @@
+{
+  "name": "iotdbreader",
+  "parameter": {
+    "model": "tree",
+    "host": "<iotdb-host>",
+    "port": 6667,
+    "username": "<username>",
+    "password": "<password>",
+    "version": "V_1_0",
+    "fetchSize": 1000,
+    "queryTimeoutMs": 60000,
+    "timeColumnPosition": 0,
+    "device": "root.example.device",
+    "measurements": ["temperature"],
+    "where": "time >= 0"
+  }
+}

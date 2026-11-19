@@ -1,0 +1,9 @@
+{
+    "name": "iotdbwriter",
+    "class": "com.alibaba.datax.plugin.writer.iotdbwriter.IoTDBWriter",
+    "description": {
+        "useScene": "data migration to iotdb",
+        "mechanism": "Use the IoTDB Java Session client to batch Tree or Table writes."
+    },
+    "developer": "timecho.com"
+}

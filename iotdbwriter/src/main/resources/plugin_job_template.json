@@ -1,0 +1,18 @@
+{
+  "name": "iotdbwriter",
+  "parameter": {
+    "model": "tree",
+    "host": "<iotdb-host>",
+    "port": 6667,
+    "username": "<username>",
+    "password": "<password>",
+    "version": "V_1_0",
+    "queryTimeoutMs": 60000,
+    "device": "root.example.device",
+    "measurements": ["temperature"],
+    "dataTypes": ["DOUBLE"],
+    "timeColumnPosition": 0,
+    "batchSize": 1000,
+    "preSql": []
+  }
+}

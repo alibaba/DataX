@@ -1,0 +1,10 @@
+{
+    "name": "iotdbreader",
+    "class": "com.alibaba.datax.plugin.reader.iotdbreader.IoTDBReader",
+    "description": {
+        "useScene": "data migration to iotdb",
+        "mechanism": "Use the IoTDB Java Session client to stream Tree or Table query results."
+    },
+    "developer": "timecho.com"
+}
+
