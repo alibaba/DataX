@@ -139,6 +139,13 @@
             <outputDirectory>datax</outputDirectory>
         </fileSet>
         <fileSet>
+            <directory>iotdbreader/target/datax/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>datax</outputDirectory>
+        </fileSet>
+        <fileSet>
             <directory>streamreader/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
@@ -275,6 +282,13 @@
         </fileSet>
         <fileSet>
             <directory>tdenginewriter/target/datax/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>datax</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>iotdbwriter/target/datax/</directory>
             <includes>
                 <include>**/*.*</include>
             </includes>
